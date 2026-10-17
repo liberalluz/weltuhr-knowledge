@@ -11,6 +11,10 @@
   - `meta` 是**信封**不是内容段：只含 `space` 与 `version`，**不含构建时间戳**
   - 序列化参数硬编码在此：`sort_keys` + 固定缩进 + `ensure_ascii=False` +
     末尾单换行。换任何一项都会让同一 commit 的两次构建 byte 不等
+  - **输出前缀用 ASCII `[ok]` / `[fail]`**：`✓`(U+2713) / `✗`(U+2717) 不在 GBK 内，
+    Windows 中文控制台（cp936）`print` 时会抛 `UnicodeEncodeError`。而这一步
+    **在 UTF-8 环境（CI 是 ubuntu）永远不触发**，所以绿灯不能证明它没问题。
+    `verify.py --suite` 的「输出可移植性」一步专门拦这类字符
 """
 
 from __future__ import annotations
@@ -148,6 +152,15 @@ def check_determinism(root: str) -> list[str]:
         env = dict(os.environ)
         # 值必须与父进程不同，否则测不到「遍历顺序依赖哈希种子」这类问题
         env["PYTHONHASHSEED"] = str(int.from_bytes(os.urandom(2), "big") + 1)
+        # 子进程输出恒 UTF-8。父侧按 utf-8 解码，若子进程用系统代码页（中文 Windows 为
+        # cp936）写中文，解码会在 CPython 的 `_readerthread` 后台线程里失败 —— 那个
+        # `UnicodeDecodeError` 死在子线程、主线程收不到，`proc.stderr` 会**静默变成
+        # None**，于是 `.strip()` 抛 `AttributeError`，把「子进程为什么挂」彻底埋掉。
+        #
+        # `PYTHONIOENCODING` 的优先级**高于** `PYTHONUTF8`：父进程若带着它，子进程会
+        # 仍按旧代码页写字节。所以必须显式摘掉，只留 PYTHONUTF8。
+        env.pop("PYTHONIOENCODING", None)
+        env["PYTHONUTF8"] = "1"
         proc = subprocess.run(
             [sys.executable, os.path.abspath(__file__), "--root", os.path.abspath(root), "--out", out],
             cwd=tmpdir,
@@ -155,9 +168,12 @@ def check_determinism(root: str) -> list[str]:
             capture_output=True,
             text=True,
             encoding="utf-8",
+            # 兜底：子进程被信号杀掉等情况下仍可能写出非 UTF-8 字节，替换掉而不是抛。
+            errors="replace",
         )
         if proc.returncode != 0:
-            problems.append(f"子进程构建失败：{proc.stderr.strip() or proc.stdout.strip()}")
+            detail = (proc.stderr or proc.stdout or "").strip()
+            problems.append(f"子进程构建失败：{detail or '（子进程无输出）'}")
         else:
             with open(out, "rb") as f:
                 third = f.read()
@@ -223,21 +239,21 @@ def main(argv: list[str] | None = None) -> int:
             problems = check_determinism(root)
             if problems:
                 status = 1
-                print(f"✗ {label} 确定性检查未通过")
+                print(f"[fail] {label} 确定性检查未通过")
                 for problem in problems:
                     print(f"    {problem}")
             else:
                 first, _ = build_text(root)
-                print(f"✓ {label} 确定性检查通过（sha256 {hashlib.sha256(first.encode()).hexdigest()[:12]}）")
+                print(f"[ok] {label} 确定性检查通过（sha256 {hashlib.sha256(first.encode()).hexdigest()[:12]}）")
             continue
 
         try:
             out = build(root, args.out)
         except BuildError as exc:
             status = 1
-            print(f"✗ {exc}", file=sys.stderr)
+            print(f"[fail] {exc}", file=sys.stderr)
             continue
-        print(f"✓ {label} → {_display_path(out)}（sha256 {sha256(out)[:12]}）")
+        print(f"[ok] {label} → {_display_path(out)}（sha256 {sha256(out)[:12]}）")
 
     return status
 
