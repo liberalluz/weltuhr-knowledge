@@ -77,3 +77,26 @@ Camera fitCameraToViewport({
     minDepth: base.minDepth,
   );
 }
+
+/// 投影后点集的**质心**（投影单位）。
+class ProjectedCentroid {
+  const ProjectedCentroid(this.x, this.y);
+
+  final double x;
+  final double y;
+}
+
+/// 算质心。绘制层用它把内容摆到画布正中 ——
+/// 扇区只朝一侧时（α 包 150 项全在 `ability`），楔形永远画在中心的一边。
+ProjectedCentroid centroidOf(List<ProjectedNode> nodes) {
+  if (nodes.isEmpty) {
+    return const ProjectedCentroid(0, 0);
+  }
+  double sx = 0;
+  double sy = 0;
+  for (final ProjectedNode node in nodes) {
+    sx += node.x;
+    sy += node.y;
+  }
+  return ProjectedCentroid(sx / nodes.length, sy / nodes.length);
+}
