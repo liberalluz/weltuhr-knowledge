@@ -1,0 +1,30 @@
+[
+  {
+    "id": "python-docs",
+    "name": "The Python Tutorial",
+    "authorityLevel": "L0",
+    "version": "3.13",
+    "segments": [
+      {
+        "text": "Assignment statements are used to (re)bind names to values.",
+        "locator": "§7.2 Assignment statements",
+        "license": "PSF-2.0"
+      }
+    ],
+    "appliesTo": { "spaceId": "python", "sixAxis": { "stack": "Python" } }
+  },
+  {
+    "id": "fluent-python",
+    "name": "Fluent Python (2nd ed.)",
+    "authorityLevel": "L1",
+    "version": "2e",
+    "segments": [
+      {
+        "text": "A closure is a function with an extended scope that encompasses non-global variables referenced in the body of the function but not defined there.",
+        "locator": "Ch.9 Closures",
+        "license": "proprietary-excerpt"
+      }
+    ],
+    "appliesTo": { "spaceId": "python", "sixAxis": { "stack": "Python" } }
+  }
+]

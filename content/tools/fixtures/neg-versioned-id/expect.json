@@ -1,0 +1,6 @@
+{
+  "base": "valid-min",
+  "exit": 1,
+  "codes": ["E-ID-VERSIONED"],
+  "note": "id 带 @2.1.0。PACK-008 的验收向量正是 python/decorator@2.1.0（SPEC-FND-013）"
+}
