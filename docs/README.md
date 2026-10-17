@@ -30,7 +30,7 @@
 
 ## 二、设计规格（`design/`）
 
-入口：[design/00-index.md](design/00-index.md)。八份主题文档，按**变更耦合度**拆分（不是按讨论顺序）：
+入口：[design/00-index.md](design/00-index.md)。十份主题文档，按**变更耦合度**拆分（不是按讨论顺序）：
 
 | 文档 | 主体 | 明确不管 |
 |---|---|---|
@@ -42,6 +42,8 @@
 | [QUANT](design/QUANT-quantification.md) | 掌握度两维 · 进度离散 · 三层单调状态 · FSRS 参数 | 视觉表达（VIEW） |
 | [NOTE](design/NOTE-notes.md) | `Note` 实体 · 三层内容 · 两套切换 · 单向导出 · 按节版本 | 笔记模板的具体排版（平台声明） |
 | [GOV](design/GOV-governance.md) | 提交四裁定 · overlay 双平面 · 跨设备 HLC 合并 · 孤儿项 | 包格式（PACK） |
+| [ACC](design/ACC-accounts.md) | 账号为使用前提 · 账号/登录方式分层 · 三渠道三批 · 会话双令牌 · `userId` 接缝 | 事件搬运（SYNC）· 治理裁定权（GOV） |
+| [SYNC](design/SYNC-sync.md) | 只搬不判 · 双向游标 · 三端点三表 · 包版本三态 · 触发时机 | 事件类型（reference）· 合并语义（GOV） |
 
 ## 三、参考层（`reference/`）
 
