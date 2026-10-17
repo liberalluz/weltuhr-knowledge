@@ -5,6 +5,7 @@ import 'package:project_knowledge/core/pack/pack_parse.dart';
 import 'package:project_knowledge/core/view/tree.dart';
 
 import '../../support/alpha_pack.dart';
+import '../../support/pack_fixture.dart';
 
 void main() {
   group('树行模型（VIEW-006 / 007 / 008）', () {
@@ -103,6 +104,35 @@ void main() {
         expect(hole.expandable, isFalse, reason: '无实体 ⇒ 展开也没有内容');
         expect(hole.label, isNotEmpty, reason: '黑洞要有痕迹名，不能是空行');
       }
+    });
+
+    test('圈外邻项在树里是 outsideNeighbor 且虚线，不混进 item（无 SPEC：VIEW-004 的邻项口径）', () {
+      // α 包**零圈外项**，这条分支在真包上不可达 —— 拿真包测它只能测到「没走
+      // 到那条分支」。所以必须用夹具：它是唯一能造出 `inScope: false` 的地方。
+      final LoadedPack pack = fixturePack(<FixtureItem>[
+        const FixtureItem('python/lexical/inside', '圈内项'),
+        const FixtureItem('python/lexical/outside', '圈外邻项', inScope: false),
+      ]);
+      final List<TreeRow> rows = buildTree(
+        pack,
+        expandedDomains: const <String>{'python/lexical'},
+        expandToPhi: 0,
+      );
+
+      final TreeRow outside = rows.firstWhere(
+        (TreeRow r) => r.id == 'python/lexical/outside',
+      );
+      expect(outside.kind, TreeRowKind.outsideNeighbor);
+      expect(outside.dashed, isTrue, reason: '虚线是「存在但不是本空间的」的唯一视觉标记');
+      expect(outside.depth, 1);
+      expect(outside.expandable, isFalse, reason: '圈外项不给展开 —— 展开等于声称它有结构');
+      expect(outside.label, '圈外邻项', reason: '仍要写原文标题，不能隐去');
+
+      final TreeRow inside = rows.firstWhere(
+        (TreeRow r) => r.id == 'python/lexical/inside',
+      );
+      expect(inside.kind, TreeRowKind.item);
+      expect(inside.dashed, isFalse);
     });
   });
 }
