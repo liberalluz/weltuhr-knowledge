@@ -20,6 +20,7 @@
 /// 所以探测不到就回落合成，并在屏幕上把原因写出来。
 library;
 
+import '../../core/entities/content.dart';
 import '../../core/frame/projection.dart';
 import '../../core/frame/scene.dart';
 import '../../core/pack/dart_io_pack_fs.dart';
@@ -92,15 +93,15 @@ class SceneResolution {
 /// 装真实 α 包；探测不到 / 解析失败 / 一个节点都没有 ⇒ 回落合成。
 ///
 /// 不抛异常：spike 的目的不是测错误处理，中途崩掉比回落更没有信息量。
+///
+/// **只装一个空间**，供绘制 spike（`universe_spike_screen`）复用 —— 那里测的是
+/// 「同一份输入下的帧成本」，多根没有意义。产品界面的入口是 [resolveAllScenes]。
 SceneResolution resolveAlphaScene() {
   const PackFs fs = DartIoPackFs();
   final ProbeResult probe = const PackProbe(fs).scanRoots(devPackRoots());
 
   if (probe.isEmpty) {
-    return _fallback(
-      '探测不到内容包（候选根 ${devPackRoots().join(" · ")}）'
-      '${probe.problems.isEmpty ? "" : "，问题 ${probe.problems.join("; ")}"}',
-    );
+    return _fallback(_probeFailure(probe));
   }
 
   PackLocation? chosen;
@@ -112,22 +113,74 @@ SceneResolution resolveAlphaScene() {
   }
   chosen ??= probe.locations.first;
 
-  final String? manifest = fs.readString(chosen.manifestPath);
-  final String? body = fs.readString(chosen.packPath);
+  final SceneResolution? resolution = bundleFromPack(fs, chosen);
+  return resolution ?? _fallback('包解析成功但一个节点都没有：${chosen.spaceRoot}');
+}
+
+/// **全部**可渲染的空间，每个一份装配结果（`SPEC-VIEW-031` 的多根入口）。
+///
+/// 为什么产品界面要一次装全部，而不是「先装一个、换根时再装」：换根发生在点击
+/// 的那一帧里，那时不能有 IO。一次装完的代价是内存，而这是单机、书只有几本。
+///
+/// 顺序按 `KnowledgeSpace.order`（`Z0` 的排序字段），`id` 收尾保证两次启动
+/// 顺序一致 —— 不一致的话「第 i 个根」在两次运行里会指到不同的空间。
+///
+/// 一个包都没有时给一份合成回落，**仍然返回非空列表**：界面永远有一个根可画，
+/// 空列表会让「没有内容包」这件事变成空白窗口，而不是一句写清原因的降级。
+List<SceneResolution> resolveAllScenes() {
+  const PackFs fs = DartIoPackFs();
+  final ProbeResult probe = const PackProbe(fs).scanRoots(devPackRoots());
+
+  if (probe.isEmpty) {
+    return <SceneResolution>[_fallback(_probeFailure(probe))];
+  }
+
+  final List<SceneResolution> resolved = <SceneResolution>[];
+  for (final PackLocation location in probe.locations) {
+    final SceneResolution? resolution = bundleFromPack(fs, location);
+    if (resolution != null) {
+      resolved.add(resolution);
+    }
+  }
+  if (resolved.isEmpty) {
+    return <SceneResolution>[
+      _fallback('探测到 ${probe.locations.length} 个包目录，但没有一个装得出来'),
+    ];
+  }
+  resolved.sort((SceneResolution a, SceneResolution b) {
+    final KnowledgeSpace left = a.pack!.space;
+    final KnowledgeSpace right = b.pack!.space;
+    return left.order == right.order
+        ? left.id.compareTo(right.id)
+        : left.order.compareTo(right.order);
+  });
+  return resolved;
+}
+
+/// 从磁盘上的一个包目录装出一份场景。失败（读不出 / 解析错 / 零节点）给 `null`。
+///
+/// 抽出来是因为「首次装配」与「换根」必须是**同一个函数**：两处各写一遍，
+/// 换根之后画出来的东西就不是首帧那个函数的结果，而形状一旦不同，用户会以为
+/// 自己进错了空间（`R-08` 同族 —— 违反它不会有任何东西变红）。
+SceneResolution? bundleFromPack(PackFs fs, PackLocation location) {
+  final String? manifest = fs.readString(location.manifestPath);
+  final String? body = fs.readString(location.packPath);
   if (manifest == null || body == null) {
-    return _fallback('包文件读不出：${chosen.spaceRoot}');
+    return null;
   }
 
   final LoadedPack pack;
   try {
     pack = parsePack(manifestJson: manifest, packJson: body);
-  } on PackFormatException catch (error) {
-    return _fallback('包解析失败（${error.problems.length} 处）：${error.problems.first}');
+  } on PackFormatException {
+    // 解析失败的原因由调用方决定怎么说：单根路径写进 `fallbackReason`，
+    // 多根路径直接丢掉这个空间（它画不出来，给不出根）。
+    return null;
   }
 
   final List<SceneNode> nodes = buildSceneNodes(pack, sectorCount: spikeSectorCount);
   if (nodes.isEmpty) {
-    return _fallback('包解析成功但一个节点都没有：${chosen.spaceRoot}');
+    return null;
   }
   final List<EdgeSpan> edges = buildEdgeSpans(pack, nodes);
 
@@ -140,13 +193,18 @@ SceneResolution resolveAlphaScene() {
       radialSegments: pack.space.domainIds.length,
       notes: <String>[
         '空间 ${pack.space.id} v${pack.space.version}',
-        '${chosen.spaceRoot.split('/').last}/dist/pack.json',
+        '${location.spaceRoot.split('/').last}/dist/pack.json',
         '边 ${pack.edges.length} 条 → 有效 ${edges.length} 条'
             '（${pack.edges.length - edges.length} 条端点不在册，投影时跳过）',
       ],
     ),
   );
 }
+
+/// 探测失败的说明。「探测不到」与「探测到但有问题」是两件事，两者都要说出来。
+String _probeFailure(ProbeResult probe) =>
+    '探测不到内容包（候选根 ${devPackRoots().join(" · ")}）'
+    '${probe.problems.isEmpty ? "" : "，问题 ${probe.problems.join("; ")}"}';
 
 SceneResolution _fallback(String reason) {
   return SceneResolution(bundle: buildSyntheticScene(), fallbackReason: reason);

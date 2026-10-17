@@ -59,12 +59,13 @@ class EmptySpaceScreen extends StatelessWidget {
               onPressed: () => Navigator.of(context).push(
                 MaterialPageRoute<void>(
                   builder: (BuildContext context) {
-                    final SceneResolution resolution = resolveAlphaScene();
+                    // 一次装全部空间：搜索的 `Z0` 与跨空间落点都要用到它们，
+                    // 而换根发生在点击那一帧，那里不能有 IO。
+                    final List<SceneResolution> roots = resolveAllScenes();
                     return UniverseScreen(
-                      scene: resolution.bundle,
                       // 树视图与详情要 `Item` / `Edge`：合成回落没有包，界面降级
                       // 成「没有可展开的树」，而不是画一棵空树。
-                      pack: resolution.pack,
+                      roots: roots,
                     );
                   },
                 ),
