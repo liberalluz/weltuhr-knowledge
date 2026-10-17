@@ -12,7 +12,7 @@ Camera _camera({
   double focal = 1.6,
   int radialSegments = 7,
   int sectorCount = 6,
-  double phiGap = 0.1,
+  double phiHeight = 0.1,
   double minDepth = 0.05,
 }) => Camera(
   yawRadians: yaw,
@@ -21,7 +21,7 @@ Camera _camera({
   focal: focal,
   radialSegments: radialSegments,
   sectorCount: sectorCount,
-  phiGap: phiGap,
+  phiHeight: phiHeight,
   minDepth: minDepth,
 );
 
@@ -31,12 +31,16 @@ SceneNode _node({
   int sector = 0,
   double sectorFraction01 = 0,
   int phiLevel = 0,
+  double? phiFraction01,
 }) => SceneNode(
   id: id,
   radial01: radial01,
   sector: sector,
   sectorFraction01: sectorFraction01,
   phiLevel: phiLevel,
+  // 未给分位时按「每层 1 个单位」退化 —— 与 `phiHeight` 相乘后等于旧的
+  // 「每层固定偏移」，本文件既有的数值断言因此一字不改。
+  phiFraction01: phiFraction01 ?? phiLevel.toDouble(),
   size01: 0.5,
   brightness01: 0.5,
   dashed: false,
@@ -149,7 +153,7 @@ void main() {
     final ProjectedFrame frame = projectFrame(
       nodes: nodes,
       edges: buildEdgeSpans(pack, nodes),
-      camera: _camera(yaw: 0.35, pitch: 0.42, phiGap: 0.025),
+      camera: _camera(yaw: 0.35, pitch: 0.42, phiHeight: 0.025),
     );
 
     expect(frame.nodes.length, 153);
