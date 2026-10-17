@@ -112,9 +112,22 @@ class _UniverseScreenState extends State<UniverseScreen>
             top: 16,
             child: _panel(
               key: hudBreadcrumbKey,
-              child: Text(
-                '宇宙 › ${_camera.zoom.code} ${_camera.zoom.label}',
-                style: const TextStyle(color: _textPrimary, fontSize: 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text(
+                    '宇宙 › ${_camera.zoom.code} ${_camera.zoom.label}',
+                    style: const TextStyle(color: _textPrimary, fontSize: 12),
+                  ),
+                  // 诊断行：**空画面时先看这一行**。若写「合成」，说明内容包没找到
+                  // （运行期 CWD 不在 `app/`），而不是渲染坏了。
+                  Text(
+                    '${widget.scene.origin.label} · ${widget.scene.itemCount} 项'
+                    ' · ${widget.scene.edgeCount} 边'
+                    ' · ${widget.scene.radialSegments} 段',
+                    style: const TextStyle(color: _textSecondary, fontSize: 10),
+                  ),
+                ],
               ),
             ),
           ),

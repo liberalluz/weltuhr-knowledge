@@ -247,7 +247,10 @@ ProjectedFrame projectFrame({
 
     final double worldX = radius * math.cos(theta);
     final double worldZ = radius * math.sin(theta);
-    final double worldY = node.phiFraction01 * camera.phiHeight;
+    // `φ` 居中：不居中则整层永远在赤道面上方，屏幕上只可能出现在中线以上
+    // （`C-41`）。
+    final double worldY =
+        (node.phiFraction01 - phiCenterOffset) * camera.phiHeight;
 
     // 先绕竖轴（yaw），再绕横轴（pitch）。
     final double yawX = worldX * cosYaw - worldZ * sinYaw;
