@@ -587,7 +587,7 @@ def validate(manifest: dict | None, segments: dict[str, list | None]) -> list[Is
 
     issues.extend(_check_edges(edges, item_ids))
     for ring in find_cycles(edges):
-        issues.append(_issue("E-CYCLE", "edges.json", f"⪯ 必须无环（SPEC-FND-005）：{' -> '.join(ring)}"))
+        issues.append(_issue("E-CYCLE", "edges.json", f"前提边必须无环（SPEC-FND-005）：{' -> '.join(ring)}"))
 
     # PACK-001 验收向量：只含 items 无 edges 的包应被拒 —— 没有独立 ⪯ 就不构成
     # 独立空间，该降为上位空间内的「域」。这条不能只看文件在不在，要看是否有边。
@@ -596,7 +596,7 @@ def validate(manifest: dict | None, segments: dict[str, list | None]) -> list[Is
             _issue(
                 "E-SPACE-NO-ORDER",
                 "edges.json",
-                "空边集：缺独立前提偏序 ⪯，按 SPEC-PACK-001 应降为域而非独立成包",
+                "空边集：缺独立前提偏序，按 SPEC-PACK-001 应降为域而非独立成包",
             )
         )
 
