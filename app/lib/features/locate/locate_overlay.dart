@@ -1,4 +1,4 @@
-/// 快速定位浮层（`SPEC-VIEW-024` / `026` / `027` / `028` / `029` / `033`）。
+/// 快速定位浮层（`SPEC-VIEW-024`–`033`）。
 ///
 /// ## 为什么是浮层而不是常驻输入框
 ///
@@ -6,7 +6,7 @@
 /// 而这块画布的全部意义是「位置即语义」—— 让一个文本框抢走它，等于把
 /// 语义区降级成工具栏。
 ///
-/// ## 浮层只做「输入 → 命中集」的呈现与选择
+/// ## 浮层只做「输入 → 命中集 / 分诊 → 选择」的呈现
 ///
 /// 跳不跳、跳到哪一档、写不写 `axisFilter`，全在 `universe_screen` 的
 /// `_applyHit` 里 —— 那是**行为**，而这层是**显示**。分开的好处是浮层可以
@@ -15,14 +15,35 @@
 /// ## 唯一命中为什么要回车而不是自动跳
 ///
 /// `VIEW-027` 说「唯一命中 → 直接跳转」，说的是**不必先选列表再点一次**。
-/// 但它不等于「边打字边跳」：打到「装饰」时命中集只有一条，再打一个字变成
+/// 但它不等于「边打字边跳」：打到「装饰器」时命中集只有一条，再打一个字变成
 /// 两条，中间每一次按键都跳一次的话，用户会被界面拽着跑。所以 `located`
 /// 的呈现是「一行直达 + 回车」，回车是一次显式动作。
+///
+/// ## 无命中为什么不是一句话，而是四个分支
+///
+/// `VIEW-030`：「搜不到」有四种事实，其中三种的正确出口都不是新增。一句话
+/// 「没有命中」把四种压成一种，用户唯一能做的动作就是离开 —— 而他要的东西
+/// 可能就在圈外、可能叫别的名字。分诊的判据在 `core/locate/diagnose.dart`，
+/// 这里只负责把结论说出来，并守住那条闸门：
+///
+/// > **新增入口不能挂在「搜不到」上**，只能挂在「已给过邻近候选且用户说都不对」
+/// > 之后。
+///
+/// 落到代码上就是：类 ③ 的新增按钮在候选为空时直接出现（本来就没有候选可给），
+/// 类 ② 必须先经过一次「都不对」；而任何表单都在第二个动作之后才展开。
+///
+/// ## 表单为什么填完也不落库
+///
+/// `VIEW-032` 要求表单**不写 `axisFilter`**（一次性查询）—— 这一条本笔守住了：
+/// 表单从头到尾不碰筛选。但「提交审核」要写进审核队列，而队列要 `entries` 表与
+/// 事件流（`B4` 的数据层）。所以按钮照出，按下去如实说「没有写入任何数据」——
+/// 比藏起来强（藏起来会被读成「这个功能不存在」），比假装成功更必需。
 library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../core/locate/diagnose.dart';
 import '../../core/locate/locator.dart';
 import '../../core/pack/pack_parse.dart';
 import '../palette.dart';
@@ -36,8 +57,35 @@ const Key locateFieldKey = Key('locate-field');
 /// 结果列表。
 const Key locateResultsKey = Key('locate-results');
 
-/// 提示行（空输入 / 无命中 / 包缺失）。
+/// 提示行（空输入 / 包缺失）。
 const Key locateHintKey = Key('locate-hint');
+
+/// 分诊面板（无命中时取代结果列表）。
+const Key locateTriageKey = Key('locate-triage');
+
+/// 分诊面板底部的那个动作按钮（申请纳入 / 都不对 / 新增这一项 / 记下需求）。
+const Key locateTriageActionKey = Key('locate-triage-action');
+
+/// 新增表单（`VIEW-032` 的一次性查询）。
+const Key locateFormKey = Key('locate-form');
+
+/// 表单里的标题输入框。
+const Key locateFormTitleKey = Key('locate-form-title');
+
+/// 表单的「提交审核」。
+const Key locateFormSubmitKey = Key('locate-form-submit');
+
+/// 「没有写入任何数据」的如实说明。
+const Key locateNoticeKey = Key('locate-notice');
+
+/// 空间前缀与标题之间的分隔符。抽出来是因为测试要断言「没有它」。
+const String locateSpaceSeparator = ' › ';
+
+/// 邻近候选最多列几条。
+///
+/// 候选是给人**换词**用的，超过一掌之数就变回「自己再翻一遍」；而排序已经把
+/// 共享片段最多的放前面，截断丢掉的正是最不像的那几条。
+const int _nearLimit = 5;
 
 /// 某一命中行的 `Key`。
 ///
@@ -47,11 +95,16 @@ const Key locateHintKey = Key('locate-hint');
 Key locateRowKey(LocateHit hit) =>
     Key('locate-row-${hit.kind.name}-${hit.axisKey ?? ''}-${hit.target}');
 
+/// 某条邻近候选行的 `Key`。
+Key locateNearRowKey(String itemId) => Key('locate-near-$itemId');
+
 class LocateOverlay extends StatefulWidget {
   const LocateOverlay({
     required this.pack,
     required this.onPick,
+    required this.onPickNear,
     required this.onDismiss,
+    this.domainId,
     this.spacePrefix,
     super.key,
   });
@@ -64,7 +117,17 @@ class LocateOverlay extends StatefulWidget {
   /// 是不是「唯一命中」。
   final void Function(LocateResult result, LocateHit hit) onPick;
 
+  /// 选中一条**邻近候选**（类 ② 的「换词」出口）。
+  ///
+  /// 单独一个回调而不是包进 [LocateHit]：邻近候选没有「强度」，而跳转又是
+  /// 真跳转 —— 两条语义拼在一条类型里，下次读代码的人会以为它也是命中。
+  final void Function(String itemId) onPickNear;
+
   final VoidCallback onDismiss;
+
+  /// 当前视图的域上下文（选中项所在的域）。只影响分诊的 ③ / ④ 分野
+  /// （`VIEW-030`）：知道往哪放才谈得上新增。
+  final String? domainId;
 
   /// `VIEW-033`：多个空间存在同名项时，结果行必须带空间前缀。
   /// 只有一个空间时传 `null` —— 每行都写一遍同样的前缀是噪音。
@@ -76,9 +139,17 @@ class LocateOverlay extends StatefulWidget {
 
 class _LocateOverlayState extends State<LocateOverlay> {
   final TextEditingController _controller = TextEditingController();
+  final TextEditingController _formTitle = TextEditingController();
   final FocusNode _fieldFocus = FocusNode();
 
   LocateResult? _result;
+  LocateDiagnosis? _diagnosis;
+
+  /// 表单是否展开。**只在第二个动作之后**为真（见文件头闸门）。
+  bool _formOpen = false;
+
+  /// 按下写操作后留下的如实说明（没有落库）。
+  String? _notice;
 
   @override
   void initState() {
@@ -90,6 +161,7 @@ class _LocateOverlayState extends State<LocateOverlay> {
   @override
   void dispose() {
     _controller.dispose();
+    _formTitle.dispose();
     _fieldFocus.dispose();
     super.dispose();
   }
@@ -97,7 +169,22 @@ class _LocateOverlayState extends State<LocateOverlay> {
   void _onChanged(String query) {
     final LoadedPack? pack = widget.pack;
     setState(() {
-      _result = pack == null ? null : Locator(pack).locate(query);
+      // 改了输入就是一次新的查询：展开的表单与留着的说明都作废 ——
+      // 留着它们会让新输入带着旧结论走。
+      _formOpen = false;
+      _notice = null;
+      if (pack == null) {
+        _result = null;
+        _diagnosis = null;
+        return;
+      }
+      final LocateResult result = Locator(pack).locate(query);
+      _result = result;
+      _diagnosis = diagnose(
+        pack: pack,
+        result: result,
+        domainId: widget.domainId,
+      );
     });
   }
 
@@ -110,11 +197,47 @@ class _LocateOverlayState extends State<LocateOverlay> {
   }
 
   /// 回车：有命中就选最强的那条（`located` 时它就是唯一落点）。
+  ///
+  /// **无命中时回车不做任何事** —— 回车不该等于「点一下主按钮」。类 ② 的主
+  /// 按钮是「都不对」，如果回车也走它，用户只是想把输入交出去，却被告知
+  /// 「你要的那个不存在」。
   void _submit() {
-    final List<LocateHit> hits = _result?.hits ?? const <LocateHit>[];
+    final List<LocateHit> hits = _result?.usableHits ?? const <LocateHit>[];
     if (hits.isNotEmpty) {
       _pick(hits.first);
     }
+  }
+
+  /// 类 ② 的「都不对」：候选全被否掉，才谈得上新增（`VIEW-030` 闸门）。
+  ///
+  /// 没有域上下文时**不给表单**，只留一句需求信号 —— 表单第一格就得填「放到哪个
+  /// 域」，替他挑一个域比不挑更糟（把新项塞进错的域，审核还得先改分类）。
+  void _rejectNear() {
+    if (widget.domainId != null) {
+      _openForm();
+      return;
+    }
+    setState(() => _notice = _notStored('需求信号'));
+  }
+
+  void _openForm() {
+    _formTitle.text = _controller.text.trim();
+    setState(() {
+      _formOpen = true;
+      _notice = null;
+    });
+  }
+
+  /// 所有「写」动作共用的说明。**不写「已提交」** —— 没有落库就不能那么说。
+  String _notStored(String what) =>
+      '「$what」要写审核队列，而队列在 B4 才接入（entries 表 + 事件流）。'
+      '本次没有写入任何数据。';
+
+  void _submitForm() {
+    setState(() {
+      _formOpen = false;
+      _notice = _notStored('新增项');
+    });
   }
 
   @override
@@ -197,16 +320,26 @@ class _LocateOverlayState extends State<LocateOverlay> {
     if (result == null || result.query.trim().isEmpty) {
       return _hint('输入关键词：完整标题直接定位，轴取值只筛选不换根。');
     }
-    if (result.isEmpty) {
-      // 无命中的四类分诊归第二笔（`VIEW-030`）。这里先如实说「没有」，
-      // 不在这里造一个「新增」入口 —— 那正是规格要防的事。
+    final String? notice = _notice;
+    if (notice != null) {
+      return _noticeView(notice);
+    }
+    if (_formOpen) {
+      return _form();
+    }
+    if (!result.isEmpty) {
+      return _results(result);
+    }
+    final LocateDiagnosis? diagnosis = _diagnosis;
+    if (diagnosis == null) {
+      // 非空输入一定会有分诊结论；留下兜底是为了不在将来某次改动后崩掉。
       return _hint('没有命中。');
     }
-    return _results(result);
+    return _triage(diagnosis);
   }
 
   Widget _results(LocateResult result) {
-    final List<LocateHit> hits = result.hits;
+    final List<LocateHit> hits = result.usableHits;
     final bool direct = result.state == LocateState.located;
     return ListView.builder(
       key: locateResultsKey,
@@ -240,14 +373,14 @@ class _LocateOverlayState extends State<LocateOverlay> {
         padding: const EdgeInsets.fromLTRB(14, 8, 14, 8),
         child: Row(
           children: <Widget>[
-            _badge(hit),
+            _badge(_badgeOf(hit)),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
                 // `VIEW-033`：同名项跨空间时带前缀，否则只写原文。
                 widget.spacePrefix == null
                     ? hit.label
-                    : '${widget.spacePrefix} › ${hit.label}',
+                    : '${widget.spacePrefix}$locateSpaceSeparator${hit.label}',
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(color: paletteTextPrimary, fontSize: 13),
@@ -264,15 +397,195 @@ class _LocateOverlayState extends State<LocateOverlay> {
     );
   }
 
+  /// 分诊面板（`VIEW-030`）。四类各说各的事实与出口。
+  Widget _triage(LocateDiagnosis diagnosis) {
+    final String? domainId = diagnosis.domainId;
+    final (
+      String text,
+      String action,
+      VoidCallback onAction,
+    ) = switch (diagnosis.kind) {
+      DiagnoseClass.outOfScope => (
+        '库里有 ${diagnosis.outside.length} 项对得上，但都不在圈内。'
+            '它们在树里是虚线支线，宇宙里不画。',
+        '申请纳入',
+        () => setState(() => _notice = _notStored('纳入申请')),
+      ),
+      DiagnoseClass.differentWording => ('没有这个说法。最接近的是：', '都不对', _rejectNear),
+      DiagnoseClass.absentInDomain => (
+        '${domainId ?? ''} 里没有这一项。',
+        '新增这一项',
+        _openForm,
+      ),
+      DiagnoseClass.absentInSpace => (
+        '整个空间都没有这一项。只能先记下这个需求 —— 不承诺何时会有。',
+        '记下这个需求',
+        () => setState(() => _notice = _notStored('需求信号')),
+      ),
+    };
+
+    return SingleChildScrollView(
+      key: locateTriageKey,
+      padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          if (diagnosis.kind == DiagnoseClass.outOfScope)
+            for (final LocateHit hit in diagnosis.outside)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 6),
+                child: Row(
+                  children: <Widget>[
+                    _badge(('圈外', paletteGap)),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        hit.label,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: paletteTextSecondary,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+          if (diagnosis.kind == DiagnoseClass.differentWording)
+            for (final NearItem near
+                in diagnosis.near.take(_nearLimit).toList(growable: false))
+              InkWell(
+                key: locateNearRowKey(near.itemId),
+                onTap: () => widget.onPickNear(near.itemId),
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 6),
+                  child: Row(
+                    children: <Widget>[
+                      _badge(('邻近', paletteTextSecondary)),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          near.title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: paletteTextPrimary,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+          Padding(
+            padding: const EdgeInsets.only(top: 4, bottom: 10),
+            child: Text(
+              text,
+              style: const TextStyle(
+                color: paletteTextSecondary,
+                fontSize: 12,
+                height: 1.5,
+              ),
+            ),
+          ),
+          _action(action, onAction),
+        ],
+      ),
+    );
+  }
+
+  /// 一次性查询表单（`VIEW-032`）。
+  ///
+  /// **不碰 `axisFilter`**：填表是「我找不到，帮我建一个」，不是筛选；写进筛选
+  /// 的话，退出搜索后视图还是被筛过的，而用户早已不记得自己筛过什么。
+  Widget _form() {
+    final String domain = widget.domainId ?? '';
+    final bool canSubmit = _formTitle.text.trim().isNotEmpty;
+    return SingleChildScrollView(
+      key: locateFormKey,
+      padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text(
+            '新增到 $domain（提交审核）',
+            style: const TextStyle(color: paletteTextSecondary, fontSize: 11),
+          ),
+          TextField(
+            key: locateFormTitleKey,
+            controller: _formTitle,
+            onChanged: (_) => setState(() {}),
+            style: const TextStyle(color: paletteTextPrimary, fontSize: 13),
+            cursorColor: paletteAccent,
+            decoration: const InputDecoration(
+              hintText: '标题',
+              hintStyle: TextStyle(color: paletteTextSecondary, fontSize: 12),
+              isDense: true,
+              contentPadding: EdgeInsets.symmetric(vertical: 8),
+            ),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: <Widget>[
+              TextButton(
+                key: locateFormSubmitKey,
+                onPressed: canSubmit ? _submitForm : null,
+                style: TextButton.styleFrom(
+                  backgroundColor: paletteSelected,
+                  foregroundColor: paletteTextPrimary,
+                  minimumSize: const Size(72, 30),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                child: const Text('提交审核', style: TextStyle(fontSize: 12)),
+              ),
+              const SizedBox(width: 8),
+              TextButton(
+                onPressed: () => setState(() => _formOpen = false),
+                style: TextButton.styleFrom(
+                  foregroundColor: paletteTextSecondary,
+                  minimumSize: const Size(48, 30),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                child: const Text('返回', style: TextStyle(fontSize: 12)),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _action(String label, VoidCallback onTap) => TextButton(
+    key: locateTriageActionKey,
+    onPressed: onTap,
+    style: TextButton.styleFrom(
+      backgroundColor: paletteSelected,
+      foregroundColor: paletteTextPrimary,
+      minimumSize: const Size(96, 30),
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+    ),
+    child: Text(label, style: const TextStyle(fontSize: 12)),
+  );
+
+  Widget _noticeView(String text) => Padding(
+    key: locateNoticeKey,
+    padding: const EdgeInsets.fromLTRB(14, 14, 14, 18),
+    child: Align(
+      alignment: Alignment.topLeft,
+      child: Text(
+        text,
+        style: const TextStyle(color: paletteGap, fontSize: 12, height: 1.6),
+      ),
+    ),
+  );
+
   /// 类徽标。**筛选类必须和落点类长得不一样** —— 点前者不换根、点后者跳走，
   /// 两者长得一样就是让人猜自己按下去会发生什么。
-  Widget _badge(LocateHit hit) {
-    final (String text, Color color) = switch (hit.kind) {
-      LocateKind.space => ('空间', paletteAccent),
-      LocateKind.domain => ('域', paletteAccent),
-      LocateKind.item => ('项', paletteTextSecondary),
-      LocateKind.axis => ('轴值', paletteGap),
-    };
+  Widget _badge((String, Color) spec) {
+    final (String text, Color color) = spec;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
@@ -282,6 +595,13 @@ class _LocateOverlayState extends State<LocateOverlay> {
       child: Text(text, style: TextStyle(color: color, fontSize: 10)),
     );
   }
+
+  (String, Color) _badgeOf(LocateHit hit) => switch (hit.kind) {
+    LocateKind.space => ('空间', paletteAccent),
+    LocateKind.domain => ('域', paletteAccent),
+    LocateKind.item => ('项', paletteTextSecondary),
+    LocateKind.axis => ('轴值', paletteGap),
+  };
 
   Widget _hint(String text) => Padding(
     key: locateHintKey,
