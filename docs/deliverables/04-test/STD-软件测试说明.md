@@ -1,6 +1,6 @@
 # 软件测试说明（STD）
 
-> **版号**：`v0.3.0` · **状态**：§三 用例表 73 条（`R-07` 补 31 条管线用例），§四 覆盖缺口已算
+> **版号**：`v0.4.0` · **状态**：§三 用例表 86 条（`R-08` / `R-09` 补 13 条架构规则用例），§四 覆盖缺口已重算，C 类清零
 > 本文件是**用例正文**。测什么与通过判据见 [`STP`](STP-软件测试计划.md)，实际执行结果见 [`STR`](STR-软件测试报告.md)。
 > **追溯补录**：2026-10-17 · §三 依据 `app/test/` 与 `content/tools/fixtures/` 的既有测试逐条反推，非当时所写。
 
@@ -11,6 +11,7 @@
 | `v0.1.0` | 2026-10-17 | 首建。确立用例编号与格式；用例表待补 |
 | `v0.2.0` | 2026-10-17 | **追溯补录** §三 用例表（42 条：Dart 33 + 管线 9）、§四 覆盖缺口、§五 待补清单 |
 | `v0.3.0` | 2026-10-17 | §三 补 `TC-PACK-011`–`041`（31 条管线用例，覆盖 `validator.py` 余下 29 个错误码 + 1 条产物层正例）；§五 待补第 4 项关闭 |
+| `v0.4.0` | 2026-10-17 | §三 补 `TC-INF-011`–`023`（13 条：`R3` 5 · `R4` 4 · `R5` 4）；§四 重算 —— `FND-012` / `VIEW-004` 由 B 转「有用例」，5 条借位映射降级进 B 类，**C 类清零**；§五 待补第 1 · 2 · 5 · 6 项关闭 |
 
 ---
 
@@ -122,7 +123,7 @@
 | `TC-QUANT-006` | `STEP-022` | 语义 | 常量表 | 读 `scaffoldCap` | `Grade.pass`（`C-26`：脚手架封顶到「合格」，熟练档关闭） | 单元 | 同上 · `C-26 脚手架封顶` |
 | `TC-QUANT-007` | — | — | `C-28` 尚未裁定 | 读 `fuzzyMatchThreshold` | 抛 `TbdConstantError` 且 `constantId == 'C-28'`，**不得返回默认值** | 单元 | 同上 · `C-28 未裁定` |
 | `TC-QUANT-008` | `QUANT-006` | **显式** | `Item` 六要件：2 格 `complete`、1 格 `notExternalizable`、3 格 `missing` | 读 `requirements.completeCount` / `externalizableCount` | `2` / `5` —— 不可外化格**不进深度分母** | 单元 | `app/test/core/entities_test.dart` · `不可外化格不进深度分母` |
-| `TC-QUANT-009` | `QUANT-007` | 语义 | 方法全部步骤无判据；另一步骤带 `hint` | 读 `isCheckin` / `hasAnyHint` | `isCheckin=true`、`hasAnyHint=false` | 单元 | 同上 · `全部步骤无判据 ⇒ 打卡式` |
+| `TC-QUANT-009` | — | — | 方法全部步骤无判据；另一步骤带 `hint` | 读 `isCheckin` / `hasAnyHint` | `isCheckin=true`、`hasAnyHint=false` | 单元 | 同上 · `全部步骤无判据 ⇒ 打卡式` |
 
 ### 3.4 `STEP` 域（3 条）
 
@@ -136,26 +137,39 @@
 
 | 编号 | 对应 `SPEC` | 依据 | 前置 | 步骤 | 预期 | 类型 | 自动化位置 |
 |---|---|---|---|---|---|---|---|
-| `TC-PLAN-001` | `PLAN-003` | 语义 | `Plan` 的 `target` 含 `selector` 与 `resolved`（3 项），**不写 `count`** | 读 `target.count`；再 `toJson()` | `count == 3`；序列化后 `target` 含 `count: 3` —— 由 `resolved` 派生，不单独存 | 单元 | `app/test/core/entities_test.dart` · `target.count 由 resolved 派生` |
-| `TC-NOTE-001` | `NOTE-005` | 语义 | `Note` 三层同时有值：`generated` / `autoFilled` / `authored` | 读 `displayText` / `noteVersion` | `手写层`（`authored` 优先）、`noteVersion == 3` | 单元 | 同上 · `authored > autoFilled > generated` |
-| `TC-VIEW-001` | `VIEW-001` | 语义 | 常量表 | 读 `deepChainPhi` / `trailCap` / `viewTransitionMinMs` / `viewTransitionMaxMs` / `lodBrightnessFar` / `lodBrightnessNear` | `5` / `5` / `180` / `220` / `3` / `7`（`C-20`–`C-23`） | 单元 | `app/test/core/constants_test.dart` · `C-20…C-23 界面阈值` |
+| `TC-PLAN-001` | — | — | `Plan` 的 `target` 含 `selector` 与 `resolved`（3 项），**不写 `count`** | 读 `target.count`；再 `toJson()` | `count == 3`；序列化后 `target` 含 `count: 3` —— 由 `resolved` 派生，不单独存 | 单元 | `app/test/core/entities_test.dart` · `target.count 由 resolved 派生` |
+| `TC-NOTE-001` | — | — | `Note` 三层同时有值：`generated` / `autoFilled` / `authored` | 读 `displayText` / `noteVersion` | `手写层`（`authored` 优先）、`noteVersion == 3` | 单元 | 同上 · `authored > autoFilled > generated` |
+| `TC-VIEW-001` | — | — | 常量表 | 读 `deepChainPhi` / `trailCap` / `viewTransitionMinMs` / `viewTransitionMaxMs` / `lodBrightnessFar` / `lodBrightnessNear` | `5` / `5` / `180` / `220` / `3` / `7`（`C-20`–`C-23`） | 单元 | `app/test/core/constants_test.dart` · `C-20…C-23 界面阈值` |
 
-### 3.6 `INF` 域（10 条 · 架构约束与外壳）
+### 3.6 `INF` 域（23 条 · 架构约束与外壳）
 
 | 编号 | 对应 `SPEC` | 依据 | 前置 | 步骤 | 预期 | 类型 | 自动化位置 |
 |---|---|---|---|---|---|---|---|
-| `TC-INF-001` | `FND-015` | 语义 | 一段 `core/` 代码 import `package:flutter/...` | 跑 `R1` | 报违规 | 架构 | `app/test/lint/rules_test.dart` · `core 引用 Flutter 被拦` |
-| `TC-INF-002` | `FND-015` | 语义 | 同上，import `dart:ui` | 跑 `R1` | 报违规 | 架构 | 同上 · `core 引用 dart:ui 被拦` |
-| `TC-INF-003` | `FND-015` | 语义 | 同上，import `features/` 下文件 | 跑 `R1` | 报违规 | 架构 | 同上 · `core 引用 features/ 被拦` |
-| `TC-INF-004` | `FND-015` | 语义 | `features/` 代码 import Flutter | 跑 `R1` | **不报**（UI 层本就该用） | 架构 | 同上 · `features 引用 Flutter 不拦` |
+| `TC-INF-001` | — | — | 一段 `core/` 代码 import `package:flutter/...` | 跑 `R1` | 报违规 | 架构 | `app/test/lint/rules_test.dart` · `core 引用 Flutter 被拦` |
+| `TC-INF-002` | — | — | 同上，import `dart:ui` | 跑 `R1` | 报违规 | 架构 | 同上 · `core 引用 dart:ui 被拦` |
+| `TC-INF-003` | — | — | 同上，import `features/` 下文件 | 跑 `R1` | 报违规 | 架构 | 同上 · `core 引用 features/ 被拦` |
+| `TC-INF-004` | — | — | `features/` 代码 import Flutter | 跑 `R1` | **不报**（UI 层本就该用） | 架构 | 同上 · `features 引用 Flutter 不拦` |
 | `TC-INF-005` | — | — | `core/` 非常量表文件出现数字字面量 | 跑 `R2` | 报违规，且**行号正确** | 架构 | 同上 · `普通数字被拦，并报出行号` |
 | `TC-INF-006` | — | — | 同上，文件为 `constants.dart` | 跑 `R2` | **不报**（唯一豁免点） | 架构 | 同上 · `constants.dart 豁免` |
 | `TC-INF-007` | — | — | `core/` 出现 `0` 与 `1` | 跑 `R2` | **不报**（坐标原点与计数基元） | 架构 | 同上 · `0 与 1 放行` |
 | `TC-INF-008` | — | — | 数字出现在注释与字符串里 | 跑 `R2` | **不误报** | 架构 | 同上 · `注释与字符串里的数字不误报` |
 | `TC-INF-009` | — | — | `features/` 出现数字字面量 | 跑 `R2` | **不查**（间距属设计 token） | 架构 | 同上 · `features 层不查数字` |
 | `TC-INF-010` | `FND-014` | 语义 | 无内容包 | 挂载应用外壳 | 渲染空态，标题为 `Weltuhr`；**不补默认星系、不填假数据** | Widget | `app/test/widget_test.dart` · `空态外壳可渲染` |
+| `TC-INF-011` | `FND-012` | **显式** | `Event` 加了 `copyWith` | 跑 `R3` | 报违规 —— 「复制改写历史」必须被拦 | 架构 | `app/test/lint/rules_test.dart` · `Event 加 copyWith 被拦` |
+| `TC-INF-012` | `FND-012` | **显式** | `Event` 出现非 `final` 字段 | 跑 `R3` | 报违规 —— 可变字段等于可变事件 | 架构 | 同上 · `Event 出现可变字段被拦` |
+| `TC-INF-013` | `FND-012` | 语义 | `class StepEvent extends Event` 且含可变字段 | 跑 `R3` | 报违规 —— 子类不豁免 | 架构 | 同上 · `Event 的子类同样受限` |
+| `TC-INF-014` | `FND-012` | **显式** | `EventStore` 出现 `delete()` | 跑 `R3` | 报违规 —— 删除 / 覆盖类方法一律禁 | 架构 | 同上 · `EventStore 出现 delete 被拦` |
+| `TC-INF-015` | `FND-012` | 语义 | `Event` 全 `final`；`EventStore` 只有 `append` / `readAll` | 跑 `R3` | **不报**（正例：没有它，上面四条的「被拦」说明不了是规则在起作用） | 架构 | 同上 · `全 final 且只 append / readAll 不误报` |
+| `TC-INF-016` | `VIEW-004` | **显式** | 视图层构造参数类型为 `SourceRef` | 跑 `R4` | 报违规 —— 源不进视觉通道 | 架构 | 同上 · `视图层按类型收源被拦` |
+| `TC-INF-017` | `VIEW-004` | 语义 | 视图层方法参数名为 `sourceRefs`，类型写 `Object?` | 跑 `R4` | 报违规 —— **只改类型躲不掉** | 架构 | 同上 · `视图层按参数名收源被拦` |
+| `TC-INF-018` | `VIEW-004` | 语义 | `core/` 下的 `Item` 构造参数收 `SourceRef` | 跑 `R4` | **不报**（源本来就该在核心层流转） | 架构 | 同上 · `core 层收源不拦` |
+| `TC-INF-019` | `VIEW-004` | 语义 | 视图层参数名 `resourceId` | 跑 `R4` | **不误报** —— 判据是 `source` 不是 `resource` | 架构 | 同上 · `resourceId 不误报` |
+| `TC-INF-020` | — | — | 测试名无任何标号 | 跑 `R5` | 报违规，并指名该测试 | 架构 | 同上 · `无标号的 test 被拦` |
+| `TC-INF-021` | — | — | 测试名分别带 `SPEC-…` / `C-…` / `ADR-…` / `R<n>` | 跑 `R5` | 四种标号**全部放行** | 架构 | 同上 · `SPEC 编号、常量编号、ADR、规则号都算合规标号` |
+| `TC-INF-022` | — | — | 测试名写「无 SPEC：<理由>」 | 跑 `R5` | **放行** —— 写不出标号时允许显式豁免，不允许静默留空 | 架构 | 同上 · `显式豁免放行` |
+| `TC-INF-023` | — | — | `lib/` 下出现 `test('…')` 调用 | 跑 `R5` | **不查**（`R5` 只管 `test/`） | 架构 | 同上 · `lib 下的 test 调用不查` |
 
-**合计 73 条** = `FND` 7 + `PACK` 41 + `QUANT` 9 + `STEP` 3 + `PLAN`/`NOTE`/`VIEW` 3 + `INF` 10。其中 Dart 33 条（`flutter test`），管线 fixture 40 条（`verify.py --suite`：源层 32 + 产物层 8）。较 `v0.2.0` 新增 31 条，全部是 `R-07` 的产物，**既有用例一字未改**。
+**合计 86 条** = `FND` 7 + `PACK` 41 + `QUANT` 9 + `STEP` 3 + `PLAN`/`NOTE`/`VIEW` 3 + `INF` 23。其中 Dart 46 条（`flutter test`），管线 fixture 40 条（`verify.py --suite`：源层 32 + 产物层 8）。`v0.3.0` → `v0.4.0` 新增 13 条，全部是 `R-08` / `R-09` 的产物（`R3` 5 · `R4` 4 · `R5` 4），**既有 73 条一字未改**。
 
 ## 四、覆盖缺口
 
@@ -164,66 +178,87 @@
 | 口径 | 数量 |
 |---|---|
 | `SPEC` 唯一编号总数（实测 `grep -ohE` 去重） | **171** |
-| 有对应用例的 `SPEC` | **21**（显式 7 + 语义 14）<br>（`v0.2.0` 为 18：显式 6 + 语义 12；`R-07` 补的用例新增 `FND-002` · `FND-003` · `PACK-007` 三条） |
-| 无用例 | **150** |
+| 有对应用例的 `SPEC` | **18**（显式 7 + 语义 11）<br>（`v0.3.0` 为 21：`R-08` 的 `R3` / `R4` 补上 `FND-012` · `VIEW-004`，`R-09` 把 5 条借位映射降为 B 类） |
+| 无用例 | **153** |
 
 按域：
 
 | 域 | `SPEC` 总数 | 有用例 | 缺口 |
 |---|---|---|---|
-| `FND` | 16 | 7（`002` `003` `005` `011` `013` `014` `015`） | 9 |
-| `VIEW` | 34 | 1（`001`） | 33 |
+| `FND` | 16 | 7（`002` `003` `005` `011` `012` `013` `014`） | 9 |
+| `VIEW` | 34 | 1（`004`） | 33 |
 | `PACK` | 18 | 5（`001` `005` `007` `008` `009`） | 13 |
-| `PLAN` | 21 | 1（`003`） | 20 |
+| `PLAN` | 21 | 0 | 21 |
 | `STEP` | 34 | 4（`012` `014` `022` `027`） | 30 |
-| `QUANT` | 15 | 2（`006` `007`） | 13 |
-| `NOTE` | 19 | 1（`005`） | 18 |
+| `QUANT` | 15 | 1（`006`） | 14 |
+| `NOTE` | 19 | 0 | 19 |
 | `GOV` | 14 | 0 | 14 |
-| **合计** | **171** | **21** | **150** |
+| **合计** | **171** | **18** | **153** |
 
-### 4.2 缺口必须分两类看，不能混算
+### 4.2 缺口必须分三类看，不能混算
 
-**150 这个数字本身说明不了任何问题。** 项目当前只完成 `B1`（三端骨架），171 条需求里绝大多数属于 `B2`–`B9`。把它们算成「测试缺失」等于指责一个还没开工的批次。
+**153 这个数字本身说明不了任何问题。** 项目当前只完成 `B1`（三端骨架），171 条需求里绝大多数属于 `B2`–`B9`。把它们算成「测试缺失」等于指责一个还没开工的批次。
 
 | 类别 | 判据 | 性质 | 数量 |
 |---|---|---|---|
-| **A · 未开工缺口** | 该 `SPEC` 所属批次尚未开始 | **正常**，随批次推进自然收敛 | 143（= 150 − B 类 7，为估算） |
-| **B · 已实现无断言** | 代码里已有实际定义或逻辑，但**没有断言锁住该语义** | **真风险** | **7** |
-| **C · 有断言但未标号** | 已测，测试里没写 `SPEC` 编号 | 追溯断链，**非**测试缺失 | **12** |
+| **A · 未开工缺口** | 该 `SPEC` 所属批次尚未开始 | **正常**，随批次推进自然收敛 | 143（= 153 − B 类 10，为估算） |
+| **B · 已实现无断言** | 代码里已有实际定义或逻辑，但**没有断言锁住该语义** | **真风险** | **10** |
+| **C · 有断言但未标号** | 已测，测试里没写裁定编号 | 追溯断链，**非**测试缺失 | **0**（`R-09` 清零） |
 
 > **A 类为什么只能给估算**：判断「未开工」需要逐条核对 `SPEC` 所属批次，而 `design/` 的 171 条并未逐条标注批次归属。143 是按「总数 − 已明确判定的 B、C 两类」倒推的上界，不是逐条核对的结果。把 `SRS` 按批次切片完成后（第 3 笔），这个数才能变准。
 
-### 4.3 B 类明细（真正的缺口 · 7 条）
+> **C 类为什么是 0，而不是「这 12 条被删了」**：它们走两条出口 —— 7 条核对后映射成立，标号已写进测试名，`R5` 规则从此强制它；5 条核对后**不成立**（借用同域相近语义），降级进 B 类。**不硬标是这次处置的核心**：把 `R1` 的依赖方向标成 `FND-015` 的「零硬编码分支」，追溯表会好看，但那是伪造证据 —— 比不标更糟。
+
+
+### 4.3 B 类明细（真正的缺口 · 10 条）
 
 | `SPEC` | 实现位置 | 现状 | 为什么算缺口 |
 |---|---|---|---|
 | `FND-003` | `core/enums.dart` `Layer` | 枚举已定义 | 无断言锁住「三层是径向属性、不是层级」这一语义 |
 | `FND-004` | `core/enums.dart` `SixRequirementState` | 枚举已定义 | `TC-PACK-002` 只测「缺格即错」，未测「三态取值集合封闭」 |
 | `FND-010` | `core/events/event.dart` · `event_store.dart` | 结构已定 | 无断言测「事件是唯一可写事实源」（不存在其他可变状态） |
-| `FND-012` | `core/events/event.dart` | 无 `copyWith`、字段全 `final` | **既无断言也无 lint 规则**锁住 append-only —— 有人加个 `copyWith` 不会有任何东西报错 |
+| `FND-015` | `core/**` 全局 | `R1` 保证核心层不反向依赖 | **判据错位**：`R1` 管依赖方向，`FND-015` 管「不得按具体空间 / 语言分支」。前者红不等于后者成立 |
 | `GOV-001` | `core/enums.dart` | 四种裁定枚举已定义 | 零用例 |
 | `STEP-018` | `core/enums.dart` | 三档刻度枚举已定义 | 零断言 |
-| `VIEW-004` | `core/entities/content.dart:223` | 仅有注释声明「源不进任何视觉通道」 | 注释不是约束；无任何机制阻止把源接进渲染 |
+| `QUANT-007` | `core/entities/plan.dart` `isCheckin` | 能判定「这是打卡式」 | 判定位有了，**算法位没有**：照算、封顶 `0.5`、不归零、UI 标「未验证」四条都无断言 |
+| `PLAN-003` | `core/entities/plan.dart` `Plan` | `Plan` 已持有三段引用 | 无断言测「三项挂 `Plan` 不挂空间」与「同一空间可并存多份 `Plan`」—— 测的是 `target.count` 派生，是另一回事 |
+| `NOTE-005` | `core/entities/state.dart` `Note` | 三层显示优先级已测 | 测的是 `authored > autoFilled > generated`，**不是**「两套笔记共用 `itemId` 锚点」 |
+| `VIEW-001` | `core/constants.dart` | 界面阈值常量齐备 | 测的是 `C-20`–`C-23` 六个常量取值，与「五档视距 Z0–Z4 是唯一主导航层级」无关 |
 
-**其中 `FND-012` 与 `VIEW-004` 最值得先补**：这两条的共同点是**约束只存在于注释里**。注释拦不住任何人，而它们各自保护的是「事件不可变」与「换源不改观感」—— 都是改起来容易、发现难的那类。
+**后四条是 `R-09` 从 C 类降级来的**：它们原先靠「同域 + 语义沾边」被当作已覆盖，核对 `SPEC` 原文后不成立。降级不是退步 —— 标错比不标更糟。
 
-`STEP-012` 属**部分覆盖**，不计入本表：`TC-QUANT-005` 测了「系数表与枚举等长」，但没测「不得自创第七类」。
+`STEP-012` 不算缺口：`TC-QUANT-005` 的「系数表与枚举等长」足以挡住「往枚举里加第七类」（加一项则等长断裂），而类型系统挡住「写个不在册的算子」。两处合起来覆盖了「只能取这 6 类之一」。
 
-### 4.4 C 类明细（追溯断链 · 12 条）
+### 4.4 追溯已接通（原 C 类 7 条）
 
-`FND-005` · `FND-011` · `FND-014` · `FND-015` · `QUANT-007` · `STEP-012` · `STEP-014` · `STEP-022` · `STEP-027` · `PLAN-003` · `NOTE-005` · `VIEW-001`
+`R-09` 的处置结果：12 条里 **7 条映射核对成立**，标号已写进测试名（`R5` 从此强制），`STR` 可以机械生成追溯表。
 
-**修法不是补文档，是补标号**：在这些测试的 `group`/`test` 名或首行注释里写上 `SPEC` 编号，`STR` 就能机械生成追溯表。本文件这 12 条现在只能靠人工判定，正是这一断链的直接后果。
+| `SPEC` | 承接测试 | 标号落点 |
+|---|---|---|
+| `FND-005` | `TC-FND-007`（`neg-cycle`） | `fixtures/neg-cycle/expect.json` 的 `note` |
+| `FND-011` | `TC-FND-001` · `TC-FND-002` | `events_test.dart` 两条 `test` 名 |
+| `FND-014` | `TC-FND-005` · `TC-INF-010` | `events_test.dart` · `widget_test.dart` |
+| `STEP-012` | `TC-QUANT-005` | `constants_test.dart`（`C-14…C-19`） |
+| `STEP-014` | `TC-STEP-001` · `TC-STEP-002` | `entities_test.dart` 两条 `test` 名 |
+| `STEP-022` | `TC-QUANT-006` | `constants_test.dart`（`C-26`） |
+| `STEP-027` | `TC-STEP-003` | `entities_test.dart` 一条 `test` 名 |
+
+还有 4 条测试**写不出标号**，按规则显式写「无 SPEC：<理由>」而不是硬凑：`fromJson(toJson()) 往返保真`（契约层通用要求）· `target.count 由 resolved 派生`（字段定义在 `reference/entity-fields.md`，非 `SPEC` 条目）· `Event` 的两条 wire 名测试（约定在 `reference/event-types.md`）。
+
+**机制化**：`R5` 规则已进 `tool/lint`，每个 `test` / `testWidgets` 必须带 `SPEC-…` / `C-…` / `ADR-…` / `R<n>` 之一，或显式「无 SPEC：<理由>」。漏标即 CI 红 —— 断链不会再靠人自觉。
+
 
 ## 五、待补与待核
 
 | # | 项 | 类型 | 归属 |
 |---|---|---|---|
-| 1 | `FND-012` 加 lint 规则（禁 `copyWith` / 禁非 `final` 字段） | 补断言 | `B2` |
-| 2 | `VIEW-004` 加架构规则（`sourceRefs` 不得出现在视图层入参） | 补断言 | `B3` |
+| 1 | ~~`FND-012` 加 lint 规则（禁 `copyWith` / 禁非 `final` 字段）~~ —— **已处置**（`R3`，`TC-INF-011`–`015`） | 补断言 | ✅ 2026-10-17 闭环 |
+| 2 | ~~`VIEW-004` 加架构规则（`sourceRefs` 不得出现在视图层入参）~~ —— **已处置**（`R4`，`TC-INF-016`–`019`） | 补断言 | ✅ 2026-10-17 闭环 |
 | 3 | `TC-PACK-010` 的 `SPEC` 标号待核（note 写 `PACK-005`，语义更像 `PLAN-012`） | 待核 | 本轮登记，`B2` 前定 |
 | 4 | ~~28 个错误码无 fixture 覆盖~~ —— **已处置**（`TC-PACK-011`–`041`，37/37 + 覆盖对账自检，见 `STP` §六） | 补用例 | ✅ 2026-10-17 闭环 |
-| 5 | C 类 13 处补 `SPEC` 标号 | 补标号 | 随 `B2` 顺手改 |
-| 6 | B 类其余 6 条补断言 | 补断言 | 随所属批次 |
+| 5 | ~~C 类 13 处补 `SPEC` 标号~~ —— **已处置**（7 条标号进测试名 + 5 条降级进 B 类，`R5` 强制此后不漏） | 补标号 | ✅ 2026-10-17 闭环 |
+| 6 | ~~B 类其余 6 条补断言~~ —— **已处置**：`FND-012` / `VIEW-004` 已补机制；余 10 条转入存量 `B2` 起逐批补 | 补断言 | ✅ 2026-10-17 已重分类 |
 
 > 第 4 项已闭环，数字一并更正：`validator.py` 共 **37 个错误码**（原记 36 —— 那次统计用裸正则扫全文，把注释里提到的码算成了定义），现 **37/37** 有 fixture 断言。**重点不是补完，而是把对账固化成机制**：`verify.py --suite` 最后一步比对「定义集 vs 断言集」，差一条即退出码 1。α 包（`B2`）落地后仍需补**真实坏法样本** —— 那是提高负例代表性，不是补漏，两件事别混。
+
+> 第 5 项的处置值得单独说：补标号有两种做法 —— 「把 12 条都标上」和「只标对得上的」。取后者。因为标号的用途是让 `STR` 机械生成追溯表，而**标错的标号会让追溯表撒谎**，且没有任何机制能事后发现。所以 5 条借位映射降级进 B 类（见 §4.3），宁可在缺口表里显形，也不在追溯表里充数。
