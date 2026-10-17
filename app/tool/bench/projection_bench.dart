@@ -68,7 +68,7 @@ void main(List<String> args) {
     // φ 归一到一个世界单位高度：本包最大层号 63，固定 phiGap 会把最深那批
     // 节点推到相机后面，量到的是钳制分支而不是正常路径。投影成本与坐标取值
     // 无关，所以这个换算只影响「量的是哪条分支」，不影响结论的量级。
-    phiGap: 1.6 / (maxPhi + 1),
+    phiHeight: 1.6,
     minDepth: 0.05,
   );
 
@@ -115,7 +115,7 @@ void main(List<String> args) {
   }
   stdout.writeln('  深度范围 ${minDepthSeen.toStringAsFixed(3)} … ${maxDepthSeen.toStringAsFixed(3)}'
       ' · 贴到相机平面被钳制的节点 $clamped');
-  stdout.writeln('  φ 最大层号 $maxPhi ⇒ phiGap ${camera.phiGap.toStringAsFixed(4)}');
+  stdout.writeln('  φ 最大层号 $maxPhi ⇒ phiHeight ${camera.phiHeight.toStringAsFixed(2)}');
   stdout.writeln('');
 
   // ② 指令编码：把投影结果压成 painter 直接可用的扁平数组。

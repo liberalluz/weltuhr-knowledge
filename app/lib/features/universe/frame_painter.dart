@@ -6,7 +6,7 @@
 /// 「若 150 项达不到帧预算就得换实现路径」前置到 `B2`，要证的正是这条路。
 ///
 /// 相机参数与 `tool/bench/projection_bench.dart` **同一套**（distance 3 ·
-/// focal 1.6 · radialSegments 7 · minDepth 0.05 · phiGap 由 maxPhi 归一）。
+/// focal 1.6 · radialSegments 7 · minDepth 0.05 · phiHeight 固定 1.6）。
 /// 两处不一致的话，`main` 上的 bench 数与终端帧率就不是在说同一种几何。
 library;
 
@@ -232,7 +232,7 @@ class FramePainter extends CustomPainter {
       sectorCount: spikeSectorCount,
       // φ 归一到一个世界单位高度：α 包最大层号 63，不做归一的话最深那批
       // 会跑到相机后面，量到的是钳制分支。
-      phiGap: _phiWorldHeight / (scene.maxPhi + 1),
+      phiHeight: _phiWorldHeight,
       minDepth: _minDepth,
     );
 

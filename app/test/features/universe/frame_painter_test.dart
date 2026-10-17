@@ -139,7 +139,7 @@ ProjectedFrame _project(SceneBundle scene) {
       focal: 1.6,
       radialSegments: 7,
       sectorCount: spikeSectorCount,
-      phiGap: 1.6 / (scene.maxPhi + 1),
+      phiHeight: 1.6,
       minDepth: 0.05,
     ),
   );

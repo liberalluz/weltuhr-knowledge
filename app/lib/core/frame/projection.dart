@@ -125,7 +125,7 @@ class Camera {
     required this.focal,
     required this.radialSegments,
     required this.sectorCount,
-    required this.phiGap,
+    required this.phiHeight,
     required this.minDepth,
   });
 
@@ -147,8 +147,12 @@ class Camera {
   /// 扇区数（= 六轴）。
   final int sectorCount;
 
-  /// `φ` 每深一层沿轴向的偏移。
-  final double phiGap;
+  /// `φ` 的**满量程**轴向高度（世界单位）。
+  ///
+  /// 与 `SceneNode.phiFraction01` 相乘得到高度 —— 不再按「每层固定偏移」算，
+  /// 因为层数会随内容变（α 包 63 层、别的包可能只有 5 层），固定偏移必然
+  /// 要么挤扁要么穿到相机后面。分位归一后，`φ01 ∈ [0,1]` 的含义与包无关。
+  final double phiHeight;
 
   /// 透视除法的下限。**必须 > 0**：节点贴到相机平面上时不做钳制会算出 `Infinity`，
   /// 而 painter 拿到 `Infinity` 的表现是整帧消失，不是报错。
@@ -243,7 +247,7 @@ ProjectedFrame projectFrame({
 
     final double worldX = radius * math.cos(theta);
     final double worldZ = radius * math.sin(theta);
-    final double worldY = node.phiLevel * camera.phiGap;
+    final double worldY = node.phiFraction01 * camera.phiHeight;
 
     // 先绕竖轴（yaw），再绕横轴（pitch）。
     final double yawX = worldX * cosYaw - worldZ * sinYaw;
