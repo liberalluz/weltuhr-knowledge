@@ -1,7 +1,7 @@
 # 贡献指南
 
-> **本文件管什么**：谁能改什么 · 按什么顺序做 · 什么算做完。
-> **不管什么**：分支命名 / 提交格式 / PR 粒度 / 合并方式 → [`docs/guides/git-conventions.md`](../docs/guides/git-conventions.md) 是唯一权威；设计内容 → [`docs/design/00-index.md`](../docs/design/00-index.md)；安全漏洞 → [`SECURITY.md`](SECURITY.md)。
+> **本文件管什么**：**治理** —— 谁能改哪一级裁定 · 谁有资格评审 · 评审看什么 · 角色 · 行为期望 · 响应时限 · 许可与 DCO。
+> **不管什么**：**流程与格式** —— 仓库结构 · 分支 · 提交格式 · PR 粒度 · **approval 数量** · 合并策略 · 版本与 tag · 交付物版号，一律以 [`docs/guides/git-conventions.md`](../docs/guides/git-conventions.md) 为准，此处不复制。设计内容 → [`docs/design/00-index.md`](../docs/design/00-index.md)；安全漏洞 → [`SECURITY.md`](SECURITY.md)。
 
 ## 一、权限边界
 
@@ -17,7 +17,7 @@
 | **TBD 取值** | `C-28` 搜索模糊阈值等 | **只能由 maintainer 裁定** | 不得代填、不得给默认值 |
 | **对外承诺** | 许可、支持版本窗口、响应时限、品牌名 | **只能由 maintainer** | 变更须显式公告并留痕 |
 
-分级判据本身不在此重复，见 [git-conventions §四](../docs/guides/git-conventions.md) 与 [design/00-index §七](../docs/design/00-index.md)；本表只回答「谁批」。
+分级判据本身不在此重复，见 [git-conventions §4.4 变更分级](../docs/guides/git-conventions.md) 与 [design/00-index §七](../docs/design/00-index.md)；本表只回答「谁批」。
 
 **为什么后三行必须单列** —— 它们看起来都只是「填个值」「改一句话」，代价却落在别人身上：
 
@@ -44,7 +44,7 @@
 
 | # | 项 | 判据 |
 |---|---|---|
-| 1 | 本地自验证 | 按 [git-conventions §五](../docs/guides/git-conventions.md) 跑全；PR 正文贴**实际执行的命令与输出** |
+| 1 | 本地自验证 | 按 [git-conventions §七 提交前的自检](../docs/guides/git-conventions.md) 跑全；PR 正文贴**实际执行的命令与输出** |
 | 2 | 可观测断言 | 新行为须配测试向量；「代码里实现了」不构成验收（`X-05`，见 [00-index §四](../docs/design/00-index.md)） |
 | 3 | DCO 签署 | `git commit -s`，每个提交带 `Signed-off-by`（见 §八） |
 | 4 | 一件一事 | 重构与行为变更不混；代码与文档不混提 |
@@ -56,9 +56,10 @@
 
 ## 四、评审
 
-- **有两位及以上活跃维护者时**：至少 1 位**非作者的** approval 才合入。作者不自批（GitHub 也不允许）。
-- **当前单人维护阶段**：作者可自行合并，但须在 PR 正文写明**自审结论**（改了什么 / 怎么验的 / 为什么这样切）。这不是豁免，是把「评审」换成「留痕」——第二位维护者出现后即失效。
-- A / B 级改动须 maintainer 参与评审。
+**数量不在此定**：approval 按维护者人数取值（单人 **0** · ≥2 人 **1** 且须非作者），口径见 [git-conventions §4.1](../docs/guides/git-conventions.md)。本节只回答**谁有资格**与**看什么**。
+
+- **单人维护期**：以 PR 正文的**自审结论**替代 approval（改了什么 / 怎么验的 / 为什么这样切）。这不是豁免，是把评审换成留痕；第二位维护者出现即失效。
+- **A / B 级改动**：不论人数，须 maintainer 参与评审。
 - 评审看四件事，不看风格偏好：
 
 | # | 看什么 | 依据 |
@@ -68,7 +69,7 @@
 | 3 | 模型没声明的字段，界面有没有偷偷画出来 | `X-01` |
 | 4 | 有没有碰 NOT 清单 | [not-list](../docs/reference/not-list.md) |
 
-⚠️ **现状**：`main` 未启用分支保护（GitHub 免费账号的私有仓不支持），上述约束**靠自觉**而非系统拦截，见 [git-conventions §三·附](../docs/guides/git-conventions.md)。不因技术上没拦住就当作允许。
+⚠️ **现状**：`main` 未启用分支保护（GitHub 免费账号的私有仓不支持），上述约束**靠自觉**而非系统拦截，见 [git-conventions §4.3 远端现状](../docs/guides/git-conventions.md)。不因技术上没拦住就当作允许。
 
 ## 五、角色
 
