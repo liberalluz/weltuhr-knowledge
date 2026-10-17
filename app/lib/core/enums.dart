@@ -77,8 +77,22 @@ enum ExecutionOperator { read, example, recall, practice, teach, build }
 /// 步骤相位：默认由算子派生，作者可覆盖（`entity-fields` §6）。
 enum StepPhase { first, review, both }
 
-/// 三档刻度（`SPEC-STEP-018`）。
-enum Grade { fail, pass, proficient }
+/// 三档刻度（`SPEC-STEP-018`）。JSON 取值 `fail` / `pass` / `proficient`
+/// （`item_graded.score`，见 `docs/reference/event-types.md` §二 A）。
+enum Grade {
+  fail,
+  pass,
+  proficient;
+
+  static Grade fromWire(String raw) {
+    for (final Grade value in values) {
+      if (value.name == raw) {
+        return value;
+      }
+    }
+    _unknownWire('Grade', raw, values.map((Grade v) => v.name));
+  }
+}
 
 /// 边类型：驱动边样式（实线 = 强依赖、虚线 = 弱依赖 / 指向未知）。
 ///

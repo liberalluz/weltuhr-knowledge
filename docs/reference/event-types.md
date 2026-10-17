@@ -33,7 +33,7 @@
 | 类型 | 何时写 | 关键 payload | 是否写判定 | 状态 |
 |---|---|---|---|---|
 | `step_completed` | 某一步骤完成 | `stepIndex` · `operator`（6 类之一） | ❌ | 已定 |
-| `item_graded` | **项末验收**（⑤） | `score`：`未过 / 合格 / 熟练` · `progressKind`：`verified / checked` · `scaffold`：`none / hint / answer` | ✅ 唯一判定点 | 已定（字段为推论） |
+| `item_graded` | **项末验收**（⑤） | `score`：`fail` / `pass` / `proficient`（未过 / 合格 / 熟练） · `progressKind`：`verified / checked` · `scaffold`：`none / hint / answer` | ✅ 唯一判定点 | 已定（字段为推论；`score` 的**线上取值**于 `B2` 第 3 笔补登记 —— 原文只写中文三档，`fold` 需要能对上的字符串） |
 | `item_passed` | **首次**验收合格 | `gradedEventId` | ✅ 已学门槛，**不可撤销** | 已定 |
 | `item_skipped` | 用户跳过该项 | 无 | ❌ 不写判定、不计 fail | 已定 |
 | `graduated` | `S ≥ 180` 首次达成 | `sAtGraduation` | ✅ 状态转换，**不可逆** | 已定 |
@@ -67,9 +67,10 @@
 
 | 类型 | 何时写 | 关键 payload | 状态 |
 |---|---|---|---|
-| `note_revised` | 每节内容被修改 | `itemId` · `sectionKey` · `noteVersion`（该节自增） · `layer = authored` · `targetVersion`（回滚时指向目标版本） | 已定 |
+| `note_revised` | 每节内容被修改 | `itemId` · `sectionKey` · `text`（正文） · `layer = authored` · `targetVersion`（回滚时指向目标版本，此时 `text` 可缺省） | 已定（`text` 于 `B2` 第 3 笔补登记 —— 原文只说「正文走 `note_revised` 的 payload」，没定字段名；`fold` 要解析它，名字必须在表里） |
 
 **版本由事件折叠得出**：`noteVersion` = 该节 `note_revised` 计数。**回滚 = 追加一条带 `targetVersion` 的事件，不删历史。**
+回滚事件的正文由 `fold` 解析为目标版本的正文并记到新版本上 —— 这样「连续回滚两次到同一版本」与「回滚到前一版」都得出一致的当前正文，而版本号仍然只增不减。
 
 > 任何要跨设备同步的可写状态，其修改都必须是事件 —— 这不是「要不要留版本」的选择，而是「能不能跨设备用」的前提。
 
