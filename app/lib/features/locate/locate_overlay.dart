@@ -38,6 +38,18 @@
 /// 表单从头到尾不碰筛选。但「提交审核」要写进审核队列，而队列要 `entries` 表与
 /// 事件流（`B4` 的数据层）。所以按钮照出，按下去如实说「没有写入任何数据」——
 /// 比藏起来强（藏起来会被读成「这个功能不存在」），比假装成功更必需。
+///
+/// ## 跨空间：搜得到 ≠ 落得过去
+///
+/// `VIEW-031` 要求作用域跟随视图，`VIEW-033` 要求同名项带空间前缀。两条都只关
+/// 命中集与展示 —— **落点要换根**（换掉 `scene` 与 `pack`），而本笔的屏幕只有一个
+/// 根。于是跨空间的命中**照常列出、带前缀**，点下去会被拦下并说明它在哪个空间：
+/// 假装能跳会让界面停在原处；从命中集里剔掉则会让用户以为「另一个空间没有这一项」。
+///
+/// 空间前缀同理**不做成入参**：要不要写是命中集自身的事实（同一标题出现在两个
+/// 以上空间），由 [_LocateOverlayState._ambiguousLabels] 从 `hits` 里算出来。
+/// 交给调用方注入的话，调用方得先知道「会不会撞名」才能传对 —— 而它手里的信息
+/// 并不比这里多。
 library;
 
 import 'package:flutter/material.dart';
@@ -78,6 +90,9 @@ const Key locateFormSubmitKey = Key('locate-form-submit');
 /// 「没有写入任何数据」的如实说明。
 const Key locateNoticeKey = Key('locate-notice');
 
+/// 结果区顶部那一行「在全部空间中搜索」（`SPEC-VIEW-031`）。
+const Key locateSearchAllKey = Key('locate-search-all');
+
 /// 空间前缀与标题之间的分隔符。抽出来是因为测试要断言「没有它」。
 const String locateSpaceSeparator = ' › ';
 
@@ -91,9 +106,11 @@ const int _nearLimit = 5;
 ///
 /// 带 `kind` 而不只带 `target`：同一个词可能同时命中域与项（域 id 末段 =
 /// 项标题），两条都出现在列表里时 `Key` 撞车会让 widget test 里
-/// `findsOneWidget` 假红。
-Key locateRowKey(LocateHit hit) =>
-    Key('locate-row-${hit.kind.name}-${hit.axisKey ?? ''}-${hit.target}');
+/// `findsOneWidget` 假红。**带 `spaceId`** 同理 —— 跨空间命中集里两个空间
+/// 可以有同一个 `target`。
+Key locateRowKey(LocateHit hit) => Key(
+  'locate-row-${hit.spaceId}-${hit.kind.name}-${hit.axisKey ?? ''}-${hit.target}',
+);
 
 /// 某条邻近候选行的 `Key`。
 Key locateNearRowKey(String itemId) => Key('locate-near-$itemId');
@@ -104,14 +121,26 @@ class LocateOverlay extends StatefulWidget {
     required this.onPick,
     required this.onPickNear,
     required this.onDismiss,
+    this.otherSpaces = const <LoadedPack>[],
+    this.scopeSpaceId,
     this.domainId,
-    this.spacePrefix,
     super.key,
   });
 
-  /// `null` = 合成回落，没有可搜的东西。浮层仍然打开并说明原因 ——
-  /// 不给入口比给了不响应好，但两者都比「静默无反应」好。
+  /// 本空间的包 —— 也就是宇宙与树此刻的根。`null` = 合成回落，没有可搜的东西。
+  /// 浮层仍然打开并说明原因 —— 不给入口比给了不响应好，但两者都比「静默无反应」好。
   final LoadedPack? pack;
+
+  /// 除本空间外、也能被搜到的其它空间（`SPEC-VIEW-031`）。
+  ///
+  /// 本笔没有换根能力，所以这里多出来的空间**只参与命中集与展示**，落点会被
+  /// 拦下并说明（见 `_pick`）。给不出来时留空 —— 空列表等于「只有一个空间」，
+  /// 那一行「在全部空间中搜索」也就不会出现。
+  final List<LoadedPack> otherSpaces;
+
+  /// 当前视图的作用域（`SPEC-VIEW-031`）：`null` = 全部空间（`Z0` 本就是跨空间
+  /// 视角）；非 `null` = 默认只搜本空间，结果区顶部给一行「在全部空间中搜索」。
+  final String? scopeSpaceId;
 
   /// 选中一条命中。第二个参数是**这次定位的完整结果** —— 路由要它来判断
   /// 是不是「唯一命中」。
@@ -129,10 +158,6 @@ class LocateOverlay extends StatefulWidget {
   /// （`VIEW-030`）：知道往哪放才谈得上新增。
   final String? domainId;
 
-  /// `VIEW-033`：多个空间存在同名项时，结果行必须带空间前缀。
-  /// 只有一个空间时传 `null` —— 每行都写一遍同样的前缀是噪音。
-  final String? spacePrefix;
-
   @override
   State<LocateOverlay> createState() => _LocateOverlayState();
 }
@@ -144,6 +169,13 @@ class _LocateOverlayState extends State<LocateOverlay> {
 
   LocateResult? _result;
   LocateDiagnosis? _diagnosis;
+
+  /// 是否已经被那一行「在全部空间中搜索」放宽到全部空间（`SPEC-VIEW-031`）。
+  ///
+  /// 是**一次查询内**的状态：关掉浮层就没了。搜索是「用完即走」的动作
+  /// （`VIEW-026`），把「我上次选了全部空间」跨次记住，会让下一次在 `Z1` 里
+  /// 搜索的用户莫名收到别的空间的结果 —— 而那一行正是用来当场表达的。
+  bool _searchAll = false;
 
   /// 表单是否展开。**只在第二个动作之后**为真（见文件头闸门）。
   bool _formOpen = false;
@@ -166,6 +198,28 @@ class _LocateOverlayState extends State<LocateOverlay> {
     super.dispose();
   }
 
+  /// 这一轮查哪些空间（`SPEC-VIEW-031`）。
+  ///
+  /// 作用域宽 = `Z0`（`scopeSpaceId == null`）**或**用户点了那一行。两者都宽时
+  /// 不必再分，因为「全部空间」只有一种含义。
+  List<LoadedPack> get _searchedPacks {
+    final LoadedPack? pack = widget.pack;
+    if (pack == null) {
+      return const <LoadedPack>[];
+    }
+    final bool wide = widget.scopeSpaceId == null || _searchAll;
+    return wide
+        ? <LoadedPack>[pack, ...widget.otherSpaces]
+        : <LoadedPack>[pack];
+  }
+
+  /// 作用域是否还窄着 —— 也就是那一行「在全部空间中搜索」该不该出现。
+  bool get _canWiden =>
+      widget.scopeSpaceId != null &&
+      !_searchAll &&
+      widget.pack != null &&
+      widget.otherSpaces.isNotEmpty;
+
   void _onChanged(String query) {
     final LoadedPack? pack = widget.pack;
     setState(() {
@@ -178,8 +232,10 @@ class _LocateOverlayState extends State<LocateOverlay> {
         _diagnosis = null;
         return;
       }
-      final LocateResult result = Locator(pack).locate(query);
+      final LocateResult result = Locator(_searchedPacks).locate(query);
       _result = result;
+      // 分诊仍读**本空间**：类 ② 的邻近候选是「换词」出口，跨空间换词没有意义
+      // （用户要的是本空间的叫法），而类 ③ 的新增更是只能落在本空间的域里。
       _diagnosis = diagnose(
         pack: pack,
         result: result,
@@ -193,7 +249,32 @@ class _LocateOverlayState extends State<LocateOverlay> {
     if (result == null) {
       return;
     }
+    final LoadedPack? pack = widget.pack;
+    if (pack != null && hit.spaceId != pack.space.id) {
+      // 居中的那条在另一个空间：如实说明，不换根、不假装跳了。
+      setState(() {
+        _notice =
+            '「${hit.label}」在「${hit.spaceName}」里，当前视图停在'
+            '「${pack.space.name}」。跨空间落点要先换根，本笔只做到「搜得到、'
+            '看得见」（换根与 `returnTo` 还原见 `SDP` 遗留项）。';
+      });
+      return;
+    }
     widget.onPick(result, hit);
+  }
+
+  /// 把作用域放宽到全部空间，并**立刻用当前输入重查**。
+  void _widenToAllSpaces() {
+    final String query = _controller.text;
+    setState(() {
+      _searchAll = true;
+      final LocateResult result = Locator(_searchedPacks).locate(query);
+      _result = result;
+      final LoadedPack? pack = widget.pack;
+      _diagnosis = pack == null
+          ? null
+          : diagnose(pack: pack, result: result, domainId: widget.domainId);
+    });
   }
 
   /// 回车：有命中就选最强的那条（`located` 时它就是唯一落点）。
@@ -340,31 +421,96 @@ class _LocateOverlayState extends State<LocateOverlay> {
 
   Widget _results(LocateResult result) {
     final List<LocateHit> hits = result.usableHits;
-    final bool direct = result.state == LocateState.located;
+    final Set<String> ambiguous = _ambiguousLabels(hits);
+    // 列表头部的说明行。**不造假的命中行**：造出来的会被点，而点了没有 target
+    // 可跳。「唯一命中」那一句也是一样的道理。
+    final List<Widget> lead = <Widget>[
+      if (_canWiden) _widenRow(),
+      if (result.state == LocateState.located) _directHint(),
+    ];
     return ListView.builder(
       key: locateResultsKey,
       shrinkWrap: true,
       padding: const EdgeInsets.symmetric(vertical: 6),
-      itemCount: hits.length + (direct ? 1 : 0),
+      itemCount: hits.length + lead.length,
       itemBuilder: (BuildContext context, int index) {
-        if (direct && index == 0) {
-          // 「直达」不是另造一条结果，而是在真结果上方说一句「回车就跳」。
-          // 造一条假结果的话，它会被点，而点了之后没有 target 可跳。
-          return const Padding(
-            padding: EdgeInsets.fromLTRB(14, 6, 14, 4),
-            child: Text(
-              '唯一命中 · 回车直接定位',
-              style: TextStyle(color: paletteTextSecondary, fontSize: 10),
-            ),
-          );
+        if (index < lead.length) {
+          return lead[index];
         }
-        final LocateHit hit = hits[direct ? index - 1 : index];
-        return _row(hit);
+        final LocateHit hit = hits[index - lead.length];
+        return _row(hit, prefix: ambiguous.contains(hit.label));
       },
     );
   }
 
-  Widget _row(LocateHit hit) {
+  /// 「在全部空间中搜索」那一行（`SPEC-VIEW-031`）。
+  ///
+  /// 只在**还有别的空间可搜**时出现：只有一个空间时它按下去什么也不会变，
+  /// 而「按了没反应」的按钮比没有这个按钮更糟。
+  ///
+  /// [flush] 用于分诊面板 —— 那里外层已经有一圈 14 的留白，再叠一层左边距
+  /// 会让这一行看起来比下面的正文缩进更多。
+  Widget _widenRow({bool flush = false}) {
+    final int others = widget.otherSpaces.length;
+    return InkWell(
+      key: locateSearchAllKey,
+      onTap: _widenToAllSpaces,
+      child: Padding(
+        padding: flush
+            ? const EdgeInsets.only(bottom: 6)
+            : const EdgeInsets.fromLTRB(14, 8, 14, 8),
+        child: Row(
+          children: <Widget>[
+            const Icon(
+              Icons.travel_explore,
+              size: 14,
+              color: paletteTextSecondary,
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                '在全部空间中搜索'
+                '（另有 $others 个空间，共 '
+                '${widget.otherSpaces.length + 1} 个）',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: paletteTextSecondary,
+                  fontSize: 12,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _directHint() => const Padding(
+    padding: EdgeInsets.fromLTRB(14, 6, 14, 4),
+    child: Text(
+      '唯一命中 · 回车直接定位',
+      style: TextStyle(color: paletteTextSecondary, fontSize: 10),
+    ),
+  );
+
+  /// 需要写空间名的那些标签（`SPEC-VIEW-033`）。
+  ///
+  /// 判据是「**同一标题出现在两个以上空间**」—— 不是「有没有两个空间」。
+  /// 每行都写一遍空间名是噪音，而它要解决的问题只在同名时存在；反过来，只搜
+  /// 一个空间时这个集合恒为空，也就不需要任何开关来控制前缀。
+  Set<String> _ambiguousLabels(List<LocateHit> hits) {
+    final Map<String, Set<String>> spacesByLabel = <String, Set<String>>{};
+    for (final LocateHit hit in hits) {
+      spacesByLabel.putIfAbsent(hit.label, () => <String>{}).add(hit.spaceId);
+    }
+    return <String>{
+      for (final MapEntry<String, Set<String>> entry in spacesByLabel.entries)
+        if (entry.value.length > 1) entry.key,
+    };
+  }
+
+  Widget _row(LocateHit hit, {required bool prefix}) {
     final bool filter = hit.kind == LocateKind.axis;
     return InkWell(
       key: locateRowKey(hit),
@@ -378,9 +524,9 @@ class _LocateOverlayState extends State<LocateOverlay> {
             Expanded(
               child: Text(
                 // `VIEW-033`：同名项跨空间时带前缀，否则只写原文。
-                widget.spacePrefix == null
-                    ? hit.label
-                    : '${widget.spacePrefix}$locateSpaceSeparator${hit.label}',
+                prefix
+                    ? '${hit.spaceName}$locateSpaceSeparator${hit.label}'
+                    : hit.label,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(color: paletteTextPrimary, fontSize: 13),
@@ -430,6 +576,9 @@ class _LocateOverlayState extends State<LocateOverlay> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
+          // 本空间没有命中时，这一行比「新增」更值得先给：用户要找的东西很可能
+          // 就在另一个空间（`VIEW-031` 放宽作用域的初衷）。
+          if (_canWiden) _widenRow(flush: true),
           if (diagnosis.kind == DiagnoseClass.outOfScope)
             for (final LocateHit hit in diagnosis.outside)
               Padding(

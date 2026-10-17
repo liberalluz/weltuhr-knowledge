@@ -21,10 +21,23 @@
 /// **相机状态跨模式保留**（`VIEW-009` 末句）：来回切换不重置 yaw / pitch。
 /// 树 → 宇宙的档位由**选中项的 `φ`** 定，不由「树里展开到第几层」定。
 ///
+/// ## 跨空间搜索（`VIEW-031` / `033`）
+///
+/// 作用域**跟着档位走**：`Z0` 搜全部空间，其余档位默认只搜本空间，浮层顶部给
+/// 一行「在全部空间中搜索」。`otherSpaces` 为空时那一行不出现 —— 只有一个空间
+/// 时它按下去什么也不会变。
+///
+/// ⚠️ **搜得到 ≠ 落得过去**：本笔的 `scene` 与 `pack` 就是根，没有换根能力。
+/// 跨空间的命中照常列出并带空间前缀（`VIEW-033`），点下去由浮层说明它在哪个
+/// 空间。从命中集里剔掉会让用户以为「另一个空间没有这一项」；假装能跳会让界面
+/// 停在原处 —— 两种都比说清楚更糟。
+///
 /// ## 本笔没有做的
 ///
-/// - 跨空间搜索（`VIEW-031`）：`Locator` 现在只收一个 `LoadedPack`，要收
-///   `List<LoadedPack>` 才能「在全部空间中搜索」。归笔 7。
+/// - **换根**与 `returnTo` 还原（`VIEW-015` / `031` 末句）：跳进另一个空间再按
+///   「返回」回到原处，是根上下文的事，要 `trail` 历史栈（`C-21` 上限未定）。
+/// - 跨空间的「措辞不同」（`VIEW-030` ②）：邻近候选只从本空间取 —— 换词换的是
+///   本空间的叫法，跨空间换词要先有落点。
 ///
 /// ## 绘制表面封顶（`C-33` / `ADR-0002` 修订三）
 ///
@@ -109,6 +122,7 @@ class UniverseScreen extends StatefulWidget {
   const UniverseScreen({
     required this.scene,
     this.pack,
+    this.otherSpaces = const <LoadedPack>[],
     this.initialZoom = ZoomLevel.z1,
     this.initialMode = ViewMode.universe,
     super.key,
@@ -119,6 +133,13 @@ class UniverseScreen extends StatefulWidget {
   /// 真实内容包。`null` = 合成回落 ⇒ 树视图与详情都拿不到 `Item`，界面降级成
   /// 「没有可展开的树」，而不是画一棵空树（`SPEC-FND-014` 未声明即不渲染）。
   final LoadedPack? pack;
+
+  /// 除本空间外、也能被搜到的其它空间（`SPEC-VIEW-031`）。
+  ///
+  /// `scene` 与 `pack` 决定宇宙与树的根，本笔**不换根**；这里多出来的空间只
+  /// 参与搜索的命中集与展示。空列表 = 只有一个空间，那时 `Z0` 与 `Z1` 的搜索
+  /// 范围没有区别，「在全部空间中搜索」那一行也不会出现。
+  final List<LoadedPack> otherSpaces;
 
   /// 进入时的档位。真实入口由「当前上下文」决定，本笔先给默认。
   final ZoomLevel initialZoom;
@@ -561,9 +582,11 @@ class _UniverseScreenState extends State<UniverseScreen>
 
   Widget _locateLayer() => LocateOverlay(
     pack: widget.pack,
+    otherSpaces: widget.otherSpaces,
+    // `VIEW-031` 的作用域：`Z0` 本就是跨空间视角 ⇒ 不限空间；其余档位默认只搜
+    // 本空间，浮层顶部给一行「在全部空间中搜索」。
+    scopeSpaceId: _camera.zoom == ZoomLevel.z0 ? null : widget.pack?.space.id,
     domainId: _domainId(),
-    // `VIEW-033`：只有一个空间时不给前缀 —— 每行都写一遍同一个空间名是噪音，
-    // 而它要解决的问题（同名项分不清是哪个空间的）在单空间下不存在。
     onPick: _applyHit,
     // 类 ②「措辞不同」的邻近候选：点了就是真落点，与命中同一条路径。
     onPickNear: _pickNear,

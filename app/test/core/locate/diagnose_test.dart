@@ -51,7 +51,7 @@ void main() {
 
   LocateDiagnosis? of(String query, {String? domainId}) => diagnose(
     pack: pack,
-    result: Locator(pack).locate(query),
+    result: Locator.single(pack).locate(query),
     domainId: domainId,
   );
 
@@ -123,7 +123,7 @@ void main() {
 
   group('三态与可用性', () {
     test('只命中圈外项：三态是 none，那条命中仍在集里（SPEC-VIEW-030）', () {
-      final LocateResult result = Locator(pack).locate('元类');
+      final LocateResult result = Locator.single(pack).locate('元类');
       expect(result.state, LocateState.none, reason: '跳过去是一片空白，不能算「成了」');
       expect(result.hits, isNotEmpty, reason: '存在性归引擎 —— 它确实在库里');
       expect(result.usableHits, isEmpty);
