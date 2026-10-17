@@ -52,12 +52,18 @@ const String ruleMagicNumber = 'R2';
 /// 判据落在「**能否构造出改写历史事件的写法**」上，而不是「当前有没有人这么写」。
 const String ruleEventAppendOnly = 'R3';
 
-/// R4：源不进任何视觉通道 —— `lib/features/**` 的入参不得出现 `SourceRef` /
+/// R4：源不进**任何视觉通道** —— 场景装配（`lib/core/frame/`）与绘制
+/// （`frame_painter.dart` / `frame_draw_target.dart`）不得出现 `SourceRef` /
 /// `SourceSegment`（`SPEC-VIEW-004`「换源不改观感」）。
 ///
-/// 这条是**前瞻性**的：`features/` 尚未建立，当前零命中。它防的是「第一版视图
-/// 顺手把源接进来」—— 接进去之后再加一条非视觉通道渲染，会把「换源不改观感」
-/// 从架构约束降级成口头约定。
+/// ⚠️ **判据收窄过一次**（`B3` 笔 3）。原判据是「`lib/features/**` 一律不许出现
+/// 源」，与 `SPEC-VIEW-004`「源只写进详情页」**直接矛盾** —— 详情三区里的来源区
+/// 必须显示源名与摘录，而那就在 `features/` 下。收窄后守的仍是原意：源不进
+/// **通道**（`scene.dart` 造 `SceneNode`、`frame_painter.dart` 把它们画出来）；
+/// 那两处一旦读到源，换本教材星星就会变亮，而这正是要被挡住的事。
+///
+/// 不靠「详情页换个参数名」绕过：判据写宽了就该改判据，否则规则里留着一条
+/// 名不副实的约束，下一个人只会照抄那个绕法。
 const String ruleSourceNotVisual = 'R4';
 
 /// R5：每个测试必须声明它守的是哪一条裁定（`SPEC-…` / `C-…` / `ADR-…` / `R<n>`），
@@ -81,8 +87,16 @@ bool _isCore(String path) => path.contains('lib/core/');
 /// 是否为常量表本身（R2 的唯一豁免点）。
 bool _isConstantsFile(String path) => path.endsWith('lib/core/constants.dart');
 
-/// 是否为视图层文件（R4 的作用域）。
-bool _isFeatureLayer(String path) => path.contains('lib/features/');
+/// 是否为**视觉通道**文件（R4 的作用域）。
+///
+/// 两处：造视觉编码的地方（`lib/core/frame/` —— `scene.dart` 装配 `SceneNode`、
+/// `projection.dart` 算几何）与画出来的地方（`frame_painter.dart` /
+/// `frame_draw_target.dart`）。详情页不在这里：它显示源名与摘录是
+/// `SPEC-VIEW-004` 要求的。
+bool _isVisualChannel(String path) =>
+    path.contains('lib/core/frame/') ||
+    path.endsWith('lib/features/universe/frame_painter.dart') ||
+    path.endsWith('lib/features/universe/frame_draw_target.dart');
 
 /// 是否为测试文件（R5 的作用域）。
 bool _isTestFile(String path) => path.startsWith('test/') || path.contains('/test/');
@@ -168,7 +182,7 @@ List<LintIssue> checkSource({required String path, required String source}) {
   // R3 不限路径：`Event` 的子类可能出现在任何一层，按路径过滤会漏。
   unit.accept(_EventAppendOnlyVisitor(parsed, normalized, issues));
 
-  if (_isFeatureLayer(normalized)) {
+  if (_isVisualChannel(normalized)) {
     unit.accept(_SourceNotVisualVisitor(parsed, normalized, issues));
   }
 

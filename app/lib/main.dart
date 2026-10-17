@@ -53,13 +53,20 @@ class EmptySpaceScreen extends StatelessWidget {
               style: text.bodySmall,
             ),
             const SizedBox(height: 32),
-            // 「宇宙视图」入口 —— `B3` 笔 2 的正式界面（五档刻度 + HUD 七区块）。
-            // 真实入口（从空间列表进）归笔 2 收尾，这里先让它可达。
+            // 「宇宙视图」入口 —— `B3` 笔 2 / 3 的正式界面（五档刻度 + HUD 七区块
+            // + 树视图 + 详情三区）。真实入口（从空间列表进）归笔 2 收尾，这里先让它可达。
             FilledButton(
               onPressed: () => Navigator.of(context).push(
                 MaterialPageRoute<void>(
-                  builder: (BuildContext context) =>
-                      UniverseScreen(scene: resolveAlphaScene().bundle),
+                  builder: (BuildContext context) {
+                    final SceneResolution resolution = resolveAlphaScene();
+                    return UniverseScreen(
+                      scene: resolution.bundle,
+                      // 树视图与详情要 `Item` / `Edge`：合成回落没有包，界面降级
+                      // 成「没有可展开的树」，而不是画一棵空树。
+                      pack: resolution.pack,
+                    );
+                  },
                 ),
               ),
               child: const Text('宇宙视图'),
