@@ -262,18 +262,11 @@ class FramePainter extends CustomPainter {
     watch
       ..reset()
       ..start();
-    // 按投影质心平移：扇区只朝一侧时（α 包全在 `ability`），楔形会整体偏在
-    // 中心一边；把质心摆到画布中心，视角自转时也只是原地转，不会甩来甩去。
-    final double pixelsPerUnit = size.shortestSide * _unitToPixel;
-    final ProjectedCentroid centroid = centroidOf(frame.nodes);
     final FrameDrawReport report = paintFrame(
       target: CanvasDrawTarget(canvas),
       frame: frame,
-      origin: Offset(
-        size.width / 2 - centroid.x * pixelsPerUnit,
-        size.height / 2 - centroid.y * pixelsPerUnit,
-      ),
-      pixelsPerUnit: pixelsPerUnit,
+      origin: Offset(size.width / 2, size.height / 2),
+      pixelsPerUnit: size.shortestSide * _unitToPixel,
       viewport: size,
     );
     final double paintMs = watch.elapsedMicroseconds / 1000;

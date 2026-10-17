@@ -81,24 +81,6 @@ void main() {
       expect(focalFor(0), closeTo(focalFor(2.7), 1e-9));
     });
 
-    test('质心按平均位置算，空集返回原点（无 SPEC：退化输入不抛）', () {
-      expect(centroidOf(const <ProjectedNode>[]).x, 0);
-
-      final List<SceneNode> nodes = <SceneNode>[
-        _node(radial01: 0.99, sector: 0),
-        _node(radial01: 0.99, sector: 3),
-      ];
-      final Camera camera = _camera();
-      final ProjectedFrame frame = projectFrame(
-        nodes: nodes,
-        edges: const <EdgeSpan>[],
-        camera: camera,
-      );
-      final ProjectedCentroid c = centroidOf(frame.nodes);
-      final double meanX = (frame.nodes[0].x + frame.nodes[1].x) / 2;
-      expect(c.x, closeTo(meanX, 1e-9));
-    });
-
     test('空场景原样返回（无 SPEC：退化输入不抛）', () {
       final Camera base = _camera();
       final Camera fitted = fitCameraToViewport(
