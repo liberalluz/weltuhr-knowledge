@@ -5,7 +5,7 @@
     python tools/verify.py --pack content/python/dist/pack.json
     python tools/verify.py --suite            跑全部 fixtures + 错误码覆盖自检
 
-`--suite` 跑三层，缺一层都不算过：
+`--suite` 跑四层，缺一层都不算过：
 
 1. **源数据层**（`fixtures/<name>/`）：走 `build.build_text`，即 `load_source` →
    `validate` → `check_pack_object` 的完整链路。负例各自锁定一种「必须拒绝」的形态。
@@ -14,11 +14,16 @@
    （`assemble()` 拼出的 pack 结构恒定），只能这样测。
 3. **覆盖自检**：把 `validator.py` 里定义的全部错误码与 fixtures 断言过的码对账。
    新增规则而没配 fixture，这里会红 —— 这是 `R-07` 的根治，不是补一次就完。
+4. **输出可移植性**：扫 `tools/*.py` 的运行期字符串字面量，凡在 GBK 里编码不了
+   的字符都报。这一层存在的理由与前三层不同 —— 它守的是**当前环境测不到**的失败：
+   前三层的判据都要真的跑一遍才算数，而「print 一个 cp936 编不了的字符」在
+   UTF-8 环境（含 CI 的 ubuntu）**永远跑不出来**，只能静态查。
 """
 
 from __future__ import annotations
 
 import argparse
+import ast
 import glob
 import json
 import os
@@ -173,12 +178,12 @@ def run_suite() -> int:
         label = os.path.basename(fixture_dir)
         if problems:
             failures.extend(problems)
-            print(f"✗ {label}")
+            print(f"[fail] {label}")
             for problem in problems:
                 print(f"    {problem}")
         else:
             passed += 1
-            print(f"✓ {label}")
+            print(f"[ok] {label}")
 
     print(f"\n{passed}/{len(dirs)} fixture 通过")
     return 1 if failures else 0
@@ -234,12 +239,12 @@ def run_pack_suite() -> int:
         label = os.path.basename(fixture_dir)
         if problems:
             failures.extend(problems)
-            print(f"✗ {label}")
+            print(f"[fail] {label}")
             for problem in problems:
                 print(f"    {problem}")
         else:
             passed += 1
-            print(f"✓ {label}")
+            print(f"[ok] {label}")
     print(f"\n{passed}/{len(dirs)} 产物层 fixture 通过")
     return 1 if failures else 0
 
@@ -296,6 +301,90 @@ def coverage_report() -> int:
     return status
 
 
+# --- 输出可移植性自检 ------------------------------------------------------
+
+# 这一层守的失败**在当前环境测不到**：`print` 一个 cp936 编码不了的字符，在 UTF-8
+# 环境（CI 是 ubuntu）永远不触发 —— 全绿也不代表没问题。只能静态查。
+#
+# 只查 AST 里的字符串字面量：注释不进 AST（本来也不会被打印），模块 / 类 / 函数的
+# docstring 显式跳过（不参与 output）。判据用 GBK 而非 ASCII —— 中文输出是本项目
+# 的常态，按 ASCII 判会把每个汉字都算成违规。
+OUTPUT_ENCODING = "gbk"
+
+
+def _printable(text: str) -> str:
+    """把编不了的字符转成 `\\uXXXX` 转义。
+
+    **报错信息自己必须能打出来。** 否则报 `✓` 违规的那一行本身就含 `✓`，
+    在同一个控制台上再崩一次 —— 把「诊断」变成「二次事故」。
+    """
+    out: list[str] = []
+    for ch in text:
+        try:
+            ch.encode(OUTPUT_ENCODING)
+        except UnicodeEncodeError:
+            out.append(f"\\u{ord(ch):04x}")
+        else:
+            out.append(ch)
+    return "".join(out)
+
+
+def _docstring_ids(tree: ast.AST) -> set[int]:
+    owners = (ast.Module, ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)
+    ids: set[int] = set()
+    for node in ast.walk(tree):
+        if not isinstance(node, owners):
+            continue
+        body = node.body
+        if not body or not isinstance(body[0], ast.Expr):
+            continue
+        value = body[0].value
+        if isinstance(value, ast.Constant) and isinstance(value.value, str):
+            ids.add(id(value))
+    return ids
+
+
+def unportable_literals(path: str) -> list[str]:
+    """该文件里「运行期会输出、但 OUTPUT_ENCODING 编不了」的字面量。"""
+    with open(path, encoding="utf-8") as f:
+        try:
+            tree = ast.parse(f.read(), filename=path)
+        except SyntaxError as exc:
+            return [f"L{exc.lineno} 语法错误，无法自检：{exc.msg}"]
+
+    skip = _docstring_ids(tree)
+    problems: list[str] = []
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Constant) or not isinstance(node.value, str):
+            continue
+        if id(node) in skip:
+            continue
+        try:
+            node.value.encode(OUTPUT_ENCODING)
+        except UnicodeEncodeError:
+            snippet = node.value.strip().replace("\n", " ")[:40]
+            problems.append(f"L{node.lineno} {_printable(snippet)!r}")
+    return problems
+
+
+def portability_report() -> int:
+    files = sorted(glob.glob(os.path.join(TOOLS_DIR, "*.py")))
+    problems = [
+        f"{os.path.basename(path)}: {problem}"
+        for path in files
+        for problem in unportable_literals(path)
+    ]
+    print(f"输出可移植性：{len(files)} 个脚本的运行期字面量须可用 {OUTPUT_ENCODING} 编码")
+    if not problems:
+        print(f"  {len(files)} 个脚本无风险字符")
+        return 0
+    print("  以下字面量在中文 Windows 控制台（cp936）print 时会抛 UnicodeEncodeError：")
+    for problem in problems:
+        print(f"    - {problem}")
+    print("  改用 ASCII 前缀（如 `[ok]` / `[fail]`）；注释与 docstring 不查，字符可留在那里。")
+    return 1
+
+
 def run_all() -> int:
     status = 0
     print("— 源数据层 —")
@@ -307,6 +396,9 @@ def run_all() -> int:
     print("\n— 错误码覆盖 —")
     if coverage_report() != 0:
         status = 1
+    print("\n— 输出可移植性 —")
+    if portability_report() != 0:
+        status = 1
     return status
 
 
@@ -315,7 +407,11 @@ def main(argv: list[str] | None = None) -> int:
     target = parser.add_mutually_exclusive_group(required=True)
     target.add_argument("--root", help="源目录")
     target.add_argument("--pack", help="已构建的 pack.json")
-    target.add_argument("--suite", action="store_true", help="跑全部 fixtures（源数据层 + 产物层）+ 错误码覆盖自检")
+    target.add_argument(
+        "--suite",
+        action="store_true",
+        help="跑全部 fixtures（源数据层 + 产物层）+ 错误码覆盖 + 输出可移植性自检",
+    )
     args = parser.parse_args(argv)
 
     if args.suite:
@@ -328,7 +424,7 @@ def main(argv: list[str] | None = None) -> int:
             print(f"  {issue}")
         return 1
 
-    print("✓ 校验通过")
+    print("[ok] 校验通过")
     return 0
 
 
