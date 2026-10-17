@@ -5,7 +5,8 @@
 // 'flutter create' template.
 
 // The application's name. By default this is also the title of the Flutter window.
-// 对外名用 Weltuhr；Dart 包名 / 可执行名仍为 project_knowledge（pubspec 与 CMake 不动）。
+// 对外名用 Weltuhr：它同时决定 .app 包名与可执行名（Weltuhr.app / Weltuhr）。
+// 不随命名改动的是 Dart 包名 project_knowledge 与 bundle id（见下）。
 PRODUCT_NAME = Weltuhr
 
 // The application's bundle identifier

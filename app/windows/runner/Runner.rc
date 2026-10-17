@@ -94,7 +94,7 @@ BEGIN
             VALUE "FileVersion", VERSION_AS_STRING "\0"
             VALUE "InternalName", "project_knowledge" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2026 liberal. All rights reserved." "\0"
-            VALUE "OriginalFilename", "project_knowledge.exe" "\0"
+            VALUE "OriginalFilename", "Weltuhr.exe" "\0"
             VALUE "ProductName", "Weltuhr" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
