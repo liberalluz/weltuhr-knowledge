@@ -15,7 +15,7 @@ python tools/build.py <空间>      # 只构建单个空间
 content/
 ├── tools/build.py        构建脚本（源数据 → dist/pack.json）
 └── <空间>/                一个知识空间一个目录（如 python/、english/）
-    ├── manifest.json      空间声明：id / 名称 / 六轴取值 / accent / order
+    ├── manifest.json      空间声明：id / 名称 / version / 六轴取值 / accent / order
     ├── items.json         知识项：稳定 id、标题、六要件三态、六轴取值、layer
     ├── edges.json         前提边（有限类型）
     ├── schemes.json       体系（⪯ 的线性扩展）
@@ -23,6 +23,8 @@ content/
     ├── excerpts/          源摘录（离线可读，带出处与许可标记）
     └── dist/pack.json     构建产物（不入库）
 ```
+
+> `manifest.json` 的 `version` 是包版本的**唯一事实源**（semver）。`build.py` **原样透传**到 `dist/pack.json` 的 `meta.version`，不得改写 —— 否则同一 commit 两次构建产出不同版本，而 `dist/` 不入库、tag 是唯一指针，无从比对。tag `pack/<空间>/vX.Y.Z` 须与它**逐字一致**。口径见 [git-conventions §五](../docs/guides/git-conventions.md)。
 
 ## 相关文档
 

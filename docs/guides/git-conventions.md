@@ -231,14 +231,14 @@
 | --- | --------------------------------------------- | -------------------------------------------------------------------------------------------------------- | ----------- |
 | 客户端 | `vX.Y.Z`（SemVer 2.0.0，`+N` 为构建号）              | `app/pubspec.yaml` 的 `version`（当前 `0.1.0+1`，**开发期基线，未发布**）                                               | `vX.Y.Z`    |
 | 服务端 | 与客户端**同一产品版本** `vX.Y.Z`                     | `server/pubspec.yaml` 的 `version`，须与 `app/pubspec.yaml` **逐字相同**（含 `+N` 构建号；字段名在脚手架生成后核对）                   | 与客户端**共用** `vX.Y.Z` |
-| 内容包 | 单包 semver；合成版本 `pack@vX + overlay@N`（两个版本号独立） | `pack.json` 的 `meta.version`，见 `docs/design/PACK-content-pack.md` §三 · `docs/reference/entity-fields.md` | `pack/<space>/vX.Y.Z` |
+| 内容包 | 单包 semver；合成版本 `pack@vX + overlay@N`（两个版本号独立） | `pack.json` 的 `meta.version`，见 `docs/design/PACK-content-pack.md` §二 · `docs/reference/entity-fields.md` | `pack/<space>/vX.Y.Z` |
 
 - **两端同版本**（`app/` 与 `server/`）：共用一个产品版本 `vX.Y.Z`，**一个 tag 覆盖双端**，不设 `server/` 或 `app/` 前缀。两端 `pubspec.yaml` 的 `version` 须**逐字相同**（含 `+N` 构建号）；不一致**视为构建错误**，由 CI 比对拦截（`server/` 脚手架落地时接入）。**理由**：两端靠事件 schema 通信，版本错配本身就是兼容问题；共用版本让「这个客户端能不能连这个服务端」一眼可判，不必再维护兼容矩阵。
 - **协议变更的发布顺序**：**服务端先发，且向后兼容至少一个版本** —— 新服务端先上线并接受旧客户端写入（新字段缺省、未知字段不报错），客户端随后放量；摘除兼容层须在确认旧版本客户端无活跃设备后进行，并记 ADR。**禁止客户端先发**：新客户端会调用尚未存在的端点，属必然故障而非灰度风险。**依据**：iOS 审核周期不可控，若要求两端同批，服务端会被审核窗口阻塞数天到数周。事件 schema 变更属 **B 级**（§4.4），PR 须写明兼容策略，不写的不予合入。
 - **内容包 tag：`pack/<space>/vX.Y.Z`** —— 例 `pack/python/v1.2.0`。`space` 取 `KnowledgeSpace.id`（稳定标识，与版本无关），版本取 `meta.version` 的 semver ⇒ tag 名不引入任何新标识。用 `/` 而非 `-`：`git tag -l 'pack/*/v1.*'` 可跨空间筛（`-l` 通配按 `/` 分段），且空间 id 含连字符时无解析歧义。**取某空间当前版本**：`git tag -l 'pack/python/*' --sort=-v:refname | head -1` —— **`--sort` 不能省**：默认是**字典序升序**，`head -1` 取到的不是最高版（实测：只有 `v1.2.0` 与 `v1.9.0` 时默认取到 `v1.2.0`）。**被否方案**：全局号 `pack-vX.Y.Z`（违反 `PACK-001`「空间可单独升级而不牵动别的空间」）· 连字符形态（解析歧义）· 不打 tag（无法从 git 侧回答「`python v1.2.0` 对应哪次提交」，且已定「打 tag 即对外承诺」）。
 - **overlay 不打 tag** —— `overlay@N` 来自用户提交与审核、存在服务端 DB（`PACK-009`/`PACK-011` 两平面），**不在仓库里**。tag 只标记仓库内容，不在仓库里的状态层不设 tag。
 - **只能打在全绿的 commit 上** —— `python content/tools/build.py` 全空间通过 + 校验器通过（DAG / 稳定 id / 六要件三态）。`dist/` 不入库（`PACK-018`），tag 是唯一指针，打在构建不过的 commit 上等于发了个拿不到的包。
-- **首包时核实** —— `content/README.md` 列的 `manifest.json` 字段**未含 `version`**，而 `KnowledgeSpace.version` 是 semver。须确认版本写在 `manifest.json` 还是由 `build.py` 注入，且 tag 名中的版本与之**逐字一致**（与「两端 `pubspec.yaml` 逐字相同」同族，可加机器校验）。
+- **版本写在 `manifest.json`，不靠 `build.py` 生成** —— `manifest.json` 的 `version` 是包版本的**唯一事实源**（semver），`build.py` **原样透传**到 `pack.json` 的 `meta.version`，**不得改写**（否则同一 commit 两次构建产出不同版本，与「tag 是唯一指针」冲突）。tag 名中的版本须与之**逐字一致**（与「两端 `pubspec.yaml` 逐字相同」同族，可加机器校验）。
 - **tag 用附注 tag**（`git tag -a`），消息 = 版本号 + 交付范围一行，**推送至远程**。
 - **打 tag 即对外承诺**：首个 tag 的时机与版本号由维护者决策，本文**不预置**。
 

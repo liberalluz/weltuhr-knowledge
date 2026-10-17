@@ -11,7 +11,7 @@
 |---|---|---|
 | `id` | string | 稳定标识，如 `python` |
 | `name` | string | 展示名 |
-| `version` | semver | 包版本；参与合成版本 `pack@vX + overlay@N` |
+| `version` | semver | 包版本；参与合成版本 `pack@vX + overlay@N`。**来源**：源数据 `manifest.json` 的 `version`，`build.py` 原样透传至 `pack.json` 的 `meta.version`（`SPEC-PACK-005`），tag `pack/<id>/v<version>` 与之逐字一致 |
 | `sixAxis` | object | 本空间在六轴上的取值（用于 Z0 分组与筛选） |
 | `accent` | string | 主题强调色，随包下发 |
 | `order` | int | Z0 星系列表排序 |
