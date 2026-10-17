@@ -136,9 +136,9 @@ void main() {
       expect(nearItemsOf(pack, 'zzz'), isEmpty);
     });
 
-    test('不读 C-28：模糊阈值未裁定也不阻塞类 ②（C-28）', () {
-      // `C-28` 的取值是 `TbdConstantError`；这条用例只要跑到结论就算过。
-      // 邻近候选判的是「共享片段 > 0」，排序按共享数 —— 没有阈值可读。
+    test('不读 C-28：邻近候选判的是共享片段，不是命中阈值（C-28）', () {
+      // `C-28` 已裁定为 v0.1 不适用 —— 但即使将来补上阈值，这条也得继续过：
+      // 邻近候选判的是「共享片段 > 0」、排序按共享数，没有阈值可读。
       final List<NearItem> near = nearItemsOf(pack, '装饰器参数');
       expect(near, isNotEmpty);
     });

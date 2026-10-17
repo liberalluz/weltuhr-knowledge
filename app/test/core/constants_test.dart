@@ -1,7 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:project_knowledge/core/constants.dart';
 import 'package:project_knowledge/core/enums.dart';
-import 'package:project_knowledge/core/errors.dart';
 
 void main() {
   group('常量表（docs/reference/constants.md 的代码投影）', () {
@@ -53,13 +52,9 @@ void main() {
       expect(scaffoldCap, Grade.pass);
     });
 
-    test('C-28 未裁定：读到即抛 TbdConstantError，而不是给默认值', () {
-      expect(
-        () => fuzzyMatchThreshold,
-        throwsA(
-          isA<TbdConstantError>().having((TbdConstantError e) => e.constantId, 'constantId', 'C-28'),
-        ),
-      );
-    });
+    // `C-28`（搜索模糊阈值）2026-10-18 裁定为「v0.1 不适用」，故本文件不再有
+    // 它的常量，也没有「读到即抛」这条用例。删掉哨兵不等于放宽纪律：裁定内容
+    // 本身有可判边界，由 `locator_test.dart` 的 `TC-QUANT-007`（连续包含才
+    // 命中、跨字不命中）锁住。
   });
 }
