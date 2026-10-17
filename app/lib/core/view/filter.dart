@@ -139,6 +139,33 @@ int matchedCount(LoadedPack pack, AxisFilter filter) {
       .length;
 }
 
+/// 某一轴在包里的**全部取值**（`SPEC-VIEW-019` / `020` 的 ⑥ 罗盘据此展开）。
+///
+/// 取值域只能从内容来，不能写死：六轴的取值随包而变（`subject` 的取值是学科名，
+/// 换一本就是另一批），任何「预设选项」都会在第二个包上立刻过时。
+///
+/// 顺序 = **出现次数降序，同次数按字典序**：
+/// - 降序是因为罗盘一屏放得下 5–8 个值，常用的必须在前；
+/// - 同次数按字典序是为了两次打开顺序不变 —— 若沿用 `Map` 的插入序，顺序会
+///   跟着 `pack.items` 的排列走，换一份同内容的包（不同项序）就换个样。
+///
+/// 空串按「没声明」处理，不进候选（`VIEW-007`：未声明即不渲染）。
+List<String> axisValuesOf(LoadedPack pack, String axisKey) {
+  final Map<String, int> counts = <String, int>{};
+  for (final Item item in pack.items) {
+    final String? value = item.sixAxis[axisKey];
+    if (value == null || value.isEmpty) {
+      continue;
+    }
+    counts[value] = (counts[value] ?? 0) + 1;
+  }
+  final List<String> values = counts.keys.toList(growable: false);
+  return values..sort((String a, String b) {
+    final int byCount = counts[b]!.compareTo(counts[a]!);
+    return byCount != 0 ? byCount : a.compareTo(b);
+  });
+}
+
 /// 是否至少有一个轴带着取值。
 ///
 /// **不能只看 `filter.isEmpty`**：`{'ability': []}` 不是空 map，但它一个值都

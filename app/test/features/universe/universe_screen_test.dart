@@ -12,6 +12,9 @@ import 'package:project_knowledge/core/locate/locator.dart';
 import 'package:project_knowledge/features/detail/detail_panel.dart';
 import 'package:project_knowledge/features/locate/locate_overlay.dart';
 import 'package:project_knowledge/features/universe/filter_chips.dart';
+import 'package:project_knowledge/core/frame/projection.dart';
+import 'package:project_knowledge/core/frame/scene.dart';
+import 'package:project_knowledge/features/universe/scene_pick.dart';
 import 'package:project_knowledge/features/universe/scene_source.dart';
 import 'package:project_knowledge/features/universe/tree_view.dart';
 import 'package:project_knowledge/features/universe/universe_screen.dart';
@@ -31,18 +34,57 @@ Future<void> _pump(WidgetTester tester) async {
 Future<void> _pumpScreen(
   WidgetTester tester, {
   LoadedPack? pack,
+  SceneBundle? scene,
   ViewMode mode = ViewMode.universe,
 }) async {
   await tester.pumpWidget(
     MaterialApp(
       home: UniverseScreen(
-        scene: buildSyntheticScene(),
+        scene: scene ?? buildSyntheticScene(),
         pack: pack,
         initialMode: mode,
       ),
     ),
   );
   await _pump(tester);
+}
+
+/// 真实包 + 由它构出来的场景（id 与 `Item` 对得上，点星之后详情才有内容）。
+SceneBundle _alphaScene(LoadedPack pack) {
+  final List<SceneNode> nodes = buildSceneNodes(
+    pack,
+    sectorCount: spikeSectorCount,
+  );
+  return SceneBundle(
+    origin: SceneOrigin.alphaPack,
+    nodes: nodes,
+    edges: buildEdgeSpans(pack, nodes),
+    radialSegments: pack.space.domainIds.length,
+    notes: const <String>[],
+  );
+}
+
+/// 在屏幕中部扫出一个「点得到星」（[hit]）或「点不到星」的位置。
+///
+/// 扫描区间避开了四角 HUD：① 与 ③ 在顶部（高约 60），⑥ 在左下，⑦ 在底部，
+/// ④ 详情抽屉占右侧 380 —— 点进这些地方等于点控件，验的就不是拾取了。
+Offset _findPoint(SceneBundle scene, Size viewport, {required bool hit}) {
+  for (double y = 140; y < viewport.height - 160; y += 13) {
+    for (double x = 40; x < viewport.width - 420; x += 13) {
+      final Offset point = Offset(x, y);
+      final String? id = pickSceneNode(
+        scene: scene,
+        viewport: viewport,
+        // 测试里 ticker 只推进了 0 ms，`spin.value == 0` ⇒ 拾取用的偏航 = 0。
+        yawRadians: 0,
+        point: point,
+      );
+      if ((id != null) == hit) {
+        return point;
+      }
+    }
+  }
+  fail('扫描区间里找不到「${hit ? "有星" : "没有星"}」的位置');
 }
 
 void main() {
@@ -437,6 +479,141 @@ void main() {
       await _pump(tester);
 
       expect(find.textContaining('树 · $kept 项'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+  });
+
+  group('宇宙的两个输入器（SPEC-VIEW-014 点星 / 019 罗盘）', () {
+    testWidgets('点中一颗星 ⇒ 选中它并直接进 Z4 详情（SPEC-VIEW-014）', (
+      WidgetTester tester,
+    ) async {
+      final LoadedPack pack = loadAlphaPack();
+      final SceneBundle scene = _alphaScene(pack);
+      await tester.pumpWidget(
+        MaterialApp(
+          home: UniverseScreen(scene: scene, pack: pack),
+        ),
+      );
+      // 只推 0 ms：`spin.value` 仍是 0，`_findPoint` 与 `_pickAt` 用同一个偏航。
+      await tester.pump();
+
+      final Size viewport = tester.getSize(find.byType(UniverseScreen));
+      final Offset at = _findPoint(scene, viewport, hit: true);
+      await tester.tapAt(at);
+      await tester.pump();
+
+      expect(
+        find.byKey(hudDetailDrawerKey),
+        findsOneWidget,
+        reason: 'VIEW-013：进详情 = 写选中项并推进到 Z4',
+      );
+      expect(
+        find.descendant(
+          of: find.byKey(hudBreadcrumbKey),
+          matching: find.textContaining('Z4'),
+        ),
+        findsOneWidget,
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('点空白不动选中 —— 详情不会毫无预警地消失（SPEC-VIEW-014）', (
+      WidgetTester tester,
+    ) async {
+      final LoadedPack pack = loadAlphaPack();
+      final SceneBundle scene = _alphaScene(pack);
+      await tester.pumpWidget(
+        MaterialApp(
+          home: UniverseScreen(scene: scene, pack: pack),
+        ),
+      );
+      await tester.pump();
+
+      final Size viewport = tester.getSize(find.byType(UniverseScreen));
+      await tester.tapAt(_findPoint(scene, viewport, hit: true));
+      await tester.pump();
+      expect(find.byKey(hudDetailDrawerKey), findsOneWidget);
+
+      await tester.tapAt(_findPoint(scene, viewport, hit: false));
+      await tester.pump();
+      expect(
+        find.byKey(hudDetailDrawerKey),
+        findsOneWidget,
+        reason: '点歪是常态；靠「点准空白」来取消选中不是一条可用路径',
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('⑥ 点轴就地展开取值，点取值写进 ②（SPEC-VIEW-019 / 020）', (
+      WidgetTester tester,
+    ) async {
+      final LoadedPack pack = loadAlphaPack();
+      await _pumpScreen(tester, pack: pack);
+
+      // 收起态：只有六个轴按钮，没有任何取值行。
+      expect(find.byKey(compassAxisKey('ability')), findsOneWidget);
+      final String value = axisValuesOf(pack, 'ability').first;
+      expect(
+        find.byKey(compassValueKey('ability', value)),
+        findsNothing,
+        reason: 'VIEW-020：就地展开，不点轴就不铺开取值',
+      );
+
+      await tester.tap(find.byKey(compassAxisKey('ability')));
+      await _pump(tester);
+      expect(find.byKey(compassValueKey('ability', value)), findsOneWidget);
+
+      await tester.tap(find.byKey(compassValueKey('ability', value)));
+      await _pump(tester);
+
+      expect(
+        find.byKey(hudFilterChipsKey),
+        findsOneWidget,
+        reason: 'VIEW-019：⑥ 负责加，② 是从 ⑥ 的写入里长出来的状态栏',
+      );
+      expect(
+        find.byKey(
+          filterChipKey(AxisFilterChip(axisKey: 'ability', value: value)),
+        ),
+        findsOneWidget,
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('⑥ 再点同一取值即取消，② 整块消失（SPEC-VIEW-019）', (
+      WidgetTester tester,
+    ) async {
+      final LoadedPack pack = loadAlphaPack();
+      await _pumpScreen(tester, pack: pack);
+      final String value = axisValuesOf(pack, 'ability').first;
+
+      await tester.tap(find.byKey(compassAxisKey('ability')));
+      await _pump(tester);
+      await tester.tap(find.byKey(compassValueKey('ability', value)));
+      await _pump(tester);
+      expect(find.byKey(hudFilterChipsKey), findsOneWidget);
+
+      await tester.tap(find.byKey(compassValueKey('ability', value)));
+      await _pump(tester);
+      expect(
+        find.byKey(hudFilterChipsKey),
+        findsNothing,
+        reason: 'VIEW-019：⑥ 上再点一次取消，与 ② 的 × 等价',
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('没有内容包时罗盘说清原因，不给一排按不动的按钮（SPEC-FND-014）', (
+      WidgetTester tester,
+    ) async {
+      await _pumpScreen(tester);
+      expect(find.byKey(hudAxisCompassKey), findsOneWidget);
+      expect(find.textContaining('没有内容包'), findsOneWidget);
+      expect(
+        find.byKey(compassAxisKey('ability')),
+        findsNothing,
+        reason: '按不动的控件会被读成「功能坏了」',
+      );
       expect(tester.takeException(), isNull);
     });
   });
