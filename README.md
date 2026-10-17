@@ -1,6 +1,8 @@
 # Weltuhr
 
-> 一句话定位：把一个学习领域展开成**可定位、可规划、可量化**的知识空间，让「我要学 X」变成「我知道该按什么顺序学什么、学到什么程度算能用」。
+**简体中文** · [English](docs/readme/en.md) · [Deutsch](docs/readme/de.md) · [Italiano](docs/readme/it.md) · [日本語](docs/readme/ja.md) · [Français](docs/readme/fr.md)
+
+> 把一个学习领域展开成**可定位、可规划、可量化**的知识空间，让「我要学 X」变成「我知道该按什么顺序学什么、学到什么程度算能用」。
 
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 
@@ -32,8 +34,6 @@ cd ../content && python tools/build.py
 # 运行
 cd ../app && flutter run -d windows
 ```
-
-> ⚠️ **骨架阶段**：以上为约定命令，`app/` `server/` `content/` 的脚手架尚未生成，命令在代码落地后逐条验证。**不以「应该能跑」当「已跑通」。**
 
 ## 目录导航
 
