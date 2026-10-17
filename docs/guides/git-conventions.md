@@ -46,6 +46,29 @@
 
 **自验证证据不得自证**：不写「应该能跑」，写实际执行的命令与输出。「代码里实现了」不构成证据。
 
+## 三·附 远端开关现状（2026-10-17）
+
+| 项 | 状态 | 说明 |
+|---|---|---|
+| 合并方式 | ✅ squash 允许 · merge commit 允许 · **rebase 禁用** | 仓库级设置 |
+| 合后自动删源分支 | ✅ 开 | 仓库级设置 |
+| `main` 分支保护 | ⚠️ **未启用** | **GitHub 免费账号的私有仓不支持分支保护**（API 返回 403：`Upgrade to GitHub Pro or make this repository public`） |
+
+**分支保护挂待办**，满足任一条件后补齐（语义见下表）：
+
+- 升级 GitHub Pro，或
+- 仓库转为公开（转公开前须先复核提交历史无敏感信息）
+
+| 待补开关 | 目标取值 |
+|---|---|
+| Require a pull request before merging | ✅ 开（禁直推） |
+| Required approvals | **0**（单人项目须能自审；GitHub 不允许自批自己的 PR） |
+| Allow force pushes | ❌ 关 |
+| Allow deletions | ❌ 关 |
+| Dismiss stale approvals | 建议开 |
+
+⚠️ **在分支保护补齐前，`main` 禁直推只能靠自觉** —— 不因技术上没拦住就当作允许。
+
 ## 四、变更分级
 
 | 级 | 判据 | 动作 |
