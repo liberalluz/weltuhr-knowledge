@@ -152,3 +152,30 @@ const int frameGoodFps = 50;
 ///
 /// 读到即抛 [TbdConstantError]：这是有意的设计，不是遗漏。
 double get fuzzyMatchThreshold => throw TbdConstantError('C-28');
+
+/// **六轴键序**（`entity-fields` §2）。`θ` 扇区序号与颜色通道的颜色序号都按
+/// 这个顺序取，顺序本身是规格的一部分 —— 改序等于给所有项换扇区。
+///
+/// 进常量表是因为 `R2` 禁止核心层散落字面量：`primaryAxis` 的值是这六个键之一，
+/// 而「值 → 扇区序号」的映射必须有唯一出处。
+const List<String> sixAxisKeys = <String>[
+  'subject',
+  'role',
+  'industry',
+  'ability',
+  'topic',
+  'stack',
+];
+
+/// `C-34` 虚实通道判据：六要件里「不可外化」格 **≥ 3** 即判「虚」（默会类）。
+///
+/// 阈值由 α 包分布决定，不是调手感（`ADR-0003` §决策 2）：不可外化只有
+/// 三档 —— 0 格 37 项 / 仅 `tacit` 110 项 / 3 格 3 项。取 1 会让 75% 变虚，
+/// 取 2 与取 3 等价（2 格的项不存在）。
+const int tacitMinGrids = 3;
+
+/// 端口不在册的边，其**占位节点**相对源点的径向外移量（`ADR-0003` §决策 5）。
+///
+/// 不偏移会与源点完全重合 —— 点压在点上，看不出「这里缺一个东西」。这个值只
+/// 保证「能看出是两个点」，最终表现（虚线圈 / 引出线）归 `B3` 笔 2 定。
+const double placeholderRadialOffset = 0.02;
