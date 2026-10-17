@@ -6,6 +6,8 @@
 /// 2. **`TBD` 项不得给默认值** —— 读到时抛 [TbdConstantError]。
 library;
 
+import 'dart:math' as math;
+
 import 'enums.dart';
 import 'errors.dart';
 
@@ -120,6 +122,31 @@ const List<String> searchMatchFields = <String>[
   'item.sixAxis',
   'scheme.nodes',
 ];
+
+// ─────────────────────── 十、投影与帧预算（`B2` 第 4 笔） ───────────────────────
+
+/// `C-29` 一整圈弧度。扇区宽 = `FULL_TURN / 扇区数`。
+///
+/// 进常量表不是因为它是「设计参数」，而是 R2 禁止核心层散落字面量。
+const double fullTurnRadians = math.pi * 2;
+
+/// `C-30` 径向环中线偏移：`r = (段序号 + 0.5) / 段数`。
+///
+/// 没有这半步，同一段的所有项会落在环的内缘，「7 段径向分层」退化成一圈
+/// 连续半径 —— 段与段之间看不出层次。
+const double radialBandCenterOffset = 0.5;
+
+/// `C-31` 单帧 CPU 投影预算（毫秒，p95）。口径 = 150 项 / Z0 全量。
+///
+/// **这是上限而不是目标**：`B2` 第 4 笔实测 p95 约 `0.02 ms`，比它低两个
+/// 数量级（见 `SDP` §7 `R-06`）。留着的用途是给 `B3` 一个「超了就是回归」的闸。
+const double frameCpuBudgetMs = 8;
+
+/// `C-32` 帧率达标线。低于它触发 `ADR-0002` 回写（换实现路径，而非调参）。
+const int frameTargetFps = 30;
+
+/// `C-32` 帧率优线。
+const int frameGoodFps = 50;
 
 /// `C-28` 搜索模糊匹配阈值 —— **尚未裁定**，须实测标定。
 ///
