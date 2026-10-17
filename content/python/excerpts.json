@@ -1,0 +1,88 @@
+[
+  {
+    "id": "python-tutorial",
+    "name": "The Python Tutorial",
+    "authorityLevel": "L0",
+    "version": "3.13",
+    "segments": [
+      {
+        "text": "Python's for statement iterates over the items of any sequence (a list or a string), in the order that they appear in the sequence.",
+        "locator": "§4.2 for Statements",
+        "license": "PSF-2.0"
+      },
+      {
+        "text": "The default values are evaluated at the point of function definition in the defining scope.",
+        "locator": "§4.8.1 Default Argument Values",
+        "license": "PSF-2.0"
+      },
+      {
+        "text": "Assignment statements are used to (re)bind names to values.",
+        "locator": "§7.2 Assignment statements",
+        "license": "PSF-2.0"
+      }
+    ],
+    "appliesTo": {
+      "spaceId": "python",
+      "sixAxis": {
+        "stack": "Python"
+      }
+    }
+  },
+  {
+    "id": "pep-484",
+    "name": "PEP 484 — Type Hints",
+    "authorityLevel": "L0",
+    "version": "2014",
+    "segments": [
+      {
+        "text": "This PEP proposes a standard syntax for function annotations, and a standard semantics for these annotations.",
+        "locator": "Abstract",
+        "license": "PSF-2.0"
+      }
+    ],
+    "appliesTo": {
+      "spaceId": "python",
+      "sixAxis": {
+        "stack": "Python"
+      }
+    }
+  },
+  {
+    "id": "python-asyncio-docs",
+    "name": "asyncio — Asynchronous I/O",
+    "authorityLevel": "L0",
+    "version": "3.13",
+    "segments": [
+      {
+        "text": "asyncio is a library to write concurrent code using the async/await syntax.",
+        "locator": "Introduction",
+        "license": "PSF-2.0"
+      }
+    ],
+    "appliesTo": {
+      "spaceId": "python",
+      "sixAxis": {
+        "stack": "Python"
+      }
+    }
+  },
+  {
+    "id": "fluent-python",
+    "name": "Fluent Python (2nd ed.)",
+    "authorityLevel": "L1",
+    "version": "2e",
+    "segments": [
+      {
+        "text": "A closure is a function with an extended scope that encompasses non-global variables referenced in the body of the function but not defined there.",
+        "locator": "Ch.9 Closures",
+        "license": "proprietary-excerpt"
+      }
+    ],
+    "appliesTo": {
+      "spaceId": "python",
+      "sixAxis": {
+        "stack": "Python"
+      }
+    }
+  }
+]
