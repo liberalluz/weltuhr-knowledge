@@ -60,4 +60,4 @@ Copyright (c) 2026 liberal。本项目以 [Apache-2.0](LICENSE) 许可发布，�
 
 - **安全漏洞**：请勿用公开 issue，按 [.github/SECURITY.md](.github/SECURITY.md) 的私密渠道报告（承诺 7 个工作日内首次回复）
 - 问题与建议：经仓库 Issues 提交；内容勘误请注明空间标识与 `itemId`
-- 贡献流程：[.github/CONTRIBUTING.md](.github/CONTRIBUTING.md) —— 权限边界 · 评审 · 角色 · 行为期望 · 许可与 DCO；分支 / 提交 / PR 的格式权威处仍是 [docs/guides/git-conventions.md](docs/guides/git-conventions.md)
+- 贡献流程：[.github/CONTRIBUTING.md](.github/CONTRIBUTING.md)
