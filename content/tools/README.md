@@ -24,24 +24,17 @@ python content/tools/verify.py --suite              # 跑 fixtures 回归
 
 ## 取值域
 
-⚠️ 下表分两类，**不要混**：
+**唯一权威处是 [`docs/reference/entity-fields.md`](../../docs/reference/entity-fields.md)**。本表只做索引，不重述取值 —— 同一批字面量若在这里再写一遍，就成了第二份事实源。要改取值，先改那份，再改代码。
 
-- **[SPEC]** —— `docs/` 里已明文枚举的取值
-- **[impl]** —— SPEC 只说「有限类型集合」或根本没列字段，此处是**首期实现层补齐**，尚未经维护者确认。要改，先改 `docs/`，再改这里
-
-| 字段 | 取值 | 来源 |
-|---|---|---|
-| `sixAxis` 键 | `subject` 学科 · `role` 岗位 · `industry` 行业 · `ability` 能力 · `topic` 主题 · `stack` 技术栈 | 轴名 [SPEC]（`SPEC-FND-002`），英文键名 [impl] |
-| `requirements` 键 | `boundary` 边界 · `justification` 证成 · `proposition` 命题 · `relation` 关联 · `how` How · `tacit` Tacit | 要件名 [SPEC]（`SPEC-FND-004`），英文键名 [impl] |
-| `requirements` 值 | `present` / `missing` / `not_externalizable` | [SPEC]（`SPEC-PACK-009`） |
-| `layer` | `persistent` 持久 · `view` 视图 · `ephemeral` 快消 | 中文值 [SPEC]（`SPEC-FND-003`），英文键名 [impl] |
-| `type` | `declarative` 陈述 · `procedural` 程序 · `skill` 技能 · `tacit` 默会 | [impl] |
-| `Edge.type` | `strong` 强依赖（实线）· `weak` 弱依赖（虚线）· `unknown` 指向未知 | 语义 [SPEC]（`channel-table` 第 6 通道），三个字面量 [impl] |
-| `authorityLevel` | `L0` / `L1` / `L2` / `L4`（无 `L3`） | [SPEC]（`entity-fields` §4 §5） |
-| `questions[]` 字段 | `id` · `itemId` · `prompt` · `answer` | [impl] —— `entity-fields.md` 不含题实体，`SPEC-PACK-005` 只给了语义 |
-| `excerpts[]` 形态 | `SourceRef[]`（`id` / `name` / `authorityLevel` / `version` / `segments[]` / `appliesTo`） | [SPEC]（`entity-fields` §5） |
-
-`unknown` 边是唯一允许 `to` 指向不存在项的形态 —— 这是「指向未知」的显式声明；其余边指向不存在的项一律 `E-EDGE-REF`。
+| 用到的地方 | 权威处 |
+|---|---|
+| `manifest.json` 的字段（`KnowledgeSpace`） | `entity-fields.md` §1 |
+| `sixAxis` · `requirements` · `layer` · `type` 的键与值 | `entity-fields.md` §2 取值域 |
+| `Edge.type` 三值，及 `unknown` 可指向包外项 | `entity-fields.md` §3 |
+| `Question` 四字段（`questions` 段） | `entity-fields.md` §4 |
+| `Scheme` 字段与 `authorityLevel`（`L3` 不存在） | `entity-fields.md` §5 |
+| `SourceRef`（= `excerpts` 段） | `entity-fields.md` §6 |
+| 三态语义：`null` 不是合法取值 | `SPEC-PACK-009` |
 
 ## 序列化约定
 

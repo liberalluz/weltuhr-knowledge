@@ -9,69 +9,96 @@
 
 | 字段 | 类型 | 说明 |
 |---|---|---|
-| `id` | string | 稳定标识，如 `python` |
+| `id` | string | 稳定标识，如 `python`。格式 `^[a-z][a-z0-9-]*$`；它同时是 tag 名 `pack/<space>/vX.Y.Z` 里的 `<space>` |
 | `name` | string | 展示名 |
 | `version` | semver | 包版本；参与合成版本 `pack@vX + overlay@N`。**来源**：源数据 `manifest.json` 的 `version`，`build.py` 原样透传至 `pack.json` 的 `meta.version`（`SPEC-PACK-005`），tag `pack/<space>/vX.Y.Z` 与之逐字一致 |
-| `sixAxis` | object | 本空间在六轴上的取值（用于 Z0 分组与筛选） |
-| `accent` | string | 主题强调色，随包下发 |
+| `sixAxis` | object | 本空间在六轴上的取值（用于 Z0 分组与筛选）。键名见 §2 取值域 |
+| `accent` | string | 主题强调色，随包下发。格式 `#RRGGBB` |
 | `order` | int | Z0 星系列表排序 |
 | `domainIds` | string[] | 空间内的「域」（Z2 星云），可选层 |
 
 **边界三判据**（三条全齐才是独立空间，缺一条降为上位空间内的「域」）：
 ① 独立前提偏序 `⪯` ② 独立版本 ③ 三层结构齐全（持久 / 视图 / 快消）
 
+> **`pack.json` 的 `meta` 信封只承载本实体的两个字段**：`space`（= `id`）与 `version`（`SPEC-PACK-005`）。信封不含时间戳，也不承载任何内容字段。
+
 ### 2. `Item` —— 知识项（Q，KST 三元组的 Q）
 
 | 字段 | 类型 | 说明 |
 |---|---|---|
-| `id` | string | **必须与版本无关的稳定 id**。带版本号会导致升级后所有已学事件指向旧 id |
+| `id` | string | **必须与版本无关的稳定 id**。格式 `<manifest.id>/<slug>`（如 `python/variable`，两侧小写字母起、可含数字与连字符）。带版本号会导致升级后所有已学事件指向旧 id |
 | `title` | string | 标题；六轴之外的**唯一自由文本匹配面** |
-| `sixAxis` | object | 六轴取值，每轴**单值**（这是「同轴多选取 OR」的前提） |
-| `layer` | enum | `持久 / 视图 / 快消`，驱动形态通道 |
-| `type` | enum | 决定方法派发：陈述 / 程序 / 技能 / 默会 |
-| `requirements` | object | 六要件 × 三态：`齐 / 缺 / 不可外化` |
+| `sixAxis` | object | 六轴取值，每轴**单值**（这是「同轴多选取 OR」的前提）。键名见下表 |
+| `layer` | enum | `persistent` 持久 / `view` 视图 / `ephemeral` 快消，驱动形态通道 |
+| `type` | enum | 决定方法派发：`declarative` 陈述 / `procedural` 程序 / `skill` 技能 / `tacit` 默会 |
+| `requirements` | object | 六要件 × 三态，键与取值见下表 |
 | `sourceRefs` | string[] | 引用 `SourceRef.id` |
-| `domainId` | string | 所属域（Z2） |
+| `domainId` | string | 所属域（Z2），须在 `manifest.domainIds` 内 |
 | `inScope` | bool | 圈内 / 圈外 |
 | `depth` | int | **派生** = `φ`（`⪯` 上的 Kahn 层号），不入库 |
 | `aliases` | string[] | ⚠️ **首期不实现**（不扩 schema）；重复检测降级为标题近似 + 人工裁定 |
+
+**取值域** —— JSON 里用的是英文键与英文值，中文只是本表的表述，**不进数据**：
+
+| 字段 | 键 / 值 | 出处 |
+|---|---|---|
+| `sixAxis` | `subject` 学科 · `role` 岗位 · `industry` 行业 · `ability` 能力 · `topic` 主题 · `stack` 技术栈 | `SPEC-FND-002` |
+| `requirements` | `boundary` 边界 · `justification` 证成 · `proposition` 命题 · `relation` 关联 · `how` How · `tacit` Tacit | `SPEC-FND-004` |
+| `requirements.*` | `present` 齐 · `missing` 缺 · `not_externalizable` 不可外化 | `SPEC-PACK-009` |
+
+三态含「缺」，因此 **`null` 不是合法取值**：还没写用 `missing`，本来就没有外部形态用 `not_externalizable`。
 
 ### 3. `Edge` —— 前提边
 
 | 字段 | 类型 | 说明 |
 |---|---|---|
-| `id` | string | — |
-| `from` / `to` | string | 前置 → 后继 |
-| `type` | enum | **有限类型集合**（驱动边样式：实线 = 强依赖、虚线 = 弱依赖 / 指向未知） |
+| `id` | string | 段内唯一，小写字母 / 数字 / 连字符 |
+| `from` / `to` | string | 前置 → 后继，均指 `Item.id` |
+| `type` | enum | `strong` 强依赖（实线）· `weak` 弱依赖（虚线）· `unknown` 指向未知（虚线） |
 
 > `⪯` 必须是 **DAG**。任意环须在内容校验阶段拒绝。
+>
+> **`unknown` 的边界**：它是唯一允许 `to` 指向**不在本包内**的项 —— 用来显式声明「后继已知存在，但尚未收进本包」。另两个取值指向不存在的项一律拒绝。`unknown` 不是「先占位、以后再补」的通用出口。
 
-### 4. `Scheme` —— 体系（顺序）
+### 4. `Question` —— 声明式题（`questions` 段）
+
+为 ⑤ 检验提供**可离线、可复现**的题；模型生成的题不入包（不可复现、不参与 SRS —— `SPEC-PACK-006` 第一次扩 schema 的原因）。
+
+| 字段 | 类型 | 说明 |
+|---|---|---|
+| `id` | string | 段内唯一 |
+| `itemId` | string | 指向 `Item.id`，必须存在 |
+| `prompt` | string | 题干 |
+| `answer` | string | 参考答案 |
+
+> 四项是**首期最小集**。加字段前先改本表 —— `questions` 已计入 `SPEC-PACK-006` 的两次扩大，再扩要过「第三次扩 schema 应暂停」的判据。
+
+### 5. `Scheme` —— 体系（顺序）
 
 | 字段 | 类型 | 说明 |
 |---|---|---|
 | `id` | string | — |
 | `name` | string | 如「官方 Tutorial 序」「语法分层」「工程路线」 |
 | `nodes` | string[] | `Item.id` 的**线性序列** |
-| `authorityLevel` | enum | L0 / L1 / L2 / L4，驱动候选卡的等级徽标 |
+| `authorityLevel` | enum | `L0` / `L1` / `L2` / `L4`，驱动候选卡的等级徽标 |
 | `inversions` | int | **派生**：本序列倒置了多少条前提边（`⪯` 逆序数） |
 
 **硬约束：`nodes` 必须是 `⪯` 的一个线性扩展。** 逆序不禁止，但必须算出 `inversions` 并在 Planner 显式展示代价（如「本序 4 处逆序，第 3 步会卡在装饰器」）。
 
-### 5. `SourceRef` —— 源（材料）
+### 6. `SourceRef` —— 源（材料）
 
 | 字段 | 类型 | 说明 |
 |---|---|---|
 | `id` | string | — |
 | `name` | string | 展示名 |
-| `authorityLevel` | enum | L0 / L1 / L2 / L4（源排序键） |
+| `authorityLevel` | enum | `L0` / `L1` / `L2` / `L4`（源排序键） |
 | `version` | string | 源自身的版本 |
 | `segments` | object[] | **内嵌最小结构化摘录**：`{ text, locator(页码/锚), license }` —— 离线可读 |
 | `appliesTo` | object | 适用范围 |
 
 > **换源不改观感**：亮度只由六要件 `k` 决定，源只写进详情页的 `sources`，**不进任何视觉通道**。
 
-### 6. `MethodProfile` —— 方法（动作 + 判据）
+### 7. `MethodProfile` —— 方法（动作 + 判据）
 
 | 字段 | 类型 | 说明 |
 |---|---|---|
@@ -98,7 +125,7 @@
 
 ## 二、用户态（派生或本地）
 
-### 7. `Plan` —— 计划（意图）
+### 8. `Plan` —— 计划（意图）
 
 | 字段 | 类型 | 说明 |
 |---|---|---|
@@ -113,7 +140,7 @@
 | `progress` | object | **派生**：`{ learned / total, segments[] }`。分母 = 圈内项数（含未纳入路径的游离项） |
 | `sessions` | object[] | 一组连续的、以项边界（= ⑤ 检验完成）收尾的执行段 |
 
-### 8. `SrsState` —— 每项的记忆状态（派生，由事件折叠）
+### 9. `SrsState` —— 每项的记忆状态（派生，由事件折叠）
 
 | 字段 | 类型 | 说明 |
 |---|---|---|
@@ -128,7 +155,7 @@
 
 > `R(t)` 不入库。掌握度 `mastery` 不入库。二者皆派生。
 
-### 9. 三层学习状态（由事件 fold）
+### 10. 三层学习状态（由事件 fold）
 
 | 状态 | 判据 | 可逆性 |
 |---|---|---|
@@ -138,7 +165,7 @@
 
 > **「记得住」与「学得深」是两件事**：`S` 回答前者，六要件完整度 `d` 回答后者。掌握度 `mastery = d × s`，两者都进但 `score` 不进（`score` 是 `R` 的观测值，已通过 FSRS 更新 `D`/`S`，再计入即重复计分）。
 
-### 10. `Note` —— 笔记
+### 11. `Note` —— 笔记
 
 | 字段 | 类型 | 说明 |
 |---|---|---|
@@ -150,7 +177,7 @@
 
 > 空间级自由笔记：`itemId` 为空，不参与两套切换。笔记**不进量化**（`d` 只看六要件）。
 
-### 11. `Submission` —— 提交（治理）
+### 12. `Submission` —— 提交（治理）
 
 | 字段 | 类型 | 说明 |
 |---|---|---|
@@ -163,7 +190,7 @@
 > **四件套（归位 / 前提边 / 六要件 / L 层来源）是「审核通过」的必要条件，不是「提交」的门槛。**
 > 提交后**立即进本地 overlay，立刻可学**；过审才进公共 overlay。
 
-### 12. `ViewState` —— 界面状态（本地，不入事件流）
+### 13. `ViewState` —— 界面状态（本地，不入事件流）
 
 | 字段 | 类型 | 说明 |
 |---|---|---|

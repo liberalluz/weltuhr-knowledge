@@ -35,10 +35,10 @@ LAYERS = ("persistent", "view", "ephemeral")
 # 项类型：陈述 / 程序 / 技能 / 默会（entity-fields §2）
 ITEM_TYPES = ("declarative", "procedural", "skill", "tacit")
 
-# 边类型：实线 = 强依赖 / 虚线 = 弱依赖 / 指向未知（channel-table 第 6 通道）
+# 边类型：实线 = 强依赖 / 虚线 = 弱依赖 / 指向未知（entity-fields §3 · channel-table 第 6 通道）
 EDGE_TYPES = ("strong", "weak", "unknown")
 
-# 出处等级（entity-fields §4 §5）
+# 出处等级（entity-fields §5 §6）
 AUTHORITY_LEVELS = ("L0", "L1", "L2", "L4")
 
 # pack 内容五段（SPEC-PACK-005）
@@ -474,9 +474,8 @@ def _check_schemes(schemes: list, item_ids: set[str]) -> list[Issue]:
 
 
 def _check_questions(questions: list, item_ids: set[str]) -> list[Issue]:
-    """`questions` 的字段表在 `entity-fields.md` 里尚未定义（该表只管实体，
-    不含题）。此处按 `SPEC-PACK-005` 的语义取**最小四字段**：能离线复现即可。
-    属实现层补齐，待维护者确认后再谈扩字段。
+    """四字段见 `entity-fields.md` §4（`Question`）。加字段前先改那张表 ——
+    `questions` 已计入 `SPEC-PACK-006` 的两次扩大，再扩要过「暂停」判据。
     """
     out: list[Issue] = []
     seen: dict[str, int] = {}
@@ -512,7 +511,7 @@ def _check_questions(questions: list, item_ids: set[str]) -> list[Issue]:
 
 
 def _check_excerpts(excerpts: list) -> tuple[list[Issue], set[str]]:
-    """`excerpts` 段是 `SourceRef[]`（entity-fields §5）。摘录离线可读，带许可标记。"""
+    """`excerpts` 段是 `SourceRef[]`（entity-fields §6）。摘录离线可读，带许可标记。"""
     out: list[Issue] = []
     seen: dict[str, int] = {}
 
