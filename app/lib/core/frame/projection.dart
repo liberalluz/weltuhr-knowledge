@@ -41,6 +41,8 @@ class SceneNode {
     required this.ringFill01,
     required this.ringClosed,
     required this.pulse,
+    this.phiFraction01 = 0,
+    this.isPlaceholder = false,
   });
 
   final String id;
@@ -56,6 +58,23 @@ class SceneNode {
 
   /// `φ` = `kahnLevels()` 的结果。
   final int phiLevel;
+
+  /// `φ` 的**轴向归一位置**（0 = 最内层起点，1 = 最深层的末端）。
+  ///
+  /// 按「该层起始项的累计分位」算（`ADR-0003` §决策 4）：半径（这里是轴向
+  /// 高度）正比于项数，密度自然均匀。**不用等距展开** —— α 包 `φ` 铺到 63 层、
+  /// 0 层只 3 项，等距会把层间距压到 `~0.025`；也不能用固定阈值折叠 ——
+  /// `φ ≥ 10` 的层装了 126/150 项（84%）。
+  ///
+  /// ⚠️ 本笔（`B3` 笔 1）只算不消费：投影层仍按 `phiLevel × phiGap` 定位。
+  /// 改由本字段驱动属于笔 2 的相机改造，届时同步四处调用点。
+  final double phiFraction01;
+
+  /// 是否为「指向未知」的**占位节点**（`ADR-0003` §决策 5 的黑洞）。
+  ///
+  /// 这类节点没有对应的 `Item`：它的 id 是合成的，只承载「这里缺一个东西」
+  /// 这一条信息。绘制成虚线空心点（与树视图的黑洞同一套语言）。
+  final bool isPlaceholder;
 
   /// 大小通道：连接度归一。
   final double size01;
@@ -81,7 +100,11 @@ class SceneNode {
 
 /// 一条边的端点索引与线型。索引指 `nodes` 的下标（边不持有 id，省掉一次查表）。
 class EdgeSpan {
-  const EdgeSpan({required this.fromIndex, required this.toIndex, required this.dashed});
+  const EdgeSpan({
+    required this.fromIndex,
+    required this.toIndex,
+    required this.dashed,
+  });
 
   final int fromIndex;
   final int toIndex;
@@ -212,9 +235,11 @@ ProjectedFrame projectFrame({
       0,
       camera.radialSegments - 1,
     );
-    final double radius = (band + radialBandCenterOffset) / camera.radialSegments;
+    final double radius =
+        (band + radialBandCenterOffset) / camera.radialSegments;
 
-    final double theta = node.sector * sectorWidth + node.sectorFraction01 * sectorWidth;
+    final double theta =
+        node.sector * sectorWidth + node.sectorFraction01 * sectorWidth;
 
     final double worldX = radius * math.cos(theta);
     final double worldZ = radius * math.sin(theta);
@@ -249,7 +274,9 @@ ProjectedFrame projectFrame({
   }
 
   final List<int> order = <int>[for (int i = 0; i < projected.length; i++) i];
-  order.sort((int a, int b) => projected[b].depth.compareTo(projected[a].depth));
+  order.sort(
+    (int a, int b) => projected[b].depth.compareTo(projected[a].depth),
+  );
 
   return ProjectedFrame(
     nodes: projected,

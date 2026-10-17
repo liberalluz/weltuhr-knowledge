@@ -7,6 +7,7 @@
     "topic": "编程语言",
     "stack": "Python"
   },
+  "defaultPrimaryAxis": "ability",
   "accent": "#3776ab",
   "order": 10,
   "domainIds": [

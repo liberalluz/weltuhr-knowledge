@@ -1,32 +1,31 @@
-/// 图模型 → 场景节点。**这一层是占位，`B3` 会重写**。
+/// 图模型 → 场景节点。装配层，**只做取值，不做几何**（几何归 `projection.dart`）。
 ///
-/// 为什么仍然放在 `lib/core/` 而不是 bench：bench 与测试都要用它，两处各写一份
-/// 就会分叉；而这个映射又是「帧预算的输入口径」，写成一处才说得清本笔测的是
-/// 什么分布。
+/// 三个坐标的取值口径由 [`ADR-0003`] 定，本文件是它的唯一实现处：
 ///
-/// ## 三处占位（都是本笔撞上的缺口，不是随手取的）
+/// | 坐标 | 取值 | 依据 |
+/// |---|---|---|
+/// | `r` | **域带**：`(域序号 + 0.5) / 域数` | `ADR-0003` §决策 1 —— 7 段在 α 包上无对应断点 |
+/// | `θ` | **主轴扇区**：`Item.primaryAxis` 缺省继承 `KnowledgeSpace.defaultPrimaryAxis` | §决策 3 修订 —— 150 项全是双轴，推不出主 |
+/// | `φ` | `kahnLevels()` 层号 + **该层起始的累计分位** | §决策 4 —— 84% 的项在 `φ ≥ 10`，等距与折叠都不成立 |
 ///
-/// 1. **`r` 的「复合轴」怎么构造，规格没定。** `VIEW-002` 只说 `r` 是复合轴、
-///    7 段径向分层，没说由哪些字段复合。这里用「域序号 + 域内位置」铺开，
-///    只为让 150 个点的半径分布有层次；`B3` 定了真构造就替换本函数。
-/// 2. **「主取值」在 schema 里没有承载位。** `channel-table.md` 通道 5 写
-///    「按 `Item.sixAxis` 主取值着色（声明式指定，不按优先级猜）」，但 `Item`
-///    只有六个轴各自的取值，**没有「哪个轴是主」的声明字段**。于是颜色通道
-///    与 `θ` 扇区在真实数据上无从取值 —— 这里退回「域序号」占位。
-/// 3. **虚实的「高比例」没有阈值。** 通道 4 只说「高比例不可外化」，
-///    `constants.md` 里也没有对应 `C-` 项。这里取「多于一格」占位。
+/// 通道侧：虚实按 `C-34`（不可外化格 ≥ 3），端口不在册的边生成**占位节点**
+/// （§决策 5 的黑洞，不新增线型）。
 ///
-/// 三处都只影响**分布**，不影响**每项的计算步数**，所以帧预算的结论不受它们
-/// 影响 —— 但正式实现前必须逐条定下来，否则渲染出来的是占位语义。
+/// [ADR-0003]: ../../../../docs/adr/0003-view-radial-axis-and-channel-thresholds.md
 library;
 
+import '../constants.dart';
 import '../entities/content.dart';
 import '../enums.dart';
 import '../graph/levels.dart';
 import '../pack/pack_parse.dart';
 import 'projection.dart';
 
-/// 从包构场景节点。顺序与 `pack.items` 一致 —— 边按下标引用，顺序必须稳定。
+/// 占位节点 id 的前缀。带边序号，同一空间内唯一 —— 它不在任何 `Item` 册里。
+const String placeholderIdPrefix = '__missing__:';
+
+/// 从包构场景节点。顺序与 `pack.items` 一致 —— 边按下标引用，顺序必须稳定；
+/// 占位节点统一追加在末尾，不插进 `items` 的区段。
 ///
 /// [sectorCount] 由调用方给（六轴 ⇒ 6），本层不内置默认值。
 List<SceneNode> buildSceneNodes(LoadedPack pack, {required int sectorCount}) {
@@ -35,16 +34,16 @@ List<SceneNode> buildSceneNodes(LoadedPack pack, {required int sectorCount}) {
     edges: pack.edges,
   );
   final Map<String, int> degrees = _degrees(pack);
+  final Map<int, double> phiFractions = _phiFractions(
+    pack.items.map((Item item) => levels[item.id] ?? 0),
+  );
 
   final List<String> domains = pack.space.domainIds;
   final Map<String, int> domainIndex = <String, int>{
     for (int i = 0; i < domains.length; i++) domains[i]: i,
   };
-  final Map<String, int> domainSize = <String, int>{};
-  for (final Item item in pack.items) {
-    domainSize[item.domainId] = (domainSize[item.domainId] ?? 0) + 1;
-  }
-  final Map<String, int> seenInDomain = <String, int>{};
+  final int domainCount = domains.isEmpty ? 1 : domains.length;
+
   int maxDegree = 1;
   for (final int value in degrees.values) {
     if (value > maxDegree) {
@@ -52,33 +51,32 @@ List<SceneNode> buildSceneNodes(LoadedPack pack, {required int sectorCount}) {
     }
   }
 
+  final String? defaultAxis = pack.space.defaultPrimaryAxis;
   final List<SceneNode> nodes = <SceneNode>[];
   for (final Item item in pack.items) {
-    final int index = domainIndex[item.domainId] ?? 0;
-    final int slot = seenInDomain[item.domainId] ?? 0;
-    seenInDomain[item.domainId] = slot + 1;
-
-    final int size = domainSize[item.domainId] ?? 1;
-    final double within = size <= 1 ? 0 : slot / (size - 1);
-    final int domainCount = domains.isEmpty ? 1 : domains.length;
-
+    final int level = levels[item.id] ?? 0;
     final int externalizable = item.requirements.externalizableCount;
-    final double brightness = externalizable == 0
-        ? 0
-        : item.requirements.completeCount / externalizable;
+    final int sector = _sectorOf(item.primaryAxis ?? defaultAxis, sectorCount);
 
     nodes.add(
       SceneNode(
         id: item.id,
-        radial01: (index + within) / domainCount,
-        sector: index % sectorCount,
-        sectorFraction01: within,
-        phiLevel: levels[item.id] ?? 0,
+        radial01:
+            ((domainIndex[item.domainId] ?? 0) + radialBandCenterOffset) /
+            domainCount,
+        sector: sector,
+        // 轴内递归区间分割（`VIEW-002`「含轴内递归区间分割」）需要**轴值序**，
+        // 而包里只有轴取值、没有各轴的取值序列 ⇒ 本笔落 0，笔 2 前补字段再细化。
+        sectorFraction01: 0,
+        phiLevel: level,
+        phiFraction01: phiFractions[level] ?? 0,
         size01: (degrees[item.id] ?? 0) / maxDegree,
-        brightness01: brightness,
-        // 「高比例不可外化」的阈值未裁定（见文件头第 3 条），这里取「多于一格」。
-        dashed: _tacitCells(item) > 1,
-        colorIndex: index,
+        brightness01: externalizable == 0
+            ? 0
+            : item.requirements.completeCount / externalizable,
+        dashed: _tacitCells(item) >= tacitMinGrids,
+        // 颜色通道与 `θ` 同源：主轴在六轴里的序号。
+        colorIndex: sector,
         // 没有事件流输入，轨道环与脉动恒空 —— 填假数据会让帧预算吃到
         // 一份真实运行时不存在的形状。
         ringFill01: 0,
@@ -88,26 +86,98 @@ List<SceneNode> buildSceneNodes(LoadedPack pack, {required int sectorCount}) {
     );
   }
 
+  // 端口不在册的边：在源点外侧生成占位节点（`ADR-0003` §决策 5）。
+  final Set<String> known = <String>{
+    for (final Item item in pack.items) item.id,
+  };
+  for (int i = 0; i < pack.edges.length; i++) {
+    final Edge edge = pack.edges[i];
+    final bool fromKnown = known.contains(edge.from);
+    final bool toKnown = known.contains(edge.to);
+    if (fromKnown == toKnown) {
+      continue;
+    }
+    final String sourceId = fromKnown ? edge.from : edge.to;
+    final SceneNode source = nodes.firstWhere(
+      (SceneNode node) => node.id == sourceId,
+    );
+    nodes.add(
+      SceneNode(
+        id: '$placeholderIdPrefix$i',
+        radial01: (source.radial01 + placeholderRadialOffset)
+            .clamp(0.0, 1.0)
+            .toDouble(),
+        sector: source.sector,
+        sectorFraction01: source.sectorFraction01,
+        phiLevel: source.phiLevel,
+        phiFraction01: source.phiFraction01,
+        size01: 0,
+        brightness01: 0,
+        dashed: true,
+        colorIndex: source.colorIndex,
+        ringFill01: 0,
+        ringClosed: false,
+        pulse: 0,
+        isPlaceholder: true,
+      ),
+    );
+  }
+
   return nodes;
 }
 
-/// 边区间。端点不在 `nodes` 里就跳过（`kahnLevels` 同一口径）。
+/// 边区间。端点不在 `nodes` 里就跳过（`kahnLevels` 同一口径）——
+/// 「指向未知」的那一侧由占位节点接住，因此**有效边数不再减少**。
 List<EdgeSpan> buildEdgeSpans(LoadedPack pack, List<SceneNode> nodes) {
   final Map<String, int> indexOf = <String, int>{
     for (int i = 0; i < nodes.length; i++) nodes[i].id: i,
   };
   final List<EdgeSpan> spans = <EdgeSpan>[];
-  for (final Edge edge in pack.edges) {
+  for (int i = 0; i < pack.edges.length; i++) {
+    final Edge edge = pack.edges[i];
     final int? from = indexOf[edge.from];
-    final int? to = indexOf[edge.to];
+    final int? to = indexOf[edge.to] ?? indexOf['$placeholderIdPrefix$i'];
     if (from == null || to == null) {
       continue;
     }
     spans.add(
-      EdgeSpan(fromIndex: from, toIndex: to, dashed: edge.type != EdgeType.strong),
+      EdgeSpan(
+        fromIndex: from,
+        toIndex: to,
+        dashed: edge.type != EdgeType.strong,
+      ),
     );
   }
   return spans;
+}
+
+/// 主轴 → 扇区序号。未声明时给 `sectorCount`（越界值）：调用方据此画
+/// 「未声明」而不是随便塞进某个轴（`ADR-0003` §决策 3 —— 不按优先级猜）。
+int _sectorOf(String? axisKey, int sectorCount) {
+  if (axisKey == null) {
+    return sectorCount;
+  }
+  final int index = sixAxisKeys.indexOf(axisKey);
+  return index < 0 ? sectorCount : index;
+}
+
+/// 层号 → 该层**起始的累计分位**（0 = 最前，1 = 末尾）。
+///
+/// 半径（轴向高度）正比于该层项数 ⇒ 长尾不会把前几层压成一条线。
+Map<int, double> _phiFractions(Iterable<int> levels) {
+  final List<int> all = levels.toList();
+  final Map<int, int> counts = <int, int>{};
+  for (final int level in all) {
+    counts[level] = (counts[level] ?? 0) + 1;
+  }
+  final List<int> sorted = counts.keys.toList()..sort();
+  final Map<int, double> fractions = <int, double>{};
+  int seen = 0;
+  for (final int level in sorted) {
+    fractions[level] = all.isEmpty ? 0 : seen / all.length;
+    seen += counts[level] ?? 0;
+  }
+  return fractions;
 }
 
 /// 入度 + 出度。大小通道用它归一（`channel-table.md` 通道 2）。
@@ -121,5 +191,7 @@ Map<String, int> _degrees(LoadedPack pack) {
 }
 
 int _tacitCells(Item item) => item.requirements.states.values
-    .where((RequirementState state) => state == RequirementState.notExternalizable)
+    .where(
+      (RequirementState state) => state == RequirementState.notExternalizable,
+    )
     .length;

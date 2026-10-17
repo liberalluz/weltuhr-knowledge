@@ -143,7 +143,7 @@ void main() {
     }
   });
 
-  test('真实 α 包：150 节点全投影，坐标全部有限（SPEC-VIEW-002）', () {
+  test('真实 α 包：150 项 + 3 个占位节点全投影，坐标全部有限（SPEC-VIEW-002）', () {
     final LoadedPack pack = loadAlphaPack();
     final List<SceneNode> nodes = buildSceneNodes(pack, sectorCount: 6);
     final ProjectedFrame frame = projectFrame(
@@ -152,8 +152,8 @@ void main() {
       camera: _camera(yaw: 0.35, pitch: 0.42, phiGap: 0.025),
     );
 
-    expect(frame.nodes.length, 150);
-    expect(frame.drawOrder.length, 150);
+    expect(frame.nodes.length, 153);
+    expect(frame.drawOrder.length, 153);
     for (final ProjectedNode node in frame.nodes) {
       expect(node.x.isFinite, isTrue);
       expect(node.y.isFinite, isTrue);
@@ -162,16 +162,17 @@ void main() {
     }
   });
 
-  test('真实 α 包：170 条边里有 3 条「指向未知」，投影时被跳过（SPEC-VIEW-002）', () {
-    // `type: unknown` 的边意即「前置指向一个还没写出来的项」，目标 id 刻意不在册
-    // （`channel-table.md` 通道 6：虚线 = 弱依赖 / 指向未知）。没有端点就画不出线，
-    // 只能跳过 —— **但这也是个真问题：指向未知在视觉上没有任何表达**，B3 得定。
+  test('真实 α 包：3 条「指向未知」由占位节点接住，170 条边全保留（ADR-0003）', () {
+    // `type: unknown` 的边意即「前置指向一个还没写出来的项」，目标 id 刻意不在册。
+    // `B2` 时这类边因缺端点被跳过（167 条）；`ADR-0003` §决策 5 裁定沿用
+    // `SPEC-VIEW-007` 的黑洞 —— 缺失端画占位节点，边指向它，于是**不再丢边**。
     final LoadedPack pack = loadAlphaPack();
     final List<SceneNode> nodes = buildSceneNodes(pack, sectorCount: 6);
     final List<EdgeSpan> spans = buildEdgeSpans(pack, nodes);
 
     expect(pack.edges.length, 170);
-    expect(spans.length, 167);
+    expect(nodes.where((SceneNode n) => n.isPlaceholder).length, 3);
+    expect(spans.length, 170);
     for (final EdgeSpan span in spans) {
       expect(span.fromIndex, inInclusiveRange(0, nodes.length - 1));
       expect(span.toIndex, inInclusiveRange(0, nodes.length - 1));
