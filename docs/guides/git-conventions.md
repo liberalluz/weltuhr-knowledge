@@ -1,6 +1,7 @@
 # Git 规范
 
-> 活文档，不设版号。分支 / 提交 / PR / 合并的唯一权威处。
+> 活文档，不设版号。分支 / 提交 / PR / 合并的**格式权威处**。
+> **本文件管不到的**：协作治理（谁能改哪一级裁定 · 评审数量 · 角色 · 许可与 DCO · 行为期望）见 [`.github/CONTRIBUTING.md`](../../.github/CONTRIBUTING.md)，此处不重复。
 
 ## 一、分支
 
@@ -62,7 +63,7 @@
 | 待补开关 | 目标取值 |
 |---|---|
 | Require a pull request before merging | ✅ 开（禁直推） |
-| Required approvals | **0**（单人项目须能自审；GitHub 不允许自批自己的 PR） |
+| Required approvals | **按维护者人数取值**：单人维护期 **0**（须能自审；GitHub 不允许自批自己的 PR）· **≥2 位维护者起 1**（且须非作者）。口径同 [`.github/CONTRIBUTING.md`](../../.github/CONTRIBUTING.md) §四 |
 | Allow force pushes | ❌ 关 |
 | Allow deletions | ❌ 关 |
 | Dismiss stale approvals | 建议开 |
@@ -77,6 +78,8 @@
 | **B** | 改常量数值、事件类型、字段可空性 | PR + 变更说明 + 回填横切表 |
 | **C** | 措辞、注释、例子 | 直接改 |
 | **D** | 与 NOT 清单冲突 | **不做**，除非推翻 NOT 条目并留痕 |
+
+> **谁能批准**：A / B / C / D 各级分别由谁拍板、谁能推翻 NOT 条目，见 [`.github/CONTRIBUTING.md`](../../.github/CONTRIBUTING.md) §一。本节只定「改之前要做什么」，不重复授权关系。
 
 ## 五、提交前的自检
 
