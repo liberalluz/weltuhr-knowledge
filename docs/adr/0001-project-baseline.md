@@ -52,6 +52,10 @@
 
 **理由**：品牌名可换，仓库标识一换就牵动仓名、包名、CI 配置与全部既有 commit 引用。**品牌名 ≠ 仓标识**，两者解耦。
 
+**应用标识（bundle id）是反向的例外**：`com.weltuhr.projectKnowledge` —— **前缀跟品牌、后缀跟包名**。理由：bundle id 是**对外产品身份**（牵动证书与 App Store 记录，首版发布后不可改），而仓名是内部标识，两者的寿命与受众都不同。iOS / macOS 均取此值（`RunnerTests` 在同一值后追加 `.RunnerTests`）；Windows 无 bundle id，由 `Runner.rc` 的 `CompanyName` 承接同一命名空间。
+
+**版权主体取自然人**：Windows `LegalCopyright` 与 macOS `PRODUCT_COPYRIGHT` 写 `liberal`，与 `LICENSE` 一致。**不用反向域名**——反向域名是标识符，不是法律主体。
+
 ## 影响
 
 - `LICENSE` = Apache-2.0 全文 + `NOTICE` 随首提入库。
