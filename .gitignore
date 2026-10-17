@@ -10,6 +10,8 @@ build/
 
 # 内容包产物（由 content/tools/build.py 生成，须本地构建）
 content/*/dist/
+# fixtures 也是源目录，同样可能被直接构建；上面那条只覆盖一层，故单列
+content/tools/fixtures/*/dist/
 
 # 服务端密钥（生产经环境变量注入，不入库）
 config/passwords.yaml
