@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:project_knowledge/core/constants.dart';
 import 'package:project_knowledge/core/entities/content.dart';
 import 'package:project_knowledge/core/enums.dart';
 import 'package:project_knowledge/core/pack/pack_parse.dart';
+import 'package:project_knowledge/core/view/filter.dart';
 import 'package:project_knowledge/core/view/tree.dart';
 import 'package:project_knowledge/core/view/zoom.dart';
+import 'package:project_knowledge/core/locate/locator.dart';
 import 'package:project_knowledge/features/detail/detail_panel.dart';
+import 'package:project_knowledge/features/locate/locate_overlay.dart';
+import 'package:project_knowledge/features/universe/filter_chips.dart';
 import 'package:project_knowledge/features/universe/scene_source.dart';
 import 'package:project_knowledge/features/universe/tree_view.dart';
 import 'package:project_knowledge/features/universe/universe_screen.dart';
@@ -210,6 +215,149 @@ void main() {
 
       expect(find.byKey(treeEmptyKey), findsOneWidget);
       expect(find.byKey(hudDetailDrawerKey), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+  });
+
+  group('快速定位与筛选（SPEC-VIEW-024 / 026 / 027 / 028）', () {
+    Future<void> openLocate(WidgetTester tester) async {
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
+      await tester.sendKeyEvent(LogicalKeyboardKey.keyK);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
+      await _pump(tester);
+    }
+
+    Future<void> type(WidgetTester tester, String text) async {
+      await tester.enterText(find.byKey(locateFieldKey), text);
+      await tester.pump();
+    }
+
+    testWidgets('Ctrl+K 打开定位浮层，Esc 关掉（SPEC-VIEW-026）', (
+      WidgetTester tester,
+    ) async {
+      await _pumpScreen(tester, pack: loadAlphaPack());
+      expect(find.byKey(locateOverlayKey), findsNothing, reason: '不常驻');
+
+      await openLocate(tester);
+      expect(find.byKey(locateOverlayKey), findsOneWidget);
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+      await _pump(tester);
+      expect(find.byKey(locateOverlayKey), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('轴值命中只写筛选：② 出现、视距不动（SPEC-VIEW-028）', (
+      WidgetTester tester,
+    ) async {
+      final LoadedPack pack = loadAlphaPack();
+      await _pumpScreen(tester, pack: pack);
+      await openLocate(tester);
+      await type(tester, '计算机科学');
+
+      final LocateHit hit = Locator(pack).locate('计算机科学').hits.first;
+      expect(hit.kind, LocateKind.axis, reason: '前提：α 包里这是轴值');
+
+      await tester.tap(find.byKey(locateRowKey(hit)));
+      await _pump(tester);
+
+      expect(find.byKey(hudFilterChipsKey), findsOneWidget);
+      expect(find.byKey(locateOverlayKey), findsNothing, reason: '选完即关');
+      expect(
+        find.text('宇宙 › Z1 星系'),
+        findsOneWidget,
+        reason: '筛选是收窄视野，不换根（VIEW-028）',
+      );
+      expect(
+        find.byKey(
+          filterChipKey(AxisFilterChip(axisKey: 'subject', value: '计算机科学')),
+        ),
+        findsOneWidget,
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('删掉唯一的 chip ⇒ ② 整块消失（SPEC-VIEW-019）', (
+      WidgetTester tester,
+    ) async {
+      final LoadedPack pack = loadAlphaPack();
+      await _pumpScreen(tester, pack: pack);
+      await openLocate(tester);
+      await type(tester, '计算机科学');
+      final LocateHit hit = Locator(pack).locate('计算机科学').hits.first;
+      await tester.tap(find.byKey(locateRowKey(hit)));
+      await _pump(tester);
+      expect(find.byKey(hudFilterChipsKey), findsOneWidget);
+
+      await tester.tap(find.text('×'));
+      await _pump(tester);
+      expect(
+        find.byKey(hudFilterChipsKey),
+        findsNothing,
+        reason: '筛空了就没有 ② —— 「激活才出现」是双向的',
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('落点命中 ⇒ 跳到该项，详情页头是它的标题（SPEC-VIEW-027）', (
+      WidgetTester tester,
+    ) async {
+      final LoadedPack pack = loadAlphaPack();
+      await _pumpScreen(tester, pack: pack);
+      await openLocate(tester);
+      await type(tester, '装饰器');
+
+      // 唯一精确命中 ⇒ 回车即跳（`VIEW-027`：不必先在列表里再点一次）。
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await _pump(tester);
+
+      final LocateHit hit = Locator(pack).locate('装饰器').hits.first;
+      expect(find.byKey(locateOverlayKey), findsNothing);
+      expect(
+        find.text('宇宙 › Z4 单星'),
+        findsOneWidget,
+        reason: '搜索的落点是这一项本身，不是它所在的星云（VIEW-027）',
+      );
+      expect(
+        find.descendant(
+          of: find.byKey(detailPanelKey),
+          matching: find.text(hit.label),
+        ),
+        findsWidgets,
+        reason: '落点之后详情必须指向这一项',
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('筛选后树里只剩匹配的项（SPEC-VIEW-021）', (WidgetTester tester) async {
+      final LoadedPack pack = loadAlphaPack();
+      await _pumpScreen(tester, pack: pack, mode: ViewMode.tree);
+      await openLocate(tester);
+      await type(tester, '计算机科学');
+      final LocateHit hit = Locator(pack).locate('计算机科学').hits.first;
+      await tester.tap(find.byKey(locateRowKey(hit)));
+      await _pump(tester);
+
+      // `计算机科学` 是全空间共有的取值 ⇒ 一项都没筛掉，标题里的项数不变。
+      expect(find.textContaining('树 · ${pack.items.length} 项'), findsOneWidget);
+
+      // 换一个真会筛掉东西的取值：某个 ability。
+      final String ability = pack.items
+          .firstWhere((Item item) => item.sixAxis['ability'] != null)
+          .sixAxis['ability']!;
+      final int kept = pack.items
+          .where((Item item) => item.sixAxis['ability'] == ability)
+          .length;
+      await openLocate(tester);
+      await type(tester, ability);
+      final LocateHit abilityHit = Locator(pack)
+          .locate(ability)
+          .hits
+          .firstWhere((LocateHit h) => h.kind == LocateKind.axis);
+      await tester.tap(find.byKey(locateRowKey(abilityHit)));
+      await _pump(tester);
+
+      expect(find.textContaining('树 · $kept 项'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
   });
