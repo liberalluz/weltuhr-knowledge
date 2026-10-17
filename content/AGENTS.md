@@ -15,8 +15,14 @@
 
 | 用途 | 命令 |
 |---|---|
-| 构建全部空间 | `python tools/build.py` |
-| 构建单个空间 | `python tools/build.py <空间>` |
+| 构建全部空间 | `python content/tools/build.py` |
+| 构建单个空间 | `python content/tools/build.py <空间>` |
+| 确定性检查（不落盘） | `python content/tools/build.py --root <目录> --check` |
+| 只校验源数据 | `python content/tools/verify.py --root <目录>` |
+| 校验已构建的产出 | `python content/tools/verify.py --pack <pack.json>` |
+| fixtures 回归 | `python content/tools/verify.py --suite` |
+
+命令在**仓根**执行。取值域与 issue code 见 [`tools/README.md`](tools/README.md)。
 
 ## 红线
 

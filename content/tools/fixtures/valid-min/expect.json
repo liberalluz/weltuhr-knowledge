@@ -1,0 +1,6 @@
+{
+  "exit": 0,
+  "scheme": "scheme-official-tutorial",
+  "inversions": 0,
+  "note": "自身完整，不继承 base。这一份同时是「怎么写一个空间」的示例：五段齐全、六要件三态齐全、含一条 type=unknown 的「指向未知」边"
+}

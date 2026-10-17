@@ -1,0 +1,43 @@
+name: content-checks
+
+# 内容管线的门禁。fixtures 是整个 job 的主体：负例红，说明某条判据被改宽了。
+# 真实空间落地后，最后一步会自动接管构建（dist/ 不入库，产物只在 CI 里验）。
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  content-checks:
+    name: content-checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      # 无第三方依赖，不装任何包
+      - name: fixtures 回归
+        run: python content/tools/verify.py --suite
+
+      - name: 确定性检查
+        run: python content/tools/build.py --root content/tools/fixtures/valid-min --check
+
+      - name: 构建全部空间
+        run: |
+          if ls content/*/manifest.json >/dev/null 2>&1; then
+            python content/tools/build.py
+          else
+            echo "尚无真实空间（content/*/manifest.json），跳过"
+          fi
+
+      - name: 产物不入库
+        run: |
+          if [ -d content ] && git status --porcelain --ignored=no | grep -q '^??'; then
+            echo "构建后出现未跟踪文件，检查 dist/ 是否被 .gitignore 覆盖"
+            git status --short
+            exit 1
+          fi

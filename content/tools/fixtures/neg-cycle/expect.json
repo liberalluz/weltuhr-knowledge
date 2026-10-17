@@ -1,0 +1,6 @@
+{
+  "base": "valid-min",
+  "exit": 1,
+  "codes": ["E-CYCLE"],
+  "note": "decorator → variable 闭合出一条环：variable → control-flow → function → closure → decorator → variable"
+}

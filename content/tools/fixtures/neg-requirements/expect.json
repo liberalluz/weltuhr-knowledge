@@ -1,0 +1,6 @@
+{
+  "base": "valid-min",
+  "exit": 1,
+  "codes": ["E-REQ-KEY", "E-REQ-STATE"],
+  "note": "function 缺 tacit 一格（E-REQ-KEY）；class 的 relation 置 null（E-REQ-STATE）。null 不等于「不可外化」，两者语义不同（SPEC-PACK-009）"
+}

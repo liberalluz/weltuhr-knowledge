@@ -4,29 +4,36 @@
 
 ## 本模块命令
 
+在**仓库根**执行（脚本按自身位置定位 `content/`，与 cwd 无关；`--root` 是相对 cwd 的路径除外）：
+
 ```bash
-python tools/build.py            # 构建全部空间：content/<空间>/dist/pack.json
-python tools/build.py <空间>      # 只构建单个空间
+python content/tools/build.py                   # 构建全部空间：content/<空间>/dist/pack.json
+python content/tools/build.py <空间>             # 只构建单个空间
+python content/tools/build.py <空间> --check     # 确定性检查：两遍构建 + 换环境复跑，比 sha256
+python content/tools/verify.py --root <目录>     # 只校验源数据，不落盘
+python content/tools/verify.py --suite          # 跑 fixtures 回归
 ```
+
+管线细节、取值域与 issue code 见 [tools/README.md](tools/README.md)。
 
 ## 目录形态
 
 ```
 content/
-├── tools/build.py        构建脚本（源数据 → dist/pack.json）
+├── tools/                构建与校验（纯标准库，无第三方依赖）
 └── <空间>/                一个知识空间一个目录（如 python/、english/）
     ├── manifest.json      空间声明：id / 名称 / version / 六轴取值 / accent / order
     ├── items.json         知识项：稳定 id、标题、六要件三态、六轴取值、layer
     ├── edges.json         前提边（有限类型）
     ├── schemes.json       体系（⪯ 的线性扩展）
     ├── questions.json     声明式题库
-    ├── excerpts/          源摘录（离线可读，带出处与许可标记）
+    ├── excerpts.json      源摘录（SourceRef[]，离线可读，带出处与许可标记）
     └── dist/pack.json     构建产物（不入库）
 ```
 
 > `manifest.json` 的 `version` 是包版本的**唯一事实源**（semver）。`build.py` **原样透传**到 `dist/pack.json` 的 `meta.version`，不得改写 —— 否则同一 commit 两次构建产出不同版本，而 `dist/` 不入库、tag 是唯一指针，无从比对。tag `pack/<space>/vX.Y.Z` 须与它**逐字一致**。口径见 [git-conventions §五](../docs/guides/git-conventions.md)。
 
-> ⚠️ **管线尚未建立**：`content/tools/build.py` 与 `content/<space>/` 目前都不存在，上面两条命令在首包落地后才可用。
+> ⚠️ **还没有真实空间**：`content/<空间>/` 尚不存在，目前只有 `tools/fixtures/` 下的示例源数据。用 `python content/tools/build.py --root content/tools/fixtures/valid-min` 可验证管线本身。
 
 ## 相关文档
 

@@ -1,0 +1,6 @@
+{
+  "base": "valid-min",
+  "exit": 1,
+  "codes": ["E-REQ-VALUE"],
+  "note": "三态只有 present / missing / not_externalizable。`partial` 是「像是对的」的取值，比 null 更容易蒙混过关，所以单独立一个 fixture"
+}

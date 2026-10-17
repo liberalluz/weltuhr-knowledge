@@ -1,0 +1,6 @@
+{
+  "base": "valid-min",
+  "exit": 1,
+  "codes": ["E-VERSION-FORMAT"],
+  "note": "version 带前导空格。校验器不得静默 strip —— 静默修正会让 tag 名与产出对不上，而 tag 是产物唯一指针"
+}
