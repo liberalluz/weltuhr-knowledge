@@ -60,6 +60,6 @@ Copyright (c) 2026 liberal。本プロジェクトは [Apache-2.0](../../LICENSE
 
 ## コントリビュートとサポート
 
-- **セキュリティ脆弱性**：公開 issue は使わず、[.github/SECURITY.md](../../.github/SECURITY.md) に記載の非公開の窓口から報告してください（7 営業日以内に一次回答することをお約束します）
+- **セキュリティ脆弱性**：公開 issue は使わず、[.github/SECURITY.ja.md](../../.github/SECURITY.ja.md) に記載の非公開の窓口から報告してください（7 営業日以内に一次回答することをお約束します）
 - 質問・提案：リポジトリの Issues へ。内容の誤りは空間識別子と `itemId` を明記してください
-- コントリビュートの流れ：[.github/CONTRIBUTING.md](../../.github/CONTRIBUTING.md)
+- コントリビュートの流れ：[.github/CONTRIBUTING.ja.md](../../.github/CONTRIBUTING.ja.md)
