@@ -1,0 +1,8 @@
+{
+  "base": "valid-min",
+  "exit": 1,
+  "codes": [
+    "E-SCHEME-NODE-REF"
+  ],
+  "note": "顺序里引用一个不存在的项。这条若放过，工作台会渲染出一个点不开的节点"
+}

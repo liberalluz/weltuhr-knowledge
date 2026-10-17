@@ -1,0 +1,8 @@
+{
+  "base": "valid-min",
+  "exit": 1,
+  "codes": [
+    "E-EDGE-DUP"
+  ],
+  "note": "同一对 from/to 出现两次（id 不同）。重复边会让逆序数与前置计数翻倍，而 id 唯一性检查抓不到它"
+}

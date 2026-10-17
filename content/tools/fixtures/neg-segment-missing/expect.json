@@ -1,0 +1,11 @@
+{
+  "base": "valid-min",
+  "exit": 1,
+  "codes": [
+    "E-SEGMENT-MISSING"
+  ],
+  "note": "questions.json 整个不在。五段是常量，缺一段就不是完整包；`assemble()` 会静默补空数组，所以必须在读源时拦住",
+  "drop": [
+    "questions.json"
+  ]
+}

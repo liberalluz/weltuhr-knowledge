@@ -1,0 +1,8 @@
+{
+  "base": "valid-min",
+  "exit": 1,
+  "codes": [
+    "E-EDGE-FIELD"
+  ],
+  "note": "一条边同时缺 to、缺 type、id 含大写 —— 三条都归 E-EDGE-FIELD，因为都是「边对象不完整或名字不合规」"
+}

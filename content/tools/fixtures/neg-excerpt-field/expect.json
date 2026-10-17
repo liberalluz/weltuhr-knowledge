@@ -1,0 +1,8 @@
+{
+  "base": "valid-min",
+  "exit": 1,
+  "codes": [
+    "E-EXCERPT-FIELD"
+  ],
+  "note": "缺源自身版本与缺段落许可。摘录要离线可读且能追到出处，这两项缺一项都不成立"
+}

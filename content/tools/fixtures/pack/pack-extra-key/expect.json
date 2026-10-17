@@ -1,0 +1,7 @@
+{
+  "exit": 1,
+  "codes": [
+    "E-PACK-EXTRA-KEY"
+  ],
+  "note": "多出 notes 段。SPEC-PACK-007 明确不得新增段 —— 笔记模板走平台层声明式定义，不进内容包"
+}

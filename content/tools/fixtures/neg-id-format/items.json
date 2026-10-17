@@ -1,0 +1,222 @@
+[
+  {
+    "id": "python/variable",
+    "title": "变量与赋值",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "基础语法"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "present"
+    },
+    "sourceRefs": [
+      "python-docs"
+    ],
+    "domainId": "python/basics",
+    "inScope": true
+  },
+  {
+    "id": "python/type",
+    "title": "数据类型与类型对象",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "基础语法"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "present"
+    },
+    "sourceRefs": [
+      "python-docs"
+    ],
+    "domainId": "python/basics",
+    "inScope": true
+  },
+  {
+    "id": "python/control-flow",
+    "title": "条件分支与循环",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "控制流"
+    },
+    "layer": "persistent",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "present"
+    },
+    "sourceRefs": [
+      "python-docs"
+    ],
+    "domainId": "python/basics",
+    "inScope": true
+  },
+  {
+    "id": "python/function",
+    "title": "函数定义与调用",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "抽象"
+    },
+    "layer": "persistent",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "missing"
+    },
+    "sourceRefs": [
+      "python-docs",
+      "fluent-python"
+    ],
+    "domainId": "python/functions",
+    "inScope": true
+  },
+  {
+    "id": "python/closure",
+    "title": "闭包与作用域链",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "抽象"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "fluent-python"
+    ],
+    "domainId": "python/functions",
+    "inScope": true
+  },
+  {
+    "id": "python/decorator",
+    "title": "装饰器",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "抽象"
+    },
+    "layer": "persistent",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "missing",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "fluent-python"
+    ],
+    "domainId": "python/functions",
+    "inScope": true
+  },
+  {
+    "id": "python/class",
+    "title": "类与实例",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "抽象"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "missing"
+    },
+    "sourceRefs": [
+      "python-docs",
+      "fluent-python"
+    ],
+    "domainId": "python/oop",
+    "inScope": true
+  },
+  {
+    "id": "python/context-manager",
+    "title": "上下文管理器与 with",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "工程实践"
+    },
+    "layer": "persistent",
+    "type": "skill",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-docs"
+    ],
+    "domainId": "python/oop",
+    "inScope": true
+  },
+  {
+    "id": "variable",
+    "title": "缺空间前缀",
+    "sixAxis": {
+      "subject": "计算机科学"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "present"
+    }
+  },
+  {
+    "id": "python/Variable",
+    "title": "slug 大写",
+    "sixAxis": {
+      "subject": "计算机科学"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "present"
+    }
+  }
+]

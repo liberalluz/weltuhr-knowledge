@@ -1,0 +1,8 @@
+{
+  "base": "valid-min",
+  "exit": 1,
+  "codes": [
+    "E-QUESTION-FIELD"
+  ],
+  "note": "缺 prompt。题目只有答案没有题面，测的时候无法复现所问"
+}
