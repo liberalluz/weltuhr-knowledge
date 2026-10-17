@@ -173,6 +173,20 @@ const List<String> sixAxisKeys = <String>[
   'stack',
 ];
 
+/// 六轴的中文名（`entity-fields` §2 的同一张表），**与 [sixAxisKeys] 同序同长**。
+///
+/// 只给界面看（② 的 chip 写「学科」而不是 `subject`）。进常量表而不进视图层：
+/// 轴键是代码的标识、中文名是同一件事的另一种写法，两处各存一份的话，改一条
+/// 轴的名字要记得翻两个文件，而漏掉的那一处不会报错 —— 只会在界面上显示英文键名。
+const Map<String, String> sixAxisLabels = <String, String>{
+  'subject': '学科',
+  'role': '岗位',
+  'industry': '行业',
+  'ability': '能力',
+  'topic': '主题',
+  'stack': '技术栈',
+};
+
 /// `C-34` 虚实通道判据：六要件里「不可外化」格 **≥ 3** 即判「虚」（默会类）。
 ///
 /// 阈值由 α 包分布决定，不是调手感（`ADR-0003` §决策 2）：不可外化只有

@@ -79,6 +79,7 @@ FrameDrawReport paintFrame({
   required Offset origin,
   required double pixelsPerUnit,
   required Size viewport,
+  Set<String>? visibleIds,
 }) {
   int dots = 0;
   int strokes = 0;
@@ -90,6 +91,12 @@ FrameDrawReport paintFrame({
   for (final EdgeSpan edge in frame.edges) {
     final ProjectedNode from = frame.nodes[edge.fromIndex];
     final ProjectedNode to = frame.nodes[edge.toIndex];
+    // 筛选（`SPEC-VIEW-021`）：两端都在才画。只藏一端的话，边上会伸出一截
+    // 连到空气里的线 —— 那看起来像「数据缺失」，而实际只是被筛掉了。
+    if (visibleIds != null &&
+        (!visibleIds.contains(from.id) || !visibleIds.contains(to.id))) {
+      continue;
+    }
     final double x1 = origin.dx + from.x * pixelsPerUnit;
     final double y1 = origin.dy + from.y * pixelsPerUnit;
     final double x2 = origin.dx + to.x * pixelsPerUnit;
@@ -144,6 +151,11 @@ FrameDrawReport paintFrame({
 
   for (final int index in frame.drawOrder) {
     final ProjectedNode node = frame.nodes[index];
+    // 被筛掉的节点**不画也不计数** —— 计数是帧预算的读数，把没画的算进去，
+    // 会让「筛选之后更快了」这件事在读数里看不出来。
+    if (visibleIds != null && !visibleIds.contains(node.id)) {
+      continue;
+    }
     final double radius = _dotRadius(node);
     final double x = origin.dx + node.x * pixelsPerUnit;
     final double y = origin.dy + node.y * pixelsPerUnit;
@@ -210,6 +222,7 @@ class FramePainter extends CustomPainter {
     required this.spin,
     required this.onRepaint,
     this.baseYaw = baseYawRadians,
+    this.visibleIds,
   }) : super(repaint: spin);
 
   /// 自转的起始偏航。正式视图把 `CameraState.yawRadians` 传进来，
@@ -217,6 +230,12 @@ class FramePainter extends CustomPainter {
   final double baseYaw;
 
   final SceneBundle scene;
+
+  /// 只画这些 id（`null` = 全画）。来自 ② 的筛选（`SPEC-VIEW-021`）。
+  ///
+  /// **筛选不重排**：`r / θ / φ` 一律不动，只让不匹配的不出现。重排会让
+  /// 「筛一下」变成「换一张图」—— 用户刚建立起来的方位感每次都归零。
+  final Set<String>? visibleIds;
 
   /// 0→1 循环。乘一整圈就是自转 —— 视角一直在变，才能测到不同遮挡关系下的
   /// 光栅化成本，而不是一个静止画面的幸运值。
@@ -268,6 +287,7 @@ class FramePainter extends CustomPainter {
       origin: Offset(size.width / 2, size.height / 2),
       pixelsPerUnit: size.shortestSide * _unitToPixel,
       viewport: size,
+      visibleIds: visibleIds,
     );
     final double paintMs = watch.elapsedMicroseconds / 1000;
 
@@ -276,5 +296,20 @@ class FramePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(FramePainter oldDelegate) =>
-      oldDelegate.scene != scene || oldDelegate.spin != spin;
+      oldDelegate.scene != scene ||
+      oldDelegate.spin != spin ||
+      // 集合按元素比而不是按引用比：`universe_screen` 每次 build 都可能给出
+      // 一个新集合，按引用比会每帧都重绘（自转时本来就每帧重绘，但筛选后
+      // 静止的 spike 画面会白刷）。
+      !_sameIds(oldDelegate.visibleIds, visibleIds);
+}
+
+bool _sameIds(Set<String>? a, Set<String>? b) {
+  if (identical(a, b)) {
+    return true;
+  }
+  if (a == null || b == null) {
+    return false;
+  }
+  return a.length == b.length && a.containsAll(b);
 }

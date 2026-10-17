@@ -107,7 +107,7 @@
 
 | 编号 | 常量 | 值 | 含义 | 来源 |
 |---|---|---|---|---|
-| C-35 | `SIX_AXIS_KEYS` | `subject` `role` `industry` `ability` `topic` `stack` | 六轴键序：`θ` 扇区序号与颜色序号都按它取。**改序等于给所有项换扇区**（`ADR-0003` §决策 3） | `entity-fields` §2 |
+| C-35 | `SIX_AXIS_KEYS` | `subject` `role` `industry` `ability` `topic` `stack` | 六轴键序：`θ` 扇区序号与颜色序号都按它取。**改序等于给所有项换扇区**（`ADR-0003` §决策 3）。代码侧另有 `sixAxisLabels`（同序同长）供 ② 的 chip 写中文名 —— 轴键给代码看，中文名给人看，同一件事的两种写法只留一处 | `entity-fields` §2 |
 | C-36 | `PLACEHOLDER_RADIAL_OFFSET` | `0.02` | 指向未知的占位节点相对源点的径向外移量；不偏移会与源点完全重合（`ADR-0003` §决策 5） | `B3` 笔 1 |
 | C-40 | `TREE_INITIAL_EXPAND_PHI` | 2 | 深链空间的树**首屏展开到 `φ` 几层**（`SPEC-VIEW-008`）。不展开会误判「就这么点东西」，全展开则 63 层铺满看不出骨架 | `B3` 笔 3（`tree.dart`） |
 | C-38 | `FIT_VIEWPORT_RADIUS_RATIO` | 0.46 | 自适应取景：内容半径占视口**短边**的比例（两侧合计 92%，留 8% 给点半径与线端） | `B3` 笔 2 修（`fit.dart`） |
