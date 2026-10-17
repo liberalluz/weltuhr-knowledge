@@ -1,8 +1,8 @@
 # Weltuhr
 
-[简体中文](../../README.md) · [English](en.md) · **Deutsch** · [Italiano](it.md) · [日本語](ja.md) · [Français](fr.md)
+[English](../../README.md) · [简体中文](README.zh.md) · **Deutsch** · [Italiano](README.it.md) · [日本語](README.ja.md) · [Français](README.fr.md)
 
-> Übersetzung von [README.md](../../README.md) · 2026-10-17 · maßgeblich ist die chinesische Fassung.
+> Übersetzung von [docs/readme/README.zh.md](../../docs/readme/README.zh.md) · 2026-10-17 · maßgeblich ist die chinesische Fassung.
 
 > Ein Lerngebiet zu einem Wissensraum entfalten, der **verortbar, planbar und messbar** ist — sodass aus „ich möchte X lernen" wird: „ich weiß, was ich in welcher Reihenfolge lerne und wann es als nutzbar gilt".
 

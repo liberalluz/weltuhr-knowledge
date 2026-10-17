@@ -1,8 +1,8 @@
 # Weltuhr
 
-[简体中文](../../README.md) · [English](en.md) · [Deutsch](de.md) · [Italiano](it.md) · **日本語** · [Français](fr.md)
+[English](../../README.md) · [简体中文](README.zh.md) · [Deutsch](README.de.md) · [Italiano](README.it.md) · **日本語** · [Français](README.fr.md)
 
-> [README.md](../../README.md) の翻訳です · 2026-10-17 · 正文は中国語版です。
+> [docs/readme/README.zh.md](../../docs/readme/README.zh.md) の翻訳です · 2026-10-17 · 正文は中国語版です。
 
 > ある学習領域を、**位置づけでき、計画でき、計量できる**知識空間へと展開します。「X を学びたい」を「何をどの順序で学べばよいか、どこまで進めば使えると言えるかが分かっている」に変えるための仕組みです。
 
