@@ -1,36 +1,40 @@
-# 安全策略
+# Security Policy
 
-## 支持的版本
+**English** · [简体中文](SECURITY.zh.md) · [Deutsch](SECURITY.de.md) · [Italiano](SECURITY.it.md) · [日本語](SECURITY.ja.md) · [Français](SECURITY.fr.md)
 
-安全更新只提供给下列版本：
+> Translation of [SECURITY.zh.md](SECURITY.zh.md) · 2026-10-17 · the Chinese version is authoritative.
 
-| 版本 | 是否支持 |
+## Supported versions
+
+Security updates are provided for the following versions only:
+
+| Version | Supported |
 |---|---|
-| 最新发布的 minor 版本 | ✅ |
-| 更早的 minor / 所有 patch-only 分支 | ❌ |
+| The latest released minor version | ✅ |
+| Earlier minor versions / all patch-only branches | ❌ |
 
-> 口径：**仅最新 minor**。旧版本用户需升级到最新 minor 才能获得安全修复。
+> Rule: **latest minor only**. Users on older versions must upgrade to the latest minor to receive security fixes.
 
-## 报告漏洞
+## Reporting a vulnerability
 
-**请勿用公开 issue 报告安全漏洞。**
+**Please do not report security vulnerabilities through public issues.**
 
-请经本仓库 **Security** 页 → **Report a vulnerability** 提交（GitHub 私密漏洞报告渠道）。
-该渠道对维护者可见、对公众不可见，可在修复发布前保持私密协作。
+Submit them via this repository's **Security** page → **Report a vulnerability** (GitHub's private vulnerability reporting channel).
+That channel is visible to maintainers and invisible to the public, which allows private collaboration until a fix is released.
 
-报告时请尽量包含：受影响版本、复现步骤、影响面判断、以及在可能的情况下的最小复现样例。
+Please include as much of the following as you can: affected version, reproduction steps, your assessment of the impact, and a minimal reproduction sample where possible.
 
-## 响应时限
+## Response time
 
-我们尽力在收到报告后 **7 个工作日内**首次回复。
+We aim to reply for the first time within **7 business days** of receiving a report.
 
-> ⚠️ 本策略**不构成 SLA**。时限与渠道均属对外承诺，变更须经变更控制并在本文件显式公告。
+> ⚠️ This policy **does not constitute an SLA**. The time limit and the channel are both external commitments; any change requires change control and an explicit announcement in this file.
 
-## 不在范围内
+## Out of scope
 
-以下不属于本策略受理范围，请走常规 issue：
+The following are outside the scope of this policy; please use the regular issue tracker:
 
-- 依赖的上游项目自身的漏洞（请同时上报上游）
-- 需要物理接触设备、或已取得设备管理权限后才能触发的攻击
-- 内容包（`content/`）中的知识内容正确性问题 —— 走内容勘误 issue
-- 纯配置建议、加固意见、扫描器输出的无复现路径告警
+- vulnerabilities in upstream projects we depend on (please report them upstream as well)
+- attacks that require physical access to the device, or that are only reachable after gaining administrative access to it
+- correctness problems in the knowledge content of a content pack (`content/`) — use a content erratum issue
+- pure configuration advice, hardening suggestions, and scanner warnings that come without a reproduction path
