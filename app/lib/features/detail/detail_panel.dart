@@ -15,11 +15,17 @@
 /// `R-08` 说的「形状保证挡得住改、挡不住加」。所以只留一个，窄壳靠 [compact]
 /// 收窄内边距与来源摘录的行数，不动字段、不动顺序。
 ///
+/// ## 返回（`VIEW-015` / `VIEW-016`）
+///
+/// 面板只负责**画**那个按钮并把点击原样交出去。有没有可退的地方、退到哪一项，
+/// 全在屏幕的 [`_goBack`] —— 面板不知道 `trail` 有多长，也不该知道：让它算
+/// 「能不能退」就等于把导航状态复制进了视图层，而复制品会与原件不同步。
+///
+/// `onBack` 为 `null` 时不渲染按钮。给一个按下去没反应的按钮，用户会读成
+/// 「功能坏了」而不是「这里就是起点」。
+///
 /// ## 本笔没有做的
 ///
-/// - `trail`（`VIEW-016`）：详情内跳转会走多步，需要内部历史栈与 `C-21` 上限。
-///   本笔的跳转只写选中项，**返回不走 trail**（归笔 4）。
-/// - `returnTo` 快照（`VIEW-015`）：同上，需要「进入详情」这件事有明确入口与出口。
 /// - 笔记区内容（`SPEC-NOTE-007`）：只留落位与 `Key`，不造空输入框 ——
 ///   可输入的框会让人以为写完能存。
 library;
@@ -42,6 +48,12 @@ const Key detailNotesSectionKey = Key('detail-section-notes');
 /// 某一行的 `Key`。缺口行没有 `itemId` ⇒ 用标题兜底，同一次渲染里仍然唯一。
 Key detailRelationRowKey(RelationRow row) =>
     Key('detail-relation-${row.itemId ?? 'gap:${row.label}'}');
+
+/// 返回按钮（`VIEW-015` / `VIEW-016`）。`onBack` 为 `null` 时整块不渲染。
+const Key detailBackKey = Key('detail-back');
+
+/// 按钮文案。抽出来是给测试断言用，也免得「返回」与「←」两处各写一份。
+const String detailBackLabel = '返回';
 
 /// 关系分组的小标题（顺序即显示顺序）。
 const List<RelationKind> _relationOrder = <RelationKind>[
@@ -88,6 +100,7 @@ class DetailPanel extends StatelessWidget {
     required this.detail,
     this.compact = false,
     this.onSelectItem,
+    this.onBack,
     super.key,
   });
 
@@ -99,6 +112,12 @@ class DetailPanel extends StatelessWidget {
 
   /// 关系行点击 ⇒ 跳到对方项（`VIEW-014`）。
   final ValueChanged<String>? onSelectItem;
+
+  /// 返回一步（`VIEW-015` / `VIEW-016`）。
+  ///
+  /// `null` = 没有可退的地方 ⇒ **不渲染按钮**。给一个按下去没反应的按钮，用户
+  /// 会读成「功能坏了」，而不是「这里就是起点」。
+  final VoidCallback? onBack;
 
   @override
   Widget build(BuildContext context) {
@@ -157,6 +176,10 @@ class DetailPanel extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
+        if (onBack != null) ...<Widget>[
+          _backRow(onBack!),
+          const SizedBox(height: 6),
+        ],
         Text(
           detail.title,
           style: const TextStyle(
@@ -188,6 +211,30 @@ class DetailPanel extends StatelessWidget {
       ],
     );
   }
+
+  /// 返回行。做成一行小字而不是 `IconButton`：详情面板窄（320），一个 48×48
+  /// 的按钮会把标题挤成两行，而「返回」在这里是低优先级的出口。
+  Widget _backRow(VoidCallback onBack) => InkWell(
+    key: detailBackKey,
+    onTap: onBack,
+    child: const Padding(
+      padding: EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          Text(
+            '←',
+            style: TextStyle(color: paletteTextSecondary, fontSize: 12),
+          ),
+          SizedBox(width: 4),
+          Text(
+            detailBackLabel,
+            style: TextStyle(color: paletteTextSecondary, fontSize: 11),
+          ),
+        ],
+      ),
+    ),
+  );
 
   Widget _badge(String text, Color color) => Container(
     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),

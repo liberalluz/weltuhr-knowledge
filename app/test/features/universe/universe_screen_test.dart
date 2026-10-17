@@ -7,6 +7,7 @@ import 'package:project_knowledge/core/constants.dart';
 import 'package:project_knowledge/core/entities/content.dart';
 import 'package:project_knowledge/core/enums.dart';
 import 'package:project_knowledge/core/pack/pack_parse.dart';
+import 'package:project_knowledge/core/view/detail.dart';
 import 'package:project_knowledge/core/view/filter.dart';
 import 'package:project_knowledge/core/view/tree.dart';
 import 'package:project_knowledge/core/view/viewport.dart';
@@ -737,6 +738,184 @@ void main() {
         find.byKey(compassAxisKey('ability')),
         findsNothing,
         reason: '按不动的控件会被读成「功能坏了」',
+      );
+      expect(tester.takeException(), isNull);
+    });
+  });
+
+  group('导航记忆（SPEC-VIEW-015 / 016）', () {
+    testWidgets('点星进详情后按返回：档位回到进之前，详情消失（SPEC-VIEW-015）', (
+      WidgetTester tester,
+    ) async {
+      final LoadedPack pack = loadAlphaPack();
+      final SceneBundle scene = _alphaScene(pack);
+      await tester.pumpWidget(
+        MaterialApp(
+          home: UniverseScreen(scene: scene, pack: pack),
+        ),
+      );
+      await tester.pump();
+
+      expect(
+        find.byKey(detailBackKey),
+        findsNothing,
+        reason: '还没进过详情 ⇒ 没有可退的地方，按钮不渲染',
+      );
+
+      final Size viewport = tester.getSize(find.byType(UniverseScreen));
+      await tester.tapAt(
+        _findPoint(
+          scene,
+          viewport,
+          hit: true,
+          devicePixelRatio: tester.view.devicePixelRatio,
+        ),
+      );
+      await tester.pump();
+      expect(find.byKey(hudDetailDrawerKey), findsOneWidget);
+      expect(find.byKey(detailBackKey), findsOneWidget);
+
+      await tester.tap(find.byKey(detailBackKey));
+      await _pump(tester);
+
+      expect(
+        find.byKey(hudDetailDrawerKey),
+        findsNothing,
+        reason: 'Z1 没有详情（VIEW-013）⇒ 已经退回来了',
+      );
+      expect(
+        find.descendant(
+          of: find.byKey(hudBreadcrumbKey),
+          matching: find.textContaining('Z1'),
+        ),
+        findsOneWidget,
+      );
+      expect(find.byKey(detailBackKey), findsNothing, reason: '退无可退之后按钮再次消失');
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('详情里点前置项 ⇒ 返回先退这一项，不是一次跳回原档位（SPEC-VIEW-016）', (
+      WidgetTester tester,
+    ) async {
+      final LoadedPack pack = loadAlphaPack();
+      final SceneBundle scene = _alphaScene(pack);
+      await tester.pumpWidget(
+        MaterialApp(
+          home: UniverseScreen(scene: scene, pack: pack),
+        ),
+      );
+      await tester.pump();
+
+      final Size viewport = tester.getSize(find.byType(UniverseScreen));
+      await tester.tapAt(
+        _findPoint(
+          scene,
+          viewport,
+          hit: true,
+          devicePixelRatio: tester.view.devicePixelRatio,
+        ),
+      );
+      await tester.pump();
+
+      final ItemDetail first = tester
+          .widget<DetailPanel>(find.byKey(hudDetailDrawerKey))
+          .detail!;
+      final List<RelationRow> linked = first.relations
+          .where((RelationRow each) => each.itemId != null)
+          .toList();
+      expect(linked, isNotEmpty, reason: 'α 包里点到的这一项总该至少有一条关系行');
+      final RelationRow row = linked.first;
+
+      await tester.ensureVisible(find.byKey(detailRelationRowKey(row)));
+      await tester.tap(find.byKey(detailRelationRowKey(row)));
+      await tester.pump();
+
+      final ItemDetail second = tester
+          .widget<DetailPanel>(find.byKey(hudDetailDrawerKey))
+          .detail!;
+      expect(second.id, row.itemId, reason: '关系行点下去就是换选中项');
+
+      await tester.tap(find.byKey(detailBackKey));
+      await _pump(tester);
+
+      final ItemDetail back = tester
+          .widget<DetailPanel>(find.byKey(hudDetailDrawerKey))
+          .detail!;
+      expect(back.id, first.id, reason: 'trail 先退一步 —— 退成「回原档位」会把用户走过的那几步一次作废');
+      expect(find.byKey(hudDetailDrawerKey), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('从搜索落点进详情，返回时词填回去、结果按当下重算（SPEC-VIEW-015）', (
+      WidgetTester tester,
+    ) async {
+      final LoadedPack pack = loadAlphaPack();
+      await _pumpScreen(tester, pack: pack, scene: _alphaScene(pack));
+
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
+      await tester.sendKeyEvent(LogicalKeyboardKey.keyK);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
+      await _pump(tester);
+      await tester.enterText(find.byKey(locateFieldKey), '装饰器');
+      await _pump(tester);
+
+      final LocateHit hit = Locator.single(pack).locate('装饰器').usableHits.first;
+      await tester.tap(find.byKey(locateRowKey(hit)));
+      await _pump(tester);
+      expect(find.byKey(hudDetailDrawerKey), findsOneWidget);
+
+      await tester.tap(find.byKey(detailBackKey));
+      await _pump(tester);
+
+      expect(
+        find.byKey(locateOverlayKey),
+        findsOneWidget,
+        reason: 'VIEW-015：快照里存 selector ⇒ 返回时把搜索这一场重新打开',
+      );
+      expect(
+        find.text('装饰器'),
+        findsWidgets,
+        reason: '词填回输入框，结果按当下重算 —— 不是还给用户一份旧列表',
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('一直在详情里、从没离开过 ⇒ 不给返回按钮（SPEC-VIEW-015）', (
+      WidgetTester tester,
+    ) async {
+      final LoadedPack pack = loadAlphaPack();
+      final SceneBundle scene = _alphaScene(pack);
+      await tester.pumpWidget(
+        MaterialApp(
+          home: UniverseScreen(
+            scene: scene,
+            pack: pack,
+            initialZoom: ZoomLevel.z4,
+          ),
+        ),
+      );
+      await tester.pump();
+
+      final Size viewport = tester.getSize(find.byType(UniverseScreen));
+      await tester.tapAt(
+        _findPoint(
+          scene,
+          viewport,
+          hit: true,
+          devicePixelRatio: tester.view.devicePixelRatio,
+        ),
+      );
+      await tester.pump();
+
+      expect(
+        find.byKey(hudDetailDrawerKey),
+        findsOneWidget,
+        reason: '本来就在 Z4，点星只换选中项',
+      );
+      expect(
+        find.byKey(detailBackKey),
+        findsNothing,
+        reason: '没有「进详情之前」可言 ⇒ 按下去什么也不会变，所以不给',
       );
       expect(tester.takeException(), isNull);
     });

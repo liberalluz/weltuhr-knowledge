@@ -32,10 +32,18 @@
 /// 空间。从命中集里剔掉会让用户以为「另一个空间没有这一项」；假装能跳会让界面
 /// 停在原处 —— 两种都比说清楚更糟。
 ///
+/// ## 导航记忆（`VIEW-015` / `VIEW-016`，本笔接上）
+///
+/// 所有改模式 / 档位 / 选中项的动作都过 [`_navigate`]，因为「要不要记导航记忆」
+/// 是这些动作共有的后果。两条判据在 `_navigate` 的注释里。
+///
+/// 返回先退 `trail`、退空了才用 `returnTo`：前者是「详情里走过的步」，后者是
+/// 「进详情之前」。反了就会把用户走过的那几步一次作废。
+///
 /// ## 本笔没有做的
 ///
-/// - **换根**与 `returnTo` 还原（`VIEW-015` / `031` 末句）：跳进另一个空间再按
-///   「返回」回到原处，是根上下文的事，要 `trail` 历史栈（`C-21` 上限未定）。
+/// - **换根**（`VIEW-031` 末句）：跳进另一个空间要换掉 `scene` 与 `pack`。本笔
+///   的 `trail` / `returnTo` 只在**同一个根**内工作。
 /// - 跨空间的「措辞不同」（`VIEW-030` ②）：邻近候选只从本空间取 —— 换词换的是
 ///   本空间的叫法，跨空间换词要先有落点。
 ///
@@ -65,6 +73,7 @@ import '../../core/locate/locator.dart';
 import '../../core/pack/pack_parse.dart';
 import '../../core/view/detail.dart';
 import '../../core/view/filter.dart';
+import '../../core/view/navigation.dart';
 import '../../core/view/tree.dart';
 import '../../core/view/viewport.dart';
 import '../../core/view/zoom.dart';
@@ -168,6 +177,19 @@ class _UniverseScreenState extends State<UniverseScreen>
   /// 定位浮层是否打开（`VIEW-026`：浮层，不常驻）。
   bool _locating = false;
 
+  /// 进详情前的那一帧（`VIEW-015`）。`null` = 没在详情里，或已经退回来了。
+  ViewSnapshot? _returnTo;
+
+  /// 详情页**内部**历史（`VIEW-016`），上限 `C-21`。存的是**离开的那一项**，
+  /// 所以 `last` 就是「上一次停在谁那儿」。
+  List<String> _trail = const <String>[];
+
+  /// 返回时要重开的搜索词（`VIEW-015` 的 `selector`）。
+  ///
+  /// 只在「从搜索进详情、又退回来」那一刻有值，浮层读到就清 —— 留着会让下一次
+  /// `⌘K` 带着上一次的词，而 `VIEW-026` 的口径是「浮层，用完即走」。
+  String? _restoreSelector;
+
   /// ⑥ 罗盘当前展开的轴（`VIEW-020` 就地展开）。`null` = 六个轴都收起。
   ///
   /// 一次只展开一个轴：罗盘是「选一个轴、挑几个值」的短流程，同时摊开六个
@@ -202,11 +224,91 @@ class _UniverseScreenState extends State<UniverseScreen>
     super.dispose();
   }
 
+  /// 详情此刻是否可见。`VIEW-013` 把详情定义成「`Z4` 的渲染形态」，树里则是
+  /// 右栏常驻 —— 两处都算「在详情里」，因为用户看到的是同样那四段。
+  bool get _detailVisible =>
+      _mode == ViewMode.tree || _camera.zoom == ZoomLevel.z4;
+
+  /// 有没有可退的地方。`false` 时返回按钮**不渲染** —— 按下去什么也不会变的
+  /// 按钮比没有更糟（同 `VIEW-031` 那一行放宽入口）。
+  bool get _canGoBack => _trail.isNotEmpty || _returnTo != null;
+
+  /// 当前视野的一帧。`selector` 只由「从搜索进来」的那条路径给。
+  ViewSnapshot _snapshot({String? selector}) => ViewSnapshot(
+    mode: _mode,
+    zoomLevel: _camera.zoom,
+    selectedItemId: _selectedItemId,
+    axisFilter: _axisFilter,
+    selector: selector,
+  );
+
+  /// 所有改模式 / 档位 / 选中项的动作都走这里。
+  ///
+  /// 为什么不让每个方法各自记：要不要写导航记忆是这些动作**共有**的后果，而
+  /// 分散在七八处各写一遍必然漏一处 —— 漏了不会有任何东西变红（`R-08`）。
+  ///
+  /// 两条判据：
+  /// - **详情从不可见变为可见** ⇒ 记 `returnTo`、`trail` 归零。这是「进详情」。
+  /// - **已在详情里又换了一项** ⇒ `trail` 压入离开的那一项，`returnTo` **不动**。
+  ///   覆盖它会让「返回」从「回出发地」退化成「回上一步」—— 而上一步本来就由
+  ///   `trail` 管着，两处都管等于两处都不准。
+  void _navigate(VoidCallback change, {String? selector}) {
+    final bool wasVisible = _detailVisible;
+    final String? previousId = _selectedItemId;
+    final ViewSnapshot before = _snapshot(selector: selector);
+    setState(() {
+      change();
+      final bool nowVisible = _detailVisible;
+      if (!wasVisible && nowVisible) {
+        _returnTo = before;
+        _trail = const <String>[];
+      } else if (wasVisible && nowVisible && previousId != _selectedItemId) {
+        _trail = pushTrail(_trail, previousId);
+      }
+    });
+  }
+
+  /// 返回一步（`VIEW-015` / `VIEW-016`）。
+  ///
+  /// 先退 `trail`，退空了才用 `returnTo` —— 顺序不能反：反了就等于把用户在详情
+  /// 里走的几步一次作废，而他按的是「返回」不是「回起点」。
+  void _goBack() {
+    final ({String? itemId, List<String> trail}) step = popTrail(_trail);
+    final String? previous = step.itemId;
+    if (previous != null) {
+      setState(() {
+        _trail = step.trail;
+        _selectedItemId = previous;
+        // 返回详情内的一项 ⇒ 它必然在 `Z4`（那是详情唯一可见的宇宙态）。
+        _camera = _camera.withZoom(ZoomLevel.z4, selectedItemId: previous);
+      });
+      return;
+    }
+    final ViewSnapshot? snapshot = _returnTo;
+    if (snapshot == null) {
+      return;
+    }
+    setState(() {
+      _returnTo = null;
+      _trail = const <String>[];
+      _mode = snapshot.mode;
+      _axisFilter = snapshot.axisFilter;
+      _selectedItemId = snapshot.selectedItemId;
+      _camera = _camera.withZoom(
+        snapshot.zoomLevel,
+        selectedItemId: snapshot.selectedItemId,
+      );
+      // `VIEW-015` 存 `selector` 不存结果列表 ⇒ 词放回去，结果按当下重算。
+      _restoreSelector = snapshot.selector;
+      _locating = snapshot.selector != null;
+    });
+  }
+
   void _switchZoom(ZoomLevel next) {
     if (next == _camera.zoom && _mode == ViewMode.universe) {
       return;
     }
-    setState(() {
+    _navigate(() {
       // `withZoom` 保留 yaw / pitch —— 切档不重置视角（`SPEC-VIEW-009`）。
       _camera = _camera.withZoom(next, selectedItemId: _selectedItemId);
       // 视距是宇宙的导航层级：点刻度即回宇宙（树里没有「Z2 的树」这种东西）。
@@ -218,7 +320,7 @@ class _UniverseScreenState extends State<UniverseScreen>
     if (next == _mode) {
       return;
     }
-    setState(() {
+    _navigate(() {
       if (next == ViewMode.universe) {
         // `VIEW-009`：树 → 宇宙按选中项的 `φ` 定档，不按展开深度。
         _camera = _camera.withZoom(
@@ -241,7 +343,11 @@ class _UniverseScreenState extends State<UniverseScreen>
     return zoomForPhi(phiLevelsOf(pack)[id] ?? 0, hasChildren: hasChildren);
   }
 
-  void _select(String itemId) => setState(() => _selectedItemId = itemId);
+  /// 详情内换一项（关系行点击，`VIEW-014`）。**`trail` 的唯一写入点**。
+  ///
+  /// 树里点项也走这里：树里的详情是常驻右栏，「从 A 翻到 B」与宇宙里「从 A 跳
+  /// 到 B」对用户是同一件事。
+  void _select(String itemId) => _navigate(() => _selectedItemId = itemId);
 
   // ── 快速定位（`SPEC-VIEW-024`–`033`） ───────────────────────────────────
 
@@ -254,7 +360,12 @@ class _UniverseScreenState extends State<UniverseScreen>
   /// （表现是「快捷键只灵一次」）。等到这一帧拆完再请求焦点，否则收上来的焦点
   /// 会在同一帧里被「销毁输入框」这一步又推走。
   void _closeLocate() {
-    setState(() => _locating = false);
+    setState(() {
+      _locating = false;
+      // 词已经用掉了：留着会让下一次 `⌘K` 带着上一次的输入（`VIEW-026` 的
+      // 口径是「浮层，用完即走」）。
+      _restoreSelector = null;
+    });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         _rootFocus.requestFocus();
@@ -270,12 +381,14 @@ class _UniverseScreenState extends State<UniverseScreen>
     _closeLocate();
     switch (hit.kind) {
       case LocateKind.item:
-        _jumpToItem(hit.target);
+        // 只有这条路径带 `selector`：用户是从「搜了什么」进来的，返回时词该
+        // 还在（`VIEW-015`）。点星与树里点项都不是从搜索来的，带 null。
+        _jumpToItem(hit.target, selector: result.query);
       case LocateKind.domain:
         _jumpToDomain(hit.target);
       case LocateKind.space:
         // 空间是 `Z0` 那一层（`VIEW-001` 末句：`Z0` 展示全部空间）。
-        setState(() {
+        _navigate(() {
           _mode = ViewMode.universe;
           _camera = _camera.withZoom(ZoomLevel.z0);
         });
@@ -286,7 +399,7 @@ class _UniverseScreenState extends State<UniverseScreen>
         if (axisKey == null) {
           return;
         }
-        setState(() {
+        _navigate(() {
           _axisFilter = toggleAxisValue(_axisFilter, axisKey, hit.target);
         });
     }
@@ -299,15 +412,15 @@ class _UniverseScreenState extends State<UniverseScreen>
   /// 搜索是相反的问题：「我要这一项」。按 `φ` 定档会把用户送到它所在的
   /// 星云（`Z2`），而他要找的那颗星只有 `Z4` 才看得见 —— 那等于搜完还得
   /// 再点一次，`VIEW-027`「唯一命中直接跳转」就白写了。
-  void _jumpToItem(String itemId) {
+  void _jumpToItem(String itemId, {String? selector}) {
     if (widget.pack == null) {
       return;
     }
-    setState(() {
+    _navigate(() {
       _selectedItemId = itemId;
       _mode = ViewMode.universe;
       _camera = _camera.withZoom(ZoomLevel.z4, selectedItemId: itemId);
-    });
+    }, selector: selector);
   }
 
   /// 域是落点类（`VIEW-028`），但宇宙里没有「选中一个域」这个状态 ——
@@ -334,7 +447,7 @@ class _UniverseScreenState extends State<UniverseScreen>
       final int phiB = levels[b.id] ?? 0;
       return phiA == phiB ? a.title.compareTo(b.title) : phiA.compareTo(phiB);
     });
-    setState(() {
+    _navigate(() {
       _selectedItemId = inDomain.first.id;
       _mode = ViewMode.universe;
       _camera = _camera.withZoom(
@@ -483,6 +596,8 @@ class _UniverseScreenState extends State<UniverseScreen>
                     // widget，只换紧凑度（`VIEW-017`）。
                     compact: true,
                     onSelectItem: _select,
+                    // 没有可退的地方就不给按钮（`VIEW-015`）：`null` 时面板不渲染它。
+                    onBack: _canGoBack ? _goBack : null,
                   ),
                 ),
               _positioned(
@@ -581,6 +696,10 @@ class _UniverseScreenState extends State<UniverseScreen>
   }
 
   Widget _locateLayer() => LocateOverlay(
+    // 换了词就换一个 State：`initialQuery` 只在 `initState` 读一次，靠 key
+    // 重建比在浮层里判「这个词和上次不一样」干净。
+    key: ValueKey<String?>(_restoreSelector),
+    initialQuery: _restoreSelector ?? '',
     pack: widget.pack,
     otherSpaces: widget.otherSpaces,
     // `VIEW-031` 的作用域：`Z0` 本就是跨空间视角 ⇒ 不限空间；其余档位默认只搜
