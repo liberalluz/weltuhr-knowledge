@@ -24,7 +24,9 @@ content/
     └── dist/pack.json     构建产物（不入库）
 ```
 
-> `manifest.json` 的 `version` 是包版本的**唯一事实源**（semver）。`build.py` **原样透传**到 `dist/pack.json` 的 `meta.version`，不得改写 —— 否则同一 commit 两次构建产出不同版本，而 `dist/` 不入库、tag 是唯一指针，无从比对。tag `pack/<空间>/vX.Y.Z` 须与它**逐字一致**。口径见 [git-conventions §五](../docs/guides/git-conventions.md)。
+> `manifest.json` 的 `version` 是包版本的**唯一事实源**（semver）。`build.py` **原样透传**到 `dist/pack.json` 的 `meta.version`，不得改写 —— 否则同一 commit 两次构建产出不同版本，而 `dist/` 不入库、tag 是唯一指针，无从比对。tag `pack/<space>/vX.Y.Z` 须与它**逐字一致**。口径见 [git-conventions §五](../docs/guides/git-conventions.md)。
+
+> ⚠️ **管线尚未建立**：`content/tools/build.py` 与 `content/<space>/` 目前都不存在，上面两条命令在首包落地后才可用。
 
 ## 相关文档
 
