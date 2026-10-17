@@ -1,0 +1,266 @@
+[
+  {
+    "id": "q-lex-line-structure",
+    "itemId": "python/lex-line-structure",
+    "prompt": "括号未闭合时换行会怎样？",
+    "answer": "隐式续行 —— 只要还在成对括号内，逻辑行未结束"
+  },
+  {
+    "id": "q-lex-raw-string",
+    "itemId": "python/lex-raw-string",
+    "prompt": "r'\\n' 是几个字符？",
+    "answer": "两个 —— 原始字符串不解释转义，反斜杠按字面保留"
+  },
+  {
+    "id": "q-lex-bytes-literal",
+    "itemId": "python/lex-bytes-literal",
+    "prompt": "b'abc'[0] 是什么类型？",
+    "answer": "int —— 字节串索引得到 0–255 的整数，不是单字符"
+  },
+  {
+    "id": "q-lex-bool-none",
+    "itemId": "python/lex-bool-none",
+    "prompt": "True + True 等于多少？",
+    "answer": "2 —— bool 是 int 的子类"
+  },
+  {
+    "id": "q-dm-eq-vs-is",
+    "itemId": "python/dm-eq-vs-is",
+    "prompt": "两个空列表 == 与 is 分别是什么？",
+    "answer": "== 为 True，is 为 False —— 值相等但对象不同"
+  },
+  {
+    "id": "q-fn-default-arg-mutable",
+    "itemId": "python/fn-default-arg",
+    "prompt": "def f(x, acc=[]): acc.append(x); return acc 连续调用两次会发生什么？",
+    "answer": "第二次能看到第一次的元素 —— 默认值在定义时求值一次，可变对象被共享"
+  },
+  {
+    "id": "q-dm-copy",
+    "itemId": "python/dm-copy",
+    "prompt": "copy.copy 一个嵌套列表后改动内层，原对象受影响吗？",
+    "answer": "受影响 —— 浅拷贝只复制外层容器，内层仍是同一对象引用"
+  },
+  {
+    "id": "q-dm-truthiness",
+    "itemId": "python/dm-truthiness",
+    "prompt": "bool([]) 与 bool([0]) 分别是？",
+    "answer": "False 与 True —— 只看容器长度，不看元素真值"
+  },
+  {
+    "id": "q-dm-slice",
+    "itemId": "python/dm-slice",
+    "prompt": "a[::-1] 对字符串做了什么？",
+    "answer": "反转 —— 步长为负表示反向取，起止缺省即全段"
+  },
+  {
+    "id": "q-ctl-break-else",
+    "itemId": "python/ctl-break-continue",
+    "prompt": "for 的 else 子句什么时候执行？",
+    "answer": "循环正常结束（未 break）时执行；break 则跳过"
+  },
+  {
+    "id": "q-ctl-walrus",
+    "itemId": "python/ctl-walrus",
+    "prompt": "while (chunk := f.read(8192)) 的好处是什么？",
+    "answer": "赋值与判断合一，避免在循环体外先赋初值"
+  },
+  {
+    "id": "q-ctl-chained",
+    "itemId": "python/ctl-chained-compare",
+    "prompt": "0 < x < 10 在 Python 里等价于什么？",
+    "answer": "(0 < x) and (x < 10) —— 链式比较，x 只求值一次"
+  },
+  {
+    "id": "q-ctl-short-circuit",
+    "itemId": "python/ctl-short-circuit",
+    "prompt": "a and b 在 a 为假时返回什么？",
+    "answer": "返回 a 本身，不返回 False —— and/or 返回操作数而非布尔值"
+  },
+  {
+    "id": "q-fn-legb",
+    "itemId": "python/fn-legb",
+    "prompt": "函数内读一个未赋值的同名变量，会去哪找？",
+    "answer": "按 LEGB：本地 → 外层函数 → 全局 → 内置"
+  },
+  {
+    "id": "q-fn-closure-late",
+    "itemId": "python/fn-closure",
+    "prompt": "[lambda: i for i in range(3)] 三个函数调用后返回什么？",
+    "answer": "都是 2 —— 闭包捕获变量而非值"
+  },
+  {
+    "id": "q-fn-decorator-order",
+    "itemId": "python/fn-decorator",
+    "prompt": "@a 与 @b 叠在同一函数上，哪个先应用？",
+    "answer": "离函数最近的（@b）先应用"
+  },
+  {
+    "id": "q-fn-wraps",
+    "itemId": "python/fn-functools-wraps",
+    "prompt": "装饰器不加 functools.wraps 会丢什么？",
+    "answer": "被包装函数的 __name__ / __doc__ / __module__ 等元信息"
+  },
+  {
+    "id": "q-fn-default-eval",
+    "itemId": "python/fn-default-arg",
+    "prompt": "默认参数的求值时机是什么？",
+    "answer": "函数定义时，且在定义作用域内求值一次"
+  },
+  {
+    "id": "q-oop-self",
+    "itemId": "python/oop-self",
+    "prompt": "实例方法为什么第一个参数必须是 self？",
+    "answer": "方法即类属性上的函数，调用时实例被隐式作为第一个参数传入"
+  },
+  {
+    "id": "q-oop-mro",
+    "itemId": "python/oop-mro",
+    "prompt": "多继承时 super() 找的是父类还是 MRO 下一个？",
+    "answer": "MRO 中的下一个，不一定是直接父类"
+  },
+  {
+    "id": "q-oop-dataclass",
+    "itemId": "python/oop-dataclass",
+    "prompt": "@dataclass 自动生成哪些方法？",
+    "answer": "默认生成 __init__ / __repr__ / __eq__"
+  },
+  {
+    "id": "q-oop-slots",
+    "itemId": "python/oop-slots",
+    "prompt": "__slots__ 带来什么代价？",
+    "answer": "不能再动态添加属性，也不能与 __dict__ 共存于同一实例"
+  },
+  {
+    "id": "q-it-yield-send",
+    "itemId": "python/it-yield-send",
+    "prompt": "生成器的 send 第一次能传非 None 吗？",
+    "answer": "不能 —— 必须先 next() 推进到第一个 yield"
+  },
+  {
+    "id": "q-it-lazy",
+    "itemId": "python/it-lazy",
+    "prompt": "生成器表达式与列表推导的内存差别？",
+    "answer": "前者逐个产出、不落列表；后者一次性构建全部元素"
+  },
+  {
+    "id": "q-it-unpacking",
+    "itemId": "python/it-unpacking",
+    "prompt": "a, *b, c = [1,2,3,4] 中 b 是什么？",
+    "answer": "[2, 3] —— 星号收集中间剩余元素为列表"
+  },
+  {
+    "id": "q-it-zip-strict",
+    "itemId": "python/it-zip-enumerate",
+    "prompt": "zip 长度不等的两个序列会怎样？",
+    "answer": "默认按最短截断；需要报错则用 strict=True"
+  },
+  {
+    "id": "q-err-else-finally",
+    "itemId": "python/err-else-finally",
+    "prompt": "try 里没异常时 except 和 else 谁执行？",
+    "answer": "只执行 else；except 不触发"
+  },
+  {
+    "id": "q-err-raise-from",
+    "itemId": "python/err-raise-from",
+    "prompt": "raise B from A 与直接 raise B 的差别？",
+    "answer": "前者显式建立因果链（__cause__），后者为隐式上下文（__context__）"
+  },
+  {
+    "id": "q-err-bare-except",
+    "itemId": "python/err-bare-except",
+    "prompt": "裸 except 会吞掉什么？",
+    "answer": "包括 KeyboardInterrupt 与 SystemExit 在内的所有异常"
+  },
+  {
+    "id": "q-err-with",
+    "itemId": "python/err-with",
+    "prompt": "with 退出时异常会传给 __exit__ 吗？",
+    "answer": "会 —— 三个参数即异常类型、值、traceback"
+  },
+  {
+    "id": "q-err-custom",
+    "itemId": "python/err-custom",
+    "prompt": "自定义异常为什么要继承 Exception 而不是 BaseException？",
+    "answer": "BaseException 留给系统级中断，业务异常继承 Exception 才被常规捕获覆盖"
+  },
+  {
+    "id": "q-mod-import",
+    "itemId": "python/mod-import",
+    "prompt": "import 时模块被缓存到哪里？",
+    "answer": "sys.modules —— 同一进程内重复 import 不会重新执行模块体"
+  },
+  {
+    "id": "q-mod-main",
+    "itemId": "python/mod-main",
+    "prompt": "__name__ == '__main__' 判的是什么？",
+    "answer": "当前模块是被直接运行还是被导入"
+  },
+  {
+    "id": "q-mod-pathlib",
+    "itemId": "python/mod-pathlib",
+    "prompt": "pathlib 相对字符串路径的核心收益？",
+    "answer": "路径是对象，拼接与读取不再依赖字符串操作与 os.path 分支"
+  },
+  {
+    "id": "q-mod-json",
+    "itemId": "python/mod-json",
+    "prompt": "json.dumps 默认能序列化 datetime 吗？",
+    "answer": "不能 —— 需自定义 default 或先转字符串"
+  },
+  {
+    "id": "q-ty-optional",
+    "itemId": "python/ty-optional",
+    "prompt": "Optional[int] 等价于什么？",
+    "answer": "Union[int, None]，即 int | None"
+  },
+  {
+    "id": "q-ty-any-object",
+    "itemId": "python/ty-any-vs-object",
+    "prompt": "Any 与 object 的关键差别？",
+    "answer": "Any 关闭检查（可赋给任何类型）；object 只接受能证明为该类型的操作"
+  },
+  {
+    "id": "q-ty-runtime",
+    "itemId": "python/ty-runtime-boundary",
+    "prompt": "类型注解在运行时会被强制检查吗？",
+    "answer": "不会 —— 注解默认不求值也不校验，除非显式取 __annotations__ 或使用检查器"
+  },
+  {
+    "id": "q-ty-protocol",
+    "itemId": "python/ty-protocol",
+    "prompt": "Protocol 与 ABC 的判别方式差别？",
+    "answer": "Protocol 是结构化子类型（看有没有方法），ABC 是名义子类型（看是否继承）"
+  },
+  {
+    "id": "q-cc-gil",
+    "itemId": "python/cc-gil",
+    "prompt": "GIL 存在时多线程还能提升什么？",
+    "answer": "I/O 密集场景的并发（等待时释放 GIL）；CPU 密集需用多进程"
+  },
+  {
+    "id": "q-cc-await",
+    "itemId": "python/cc-await",
+    "prompt": "await 一个协程发生了什么？",
+    "answer": "挂起当前协程并把控制权交回事件循环，待其完成后恢复"
+  },
+  {
+    "id": "q-cc-blocking",
+    "itemId": "python/cc-blocking-call",
+    "prompt": "在 async 函数里调用 time.sleep 会怎样？",
+    "answer": "阻塞整个事件循环 —— 应改用 asyncio.sleep"
+  },
+  {
+    "id": "q-cc-gather",
+    "itemId": "python/cc-gather",
+    "prompt": "gather 与逐个 await 的差别？",
+    "answer": "gather 并发调度多个协程；逐个 await 是串行"
+  },
+  {
+    "id": "q-cc-task-cancel",
+    "itemId": "python/cc-task",
+    "prompt": "取消一个 Task 后协程一定会立刻停止吗？",
+    "answer": "不一定 —— 需在协程内响应 CancelledError 并在合适的 await 点退出"
+  }
+]

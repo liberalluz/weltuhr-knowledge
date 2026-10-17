@@ -1,0 +1,24 @@
+{
+  "id": "python",
+  "name": "Python 语法分层",
+  "version": "0.1.0",
+  "sixAxis": {
+    "subject": "计算机科学",
+    "topic": "编程语言",
+    "stack": "Python"
+  },
+  "accent": "#3776ab",
+  "order": 10,
+  "domainIds": [
+    "python/lexical",
+    "python/data-model",
+    "python/control",
+    "python/func",
+    "python/oop",
+    "python/iteration",
+    "python/errors",
+    "python/modules",
+    "python/typing",
+    "python/concurrency"
+  ]
+}
