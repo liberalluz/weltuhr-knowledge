@@ -148,6 +148,20 @@ void main() {
       expect(spans.length, 170, reason: 'B2 时是 167（跳过的 3 条），现在由占位节点接住');
     });
 
+    test('扇区内按轴值出现顺序细分，α 包 9 个 ability 取值 ⇒ 9 段（ADR-0003）', () {
+      final LoadedPack pack = loadAlphaPack();
+      final List<SceneNode> nodes = buildSceneNodes(pack, sectorCount: sixAxisKeys.length);
+      final Set<double> fractions = <double>{
+        for (final SceneNode node in nodes)
+          if (!node.isPlaceholder) node.sectorFraction01,
+      };
+      expect(fractions.length, 9, reason: 'ability 有 9 个不同取值');
+      for (final double f in fractions) {
+        expect(f, greaterThan(0));
+        expect(f, lessThan(1), reason: '取段中线，不压在扇区边界上');
+      }
+    });
+
     test('主轴缺省继承 manifest 默认，两者都缺则落「未声明」扇区（ADR-0003）', () {
       final int abilityIndex = sixAxisKeys.indexOf('ability');
       expect(abilityIndex, 3, reason: '六轴键序见 constants.sixAxisKeys');
