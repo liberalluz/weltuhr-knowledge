@@ -6,6 +6,12 @@
 ///
 /// 三处判据的选择都在下面逐条写了理由，因为它们各自与一处 spec 的字面读法
 /// 不同，选错会让整个视图层的行为歪掉。
+///
+/// ## 一组的包，一个作用域
+///
+/// `SPEC-VIEW-031` 要两种覆盖面：`Z0` 搜全部空间、`Z1` 内只搜本空间。入参因此是
+/// 「装进内存的全部空间」+ 可选作用域 —— 收单包的写法只能表达后者，而前者迟早
+/// 要改签名。
 library;
 
 import '../entities/content.dart';
@@ -37,6 +43,8 @@ class LocateHit {
     required this.target,
     required this.label,
     required this.strength,
+    required this.spaceId,
+    required this.spaceName,
     this.axisKey,
     this.inScope = true,
   });
@@ -53,6 +61,15 @@ class LocateHit {
   final String label;
 
   final MatchStrength strength;
+
+  /// 这条命中**属于哪个空间**（`SPEC-VIEW-031` 起命中集可跨空间）。
+  ///
+  /// 不给它的话，两个空间里同名的项在命中集里长得一模一样，而 `target` 是
+  /// 空间内唯一的 id —— 跨空间撞 id 时连去重都会把它们并成一条。
+  final String spaceId;
+
+  /// 空间名，供结果行写前缀（`SPEC-VIEW-033`）。取值来自 `Space.name`。
+  final String spaceName;
 
   /// 仅筛选类：轴键（`subject` / `ability` …）。落点类为 `null`。
   final String? axisKey;
@@ -98,10 +115,31 @@ class LocateResult {
 }
 
 /// 定位引擎。
+///
+/// ## 为什么收的是「一组包」而不是一个包
+///
+/// `SPEC-VIEW-031`：`Z0` 下搜全部空间（它本就是跨空间视角），`Z1` 内默认只搜
+/// 本空间。两件事都要能表达，于是引擎的入参是**已经装进内存的全部空间** +
+/// 一个可选的作用域。收单个包的写法只能表达后者，而前者要改函数签名 ——
+/// 迟早要改，不如一开始就收一组。
+///
+/// 作用域只影响**搜哪几个包**，不影响任何判据：三态、排序、可用性都还在
+/// 同一份逻辑里。这也意味着「跨空间」不需要第二套引擎。
 class Locator {
-  const Locator(this._pack);
+  const Locator(this.packs, {this.spaceId});
 
-  final LoadedPack _pack;
+  /// 只有一个空间时的退化写法：此刻「全部空间」就等于「本空间」。
+  Locator.single(LoadedPack pack) : this(<LoadedPack>[pack]);
+
+  /// 装进内存的全部空间。空列表是合法的（返回空命中集，不抛）。
+  final List<LoadedPack> packs;
+
+  /// 作用域：只搜这个空间。`null` = 全部空间（`SPEC-VIEW-031`）。
+  ///
+  /// 传进来的 id 不在 [packs] 里时结果为空，顺序与集合不匹配时**不**放宽成
+  /// 「全部空间」—— 静默放宽会让「本空间没搜到」变成「全部空间没搜到」，
+  /// 而这两种结论对用户的含义完全不同。
+  final String? spaceId;
 
   /// 定位。
   ///
@@ -119,55 +157,71 @@ class Locator {
       );
     }
 
+    final String? scope = spaceId;
+    final Iterable<LoadedPack> searched = scope == null
+        ? packs
+        : packs.where((LoadedPack pack) => pack.space.id == scope);
+
     final Map<String, LocateHit> best = <String, LocateHit>{};
 
-    void consider(
-      LocateKind kind,
-      String target,
-      String label, {
-      String? axisKey,
-      bool inScope = true,
-    }) {
-      final MatchStrength? strength = _match(label, needle);
-      if (strength == null) {
-        return;
-      }
-      final String key = '${kind.name}|${axisKey ?? ''}|$target';
-      final LocateHit? known = best[key];
-      // 同一目标被多处命中（如标题与 `scheme.nodes` 的 id 都中）只留最强那条。
-      if (known != null && known.strength.index <= strength.index) {
-        return;
-      }
-      best[key] = LocateHit(
-        kind: kind,
-        target: target,
-        label: label,
-        strength: strength,
-        axisKey: axisKey,
-        inScope: inScope,
-      );
-    }
+    for (final LoadedPack pack in searched) {
+      // 不用 `spaceId` 作局部名：它与本类的 `spaceId`（作用域）同名，读代码时
+      // 两个东西会混成一件。
+      final String hitSpaceId = pack.space.id;
+      final String hitSpaceName = pack.space.name;
 
-    consider(LocateKind.space, _pack.space.id, _pack.space.name);
-    for (final String domainId in _pack.space.domainIds) {
-      consider(LocateKind.domain, domainId, domainId);
-    }
-    for (final Item item in _pack.items) {
-      consider(LocateKind.item, item.id, item.title, inScope: item.inScope);
-      for (final MapEntry<String, String> axis in item.sixAxis.entries) {
-        consider(LocateKind.axis, axis.value, axis.value, axisKey: axis.key);
-      }
-    }
-    for (final Scheme scheme in _pack.schemes) {
-      for (final String nodeId in scheme.nodes) {
-        // 体系的节点可能就是圈外项的 id：`inScope` 要与项命中的判法一致，
-        // 否则同一个项会在这里被当成「可用」。
-        consider(
-          LocateKind.item,
-          nodeId,
-          nodeId,
-          inScope: _pack.itemOf(nodeId)?.inScope ?? true,
+      void consider(
+        LocateKind kind,
+        String target,
+        String label, {
+        String? axisKey,
+        bool inScope = true,
+      }) {
+        final MatchStrength? strength = _match(label, needle);
+        if (strength == null) {
+          return;
+        }
+        // 去重键必须带空间：`target` 只在空间内唯一，跨空间撞 id 时同一把键
+        // 会把两条命中并成一条（用户会看到「只有一个空间有」）。
+        final String key = '$hitSpaceId|${kind.name}|${axisKey ?? ''}|$target';
+        final LocateHit? known = best[key];
+        // 同一目标被多处命中（如标题与 `scheme.nodes` 的 id 都中）只留最强那条。
+        if (known != null && known.strength.index <= strength.index) {
+          return;
+        }
+        best[key] = LocateHit(
+          kind: kind,
+          target: target,
+          label: label,
+          strength: strength,
+          spaceId: hitSpaceId,
+          spaceName: hitSpaceName,
+          axisKey: axisKey,
+          inScope: inScope,
         );
+      }
+
+      consider(LocateKind.space, pack.space.id, pack.space.name);
+      for (final String domainId in pack.space.domainIds) {
+        consider(LocateKind.domain, domainId, domainId);
+      }
+      for (final Item item in pack.items) {
+        consider(LocateKind.item, item.id, item.title, inScope: item.inScope);
+        for (final MapEntry<String, String> axis in item.sixAxis.entries) {
+          consider(LocateKind.axis, axis.value, axis.value, axisKey: axis.key);
+        }
+      }
+      for (final Scheme scheme in pack.schemes) {
+        for (final String nodeId in scheme.nodes) {
+          // 体系的节点可能就是圈外项的 id：`inScope` 要与项命中的判法一致，
+          // 否则同一个项会在这里被当成「可用」。
+          consider(
+            LocateKind.item,
+            nodeId,
+            nodeId,
+            inScope: pack.itemOf(nodeId)?.inScope ?? true,
+          );
+        }
       }
     }
 
@@ -185,6 +239,9 @@ class Locator {
   ///
   /// 判在 `usableHits` 上：只命中圈外项时三态是 `none`（**没成**），而「为什么
   /// 没成」归分诊 —— 见 [LocateHit.inScope]。
+  ///
+  /// 跨空间命中集下这条判据不用改：两个空间各有一处精确命中时 `top.length == 2`
+  /// ⇒ `partial`，用户确实要在两条之间选一次。
   LocateState _stateOf(List<LocateHit> hits) {
     final List<LocateHit> usable = hits
         .where((LocateHit hit) => hit.inScope)
@@ -224,7 +281,13 @@ class Locator {
     if (byKind != 0) {
       return byKind;
     }
-    return a.target.compareTo(b.target);
+    final int byTarget = a.target.compareTo(b.target);
+    if (byTarget != 0) {
+      return byTarget;
+    }
+    // 同 id 跨空间：最后按空间 id 定序。跨空间命中集里这是唯一能同时满足
+    // 「与输入顺序无关」和「两次查询顺序一致」的收尾键。
+    return a.spaceId.compareTo(b.spaceId);
   }
 
   /// `SPEC-VIEW-029` 的第三键「未学优先」**未实现**：它要掌握度，而掌握度由

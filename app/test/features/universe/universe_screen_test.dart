@@ -24,6 +24,7 @@ import 'package:project_knowledge/features/universe/tree_view.dart';
 import 'package:project_knowledge/features/universe/universe_screen.dart';
 
 import '../../support/alpha_pack.dart';
+import '../../support/pack_fixture.dart';
 
 Future<void> _pump(WidgetTester tester) async {
   // 场景缓慢自转 ⇒ `repeat()` 永不停，`pumpAndSettle` 永远等不到静止，
@@ -40,12 +41,16 @@ Future<void> _pumpScreen(
   LoadedPack? pack,
   SceneBundle? scene,
   ViewMode mode = ViewMode.universe,
+  List<LoadedPack> otherSpaces = const <LoadedPack>[],
+  ZoomLevel zoom = ZoomLevel.z1,
 }) async {
   await tester.pumpWidget(
     MaterialApp(
       home: UniverseScreen(
         scene: scene ?? buildSyntheticScene(),
         pack: pack,
+        otherSpaces: otherSpaces,
+        initialZoom: zoom,
         initialMode: mode,
       ),
     ),
@@ -321,7 +326,7 @@ void main() {
       await openLocate(tester);
       await type(tester, '计算机科学');
 
-      final LocateHit hit = Locator(pack).locate('计算机科学').hits.first;
+      final LocateHit hit = Locator.single(pack).locate('计算机科学').hits.first;
       expect(hit.kind, LocateKind.axis, reason: '前提：α 包里这是轴值');
 
       await tester.tap(find.byKey(locateRowKey(hit)));
@@ -350,7 +355,7 @@ void main() {
       await _pumpScreen(tester, pack: pack);
       await openLocate(tester);
       await type(tester, '计算机科学');
-      final LocateHit hit = Locator(pack).locate('计算机科学').hits.first;
+      final LocateHit hit = Locator.single(pack).locate('计算机科学').hits.first;
       await tester.tap(find.byKey(locateRowKey(hit)));
       await _pump(tester);
       expect(find.byKey(hudFilterChipsKey), findsOneWidget);
@@ -377,7 +382,7 @@ void main() {
       await tester.testTextInput.receiveAction(TextInputAction.done);
       await _pump(tester);
 
-      final LocateHit hit = Locator(pack).locate('装饰器').hits.first;
+      final LocateHit hit = Locator.single(pack).locate('装饰器').hits.first;
       expect(find.byKey(locateOverlayKey), findsNothing);
       expect(
         find.text('宇宙 › Z4 单星'),
@@ -474,12 +479,50 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
+    testWidgets('作用域跟着档位走：Z0 是全部空间，Z1 只搜本空间（SPEC-VIEW-031）', (
+      WidgetTester tester,
+    ) async {
+      final LoadedPack pack = loadAlphaPack();
+      // 另一个空间只用来验作用域，不进宇宙 —— 换根不在本笔。
+      final LoadedPack other = fixturePack(
+        const <FixtureItem>[FixtureItem('go/fn-closure', '闭包')],
+        spaceId: 'go',
+        spaceName: 'Go 语言',
+      );
+      final SceneBundle scene = _alphaScene(pack);
+
+      // `Z1`：窄作用域 ⇒ 结果区顶部给一行「在全部空间中搜索」。
+      await _pumpScreen(
+        tester,
+        pack: pack,
+        scene: scene,
+        otherSpaces: <LoadedPack>[other],
+      );
+      await openLocate(tester);
+      await type(tester, '装饰器');
+      expect(find.byKey(locateSearchAllKey), findsOneWidget);
+
+      // `Z0`：本来就是跨空间视角 ⇒ 不给那一行（它按下去不会改变任何东西）。
+      await tester.pumpWidget(const SizedBox.shrink());
+      await _pumpScreen(
+        tester,
+        pack: pack,
+        scene: scene,
+        otherSpaces: <LoadedPack>[other],
+        zoom: ZoomLevel.z0,
+      );
+      await openLocate(tester);
+      await type(tester, '装饰器');
+      expect(find.byKey(locateSearchAllKey), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+
     testWidgets('筛选后树里只剩匹配的项（SPEC-VIEW-021）', (WidgetTester tester) async {
       final LoadedPack pack = loadAlphaPack();
       await _pumpScreen(tester, pack: pack, mode: ViewMode.tree);
       await openLocate(tester);
       await type(tester, '计算机科学');
-      final LocateHit hit = Locator(pack).locate('计算机科学').hits.first;
+      final LocateHit hit = Locator.single(pack).locate('计算机科学').hits.first;
       await tester.tap(find.byKey(locateRowKey(hit)));
       await _pump(tester);
 
@@ -495,7 +538,7 @@ void main() {
           .length;
       await openLocate(tester);
       await type(tester, ability);
-      final LocateHit abilityHit = Locator(pack)
+      final LocateHit abilityHit = Locator.single(pack)
           .locate(ability)
           .hits
           .firstWhere((LocateHit h) => h.kind == LocateKind.axis);
