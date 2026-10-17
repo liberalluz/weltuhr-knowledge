@@ -5,24 +5,26 @@
 
 ## 一、怎么读
 
-- **第 0 步永远是 [FND](FND-foundation.md)** —— 其余七份都引用其中的术语与判据。
+- **第 0 步永远是 [FND](FND-foundation.md)** —— 其余九份都引用其中的术语与判据。
 - 每份开头都有「前置阅读」与「明确不管」两行。**「明确不管」是防重复的手段，不是可选项** —— 它指定了该内容归谁管。
 - 数值一律不写在正文里，只写表项 id（如「见 `C-01`」），去 [`../reference/constants.md`](../reference/constants.md) 查。
 
-## 二、八份主题文档
+## 二、十份主题文档
 
 | 文档 | 主体 | 条数 | 前置阅读 | 明确不管（归谁） |
 |---|---|---|---|---|
 | [FND](FND-foundation.md) | KST 三元组 · 六轴 + 三层 · 六要件三态 · `⪯` · 坐标与容器之辨 · 事件折叠底座 | 16 | — | 视距与通道（VIEW）· 包格式（PACK） |
-| [VIEW](VIEW-views.md) | Z0–Z4 · 六通道两叠加 · 三视图投影 · HUD 七区块 · 树四类行 · 详情六入口两壳 · 快速定位 | 34 | FND | 掌握度公式（QUANT）· 笔记内容（NOTE） |
+| [VIEW](VIEW-views.md) | Z0–Z4 · 六通道两叠加 · 三视图投影 · HUD 七区块（不含事件计数）· 树四类行 · 详情六入口两壳 · 快速定位 | 35 | FND | 掌握度公式（QUANT）· 笔记内容（NOTE） |
 | [PACK](PACK-content-pack.md) | 边界三判据 · 一空间一包 · pack schema · 稳定 `Item.id` · overlay 双平面 · 版本迁移 | 18 | FND | 事件字段（reference/event-types）· 审核裁定（GOV） |
 | [PLAN](PLAN-planning.md) | 源=材料 · 体系=顺序 · 方法=动作+判据 · 三段自建 · 逆序数 · `Plan` 实体 · 实时预览 · 候选排序 | 21 | FND · PACK | 方法与判据的执行（STEP） |
 | [STEP](STEP-learning-steps.md) | 七步行为 · Runner 三入队源 · 会话边界 · 步骤游标 · 六类执行算子 · 检验两出口 · 保持 · 毕业 | 34 | FND · PLAN | SRS 参数与公式（QUANT） |
 | [QUANT](QUANT-quantification.md) | 掌握度两维 · 进度离散 · 三层单调状态 · `verified/checked` · FSRS 参数落位 | 15 | FND · STEP | 视觉表达（VIEW）· 常量数值（reference/constants） |
 | [NOTE](NOTE-notes.md) | `Note` 实体 · 三层内容 · 两套切换 · 单向导出三戳 · 按节版本 · 与判定的隔离 | 19 | FND · PACK · STEP | 模板排版（平台声明）· 笔记内容正确性（内容作者） |
 | [GOV](GOV-governance.md) | 提交四裁定 · 最小三字段 · 即入 overlay · 跨设备 HLC 合并 · 孤儿项 · 降级五档 | 14 | FND · PACK | 包格式（PACK） |
+| [ACC](ACC-accounts.md) | 账号为使用前提 · 账号/登录方式分层 · 三渠道 · 注册五步 · 会话双令牌 · `userId` 接缝 | 15 | FND · event-types | 事件搬运（SYNC）· 包格式（PACK）· 治理裁定权（GOV） |
+| [SYNC](SYNC-sync.md) | 只搬不判 · 双向游标 · 三端点 · 三张表 · 包版本三态 · 触发时机 · 可中断增量 | 16 | FND · GOV · ACC · event-types | 事件类型（event-types）· 合并语义（GOV）· 账号与会话（ACC） |
 
-合计 **171 条编号条目**（八份文档各自 `1..N` 连续编号，无跨文档重号）。
+合计 **203 条编号条目**（十份文档各自 `1..N` 连续编号，无跨文档重号）。
 
 ## 三、参考层（`../reference/`）
 
@@ -53,6 +55,7 @@
 | **X-06 声明驱动零分支** | 空间 / 语言 / 方法差异由内容包与平台声明承载，代码不得按具体空间分支 | PACK · PLAN · STEP |
 | **X-07 已学不可撤销** | `item_passed` 是 append-only 事件；只有包版本迁移可改变其指向 | QUANT · PACK · GOV |
 | **X-08 顺序与范围分离** | 体系（顺序）定义在空间级；`target`（范围）随视距。不得给域单独配体系 | FND · PLAN · NOTE |
+| **X-09 同步只搬不判** | 同步层只搬运事件与校验包版本，**不去重、不做冲突解决、不计算状态**；合并一律由客户端 `fold` 完成。违反它不会有任何测试变红 —— 故须显式成条 | SYNC · GOV · PACK |
 
 ## 五、编号规则
 
@@ -75,8 +78,19 @@
 | TBD-9 | 搜索模糊匹配阈值（`C-28`），须实测标定 | VIEW |
 | TBD-10 | 候选卡的元素排布细节（三段一致的三段卡片） | PLAN |
 | TBD-11 | 总览链的具体形态（分段来自 `methodProfile`，但视觉待定） | QUANT |
+| TBD-12 | 事件累计量（复习次数 / 累计时长 / 学习天数）是否进首屏，以及多设备重合时的呈现口径 | VIEW |
+| TBD-13 | 多设备同步完成的提示文案（须报重合项数，不只说「已合并 N 条」） | VIEW |
+| TBD-14 | 邮件服务商选型（自建 SMTP / Resend / Postmark / SES）；私有化交付常要求走客户自己的 SMTP，会影响端点抽象 | ACC |
+| TBD-15 | 短信服务商与模板报备；国际号码的区号选择器形态 | ACC |
+| TBD-16 | Windows 上的 Apple 登录回调方式（loopback 监听 / 自定义 URL scheme） | ACC |
+| TBD-17 | 条款与隐私政策勾选的时点（注册时 / 首次启动） | ACC |
+| TBD-18 | 账号删除的具体形态与冷却期（`v1.0.0` 上架硬性要求） | ACC |
 
 > **已裁定（2026-10-17）**：TBD-7 → `C-25` = **0.5**（[QUANT-008](QUANT-quantification.md)）· TBD-8 → `C-03` = **0.90**。编号保留不复用、不重排，以免既有引用失效。
+
+> **TBD-12 / TBD-13 为什么现在挂而不现在定**：跨设备同步尚未开工（`GOV-011` 只裁了「不去重、都重放」，没裁呈现）。而当前 [VIEW-018](VIEW-views.md) 的 HUD 七区块与 [QUANT-011](QUANT-quantification.md) 的两个分区**本来就不含任何事件计数**，所以这两条在 `v0.1.0` 无实现压力。挂 TBD 的目的是：将来真要加统计卡片时，**先定口径再加**，而不是先加一个会随设备数翻倍的裸数字。详见 [VIEW](VIEW-views.md) 的 `VIEW-035`（`VIEW-018` 末尾有指针）。
+
+> **TBD-14–TBD-18 为什么不阻塞**：前四条是外部服务商与平台回调方式，[`ACC-006`](ACC-accounts.md) 已按批次把它们各自隔离在一个版本里，选型晚定只影响该批开工，不影响条目结构；`TBD-18` 属 `v1.0.0` 上架要求，届时随审核材料一并定。**五条都不阻塞 `v0.1.0`。**
 
 > TBD 与「未提出的需求」不同：TBD 是**已知要定、暂不必定**；未提出的需求（如推荐引擎一键生成、跨空间统一队列）已在 [NOT 清单](../reference/not-list.md) 中明确排除或挂待办。
 
