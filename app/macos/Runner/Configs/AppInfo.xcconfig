@@ -8,7 +8,7 @@
 PRODUCT_NAME = project_knowledge
 
 // The application's bundle identifier
-PRODUCT_BUNDLE_IDENTIFIER = com.liberalluz.projectKnowledge
+PRODUCT_BUNDLE_IDENTIFIER = com.weltuhr.projectKnowledge
 
 // The copyright displayed in application information
-PRODUCT_COPYRIGHT = Copyright © 2026 com.liberalluz. All rights reserved.
+PRODUCT_COPYRIGHT = Copyright © 2026 liberal. All rights reserved.
