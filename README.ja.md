@@ -37,8 +37,6 @@ cd ../content && python tools/build.py
 cd ../app && flutter run -d windows
 ```
 
-> ⚠️ **骨組み段階**：上記は取り決めたコマンドです。`app/` `server/` `content/` の足場はまだ生成されておらず、各コマンドはコードが入った時点で逐次検証します。**「動くはず」を「動いた」とはしません。**
-
 ## ディレクトリ構成
 
 | ディレクトリ | 責務 |

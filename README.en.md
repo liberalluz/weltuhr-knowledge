@@ -37,8 +37,6 @@ cd ../content && python tools/build.py
 cd ../app && flutter run -d windows
 ```
 
-> ⚠️ **Skeleton stage**: the commands above are the agreed ones. The `app/` `server/` `content/` scaffolds have not been generated yet, so each command will be verified once the code lands. **"Ought to run" is not "has run".**
-
 ## Directory map
 
 | Directory | Responsibility |

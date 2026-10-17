@@ -37,8 +37,6 @@ cd ../content && python tools/build.py
 cd ../app && flutter run -d windows
 ```
 
-> ⚠️ **Fase di scheletro**: i comandi sopra sono quelli concordati. Le impalcature di `app/` `server/` `content/` non sono ancora generate, ogni comando sarà verificato man mano che il codice arriva. **«Dovrebbe funzionare» non è «ha funzionato».**
-
 ## Mappa delle directory
 
 | Directory | Responsabilità |

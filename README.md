@@ -35,8 +35,6 @@ cd ../content && python tools/build.py
 cd ../app && flutter run -d windows
 ```
 
-> ⚠️ **骨架阶段**：以上为约定命令，`app/` `server/` `content/` 的脚手架尚未生成，命令在代码落地后逐条验证。**不以「应该能跑」当「已跑通」。**
-
 ## 目录导航
 
 | 目录 | 职责 |

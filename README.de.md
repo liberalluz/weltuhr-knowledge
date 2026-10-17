@@ -37,8 +37,6 @@ cd ../content && python tools/build.py
 cd ../app && flutter run -d windows
 ```
 
-> ⚠️ **Skelettphase**: die obigen Befehle sind die vereinbarten. Die Gerüste von `app/` `server/` `content/` sind noch nicht erzeugt, jeder Befehl wird nach dem Landen des Codes einzeln verifiziert. **„Müsste laufen" ist nicht „ist gelaufen".**
-
 ## Verzeichnisübersicht
 
 | Verzeichnis | Zuständigkeit |

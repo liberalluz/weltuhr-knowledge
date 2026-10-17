@@ -37,8 +37,6 @@ cd ../content && python tools/build.py
 cd ../app && flutter run -d windows
 ```
 
-> ⚠️ **Stade de squelette** : les commandes ci-dessus sont celles convenues. Les échafaudages de `app/` `server/` `content/` ne sont pas encore générés ; chaque commande sera vérifiée au fur et à mesure que le code arrive. **« Devrait tourner » n'est pas « a tourné ».**
-
 ## Arborescence
 
 | Répertoire | Responsabilité |
