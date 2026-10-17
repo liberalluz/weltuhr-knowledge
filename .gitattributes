@@ -1,0 +1,93 @@
+# ════════════════════════════════════════════════════════════════════
+# 换行与二进制治理 —— 跨平台一致性
+#
+# 目的：
+#   1. 消除 core.autocrlf=true 带来的「LF will be replaced by CRLF」噪音；
+#   2. 保证 macOS / Windows / Linux 三端克隆出的工作区换行一致，
+#      不产生「只有换行不同」的伪 diff；
+#   3. 明确声明二进制，任何平台都不做换行转换与文本 diff。
+#
+# 规范来源：docs/guides/git-conventions.md §1.5（换行与二进制）
+# 本文件由 S0 落到仓根，`check_s0.py` 判存在且含 `eol=lf`。
+# ════════════════════════════════════════════════════════════════════
+
+# ─── 默认：文本一律以 LF 入库、以 LF 检出 ───────────────────────────
+* text=auto eol=lf
+
+# ─── 显式文本（防 Git 误判；统一 LF）───────────────────────────────
+# 应用与工具链源码
+*.dart            text eol=lf
+*.py              text eol=lf
+*.cmake           text eol=lf
+*.swift           text eol=lf
+*.h               text eol=lf
+*.cpp             text eol=lf
+*.cc              text eol=lf
+*.rc              text eol=lf
+*.manifest        text eol=lf
+# 内容与配置
+*.md              text eol=lf
+*.yaml            text eol=lf
+*.yml             text eol=lf
+*.json            text eol=lf
+*.csv             text eol=lf
+*.lock            text eol=lf
+*.txt             text eol=lf
+# 平台工程文件（`flutter create` 生成，仍属文本）
+*.plist           text eol=lf
+*.xcconfig        text eol=lf
+*.pbxproj         text eol=lf
+*.xcscheme        text eol=lf
+*.xcsettings      text eol=lf
+*.xcworkspacedata text eol=lf
+*.storyboard      text eol=lf
+*.xib             text eol=lf
+*.entitlements    text eol=lf
+
+# ─── Windows 脚本必须保持 CRLF（当前可能无此类文件，为打包 / CI 预留）──
+*.bat             text eol=crlf
+*.cmd             text eol=crlf
+*.ps1             text eol=crlf
+
+# ─── 二进制：禁换行转换、禁文本 diff ──────────────────────────────
+# 图像（平台图标等）
+*.png             binary
+*.jpg             binary
+*.jpeg            binary
+*.gif             binary
+*.webp            binary
+*.ico             binary
+*.icns            binary
+# 字体
+*.ttf             binary
+*.otf             binary
+*.woff            binary
+*.woff2           binary
+# 音频 / 视频
+*.mp3             binary
+*.m4a             binary
+*.wav             binary
+*.ogg             binary
+*.opus            binary
+*.mp4             binary
+# 归档与可执行
+*.zip             binary
+*.gz              binary
+*.tar             binary
+*.7z              binary
+*.exe             binary
+*.dll             binary
+*.so              binary
+*.dylib           binary
+*.a               binary
+*.lib             binary
+# 数据库与文档
+*.db              binary
+*.sqlite          binary
+*.sqlite3         binary
+*.pdf             binary
+
+# ─── 机器生成物：托管平台折叠 diff、不计入语言统计 ────────────────
+app/windows/**    linguist-generated=true
+app/macos/**      linguist-generated=true
+app/ios/**        linguist-generated=true

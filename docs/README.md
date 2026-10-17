@@ -9,11 +9,21 @@
 |---|---|---|
 | [design/](design/00-index.md) | **设计规格** —— 产品与系统的「是什么」 | 活文档，不设版号 |
 | [reference/](reference/channel-table.md) | **参考层** —— 横切六表（通道 / 常量 / 事件类型 / 实体字段 / 术语 / NOT 清单）+ 上游方法论长文 | 活文档，不设版号 |
-| [deliverables/](deliverables/) | **交付物** —— 按 GB/T 8567 组织的计划、需求、设计、测试、验收文档 | `vX.Y.Z` 独立递增 |
+| [deliverables/](deliverables/README.md) | **交付物** —— 按 GB/T 8567 组织的**六段 25 种**（计划 / 需求 / 设计 / 测试 / 交付 / 总结） | `vX.Y.Z` 独立递增 |
 | [guides/](guides/) | **操作指南** —— 怎么做（环境、Git、依赖许可…） | 活文档，不设版号 |
 | [adr/](adr/) | **架构决策记录** —— 为什么这么选，含被否方案与代价 | 活文档，不设版号 |
 
 **判据**：讲「是什么 / 为什么」→ `design/` 或 `adr/`；讲「多少次 / 哪些值」→ `reference/`；讲「怎么操作」→ `guides/`；要对外交付、需签字 → `deliverables/`。
+
+三个**唯一权威处**（别处只引用不复制）：
+
+| 内容 | 唯一权威处 |
+|---|---|
+| 交付物清单与命名（六段 25 种） | [`deliverables/README.md`](deliverables/README.md) §一 |
+| 排期、批次、阶段与目标版本 | [`deliverables/01-plan/SDP-软件开发计划.md`](deliverables/01-plan/SDP-软件开发计划.md) §四 |
+| 基线与配置项 | [`deliverables/01-plan/SCMP-软件配置管理计划.md`](deliverables/01-plan/SCMP-软件配置管理计划.md) §三 |
+
+目录级约定与红线见 [`AGENTS.md`](AGENTS.md)。
 
 ## 二、设计规格（`design/`）
 
