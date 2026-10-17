@@ -128,5 +128,6 @@ enum MethodOrigin { platform, pack, user }
 /// 视图模式：底部导航是视距刻度，不是功能标签栏（`N-11`）。
 enum ViewMode { universe, tree, detail, locateResult, progress, practice }
 
-/// 五档视距（`SPEC-VIEW-001`）。
-enum ZoomLevel { z0, z1, z2, z3, z4 }
+// `ZoomLevel` **不在这里** —— 它带 `code` / `label` 两个界面字段，是
+// `core/view/zoom.dart` 的 `enum ZoomLevel`。两个同名枚举并存过一阵，
+// 两边一起 import 就 `ambiguous_import`；唯一出处比「枚举都放 enums.dart」重要。
