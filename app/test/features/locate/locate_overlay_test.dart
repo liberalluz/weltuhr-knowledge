@@ -13,6 +13,7 @@ import 'package:project_knowledge/core/pack/pack_parse.dart';
 import 'package:project_knowledge/features/locate/locate_overlay.dart';
 
 import '../../support/alpha_pack.dart';
+import '../../support/pack_fixture.dart';
 
 void main() {
   late LoadedPack pack;
@@ -24,7 +25,10 @@ void main() {
   Future<void> pump(
     WidgetTester tester, {
     required void Function(LocateResult, LocateHit) onPick,
+    void Function(String itemId)? onPickNear,
     bool withPack = true,
+    String? domainId,
+    LoadedPack? packOverride,
     String? spacePrefix,
     VoidCallback? onDismiss,
   }) async {
@@ -35,9 +39,11 @@ void main() {
             width: 900,
             height: 700,
             child: LocateOverlay(
-              pack: withPack ? pack : null,
+              pack: withPack ? (packOverride ?? pack) : null,
               spacePrefix: spacePrefix,
+              domainId: domainId,
               onPick: onPick,
+              onPickNear: onPickNear ?? (String _) {},
               onDismiss: onDismiss ?? () {},
             ),
           ),
@@ -128,13 +134,22 @@ void main() {
     expect(dismissed, 1);
   });
 
-  testWidgets('无命中只说没有，不出现新增入口（SPEC-VIEW-030）', (WidgetTester tester) async {
+  testWidgets('无命中先给分诊，不直接给新增入口（SPEC-VIEW-030）', (WidgetTester tester) async {
     await pump(tester, onPick: (_, _) {});
-    await type(tester, '这个词包里一定没有');
+    await type(tester, '虚拟环境');
 
-    expect(find.byKey(locateResultsKey), findsNothing);
-    final String hint = tester.widget<Text>(find.textContaining('没有命中')).data!;
-    expect(hint.contains('新增'), isFalse, reason: '新增入口不能挂在「搜不到」上');
+    expect(find.byKey(locateResultsKey), findsNothing, reason: '没有命中就不该有结果列表');
+    expect(
+      find.byKey(locateTriageKey),
+      findsOneWidget,
+      reason: '「没有」不是一种状态，是四类',
+    );
+    expect(
+      find.text('新增这一项'),
+      findsNothing,
+      reason: '①不知道往哪个域放（无域上下文）②还没有候选可给 —— 两样都没有就只剩需求信号',
+    );
+    expect(find.byKey(locateFormKey), findsNothing);
   });
 
   testWidgets('多空间才带前缀，单空间不重复写空间名（SPEC-VIEW-033）', (WidgetTester tester) async {
@@ -166,5 +181,121 @@ void main() {
     expect(find.byKey(locateHintKey), findsOneWidget);
     expect(find.textContaining('没有内容包'), findsOneWidget);
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('类 ④ 无域上下文：只给「记下这个需求」，按下如实说没落库（SPEC-VIEW-030）', (
+    WidgetTester tester,
+  ) async {
+    await pump(tester, onPick: (_, _) {});
+    await type(tester, '虚拟环境');
+
+    expect(find.text('记下这个需求'), findsOneWidget);
+    expect(find.textContaining('不承诺'), findsOneWidget);
+
+    await tester.tap(find.byKey(locateTriageActionKey));
+    await tester.pump();
+    expect(find.byKey(locateNoticeKey), findsOneWidget);
+    expect(
+      find.textContaining('没有写入任何数据'),
+      findsOneWidget,
+      reason: '审核队列在 B4 才接入 —— 不能把没写成的说成已提交',
+    );
+  });
+
+  testWidgets('类 ②：先给邻近候选，点候选就走落点（SPEC-VIEW-030）', (WidgetTester tester) async {
+    String? nearId;
+    await pump(
+      tester,
+      onPick: (_, _) {},
+      onPickNear: (String id) => nearId = id,
+    );
+    await type(tester, '装饰器参数');
+
+    expect(find.text('都不对'), findsOneWidget);
+    expect(
+      find.text('新增这一项'),
+      findsNothing,
+      reason: '新增入口只能挂在「已给过候选且用户说都不对」之后',
+    );
+    expect(find.byKey(locateNearRowKey('python/fn-decorator')), findsOneWidget);
+
+    await tester.tap(find.byKey(locateNearRowKey('python/fn-decorator')));
+    await tester.pump();
+    expect(nearId, 'python/fn-decorator');
+  });
+
+  testWidgets('类 ②「都不对」：有域上下文才展开表单，标题预填输入（SPEC-VIEW-030）', (
+    WidgetTester tester,
+  ) async {
+    await pump(tester, onPick: (_, _) {}, domainId: 'python/func');
+    await type(tester, '装饰器参数');
+    await tester.tap(find.byKey(locateTriageActionKey));
+    await tester.pump();
+
+    expect(find.byKey(locateFormKey), findsOneWidget);
+    expect(find.textContaining('python/func'), findsOneWidget);
+    final TextField title = tester.widget<TextField>(
+      find.byKey(locateFormTitleKey),
+    );
+    expect(title.controller?.text, '装饰器参数', reason: '预填用户刚才打的词');
+  });
+
+  testWidgets('没有域上下文时「都不对」不给表单，只记需求（SPEC-VIEW-030）', (
+    WidgetTester tester,
+  ) async {
+    await pump(tester, onPick: (_, _) {});
+    await type(tester, '装饰器参数');
+    await tester.tap(find.byKey(locateTriageActionKey));
+    await tester.pump();
+
+    expect(find.byKey(locateFormKey), findsNothing, reason: '表单第一格就得说放哪个域');
+    expect(find.byKey(locateNoticeKey), findsOneWidget);
+  });
+
+  testWidgets('表单是死的一次性查询：填它不改外层输入、提交也不留筛选（SPEC-VIEW-032）', (
+    WidgetTester tester,
+  ) async {
+    await pump(tester, onPick: (_, _) {}, domainId: 'python/func');
+    await type(tester, '虚拟环境');
+    expect(find.text('新增这一项'), findsOneWidget);
+
+    await tester.tap(find.byKey(locateTriageActionKey));
+    await tester.pump();
+    await tester.enterText(find.byKey(locateFormTitleKey), '虚拟环境与 venv');
+    await tester.pump();
+
+    final TextField field = tester.widget<TextField>(
+      find.byKey(locateFieldKey),
+    );
+    expect(field.controller?.text, '虚拟环境', reason: '表单是另一次查询，不回头改搜索词');
+
+    await tester.tap(find.byKey(locateFormSubmitKey));
+    await tester.pump();
+    expect(find.byKey(locateNoticeKey), findsOneWidget);
+    expect(find.textContaining('没有写入任何数据'), findsOneWidget);
+  });
+
+  testWidgets('类 ①：圈外项不列成结果，只给「申请纳入」（SPEC-VIEW-030）', (
+    WidgetTester tester,
+  ) async {
+    final LoadedPack fixed = fixturePack(const <FixtureItem>[
+      FixtureItem('python/fn-metaclass', '元类', inScope: false),
+      FixtureItem('python/lex-keyword', '关键字'),
+    ]);
+    await pump(tester, onPick: (_, _) {}, packOverride: fixed);
+    await type(tester, '元类');
+
+    expect(find.byKey(locateResultsKey), findsNothing);
+    expect(find.textContaining('唯一命中'), findsNothing, reason: '圈外项跳过去是一片空白');
+    expect(find.textContaining('都不在圈内'), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byKey(locateTriageKey),
+        matching: find.text('元类'),
+      ),
+      findsOneWidget,
+      reason: '要说清是哪一项在圈外 —— 只写「圈外」用户不知道它到底存不存在',
+    );
+    expect(find.text('申请纳入'), findsOneWidget);
   });
 }

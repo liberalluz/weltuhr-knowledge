@@ -329,6 +329,85 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
+    testWidgets('关掉浮层后 ⌘K 还能再开 —— 焦点不随浮层一起消失（SPEC-VIEW-026）', (
+      WidgetTester tester,
+    ) async {
+      await _pumpScreen(tester, pack: loadAlphaPack());
+
+      await openLocate(tester);
+      expect(find.byKey(locateOverlayKey), findsOneWidget);
+      await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+      await _pump(tester);
+      expect(find.byKey(locateOverlayKey), findsNothing);
+
+      // 浮层里的输入框占过主焦点；它被销毁时若不把焦点收回屏幕根，
+      // 第二遍 `⌘K` 就没有节点接着冒泡 —— 表现是「快捷键只灵一次」。
+      await openLocate(tester);
+      expect(
+        find.byKey(locateOverlayKey),
+        findsOneWidget,
+        reason: '快捷键必须能重复触发，否则「用完即走」就成了「用完就没了」',
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('邻近候选点了就是落点，与命中同一条路径（SPEC-VIEW-030）', (
+      WidgetTester tester,
+    ) async {
+      final LoadedPack pack = loadAlphaPack();
+      await _pumpScreen(tester, pack: pack);
+      await openLocate(tester);
+      await type(tester, '装饰器参数');
+      expect(find.byKey(locateTriageKey), findsOneWidget, reason: '前提：零命中');
+
+      await tester.tap(find.byKey(locateNearRowKey('python/fn-decorator')));
+      await _pump(tester);
+
+      expect(find.byKey(locateOverlayKey), findsNothing);
+      expect(find.text('宇宙 › Z4 单星'), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byKey(detailPanelKey),
+          matching: find.text('装饰器'),
+        ),
+        findsWidgets,
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('表单兜底不写筛选：提交后退出搜索，视图没有被筛过（SPEC-VIEW-032）', (
+      WidgetTester tester,
+    ) async {
+      final LoadedPack pack = loadAlphaPack();
+      await _pumpScreen(tester, pack: pack);
+      // 先选中一项 —— 域上下文来自选中项，没有它就没有 ③（`VIEW-030`）。
+      await openLocate(tester);
+      await type(tester, '装饰器');
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await _pump(tester);
+      expect(find.byKey(hudFilterChipsKey), findsNothing, reason: '前提：定位不写筛选');
+
+      await openLocate(tester);
+      await type(tester, '虚拟环境');
+      expect(find.text('新增这一项'), findsOneWidget, reason: '有域上下文 ⇒ 类 ③');
+      await tester.tap(find.byKey(locateTriageActionKey));
+      await _pump(tester);
+      expect(find.byKey(locateFormKey), findsOneWidget);
+
+      await tester.tap(find.byKey(locateFormSubmitKey));
+      await _pump(tester);
+      expect(find.byKey(locateNoticeKey), findsOneWidget);
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+      await _pump(tester);
+      expect(
+        find.byKey(hudFilterChipsKey),
+        findsNothing,
+        reason: '填表是一次性查询 —— 退出搜索后视图还是原样（VIEW-032）',
+      );
+      expect(tester.takeException(), isNull);
+    });
+
     testWidgets('筛选后树里只剩匹配的项（SPEC-VIEW-021）', (WidgetTester tester) async {
       final LoadedPack pack = loadAlphaPack();
       await _pumpScreen(tester, pack: pack, mode: ViewMode.tree);
