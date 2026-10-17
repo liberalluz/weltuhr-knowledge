@@ -220,6 +220,18 @@ void main() {
         'scheme.nodes',
       });
     });
+
+    test('模糊档 = 子串包含：连续才命中，跨字不命中（C-28：v0.1 不设相似度阈值）', () {
+      // 「饰器参」是「装饰器参数」里连续的一段 ⇒ 模糊档命中。
+      final LocateResult contiguous = locator.locate('饰器参');
+      expect(contiguous.top?.strength, MatchStrength.fuzzy);
+      expect(contiguous.top?.target, 'python/fn-decorator-params');
+
+      // 「饰器数」与「装饰器参数」只差一次替换 —— 编辑距离会判它「像」，
+      // 子串包含不会。这就是 `C-28` 裁定的可判边界：模糊 = 连续包含，
+      // 不是「相似度够不够」。将来若真做编辑距离，这条会红，提醒同步改判据。
+      expect(locator.locate('饰器数').hits, isEmpty);
+    });
   });
 
   group('跨空间与作用域（SPEC-VIEW-031 / 033）', () {
