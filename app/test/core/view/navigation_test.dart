@@ -5,56 +5,103 @@ import 'package:project_knowledge/core/view/filter.dart';
 import 'package:project_knowledge/core/view/navigation.dart';
 import 'package:project_knowledge/core/view/zoom.dart';
 
+/// 同一个空间里的第 [id] 步。多数用例只关心「走了哪几步」，空间固定。
+TrailStep _step(String id, {String? space = 'python'}) =>
+    TrailStep(spaceId: space, itemId: id);
+
 void main() {
   group('详情页内部历史 trail（SPEC-VIEW-016）', () {
     test('压栈追加到尾部，返回时读到的就是上一次停的那一项（SPEC-VIEW-016）', () {
-      expect(pushTrail(const <String>[], 'a'), <String>['a']);
-      expect(pushTrail(<String>['a'], 'b'), <String>['a', 'b']);
+      expect(pushTrail(const <TrailStep>[], _step('a')), <TrailStep>[
+        _step('a'),
+      ]);
+      expect(pushTrail(<TrailStep>[_step('a')], _step('b')), <TrailStep>[
+        _step('a'),
+        _step('b'),
+      ]);
     });
 
     test('超出 C-21 丢最旧的那端 —— 最近 5 步永远在（C-21）', () {
-      List<String> trail = const <String>[];
+      List<TrailStep> trail = const <TrailStep>[];
       for (final String id in <String>['a', 'b', 'c', 'd', 'e', 'f']) {
-        trail = pushTrail(trail, id);
+        trail = pushTrail(trail, _step(id));
       }
       expect(trail.length, trailCap);
-      expect(trail, <String>['b', 'c', 'd', 'e', 'f']);
-      expect(trail.last, 'f', reason: '刚离开的那一项必须在栈顶，否则第一次返回就落空');
+      expect(trail.map((TrailStep step) => step.itemId), <String>[
+        'b',
+        'c',
+        'd',
+        'e',
+        'f',
+      ]);
+      expect(trail.last.itemId, 'f', reason: '刚离开的那一项必须在栈顶，否则第一次返回就落空');
     });
 
     test('null 不压栈 —— 从「没有选中」进详情不该在历史里留一个空洞（SPEC-VIEW-016）', () {
-      const List<String> trail = <String>['a'];
+      const List<TrailStep> trail = <TrailStep>[_stepEmpty];
       expect(pushTrail(trail, null), same(trail));
     });
 
     test('不去重：A → B → A 是走过两次的路，两次都得记（SPEC-VIEW-016）', () {
-      List<String> trail = pushTrail(const <String>[], 'a');
-      trail = pushTrail(trail, 'b');
-      trail = pushTrail(trail, 'a');
-      expect(trail, <String>['a', 'b', 'a']);
+      List<TrailStep> trail = pushTrail(const <TrailStep>[], _step('a'));
+      trail = pushTrail(trail, _step('b'));
+      trail = pushTrail(trail, _step('a'));
+      expect(trail.map((TrailStep step) => step.itemId), <String>[
+        'a',
+        'b',
+        'a',
+      ]);
 
-      final ({String? itemId, List<String> trail}) step = popTrail(trail);
-      expect(step.itemId, 'a');
-      final ({String? itemId, List<String> trail}) second = popTrail(
-        step.trail,
+      final ({TrailStep? step, List<TrailStep> trail}) first = popTrail(trail);
+      expect(first.step?.itemId, 'a');
+      final ({TrailStep? step, List<TrailStep> trail}) second = popTrail(
+        first.trail,
       );
-      expect(second.itemId, 'b', reason: '再退一步该是 B，去重会让它跳过 B');
+      expect(second.step?.itemId, 'b', reason: '再退一步该是 B，去重会让它跳过 B');
     });
 
     test('空栈退步给 null，剩下的还是空栈（SPEC-VIEW-016）', () {
-      final ({String? itemId, List<String> trail}) step = popTrail(
-        const <String>[],
+      final ({TrailStep? step, List<TrailStep> trail}) stepped = popTrail(
+        const <TrailStep>[],
       );
-      expect(step.itemId, isNull);
-      expect(step.trail, isEmpty);
+      expect(stepped.step, isNull);
+      expect(stepped.trail, isEmpty);
+    });
+
+    test('每一步都带空间 —— 同名项跨空间是两条不同的路（SPEC-VIEW-016）', () {
+      // 多根之后 `go/fn-closure` 与 `python/fn-closure` 是两个项：只记 `itemId`
+      // 的话「返回」会落进另一个空间，而那里恰好有一个同 id 的项 ⇒ 错得不留痕迹。
+      List<TrailStep> trail = pushTrail(
+        const <TrailStep>[],
+        _step('fn-closure', space: 'python'),
+      );
+      trail = pushTrail(trail, _step('fn-closure', space: 'go'));
+
+      expect(trail, <TrailStep>[
+        _step('fn-closure', space: 'python'),
+        _step('fn-closure', space: 'go'),
+      ]);
+      expect(
+        trail.first == trail.last,
+        isFalse,
+        reason: '同一 id 不同空间不是同一步 —— `==` 必须比空间',
+      );
+
+      final ({TrailStep? step, List<TrailStep> trail}) back = popTrail(trail);
+      expect(back.step?.spaceId, 'go');
+      final ({TrailStep? step, List<TrailStep> trail}) again = popTrail(
+        back.trail,
+      );
+      expect(again.step?.spaceId, 'python', reason: '再退一步回到出发的那个空间');
     });
   });
 
   group('returnTo 快照（SPEC-VIEW-015）', () {
-    test('五个字段往返 JSON 不丢（SPEC-VIEW-015）', () {
+    test('六个字段往返 JSON 不丢（SPEC-VIEW-015）', () {
       const ViewSnapshot snapshot = ViewSnapshot(
         mode: ViewMode.tree,
         zoomLevel: ZoomLevel.z2,
+        spaceId: 'python',
         selectedItemId: 'python/fn-decorator',
         axisFilter: <String, List<String>>{
           'ability': <String>['抽象', '具象'],
@@ -65,6 +112,7 @@ void main() {
       expect(back, snapshot);
       expect(back.mode, ViewMode.tree);
       expect(back.zoomLevel, ZoomLevel.z2);
+      expect(back.spaceId, 'python');
       expect(back.selectedItemId, 'python/fn-decorator');
       expect(back.selector, '装饰器');
       expect(back.axisFilter, <String, List<String>>{
@@ -72,16 +120,18 @@ void main() {
       });
     });
 
-    test('可缺的两项是真缺：没选中项、不是从搜索进来（SPEC-VIEW-015）', () {
+    test('可缺的三项是真缺：没选中项、不是从搜索进来、合成根没有空间（SPEC-VIEW-015）', () {
       const ViewSnapshot snapshot = ViewSnapshot(
         mode: ViewMode.universe,
         zoomLevel: ZoomLevel.z1,
       );
       final Map<String, Object?> json = snapshot.toJson();
+      expect(json.containsKey('spaceId'), isFalse, reason: '合成回落的根没有空间 id');
       expect(json.containsKey('selectedItemId'), isFalse);
       expect(json.containsKey('selector'), isFalse);
 
       final ViewSnapshot back = ViewSnapshot.fromJson(json);
+      expect(back.spaceId, isNull);
       expect(back.selectedItemId, isNull);
       expect(back.selector, isNull);
       expect(back.axisFilter, isEmpty);
@@ -144,3 +194,7 @@ void main() {
     });
   });
 }
+
+/// `pushTrail` 的 `null` 分支要一个「已有的栈」做对照，但不能是空列表
+/// （空列表与 `same` 的差别看不出来）。
+const TrailStep _stepEmpty = TrailStep(spaceId: 'python', itemId: 'a');

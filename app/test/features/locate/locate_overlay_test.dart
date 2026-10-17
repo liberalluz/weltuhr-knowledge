@@ -261,7 +261,7 @@ void main() {
     expect(find.byKey(locateSearchAllKey), findsNothing);
   });
 
-  testWidgets('跨空间的命中不交给 onPick：说清它在哪个空间（SPEC-VIEW-031）', (
+  testWidgets('跨空间的命中照样交给 onPick，且带着它自己的空间（SPEC-VIEW-031）', (
     WidgetTester tester,
   ) async {
     final LoadedPack here = fixturePack(
@@ -275,10 +275,10 @@ void main() {
       spaceName: 'Go',
     );
 
-    int picked = 0;
+    LocateHit? picked;
     await pump(
       tester,
-      onPick: (_, _) => picked++,
+      onPick: (_, LocateHit hit) => picked = hit,
       packOverride: here,
       otherSpaces: <LoadedPack>[there],
     );
@@ -287,9 +287,18 @@ void main() {
     await tester.tap(find.byKey(locateRowKey(foreign)));
     await tester.pump();
 
-    expect(picked, 0, reason: '换根不在本笔，跳过去只会把界面停在原处');
-    expect(find.byKey(locateNoticeKey), findsOneWidget);
-    expect(find.textContaining('在「Go」里'), findsOneWidget);
+    expect(
+      picked,
+      isNotNull,
+      reason: '多根之后拦下来就成了「搜得到却点不动」—— 换根是屏幕层的事',
+    );
+    expect(picked!.spaceId, 'go', reason: '命中带着空间，调用方才换得对根');
+    expect(picked!.target, 'g1');
+    expect(
+      find.byKey(locateNoticeKey),
+      findsNothing,
+      reason: '能跳就不该给一句「做不到」',
+    );
   });
 
   testWidgets('没有内容包时浮层照样打开并说明原因（SPEC-FND-014）', (WidgetTester tester) async {
