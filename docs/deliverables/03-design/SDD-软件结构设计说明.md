@@ -1,6 +1,6 @@
 # 软件结构设计说明（SDD）
 
-> **版号**：`v0.3.0` · **状态**：§二 §三 已写实，§四–§六 待填（§二 视图层由「未建」改为「spike 占位」）
+> **版号**：`v0.4.0` · **状态**：§二 §三 已写实，§四–§六 待填（§2.1 视图层由「spike 占位」改为**正式视图层**，`core/` 文件树按实扫补全至 27 份）
 > 本文件是**软件结构**的设计视图。分章与 `design/` 八份主题文档对齐，实现细节**回指不复制**。
 > **追溯补录**：2026-10-17 · §二 §三 依据 `app/lib/` · `app/tool/lint/` · `content/tools/` 的既有代码反推，非当时所写。
 
@@ -10,6 +10,7 @@
 |---|---|---|
 | `v0.1.0` | 2026-10-17 | 首建。确立与 `design/` 的分章映射；结构与机制待补 |
 | `v0.2.0` | 2026-10-17 | **追溯补录** §二 分层与模块边界、§三 内容管线。据代码现状写实，并标明第三段（运行期加载）尚未实现 |
+| `v0.4.0` | 2026-10-17 | §2.1 视图层由「spike 占位」改为**正式视图层九份**（宇宙 7 · 详情 1 · 调色板 1；spike 保留作 `STR` 复跑装置）；`core/` 文件树由 5 份补全至**实扫 27 份**（原树停在 `B1` 收尾状）。**未改** §2.2 规则表（仍只列 `R1` / `R2`，`R3`–`R5` 的登记滞后）与 §3.1「9 份样例 / 第三段未实现」—— 两处是更早的滞后，不在本笔范围 |
 | `v0.3.0` | 2026-10-17 | §2.1 视图层由「⬜ 未建（`B3`）」改为「⚠️ spike 占位（`B2` 第 5 笔 · 5 份，`B3` 重写）」—— `features/` 首次有代码，但它是一次帧率实测的**测量装置**，不是视图层设计；§五 视图投影仍待填，填充时点不变 |
 
 ---
@@ -34,7 +35,7 @@
 |---|---|---|---|---|
 | **核心层** | `app/lib/core/` | 纯 Dart SDK + `core/` 内部 | Flutter · `dart:ui` · `features/` · 一切 I/O | ✅ 已落地 |
 | **外壳层** | `app/lib/main.dart` | Flutter + `core/` | 不得被 `core/` 反向引用 | ✅ 已落地（空态） |
-| **视图层** | `app/lib/features/` | Flutter + `core/` | — | ⚠️ spike 占位（`B2` 第 5 笔 · 5 份，`B3` 重写） |
+| **视图层** | `app/lib/features/` | Flutter + `core/` | — | ✅ 正式视图层 **9 份**：`universe/` 7（正式界面 · 树视图 · 绘制 · 绘制目标 · 帧统计 · 场景源 · 绘制 spike）· `detail/` 1 · `palette.dart` 1。spike 是 `STR` 复跑装置，**不是产品路径** |
 | **静态检查** | `app/tool/lint/` | Dart SDK | 不参与构建产物 | ✅ 已落地（`R1` `R2`） |
 | **内容工具** | `content/tools/` | Python 标准库 | 第三方包 | ✅ 已落地（三脚本） |
 | **服务端** | `server/` | — | — | ⬜ 仅 `README` + `AGENTS`（`P4`） |
@@ -43,18 +44,41 @@
 `core/` 实际文件：
 
 ```
-app/lib/core/
+app/lib/core/                    共 27 份
 ├── constants.dart          常量表（docs/reference/constants.md 的代码投影）
 ├── enums.dart              枚举全集（含 wire 名映射）
 ├── errors.dart             错误类型（含 TbdConstantError）
-├── json.dart               JSON 严格解析helper
+├── ids.dart                id 末段显示（域 / 缺口 id 共用一处）
+├── json.dart               JSON 严格解析 helper
 ├── entities/
-│   ├── content.dart        Item · SixRequirements · MethodStep · MethodProfile · Note
+│   ├── content.dart        Item · ItemRequirements · Edge · Scheme · SourceRef · MethodProfile
 │   ├── plan.dart           Plan · Target
-│   └── state.dart          SrsState 等状态实体
-└── events/
-    ├── event.dart          Event · Hlc · EventType ↔ wire 名
-    └── event_store.dart    事件存储接口
+│   └── state.dart          SrsState · ViewState 等状态实体
+├── events/
+│   ├── event.dart          Event · Hlc · EventType ↔ wire 名
+│   ├── event_store.dart    事件存储接口（只 append）
+│   ├── fold.dart           事件 → 状态（纯函数）
+│   ├── hlc_clock.dart      混合逻辑时钟
+│   └── migration.dart      包迁移账本
+├── frame/
+│   ├── projection.dart     三维几何（`r/θ/φ` → 屏幕）
+│   └── scene.dart          图模型 → SceneNode（只取值，不做几何）
+├── graph/
+│   └── levels.dart         `⪯` 上的 Kahn 层号（= `φ`）
+├── locate/
+│   └── locator.dart        快速定位匹配
+├── pack/
+│   ├── cycle_check.dart    环检测
+│   ├── dart_io_pack_fs.dart 唯一 `dart:io` 处
+│   ├── pack_fs.dart        文件系统抽象
+│   ├── pack_parse.dart     清单 + 产物 → LoadedPack
+│   └── pack_probe.dart     候选根探测
+└── view/
+    ├── detail.dart         详情三区渲染模型（关系 / 要件 / 来源）
+    ├── fit.dart            自适应取景
+    ├── tree.dart           树行模型（四类可见集合）
+    ├── viewport.dart       绘制表面按面积封顶（`C-33`）
+    └── zoom.dart           五档视距 + `φ` → 档位
 ```
 
 ### 2.2 约束如何被强制执行
