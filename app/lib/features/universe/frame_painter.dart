@@ -249,6 +249,7 @@ class FramePainter extends CustomPainter {
       base: baseCamera,
       viewportWidth: size.width,
       viewportHeight: size.height,
+      pixelsPerUnit: size.shortestSide * _unitToPixel,
     );
 
     final ProjectedFrame frame = projectFrame(

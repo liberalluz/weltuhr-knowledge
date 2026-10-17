@@ -29,6 +29,8 @@ void main() {
       base: base,
       viewportWidth: 1080,
       viewportHeight: 600,
+      // 与 `frame_painter` 一致：绘制层会再乘一次最短边 × 0.85。
+      pixelsPerUnit: 600 * 0.85,
     );
     final ProjectedFrame frame = projectFrame(
       nodes: nodes,
@@ -46,9 +48,10 @@ void main() {
     debugPrint('focal=${fitted.focal} x=[$minX, $maxX] y=[$minY, $maxY] '
         'screenX=[${minX + 540}, ${maxX + 540}] screenY=[${300 - maxY}, ${300 - minY}]');
 
-    expect(maxX - minX, greaterThan(20), reason: '横向不能塌成一点');
-    expect(maxY - minY, greaterThan(20), reason: '纵向不能塌成一点');
-    expect(maxX, lessThanOrEqualTo(540));
-    expect(maxY, lessThanOrEqualTo(300));
+    const double pxPerUnit = 600 * 0.85;
+    expect((maxX - minX) * pxPerUnit, greaterThan(20), reason: '横向不能塌成一点');
+    expect((maxY - minY) * pxPerUnit, greaterThan(20), reason: '纵向不能塌成一点');
+    expect(maxX * pxPerUnit, lessThanOrEqualTo(540), reason: '屏幕内');
+    expect(maxY * pxPerUnit, lessThanOrEqualTo(300), reason: '屏幕内');
   });
 }

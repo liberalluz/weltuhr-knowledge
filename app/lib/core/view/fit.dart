@@ -26,6 +26,7 @@ Camera fitCameraToViewport({
   required Camera base,
   required double viewportWidth,
   required double viewportHeight,
+  double pixelsPerUnit = 1,
 }) {
   if (nodes.isEmpty || viewportWidth <= 0 || viewportHeight <= 0) {
     return base;
@@ -53,8 +54,13 @@ Camera fitCameraToViewport({
     return base;
   }
 
+  // ⚠️ 目标必须换算到**投影单位**：绘制层还会乘一次 `pixelsPerUnit`
+  // （`size.shortestSide × 0.85`）。漏掉这一步会让焦距大出两个数量级 ——
+  // 投影后看着正常，屏幕上全在视口外，表现就是「画面全空」。
   final double target =
-      math.min(viewportWidth, viewportHeight) * fitViewportRadiusRatio;
+      math.min(viewportWidth, viewportHeight) *
+      fitViewportRadiusRatio /
+      (pixelsPerUnit <= 0 ? 1 : pixelsPerUnit);
   final double focal = base.focal * target / maxExtent;
   if ((focal - base.focal).abs() < fitFocalEpsilon) {
     return base;
