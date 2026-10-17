@@ -16,6 +16,7 @@ import 'package:flutter/animation.dart';
 import 'package:flutter/rendering.dart';
 
 import '../../core/constants.dart';
+import '../../core/view/fit.dart';
 import '../../core/frame/projection.dart';
 import 'frame_draw_target.dart';
 import 'scene_source.dart';
@@ -227,7 +228,7 @@ class FramePainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final Stopwatch watch = Stopwatch()..start();
 
-    final Camera camera = Camera(
+    final Camera baseCamera = Camera(
       yawRadians: baseYaw + spin.value * fullTurnRadians,
       pitchRadians: _cameraPitch,
       distance: _cameraDistance,
@@ -238,6 +239,16 @@ class FramePainter extends CustomPainter {
       // 会跑到相机后面，量到的是钳制分支。
       phiHeight: _phiWorldHeight,
       minDepth: _minDepth,
+    );
+
+    // 按当前场景与视口**自适应取景**：写死一组 distance/focal，换个包或
+    // 换个窗口尺寸就会裁切（实测反馈：最下一排点被切）。
+    final Camera camera = fitCameraToViewport(
+      nodes: scene.nodes,
+      edges: scene.edges,
+      base: baseCamera,
+      viewportWidth: size.width,
+      viewportHeight: size.height,
     );
 
     final ProjectedFrame frame = projectFrame(

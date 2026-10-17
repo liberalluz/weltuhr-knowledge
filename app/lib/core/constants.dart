@@ -193,3 +193,12 @@ const double frameBenchWidth = 1920;
 
 /// `C-33` 基准窗口的高。
 const double frameBenchHeight = 1080;
+
+/// 自适应取景：内容**半径**最多占视口短边的 46%（两侧合计 92%）。
+///
+/// 留 8% 是因为点本身有半径、边有端点圆头 —— 贴着边画会看起来像被切掉。
+/// 用半径而不是直径表达，是为了让判据里不出现常量 `2`。
+const double fitViewportRadiusRatio = 0.46;
+
+/// 焦距变化小于这个量就不重算 —— 避免每帧在「重算」与「沿用」间来回。
+const double fitFocalEpsilon = 0.001;
