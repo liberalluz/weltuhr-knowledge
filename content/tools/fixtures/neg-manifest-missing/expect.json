@@ -1,0 +1,11 @@
+{
+  "base": "valid-min",
+  "exit": 1,
+  "codes": [
+    "E-MANIFEST-MISSING"
+  ],
+  "note": "整个 manifest.json 不在。这条不能靠「字段错」代替 —— 空间连信封都没有，后续字段校验全部无意义",
+  "drop": [
+    "manifest.json"
+  ]
+}

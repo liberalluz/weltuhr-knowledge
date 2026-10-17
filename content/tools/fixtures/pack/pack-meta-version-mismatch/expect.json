@@ -1,0 +1,8 @@
+{
+  "exit": 1,
+  "codes": [
+    "E-META-VERSION"
+  ],
+  "note": "产物版本与源 manifest 不一致。dist/ 不入库、tag 是唯一指针，版本一旦被改写就对不上任何 tag",
+  "expectedVersion": "0.1.0"
+}

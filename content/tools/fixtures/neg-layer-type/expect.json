@@ -1,0 +1,9 @@
+{
+  "base": "valid-min",
+  "exit": 1,
+  "codes": [
+    "E-LAYER",
+    "E-TYPE"
+  ],
+  "note": "`permanent` 与 `persistent` 肉眼几乎一样，`concept` 也像是个合理类型。两个枚举都只认常量表里的值"
+}

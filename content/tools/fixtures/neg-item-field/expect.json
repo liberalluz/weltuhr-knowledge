@@ -1,0 +1,8 @@
+{
+  "base": "valid-min",
+  "exit": 1,
+  "codes": [
+    "E-ITEM-FIELD"
+  ],
+  "note": "五条路径一次跑完：缺 title / sourceRefs 不是数组 / inScope 不是布尔 / domainId 不是字符串 / item 本身不是 object。最后一条最容易漏 —— 顶层混进一个字符串就该拒，而不是跳过"
+}

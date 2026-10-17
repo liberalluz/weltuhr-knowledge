@@ -1,0 +1,7 @@
+{
+  "exit": 1,
+  "codes": [
+    "E-PACK-MISSING-KEY"
+  ],
+  "note": "少 excerpts 段。构建逻辑退化成「丢段」时，产物仍能解析、仍能跑，只有这条能抓住"
+}

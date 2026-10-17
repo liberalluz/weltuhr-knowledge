@@ -1,0 +1,8 @@
+{
+  "base": "valid-min",
+  "exit": 1,
+  "codes": [
+    "E-QUESTION-REF"
+  ],
+  "note": "itemId 指向不存在的项。题不挂项就无法回到「考的是哪条能力」，错题回灌会失去落点"
+}

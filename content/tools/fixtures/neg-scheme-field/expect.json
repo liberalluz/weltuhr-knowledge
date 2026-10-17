@@ -1,0 +1,8 @@
+{
+  "base": "valid-min",
+  "exit": 1,
+  "codes": [
+    "E-SCHEME-FIELD"
+  ],
+  "note": "缺 name 与 nodes 为空。体系是一条有序路径，空路径等于没给顺序 —— 但它是个合法的空数组，只看类型是拦不住的"
+}

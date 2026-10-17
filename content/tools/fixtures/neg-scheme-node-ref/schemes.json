@@ -1,0 +1,18 @@
+[
+  {
+    "id": "scheme-official-tutorial",
+    "name": "官方 Tutorial 序",
+    "nodes": [
+      "python/variable",
+      "python/type",
+      "python/control-flow",
+      "python/function",
+      "python/closure",
+      "python/class",
+      "python/decorator",
+      "python/context-manager",
+      "python/nope"
+    ],
+    "authorityLevel": "L1"
+  }
+]

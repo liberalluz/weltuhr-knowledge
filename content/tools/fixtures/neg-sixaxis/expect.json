@@ -1,0 +1,8 @@
+{
+  "base": "valid-min",
+  "exit": 1,
+  "codes": [
+    "E-SIXAXIS"
+  ],
+  "note": "manifest 出现不在册的轴 `level`，item 的 ability 写成数组。后者会让「同轴多值取 OR」失去前提，所以必须是单值"
+}

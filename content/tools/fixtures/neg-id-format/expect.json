@@ -1,0 +1,8 @@
+{
+  "base": "valid-min",
+  "exit": 1,
+  "codes": [
+    "E-ID-FORMAT"
+  ],
+  "note": "缺 `<space>/` 前缀与 slug 含大写各一条。id 是已学事件的唯一锚点，格式错会让迁移与跨设备合并同时失效"
+}
