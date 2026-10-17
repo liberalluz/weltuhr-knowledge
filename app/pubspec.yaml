@@ -1,0 +1,23 @@
+name: project_knowledge
+description: "Weltuhr — 知识体系学习软件"
+publish_to: 'none'
+version: 0.1.0+1
+
+# 版本钉死：不用 ^ 区间（docs/guides/environment.md §一）。升级须走变更控制。
+environment:
+  sdk: 3.13.5
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: 1.0.9
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: 6.0.0
+  # 仅供 tool/lint/ 的架构规则检查使用（解析 AST）；运行时零依赖。
+  analyzer: 14.5.0
+
+flutter:
+  uses-material-design: true
