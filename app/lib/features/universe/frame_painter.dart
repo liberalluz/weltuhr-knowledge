@@ -28,7 +28,6 @@ const double _phiWorldHeight = 1.6;
 const double _minDepth = 0.05;
 
 /// `VIEW-002`：`r` 是 7 段径向分层。
-const int _radialSegments = 7;
 
 /// 自转起始角（与 bench 的静态视角一致，便于两处对数）。
 const double baseYawRadians = 0.35;
@@ -209,7 +208,12 @@ class FramePainter extends CustomPainter {
     required this.scene,
     required this.spin,
     required this.onRepaint,
+    this.baseYaw = baseYawRadians,
   }) : super(repaint: spin);
+
+  /// 自转的起始偏航。正式视图把 `CameraState.yawRadians` 传进来，
+  /// 于是「切档保留视角」在画面上真的成立；spike 不传，沿用 `baseYawRadians`。
+  final double baseYaw;
 
   final SceneBundle scene;
 
@@ -224,11 +228,11 @@ class FramePainter extends CustomPainter {
     final Stopwatch watch = Stopwatch()..start();
 
     final Camera camera = Camera(
-      yawRadians: baseYawRadians + spin.value * fullTurnRadians,
+      yawRadians: baseYaw + spin.value * fullTurnRadians,
       pitchRadians: _cameraPitch,
       distance: _cameraDistance,
       focal: _cameraFocal,
-      radialSegments: _radialSegments,
+      radialSegments: scene.radialSegments,
       sectorCount: spikeSectorCount,
       // φ 归一到一个世界单位高度：α 包最大层号 63，不做归一的话最深那批
       // 会跑到相机后面，量到的是钳制分支。
