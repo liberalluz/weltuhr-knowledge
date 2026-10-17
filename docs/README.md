@@ -8,7 +8,7 @@
 | 目录 | 内容 | 版号 |
 |---|---|---|
 | [design/](design/00-index.md) | **设计规格** —— 产品与系统的「是什么」 | 活文档，不设版号 |
-| [reference/](reference/channel-table.md) | **横切表** —— 通道 / 常量 / 事件类型 / 实体字段 / 术语 / NOT 清单 | 活文档，不设版号 |
+| [reference/](reference/channel-table.md) | **参考层** —— 横切六表（通道 / 常量 / 事件类型 / 实体字段 / 术语 / NOT 清单）+ 上游方法论长文 | 活文档，不设版号 |
 | [deliverables/](deliverables/) | **交付物** —— 按 GB/T 8567 组织的计划、需求、设计、测试、验收文档 | `vX.Y.Z` 独立递增 |
 | [guides/](guides/) | **操作指南** —— 怎么做（环境、Git、依赖许可…） | 活文档，不设版号 |
 | [adr/](adr/) | **架构决策记录** —— 为什么这么选，含被否方案与代价 | 活文档，不设版号 |
@@ -30,22 +30,25 @@
 | [NOTE](design/NOTE-notes.md) | `Note` 实体 · 三层内容 · 两套切换 · 单向导出 · 按节版本 | 笔记模板的具体排版（平台声明） |
 | [GOV](design/GOV-governance.md) | 提交四裁定 · overlay 双平面 · 跨设备 HLC 合并 · 孤儿项 | 包格式（PACK） |
 
-## 三、横切表（`reference/`）
+## 三、参考层（`reference/`）
 
-被多份文档引用，**只在一处维护数值**：
+被多份文档引用，**只在一处维护**。前六份是**横切表**（数值与事实），第七份是**上游理论长文**：
 
-| 表 | 内容 |
-|---|---|
-| [channel-table.md](reference/channel-table.md) | 视觉通道 ↔ 语义维度映射（含唯一豁免） |
-| [constants.md](reference/constants.md) | 全部数值常量（`S₀`、配额、系数、`carry`…） |
-| [event-types.md](reference/event-types.md) | 事件类型全集与字段 |
-| [entity-fields.md](reference/entity-fields.md) | 实体字段表 |
-| [glossary.md](reference/glossary.md) | 术语表（含七个易混辨析） |
-| [not-list.md](reference/not-list.md) | **明确不做**的事 + 理由 |
+| 文件 | 内容 | 类型 |
+|---|---|---|
+| [channel-table.md](reference/channel-table.md) | 视觉通道 ↔ 语义维度映射（含唯一豁免） | 表 |
+| [constants.md](reference/constants.md) | 全部数值常量（`S₀`、配额、系数、`carry`…） | 表 |
+| [event-types.md](reference/event-types.md) | 事件类型全集与字段 | 表 |
+| [entity-fields.md](reference/entity-fields.md) | 实体字段表 | 表 |
+| [glossary.md](reference/glossary.md) | 术语表（含八对易混辨析） | 表 |
+| [not-list.md](reference/not-list.md) | **明确不做**的事 + 理由 | 表 |
+| [knowledge-system-learning-methodology.md](reference/knowledge-system-learning-methodology.md) | **知识体系学习方法论** —— 全案的上游理论依据 | 长文 |
+
+**为什么方法论放这里而不放 `design/`**：它是 `design/` 的**上游**（design 全部引用它，而它不引用 design），且改动频率远低于 design。放 `reference/` 意味着「被引用的权威源」；放 `design/` 会与「设计基线」的变更纪律混在一起。**仓根只留 `README.md` / `LICENSE` / `NOTICE`**，不放孤岛文档。
 
 ## 四、方法论依据
 
-仓根 [knowledge-system-learning-methodology.md](../knowledge-system-learning-methodology.md) —— 知识体系学习方法论：KST 三元组、定位算子全景（五族 17 个）、习得七步的理论推导。本项目的设计规格是其软件化落地；**方法论讲「人怎么学」，规格讲「软件怎么设计」**，两者不同层，冲突时以方法论的理论结论为准、以规格的实现取舍为落地。
+[reference/knowledge-system-learning-methodology.md](reference/knowledge-system-learning-methodology.md) —— KST 三元组、定位算子全景（五族 17 个）、习得七步的理论推导。本项目的设计规格是其软件化落地；**方法论讲「人怎么学」，规格讲「软件怎么设计」**，两者不同层，冲突时以方法论的理论结论为准、以规格的实现取舍为落地。
 
 ## 五、写作纪律
 
