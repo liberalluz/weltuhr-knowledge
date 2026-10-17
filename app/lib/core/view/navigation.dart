@@ -15,6 +15,18 @@
 /// 从 A 一路点到 F（`C-21` = 5），返回时用户要的是 E，不是 B。丢最新那端，第一个
 /// 「返回」就落空；丢最旧那端，最近 5 步永远在。栈溢出时用户失去的是「最远的那
 /// 一步」，而那是他最不可能想回去的地方。
+///
+/// ## 为什么 `trail` 存「空间 + 项」而不是裸 `itemId`
+///
+/// 裸 `itemId` 只在**一个根**的前提下等于「返回目标」。多根之后，`go/fn-closure`
+/// 与 `python/fn-closure` 是两条不同的路，只记 id 会让「返回」落进另一个空间 ——
+/// 而那个空间里可能恰好有一个同 id 的项，于是错得不留痕迹（`R-08` 同族：违反它
+/// 不会有任何东西变红）。所以 `trail` 的每一步都带 `spaceId`，与
+/// [ViewSnapshot.spaceId] 同一个理由。
+///
+/// 但**不存整份 [ViewSnapshot]**：`trail` 记的是「详情里走过的那一步」，不是
+/// 「一帧视图」。带上 `mode` / `zoomLevel` / `axisFilter` 会让「返回一步」多出
+/// 两套可读语义（退项 还是 退视图），而档位与筛选本来就是 `returnTo` 的事。
 library;
 
 import '../constants.dart';
@@ -32,6 +44,7 @@ class ViewSnapshot {
   const ViewSnapshot({
     required this.mode,
     required this.zoomLevel,
+    this.spaceId,
     this.selectedItemId,
     this.axisFilter = emptyAxisFilter,
     this.selector,
@@ -42,9 +55,13 @@ class ViewSnapshot {
   /// 缺字段一律报错、不猜默认值：快照是 `setState` 之前亲手存下的，缺字段说明
   /// 存的代码漏了项，猜一个默认值会把 bug 变成「返回后位置有点怪」这种查不动的
   /// 现象。
+  ///
+  /// `spaceId` 是例外 —— 它**可真缺**：合成回落的根背后没有 `KnowledgeSpace`，
+  /// 那时「在哪个空间」这个问题没有答案。与 `selectedItemId` / `selector` 同类。
   factory ViewSnapshot.fromJson(JsonMap json) => ViewSnapshot(
     mode: ViewMode.values.byName(requireString(json, 'mode')),
     zoomLevel: ZoomLevel.values.byName(requireString(json, 'zoomLevel')),
+    spaceId: optionalString(json, 'spaceId'),
     selectedItemId: optionalString(json, 'selectedItemId'),
     axisFilter: _filterFromJson(json),
     selector: optionalString(json, 'selector'),
@@ -52,6 +69,15 @@ class ViewSnapshot {
 
   final ViewMode mode;
   final ZoomLevel zoomLevel;
+
+  /// 这一帧是**哪个根**的视图（`SPEC-VIEW-015` 多根修订）。
+  ///
+  /// 没有它，`returnTo` 只能回到「同一个空间里的某个位置」；跨空间搜索落点之后
+  /// 按返回，会把用户留在目标空间却假装回到了出发地。
+  ///
+  /// `null` = 合成回落的根（没有包就没有空间 id）。
+  final String? spaceId;
+
   final String? selectedItemId;
   final AxisFilter axisFilter;
 
@@ -63,6 +89,7 @@ class ViewSnapshot {
   JsonMap toJson() => <String, Object?>{
     'mode': mode.name,
     'zoomLevel': zoomLevel.name,
+    if (spaceId != null) 'spaceId': spaceId,
     if (selectedItemId != null) 'selectedItemId': selectedItemId,
     'axisFilter': <String, Object?>{
       for (final MapEntry<String, List<String>> entry in axisFilter.entries)
@@ -76,6 +103,7 @@ class ViewSnapshot {
       other is ViewSnapshot &&
       other.mode == mode &&
       other.zoomLevel == zoomLevel &&
+      other.spaceId == spaceId &&
       other.selectedItemId == selectedItemId &&
       other.selector == selector &&
       _sameFilter(other.axisFilter, axisFilter);
@@ -90,6 +118,7 @@ class ViewSnapshot {
     return Object.hash(
       mode,
       zoomLevel,
+      spaceId,
       selectedItemId,
       selector,
       Object.hashAll(<Object>[
@@ -101,6 +130,29 @@ class ViewSnapshot {
       ]),
     );
   }
+}
+
+/// `trail` 的一步：**离开的那一项在哪个空间的哪一项**（`SPEC-VIEW-016`）。
+///
+/// 值类，理由同 [ViewSnapshot]：`trail` 会被整体比较（测试里断言「退回去的是
+/// 哪一步」），引用比会让「同一处地方」看起来每次都是新的。
+class TrailStep {
+  const TrailStep({required this.spaceId, required this.itemId});
+
+  /// 这一步所属的空间。`null` = 合成回落的根（没有包，也就没有可跳的项）。
+  final String? spaceId;
+
+  final String itemId;
+
+  @override
+  bool operator ==(Object other) =>
+      other is TrailStep && other.spaceId == spaceId && other.itemId == itemId;
+
+  @override
+  int get hashCode => Object.hash(spaceId, itemId);
+
+  @override
+  String toString() => 'TrailStep(${spaceId ?? '—'}/$itemId)';
 }
 
 /// `axisFilter` 是 `Map<String, List<String>>`，`requireMap` 只给一层。
@@ -158,23 +210,26 @@ bool _sameFilter(AxisFilter a, AxisFilter b) {
 /// **不去重**：A → B → A 是用户真走过两次的路，去重会让「返回」从 A 直接跳到
 /// 别处。详情页内部历史学的是「来过这里」，不是「这里在不在集合里」——
 /// 那是 `visited` 的语义，不是 `trail` 的。
-List<String> pushTrail(List<String> trail, String? itemId) {
-  if (itemId == null) {
+///
+/// [step] 为 `null` 表示「离开时压根没有选中项」，不压 —— 从「没有选中」进详情
+/// 不该在历史里留一个空洞。
+List<TrailStep> pushTrail(List<TrailStep> trail, TrailStep? step) {
+  if (step == null) {
     return trail;
   }
-  final List<String> next = <String>[...trail, itemId];
+  final List<TrailStep> next = <TrailStep>[...trail, step];
   if (next.length <= trailCap) {
     return next;
   }
   return next.sublist(next.length - trailCap);
 }
 
-/// 退一步：给出上一项与剩下的栈。
+/// 退一步：给出上一步与剩下的栈。
 ///
-/// 栈空时 `itemId` 为 `null` —— 调用方据此决定是否改用 `returnTo` 快照。
-({String? itemId, List<String> trail}) popTrail(List<String> trail) {
+/// 栈空时 `step` 为 `null` —— 调用方据此决定是否改用 `returnTo` 快照。
+({TrailStep? step, List<TrailStep> trail}) popTrail(List<TrailStep> trail) {
   if (trail.isEmpty) {
-    return (itemId: null, trail: const <String>[]);
+    return (step: null, trail: const <TrailStep>[]);
   }
-  return (itemId: trail.last, trail: trail.sublist(0, trail.length - 1));
+  return (step: trail.last, trail: trail.sublist(0, trail.length - 1));
 }

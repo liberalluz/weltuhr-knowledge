@@ -42,15 +42,21 @@ Future<void> _pumpScreen(
   LoadedPack? pack,
   SceneBundle? scene,
   ViewMode mode = ViewMode.universe,
-  List<LoadedPack> otherSpaces = const <LoadedPack>[],
+  List<LoadedPack> others = const <LoadedPack>[],
   ZoomLevel zoom = ZoomLevel.z1,
 }) async {
   await tester.pumpWidget(
     MaterialApp(
       home: UniverseScreen(
-        scene: scene ?? buildSyntheticScene(),
-        pack: pack,
-        otherSpaces: otherSpaces,
+        roots: <SceneResolution>[
+          SceneResolution(
+            bundle: scene ?? buildSyntheticScene(),
+            pack: pack,
+          ),
+          // 其它空间按各自的包装场景 —— 换根之后画的必须是**那一份**数据。
+          for (final LoadedPack other in others)
+            SceneResolution(bundle: _alphaScene(other), pack: other),
+        ],
         initialZoom: zoom,
         initialMode: mode,
       ),
@@ -72,6 +78,27 @@ SceneBundle _alphaScene(LoadedPack pack) {
     radialSegments: pack.space.domainIds.length,
     notes: const <String>[],
   );
+}
+
+/// 一个「除 α 包以外」的空间，只用来验换根。一项、零边 —— 与 α 包在项数上
+/// 一眼能分开（153 vs 1），诊断行就是换根的证据。
+LoadedPack _goPack() => fixturePack(
+  const <FixtureItem>[FixtureItem('g1', '闭包')],
+  spaceId: 'go',
+  spaceName: 'Go 语言',
+);
+
+/// 打开浮层并输入 [query]，等结果出来。
+///
+/// 单独抽出来是因为跨空间用例要重复走这条三步（快捷键 → 输入 → pump），
+/// 而每处各写一遍会让「是不是漏了 pump」变成看运气。
+Future<void> _search(WidgetTester tester, String query) async {
+  await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
+  await tester.sendKeyEvent(LogicalKeyboardKey.keyK);
+  await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
+  await _pump(tester);
+  await tester.enterText(find.byKey(locateFieldKey), query);
+  await _pump(tester);
 }
 
 /// 在屏幕中部扫出一个「点得到星」（[hit]）或「点不到星」的**窗口坐标**位置。
@@ -497,7 +524,7 @@ void main() {
         tester,
         pack: pack,
         scene: scene,
-        otherSpaces: <LoadedPack>[other],
+        others: <LoadedPack>[other],
       );
       await openLocate(tester);
       await type(tester, '装饰器');
@@ -509,7 +536,7 @@ void main() {
         tester,
         pack: pack,
         scene: scene,
-        otherSpaces: <LoadedPack>[other],
+        others: <LoadedPack>[other],
         zoom: ZoomLevel.z0,
       );
       await openLocate(tester);
@@ -559,7 +586,7 @@ void main() {
       final SceneBundle scene = _alphaScene(pack);
       await tester.pumpWidget(
         MaterialApp(
-          home: UniverseScreen(scene: scene, pack: pack),
+          home: UniverseScreen.single(scene: scene, pack: pack),
         ),
       );
       // 只推 0 ms：`spin.value` 仍是 0，`_findPoint` 与 `_pickAt` 用同一个偏航。
@@ -597,7 +624,7 @@ void main() {
       final SceneBundle scene = _alphaScene(pack);
       await tester.pumpWidget(
         MaterialApp(
-          home: UniverseScreen(scene: scene, pack: pack),
+          home: UniverseScreen.single(scene: scene, pack: pack),
         ),
       );
       await tester.pump();
@@ -692,7 +719,7 @@ void main() {
       final SceneBundle scene = _alphaScene(pack);
       await tester.pumpWidget(
         MaterialApp(
-          home: UniverseScreen(scene: scene, pack: pack),
+          home: UniverseScreen.single(scene: scene, pack: pack),
         ),
       );
       await tester.pump();
@@ -751,7 +778,7 @@ void main() {
       final SceneBundle scene = _alphaScene(pack);
       await tester.pumpWidget(
         MaterialApp(
-          home: UniverseScreen(scene: scene, pack: pack),
+          home: UniverseScreen.single(scene: scene, pack: pack),
         ),
       );
       await tester.pump();
@@ -801,7 +828,7 @@ void main() {
       final SceneBundle scene = _alphaScene(pack);
       await tester.pumpWidget(
         MaterialApp(
-          home: UniverseScreen(scene: scene, pack: pack),
+          home: UniverseScreen.single(scene: scene, pack: pack),
         ),
       );
       await tester.pump();
@@ -887,7 +914,7 @@ void main() {
       final SceneBundle scene = _alphaScene(pack);
       await tester.pumpWidget(
         MaterialApp(
-          home: UniverseScreen(
+          home: UniverseScreen.single(
             scene: scene,
             pack: pack,
             initialZoom: ZoomLevel.z4,
@@ -917,6 +944,330 @@ void main() {
         findsNothing,
         reason: '没有「进详情之前」可言 ⇒ 按下去什么也不会变，所以不给',
       );
+      expect(tester.takeException(), isNull);
+    });
+  });
+
+  group('跨空间换根（SPEC-VIEW-031 多根）', () {
+    testWidgets('跨空间的项命中 ⇒ 换根、进 Z4，详情来自那个空间（SPEC-VIEW-031）', (
+      WidgetTester tester,
+    ) async {
+      final LoadedPack pack = loadAlphaPack();
+      final LoadedPack go = _goPack();
+      await _pumpScreen(
+        tester,
+        pack: pack,
+        scene: _alphaScene(pack),
+        others: <LoadedPack>[go],
+      );
+
+      await _search(tester, '闭包');
+      // `Z1` 只搜本空间 ⇒ 先按那一行放宽（`VIEW-031` 的作用域跟随档位）。
+      expect(find.byKey(locateSearchAllKey), findsOneWidget);
+      await tester.tap(find.byKey(locateSearchAllKey));
+      await _pump(tester);
+
+      final LocateHit hit = Locator(<LoadedPack>[pack, go])
+          .locate('闭包')
+          .usableHits
+          .first;
+      await tester.tap(find.byKey(locateRowKey(hit)));
+      await _pump(tester);
+
+      final ItemDetail detail = tester
+          .widget<DetailPanel>(find.byKey(hudDetailDrawerKey))
+          .detail!;
+      expect(detail.id, 'g1', reason: '落到了目标空间的那一项');
+      expect(
+        find.textContaining('· 1 项'),
+        findsOneWidget,
+        reason: '诊断行写的是新根（go 包 1 项，α 包 153 项）—— 换根真的换了',
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('跨空间跳过去后按返回 ⇒ 回到出发的空间与档位（SPEC-VIEW-015）', (
+      WidgetTester tester,
+    ) async {
+      final LoadedPack pack = loadAlphaPack();
+      final LoadedPack go = _goPack();
+      await _pumpScreen(
+        tester,
+        pack: pack,
+        scene: _alphaScene(pack),
+        others: <LoadedPack>[go],
+      );
+
+      await _search(tester, '闭包');
+      await tester.tap(find.byKey(locateSearchAllKey));
+      await _pump(tester);
+      final LocateHit hit = Locator(<LoadedPack>[pack, go])
+          .locate('闭包')
+          .usableHits
+          .first;
+      await tester.tap(find.byKey(locateRowKey(hit)));
+      await _pump(tester);
+      expect(find.byKey(hudDetailDrawerKey), findsOneWidget);
+
+      await tester.tap(find.byKey(detailBackKey));
+      await _pump(tester);
+
+      // 返回会按 `selector` 重开浮层（`VIEW-015`）—— 先关掉再看底下的视图。
+      await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+      await _pump(tester);
+
+      expect(
+        find.byKey(hudDetailDrawerKey),
+        findsNothing,
+        reason: '回到了出发时的 Z1，那里没有详情',
+      );
+      expect(
+        find.textContaining('· ${_alphaScene(pack).itemCount} 项'),
+        findsOneWidget,
+        reason: '快照带着 spaceId ⇒ 回到 python 这个根，不是停在 Go',
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('详情里再跨空间跳 ⇒ 返回先回原空间的那一项（SPEC-VIEW-016）', (
+      WidgetTester tester,
+    ) async {
+      final LoadedPack pack = loadAlphaPack();
+      final LoadedPack go = _goPack();
+      final SceneBundle scene = _alphaScene(pack);
+      await tester.pumpWidget(
+        MaterialApp(
+          home: UniverseScreen(
+            roots: <SceneResolution>[
+              SceneResolution(bundle: scene, pack: pack),
+              SceneResolution(bundle: _alphaScene(go), pack: go),
+            ],
+          ),
+        ),
+      );
+      await tester.pump();
+
+      // 点星进详情 —— 这是「出发的那一项」，在 python 空间。
+      final Size viewport = tester.getSize(find.byType(UniverseScreen));
+      await tester.tapAt(
+        _findPoint(
+          scene,
+          viewport,
+          hit: true,
+          devicePixelRatio: tester.view.devicePixelRatio,
+        ),
+      );
+      await tester.pump();
+      final ItemDetail origin = tester
+          .widget<DetailPanel>(find.byKey(hudDetailDrawerKey))
+          .detail!;
+
+      // 详情里搜索跨空间命中：`Z4` 的作用域是本空间 ⇒ 先放宽。
+      await _search(tester, '闭包');
+      await tester.tap(find.byKey(locateSearchAllKey));
+      await _pump(tester);
+      final LocateHit hit = Locator(<LoadedPack>[pack, go])
+          .locate('闭包')
+          .usableHits
+          .first;
+      await tester.tap(find.byKey(locateRowKey(hit)));
+      await _pump(tester);
+      expect(
+        tester.widget<DetailPanel>(find.byKey(hudDetailDrawerKey)).detail!.id,
+        'g1',
+      );
+
+      await tester.tap(find.byKey(detailBackKey));
+      await _pump(tester);
+      await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+      await _pump(tester);
+
+      final ItemDetail back = tester
+          .widget<DetailPanel>(find.byKey(hudDetailDrawerKey))
+          .detail!;
+      expect(
+        back.id,
+        origin.id,
+        reason: 'trail 记的是「python 空间的那一项」—— 只存裸 id 会落到另一个空间',
+      );
+      expect(
+        find.textContaining('· ${scene.itemCount} 项'),
+        findsOneWidget,
+        reason: '退一步就把根也退回去了',
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('空间命中 ⇒ 换根到它并推到 Z0，选中项清空（SPEC-VIEW-001 / 031）', (
+      WidgetTester tester,
+    ) async {
+      final LoadedPack pack = loadAlphaPack();
+      final LoadedPack go = _goPack();
+      await _pumpScreen(
+        tester,
+        pack: pack,
+        scene: _alphaScene(pack),
+        others: <LoadedPack>[go],
+        zoom: ZoomLevel.z0,
+      );
+
+      // `Z0` 本就是全部空间 ⇒ 不必点放宽那一行。
+      await _search(tester, 'Go 语言');
+      final LocateHit space = Locator(<LoadedPack>[pack, go])
+          .locate('Go 语言')
+          .usableHits
+          .first;
+      expect(space.kind, LocateKind.space, reason: '前提：命中的是空间本身');
+      await tester.tap(find.byKey(locateRowKey(space)));
+      await _pump(tester);
+
+      expect(
+        find.textContaining('· 1 项'),
+        findsOneWidget,
+        reason: '换根到 Go —— 画的是它那一项',
+      );
+      expect(
+        find.descendant(
+          of: find.byKey(hudBreadcrumbKey),
+          matching: find.textContaining('Z0'),
+        ),
+        findsOneWidget,
+        reason: '空间是 Z0 那一层',
+      );
+      expect(
+        find.byKey(hudDetailDrawerKey),
+        findsNothing,
+        reason: '选中项被清空 —— 旧空间的 id 在新空间里通常不存在，留着会开一个空抽屉',
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('跨空间的轴值命中 ⇒ 换根并写筛选，档位不动（SPEC-VIEW-028 的边界）', (
+      WidgetTester tester,
+    ) async {
+      final LoadedPack pack = loadAlphaPack();
+      // Go 包的轴取值与 α 包不重叠 —— 只在本空间筛它必然是空集。
+      final LoadedPack go = fixturePack(
+        const <FixtureItem>[
+          // 轴取值只在本空间有 ⇒ 不换根就筛出空集。
+          FixtureItem('g1', '闭包', ability: '语言特性'),
+        ],
+        spaceId: 'go',
+        spaceName: 'Go 语言',
+      );
+      await _pumpScreen(
+        tester,
+        pack: pack,
+        scene: _alphaScene(pack),
+        others: <LoadedPack>[go],
+      );
+
+      await _search(tester, '语言特性');
+      await tester.tap(find.byKey(locateSearchAllKey));
+      await _pump(tester);
+      final LocateHit axis = Locator(<LoadedPack>[pack, go])
+          .locate('语言特性')
+          .usableHits
+          .firstWhere((LocateHit h) => h.kind == LocateKind.axis);
+      await tester.tap(find.byKey(locateRowKey(axis)));
+      await _pump(tester);
+
+      expect(
+        find.byKey(hudFilterChipsKey),
+        findsOneWidget,
+        reason: '筛选写进去了',
+      );
+      expect(
+        find.textContaining('· 1 项'),
+        findsOneWidget,
+        reason: '换根到 Go —— 不换根的话这条取值在 α 包里筛出空集',
+      );
+      expect(
+        find.descendant(
+          of: find.byKey(hudBreadcrumbKey),
+          matching: find.textContaining('Z1'),
+        ),
+        findsOneWidget,
+        reason: '筛选类不改档位（VIEW-028）—— 改的只是根',
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('换根后作用域跟着新根：放宽那一行改报「另有 1 个空间」（SPEC-VIEW-031）', (
+      WidgetTester tester,
+    ) async {
+      final LoadedPack pack = loadAlphaPack();
+      final LoadedPack go = _goPack();
+      await _pumpScreen(
+        tester,
+        pack: pack,
+        scene: _alphaScene(pack),
+        others: <LoadedPack>[go],
+      );
+
+      // 先换到 Go（空间命中，`Z0` 下不必放宽）。
+      await _search(tester, 'Go 语言');
+      await tester.tap(find.byKey(locateSearchAllKey));
+      await _pump(tester);
+      final LocateHit space = Locator(<LoadedPack>[pack, go])
+          .locate('Go 语言')
+          .usableHits
+          .first;
+      await tester.tap(find.byKey(locateRowKey(space)));
+      await _pump(tester);
+
+      // 在 Go 里再搜：`Z0` 不限空间，所以直接能看到 α 包的项。
+      await _search(tester, '装饰器');
+      final LocateHit remote = Locator(<LoadedPack>[pack, go])
+          .locate('装饰器')
+          .usableHits
+          .first;
+      expect(
+        remote.spaceId,
+        'python',
+        reason: '命中来自另一个空间 —— 换根之后它成了「别人」',
+      );
+      expect(
+        find.byKey(locateRowKey(remote)),
+        findsOneWidget,
+        reason: 'Z0 搜全部空间，另一个空间的项照样列出来',
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('换根后树里是新根的项（SPEC-VIEW-031 / 021）', (
+      WidgetTester tester,
+    ) async {
+      final LoadedPack pack = loadAlphaPack();
+      final LoadedPack go = _goPack();
+      await _pumpScreen(
+        tester,
+        pack: pack,
+        scene: _alphaScene(pack),
+        others: <LoadedPack>[go],
+        zoom: ZoomLevel.z0,
+      );
+
+      await _search(tester, 'Go 语言');
+      final LocateHit space = Locator(<LoadedPack>[pack, go])
+          .locate('Go 语言')
+          .usableHits
+          .first;
+      await tester.tap(find.byKey(locateRowKey(space)));
+      await _pump(tester);
+
+      await tester.tap(find.descendant(
+        of: find.byKey(hudModeSwitchKey),
+        matching: find.text('树'),
+      ));
+      await _pump(tester);
+
+      expect(
+        find.textContaining('树 · 1 项'),
+        findsOneWidget,
+        reason: '树读的是 `_pack` —— 换根之后它必须跟着换',
+      );
+      expect(find.text('闭包'), findsWidgets);
       expect(tester.takeException(), isNull);
     });
   });
