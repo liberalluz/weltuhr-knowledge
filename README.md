@@ -1,6 +1,8 @@
 # Weltuhr
 
-> 一句话定位：把一个学习领域展开成**可定位、可规划、可量化**的知识空间，让「我要学 X」变成「我知道该按什么顺序学什么、学到什么程度算能用」。
+**简体中文** · [English](README.en.md) · [Deutsch](README.de.md) · [Italiano](README.it.md) · [日本語](README.ja.md) · [Français](README.fr.md)
+
+> 把一个学习领域展开成**可定位、可规划、可量化**的知识空间，让「我要学 X」变成「我知道该按什么顺序学什么、学到什么程度算能用」。
 
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 
