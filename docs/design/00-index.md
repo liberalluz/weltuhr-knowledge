@@ -1,6 +1,6 @@
 # Weltuhr 设计规格 · 索引
 
-> **本目录是什么**：产品与系统的**设计基线**，回答「是什么」。理论依据在仓根 `knowledge-system-learning-methodology.md`（回答「人怎么学」）。
+> **本目录是什么**：产品与系统的**设计基线**，回答「是什么」。理论依据在 [`../reference/knowledge-system-learning-methodology.md`](../reference/knowledge-system-learning-methodology.md)（回答「人怎么学」）。
 > **本文件是导航与裁决规则，不承载具体设计内容。**
 
 ## 一、怎么读
@@ -24,9 +24,9 @@
 
 合计 **165 条编号条目**（含同一裁定在不同域的展开表述；裁定总数 140 条，部分跨域裁定在两份中各出现一次，以**首次出现处为主条目**，另一处标 `见 SPEC-XXX-nnn`）。
 
-## 三、六张横切表
+## 三、参考层（`../reference/`）
 
-被多份文档引用，**只在 `../reference/` 维护**：
+被多份文档引用，**只在 `../reference/` 维护**。六张横切表：
 
 | 表 | 内容 | 主要引用方 |
 |---|---|---|
@@ -36,6 +36,8 @@
 | [entity-fields](../reference/entity-fields.md) | 实体字段表 | 全部 |
 | [glossary](../reference/glossary.md) | 术语与八对辨析 | 全部 |
 | [not-list](../reference/not-list.md) | 明确不做 + 理由 | 全部（实施者必读） |
+
+> 另有**上游理论长文** [`../reference/knowledge-system-learning-methodology.md`](../reference/knowledge-system-learning-methodology.md) —— 全案的理论依据。它是 `design/` 的**上游**（design 全部引用它，它不引用 design），改动频率远低于 design，故归入参考层而非设计基线。
 
 ## 四、跨文档约束清单
 
