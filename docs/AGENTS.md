@@ -38,15 +38,15 @@
 |---|---|
 | 命名 | `<原名>.<lang>.md` —— `README.zh.md` · `SDP-软件开发计划.en.md`。**原文保留 `<原名>.md`**，不加后缀 |
 | 语言码 | `zh` `en` `de` `it` `ja` `fr`（BCP 47 短码） |
-| 唯一例外 | 根 `README.md` **是英文**（GitHub 首页渲染它），中文原文在 [`readme/README.zh.md`](readme/README.zh.md) |
-| 落点 | 根 README 的译本统一放 [`readme/`](readme/)；其余文档的译本**与原文同目录** |
+| 唯一例外 | **GitHub 按文件名读取的三份**用英文占位原名，中文原文加 `.zh` 后缀：根 [`README.md`](../README.md)（首页渲染）· [`.github/CONTRIBUTING.md`](../.github/CONTRIBUTING.zh.md)（新 issue / PR 界面自动链接）· [`.github/SECURITY.md`](../.github/SECURITY.zh.md)（Security 页 policy）。三者均**只是命名例外，源仍是中文** |
+| 落点 | 译本**与其中文原文同目录**：根 README → [`readme/`](readme/)；`.github/` 两份 → [`.github/`](../.github/) 同级；其余文档 → 与原文同目录 |
 | 切换条 | `English · 简体中文 · Deutsch · Italiano · 日本語 · Français` 固定顺序，**当前语言加粗不设链接**，置于 `# 标题` 之下 |
 | 溯源行 | 译本头部第二行写 `> Translation of <指向中文原文的链接> · <日期> · the Chinese version is authoritative.`（措辞按各语言自写，格式照此）。**不写 commit sha** —— 提交前不可知，写了必然立刻误报 |
 | 链接 | 目标已有译本 ⇒ 指向同名译本；目标尚无译本 ⇒ 指向中文原文。**不指向其他译本** |
 | 不译 | `AGENTS.md`（两套语言 = 两套规则源）· `LICENSE` · `NOTICE`（法律文本） |
 | 完整性 | **中文原文不得删除，译本不得单独存在** —— `check_s0` 只判前缀存在，删了中文会静默通过 |
 
-`readme/` 下现有五份（`zh` `de` `it` `ja` `fr`），其余 57 份文档的译本**等首个版本发布后统一做**。
+**已落译本**：`readme/` 五份（`de` `it` `ja` `fr`，中文原文为 `README.zh.md`）· `.github/` 两份各五份（`CONTRIBUTING` · `SECURITY`，中文原文为同名 `.zh.md`）。其余 57 份文档的译本**等首个版本发布后统一做**。
 
 ## 交付物导航
 
