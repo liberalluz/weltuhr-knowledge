@@ -1,0 +1,20 @@
+[
+  {
+    "id": "q-variable-binding",
+    "itemId": "python/variable",
+    "prompt": "`a = [1]; b = a; b.append(2)` 之后 `a` 是什么？",
+    "answer": "[1, 2] —— 赋值绑定的是对象引用，不是副本"
+  },
+  {
+    "id": "q-closure-late-binding",
+    "itemId": "python/closure",
+    "prompt": "`[lambda: i for i in range(3)]` 里三个函数调用后各返回什么？",
+    "answer": "都是 2 —— 闭包捕获变量而非值，循环结束后 i 已定格"
+  },
+  {
+    "id": "q-decorator-order",
+    "itemId": "python/decorator",
+    "prompt": "`@a` 与 `@b` 叠在同一个函数上，哪个先被应用？",
+    "answer": "离函数最近的那个（`@b`）先应用，`@a` 包装的是 `b(f)` 的结果"
+  }
+]

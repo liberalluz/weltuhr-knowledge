@@ -1,0 +1,6 @@
+{
+  "base": "valid-min",
+  "exit": 1,
+  "codes": ["E-SPACE-NO-ORDER"],
+  "note": "edges 为空。文件在、段齐，但没有独立 ⪯ —— PACK-001 的第一条判据缺，按裁定应降为域而不是独立成包。这条只看文件存在性是抓不到的"
+}

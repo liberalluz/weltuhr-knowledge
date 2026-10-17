@@ -1,0 +1,6 @@
+{
+  "base": "valid-min",
+  "exit": 1,
+  "codes": ["E-ID-DUP"],
+  "note": "两项共用同一个 Item.id。带版本号的升级会退化成同一问题，故此处只测纯重复"
+}
