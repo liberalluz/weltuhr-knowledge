@@ -24,7 +24,15 @@
 /// ## 本笔没有做的
 ///
 /// - 跨空间搜索（`VIEW-031`）：`Locator` 现在只收一个 `LoadedPack`，要收
-///   `List<LoadedPack>` 才能「在全部空间中搜索」。归笔 6。
+///   `List<LoadedPack>` 才能「在全部空间中搜索」。归笔 7。
+///
+/// ## 绘制表面封顶（`C-33` / `ADR-0002` 修订三）
+///
+/// 窗口再大，绘制表面也只到 `C-33` 的基准面积为止，然后靠 `FittedBox` 放大贴满
+/// —— 光栅成本跟的是**绘制表面**，不是窗口。判据用**物理面积**
+/// （`w·h·dpr²`，见 `planViewport`）：只看逻辑尺寸的话，高分屏上这条封顶等于
+/// 不存在。拾取因此必须吃**画布坐标**而不是窗口坐标，同时手势不能拿
+/// `details.localPosition`（`FittedBox` 下命中的 RenderBox 不一定是画布盒）。
 ///
 /// ## 点星与罗盘（本笔接上的两个输入器）
 ///
@@ -45,6 +53,7 @@ import '../../core/pack/pack_parse.dart';
 import '../../core/view/detail.dart';
 import '../../core/view/filter.dart';
 import '../../core/view/tree.dart';
+import '../../core/view/viewport.dart';
 import '../../core/view/zoom.dart';
 import '../detail/detail_panel.dart';
 import '../locate/locate_overlay.dart';
@@ -146,6 +155,9 @@ class _UniverseScreenState extends State<UniverseScreen>
 
   /// 屏幕根的焦点节点。`⌘K` / `Ctrl+K` 靠它接键（见 `_closeLocate`）。
   final FocusNode _rootFocus = FocusNode(debugLabel: 'universe-root');
+
+  /// 画布盒。拾取要用 `globalToLocal` 把指针位置映到它上面（见 `_universeBody`）。
+  final GlobalKey _canvasKey = GlobalKey(debugLabel: 'universe-canvas');
 
   @override
   void initState() {
@@ -332,10 +344,13 @@ class _UniverseScreenState extends State<UniverseScreen>
   ///
   /// **点空白什么都不做**（见 `core/frame/pick.dart` 文件头）：清掉选中会让
   /// 详情抽屉毫无预警地消失，而点歪是常态。
-  void _pickAt(Offset point, Size viewport, Set<String>? visibleIds) {
+  ///
+  /// [point] 是**画布坐标**（手势挂在画布内部，见 `_universeBody`）。
+  /// [surface] 是画布尺寸 —— 降采样后它与窗口不等，拾取必须用画布这一套。
+  void _pickAt(Offset point, Size surface, Set<String>? visibleIds) {
     final String? id = pickSceneNode(
       scene: widget.scene,
-      viewport: viewport,
+      viewport: surface,
       // 自转一直在动：用**这一刻**的偏航，不是基准偏航。
       yawRadians: spunYaw(_camera.yawRadians, _spin.value),
       point: point,
@@ -573,13 +588,23 @@ class _UniverseScreenState extends State<UniverseScreen>
     builder: (BuildContext context, BoxConstraints constraints) {
       // 视口尺寸要**与 painter 拿到的一致**。用 `constraints` 而不是
       // `context.size`：后者在首帧是 null，而首帧就点是不该崩的。
-      final Size viewport = Size(constraints.maxWidth, constraints.maxHeight);
-      return GestureDetector(
-        // `opaque`：空白处也要接住点击，否则点在星与星的缝里会穿透到底下。
-        behavior: HitTestBehavior.opaque,
-        onTapUp: (TapUpDetails details) =>
-            _pickAt(details.localPosition, viewport, visibleIds),
-        child: RepaintBoundary(
+      final Size window = Size(constraints.maxWidth, constraints.maxHeight);
+      // 绘制表面按**物理面积**封顶（`C-33` / `ADR-0002` 修订二）：4K、以及
+      // Retina 这类高分屏，都靠这一步把光栅成本拉回基准窗口的量级。
+      final ViewportPlan plan = planViewport(
+        window.width,
+        window.height,
+        devicePixelRatio: MediaQuery.of(context).devicePixelRatio,
+      );
+      final Size surface = Size(plan.surfaceWidth, plan.surfaceHeight);
+
+      final Widget canvas = RepaintBoundary(
+        // ⚠️ 尺寸必须由 `SizedBox` **强制**给，不能只写 `CustomPaint.size`：
+        // `size` 只是 preferred，父级给的 tight 约束会把它推翻 —— 那样绘制按
+        // 窗口尺寸画、拾取按画布尺寸算，两边错开。
+        child: SizedBox.fromSize(
+          key: _canvasKey,
+          size: surface,
           child: CustomPaint(
             painter: FramePainter(
               scene: widget.scene,
@@ -588,8 +613,40 @@ class _UniverseScreenState extends State<UniverseScreen>
               visibleIds: visibleIds,
               onRepaint: (_, _, _) {},
             ),
-            size: Size.infinite,
           ),
+        ),
+      );
+
+      // ⚠️ 外层 `SizedBox` 不是多余：`AnimatedSwitcher` 的 `Stack` 给的是
+      // **loose 约束**，`FittedBox` 在 loose 下只会「保持比例地缩到装得下」——
+      // 于是画布停在 554×416、居中显示，四周留底，降采样后的放大根本没发生
+      // （实测画布盒在窗口里居中，点击坐标整体偏 (123, 92)）。
+      // 给它一个 tight 的窗口尺寸，`BoxFit.fill` 才会把它铺满。
+      return SizedBox.fromSize(
+        size: window,
+        child: GestureDetector(
+          // `opaque`：空白处也要接住点击，否则点在星与星的缝里会穿透到底下。
+          behavior: HitTestBehavior.opaque,
+          // ⚠️ **不能用 `details.localPosition`**。它相对的是「手势命中的那个
+          // RenderBox」，而 `FittedBox` 下不保证落在画布盒上。把全局坐标显式
+          // 映到画布盒，不依赖命中路径怎么走。
+          onTapUp: (TapUpDetails details) {
+            final RenderBox? box =
+                _canvasKey.currentContext?.findRenderObject() as RenderBox?;
+            if (box == null || !box.hasSize) {
+              return;
+            }
+            _pickAt(
+              box.globalToLocal(details.globalPosition),
+              surface,
+              visibleIds,
+            );
+          },
+          // `FittedBox` 只在真降了分辨率时才包一层：`scale == 1` 时它是纯开销，
+          // 而宇宙每帧都在重绘。
+          child: plan.isDownscaled
+              ? FittedBox(fit: BoxFit.fill, child: canvas)
+              : canvas,
         ),
       );
     },
