@@ -12,6 +12,10 @@ jobs:
   content-checks:
     name: content-checks
     runs-on: ubuntu-latest
+    # 从根上不产字节码：content/tools/*.py 互相 import 会写 __pycache__/，
+    # 那是工具缓存而非交付物，不该由「产物不入库」这条判据去管。
+    env:
+      PYTHONDONTWRITEBYTECODE: "1"
     steps:
       - uses: actions/checkout@v4
 
@@ -34,10 +38,29 @@ jobs:
             echo "尚无真实空间（content/*/manifest.json），跳过"
           fi
 
+      # 判据只针对产物路径。原写法「全仓不得有未跟踪文件」有两处失真：
+      #   过宽 —— 任何与产物无关的临时文件都会让它红，错误信息还指向 dist/；
+      #   过窄 —— ^?? 只匹配未跟踪文件，dist/ 若已被提交进库，status 显示的是 M
+      #           （甚至无变化时不显示），它反而漏掉自己最该抓的情况。
+      # ⚠️ 不用 pathspec 通配：实测 `git status -- 'content/*/dist'` 拿不到未跟踪目录
+      #    （全量 status 有 `?? .../dist/`，加通配后返回空，`:(glob)` 同样无效），
+      #    会静默放行。故取全量输出再文本过滤。
+      # 判据工具按 .gitignore 纪律 ③：以 `git add -A --dry-run` 为准（新增与修改都会列出，
+      # 被忽略的不列），再用 ls-files 补「已提交进库但未改动」这一路。
       - name: 产物不入库
         run: |
-          if [ -d content ] && git status --porcelain --ignored=no | grep -q '^??'; then
-            echo "构建后出现未跟踪文件，检查 dist/ 是否被 .gitignore 覆盖"
-            git status --short
-            exit 1
+          fail=0
+          pending=$(git add -A --dry-run | grep -E '(^|/)dist/' || true)
+          if [ -n "$pending" ]; then
+            echo "构建产物会被提交进库（未被 .gitignore 覆盖）："
+            echo "$pending"
+            fail=1
           fi
+          tracked=$(git ls-files | grep -E '(^|/)dist/' || true)
+          if [ -n "$tracked" ]; then
+            echo "构建产物已在索引中，应移除并补 .gitignore："
+            echo "$tracked"
+            fail=1
+          fi
+          if [ "$fail" -ne 0 ]; then exit 1; fi
+          echo "产物未入库：dist/ 均被 .gitignore 覆盖"
