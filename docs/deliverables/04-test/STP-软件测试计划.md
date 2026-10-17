@@ -1,6 +1,6 @@
 # 软件测试计划（STP）
 
-> **版号**：`v0.2.0` · **状态**：§五 用例已回填，§六 错误码覆盖缺口已量化
+> **版号**：`v0.3.0` · **状态**：§五 用例已回填（73 条），§六 错误码覆盖 37/37 无缺口
 > 本文件规定**测什么、怎么判通过**。用例正文在 [`STD`](STD-软件测试说明.md)，实际执行结果在 [`STR`](STR-软件测试报告.md)。
 > **追溯补录**：2026-10-17 · §五 §六 依据 `app/test/` 与 `content/tools/` 的既有测试反推，非当时所写。
 
@@ -10,6 +10,7 @@
 |---|---|---|
 | `v0.1.0` | 2026-10-17 | 首建。确立测试分层与通过判据；用例待补 |
 | `v0.2.0` | 2026-10-17 | **追溯补录** §五 用例汇总（42 条）、§六 错误码覆盖缺口（8/36） |
+| `v0.3.0` | 2026-10-17 | §六 覆盖由 8/36 补至 **37/37**（新增 31 条管线用例 + 覆盖对账自检）；§五 汇总同步（42 → 73 条） |
 
 ---
 
@@ -63,12 +64,12 @@
 | 层 | 用例数 | 编号 | 跑法 |
 |---|---|---|---|
 | 单元 | 23 | `TC-FND-001`–`006` · `TC-PACK-001`–`002` · `TC-QUANT-001`–`009` · `TC-STEP-001`–`003` · `TC-PLAN-001` · `TC-NOTE-001` · `TC-VIEW-001` | `flutter test`（在 `app/` 下） |
-| 管线 | 9 | `TC-FND-007` · `TC-PACK-003`–`010` | `python content/tools/verify.py --suite` |
+| 管线 | 40 | `TC-FND-007` · `TC-PACK-003`–`041` | `python content/tools/verify.py --suite` |
 | 架构 | 9 | `TC-INF-001`–`009` | `dart run tool/lint/check.dart`（在 `app/` 下） |
 | Widget | 1 | `TC-INF-010` | `flutter test` |
-| **合计** | **42** | — | — |
+| **合计** | **73** | — | — |
 
-> 42 = **Dart 33**（`constants` 8 · `entities` 9 · `events` 6 · `lint` 9 · `widget` 1）+ **管线 fixture 9**，与既有测试 1:1 对应，**未新增、未删减**。
+> 73 = **Dart 33**（`constants` 8 · `entities` 9 · `events` 6 · `lint` 9 · `widget` 1）+ **管线 fixture 40**（源层 32 + 产物层 8）。较 `v0.2.0` 的 42 条新增 31 条，全部对应 `R-07` 补的 fixture，**未改动任何既有用例**。
 
 ### 5.2 一个必须写明的边界
 
@@ -81,34 +82,41 @@
 
 所以这两条目前在 `STD` §4.3 里被列为 **B 类缺口**，不是 C 类。差别在于：C 类是「测了但没标号」，补个编号就行；B 类是「根本没有东西会响」，得补机制。
 
-## 六、错误码覆盖缺口
+## 六、错误码覆盖
 
-`content/tools/validator.py` 共定义 **36 个错误码**。9 个 fixture 覆盖了其中 **8 个**：
+`content/tools/validator.py` 共定义 **37 个错误码**（`v0.2.0` 记 36，实测少记 1 —— 那次统计用裸正则扫全文，把注释里提到的码当成定义）。截至 2026-10-17 **37/37 全部有 fixture 断言**：
 
-| 已覆盖 | 由哪条用例锁住 |
-|---|---|
-| `E-CYCLE` | `TC-FND-007` |
-| `E-ID-DUP` | `TC-PACK-004` |
-| `E-SPACE-NO-ORDER` | `TC-PACK-005` |
-| `E-REQ-VALUE` | `TC-PACK-006` |
-| `E-REQ-KEY` · `E-REQ-STATE` | `TC-PACK-007` |
-| `E-VERSION-FORMAT` | `TC-PACK-008` |
-| `E-ID-VERSIONED` | `TC-PACK-009` |
+| 层 | fixture | 覆盖的码 | 为什么分两层 |
+|---|---|---|---|
+| 源数据层 | 32（9 原有 + 23 新增） | 31 | 走 `build_text`：读源 → 校验 → 产物层的完整链路 |
+| 产物层 | 8（全新增） | 6 | `assemble()` 拼出的 pack 结构恒定，`E-PACK-*` / `E-META-*` 在源路径上**结构上不可达** |
+| **合计** | **40** | **37** | |
 
-**未覆盖的 28 个**：
+### 6.1 这 31 个码为什么以前没测
+
+不是「忘了写」，是**没有机制提醒**。原 9 个 fixture 是「想到一条写一条」的产物，负例只覆盖了最早实现的那批规则；后来加的 `E-DOMAIN` / `E-SCHEME-AUTH` / `E-EXCERPT-FIELD` 等再没配负例，而**没有任何东西会因此变红**。
+
+所以本次处置不是只补 fixture，而是把「覆盖对账」做成 `--suite` 的最后一步：
 
 ```
-E-DOMAIN            E-EDGE-DUP         E-EDGE-FIELD       E-EDGE-REF
-E-EDGE-TYPE         E-EXCERPT-FIELD    E-ID-FORMAT        E-ITEM-FIELD
-E-JSON              E-LAYER            E-MANIFEST-FIELD   E-MANIFEST-MISSING
-E-META-EXTRA-KEY    E-META-FIELD       E-META-VERSION     E-PACK-EXTRA-KEY
-E-PACK-MISSING-KEY  E-QUESTION-FIELD   E-QUESTION-REF     E-SCHEME-AUTH
-E-SCHEME-DUP        E-SCHEME-FIELD     E-SCHEME-NODE-REF  E-SEGMENT-MISSING
-E-SEGMENT-TYPE      E-SIXAXIS          E-SOURCEREF        E-TYPE
+— 错误码覆盖 —
+错误码覆盖：37/37
 ```
 
-**这意味着什么，要说准确**：这 28 条拒绝路径**从未被执行过**。它们可能是对的，可能有 bug，也可能已经因为数据结构演进而永远走不到 —— **目前无人知道**。而校验器是内容包质量的第一道门，它静默放过一个坏包，代价要到用户导入时才发现。
+定义集与断言集差任何一条即失败。两个方向都查：**定义了没断言** = 那条规则从没被执行过；**断言了没定义** = `expect.json` 里写了 typo，永远不可能满足。没有这一步，补 31 个 fixture 只是把同一个坑填一次 —— 下一个新增规则照样会漏。
 
-**为什么不是现在补**：补 28 个 fixture 是纯机械工作，但没有 α 真实内容包（`B2`）之前，fixture 只能基于 `valid-min` 变异得出 —— 而 `valid-min` 本身就是最小样例，从它变异出来的负例未必代表真实数据的坏法。等 α 包落地后同批补，覆盖率才能真正对应现实。
+### 6.2 6 个码在源路径上不可达 —— 不当作死码
 
-> 记入 `STD` §五 待补第 4 项，归属 `B2`。
+`E-PACK-TYPE` / `E-PACK-EXTRA-KEY` / `E-PACK-MISSING-KEY` / `E-META-FIELD` / `E-META-EXTRA-KEY` / `E-META-VERSION` 在 `assemble()` 之后**永远不触发**：拼出来的 pack 必然五段齐全、`meta` 必然只有 `space` 与 `version`。
+
+它们不是死码，防的是两件真事：**有人手改产物**（`verify.py --pack` 直接读外部文件）与**构建逻辑退化**（某天 `assemble()` 真的丢了一段）。故单列 `fixtures/pack/` 产物层测试，把坏对象直接喂给 `check_pack_object`。
+
+> 判据：**「在当前调用路径上不可达」≠「没有价值」**。要先问清它防的是什么场景，确认那个场景不存在了才删。
+
+### 6.3 覆盖率的边界，要说准确
+
+37/37 证明的是**每条拒绝路径都执行过一次**，不证明「负例代表真实坏法」。这 31 份负例全部由 `valid-min` 变异得出，而 `valid-min` 是最小样例 —— 真实内容包的坏法与它并不完全同构。
+
+`v0.2.0` 那句「等 α 包落地再同批补」在这个维度上仍然成立：α 包（`B2`）落地后**应补真实坏法样本**。届时新增的是「更接近现实的负例」，不是「补上没测的码」—— 两件事别混。
+
+> `R-07` 的「已规避」指**机制层**已闭环（不会再静默漏），不指「负例质量已达标」。
