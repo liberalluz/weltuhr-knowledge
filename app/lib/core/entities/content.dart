@@ -15,7 +15,7 @@ class ItemRequirements {
       if (raw is! String) {
         throw FormatException('requirements.${key.name} 缺失或非字符串');
       }
-      result[key] = RequirementState.values.byName(raw);
+      result[key] = RequirementState.fromWire(raw);
     }
     return ItemRequirements(Map<RequirementKey, RequirementState>.unmodifiable(result));
   }
@@ -29,11 +29,11 @@ class ItemRequirements {
 
   /// 齐备格数 = 深度 `d` 的分子。
   int get completeCount =>
-      states.values.where((RequirementState s) => s == RequirementState.complete).length;
+      states.values.where((RequirementState s) => s == RequirementState.present).length;
 
   Map<String, Object?> toJson() => <String, Object?>{
     for (final MapEntry<RequirementKey, RequirementState> e in states.entries)
-      e.key.name: e.value.name,
+      e.key.name: e.value.wire,
   };
 }
 
@@ -103,8 +103,8 @@ class Item {
     id: requireString(json, 'id'),
     title: requireString(json, 'title'),
     sixAxis: requireStringMap(json, 'sixAxis'),
-    layer: Layer.values.byName(requireString(json, 'layer')),
-    type: ItemType.values.byName(requireString(json, 'type')),
+    layer: Layer.fromWire(requireString(json, 'layer')),
+    type: ItemType.fromWire(requireString(json, 'type')),
     requirements: ItemRequirements.fromJson(requireMap(json, 'requirements')),
     sourceRefs: requireStringList(json, 'sourceRefs'),
     domainId: requireString(json, 'domainId'),
@@ -148,7 +148,7 @@ class Edge {
     id: requireString(json, 'id'),
     from: requireString(json, 'from'),
     to: requireString(json, 'to'),
-    type: EdgeType.values.byName(requireString(json, 'type')),
+    type: EdgeType.fromWire(requireString(json, 'type')),
   );
 
   final String id;
@@ -165,6 +165,42 @@ class Edge {
     'from': from,
     'to': to,
     'type': type.name,
+  };
+}
+
+/// 声明式题（`questions` 段）。为 ⑤ 检验提供**可离线、可复现**的题 ——
+/// 模型生成的题不入包，因为它不可复现、也不参与 SRS（`SPEC-PACK-006`）。
+class Question {
+  const Question({
+    required this.id,
+    required this.itemId,
+    required this.prompt,
+    required this.answer,
+  });
+
+  factory Question.fromJson(JsonMap json) => Question(
+    id: requireString(json, 'id'),
+    itemId: requireString(json, 'itemId'),
+    prompt: requireString(json, 'prompt'),
+    answer: requireString(json, 'answer'),
+  );
+
+  final String id;
+
+  /// 指向 `Item.id`（存在性在构建期校验，客户端不重复实现）。
+  final String itemId;
+
+  /// 题干。
+  final String prompt;
+
+  /// 参考答案。
+  final String answer;
+
+  JsonMap toJson() => <String, Object?>{
+    'id': id,
+    'itemId': itemId,
+    'prompt': prompt,
+    'answer': answer,
   };
 }
 

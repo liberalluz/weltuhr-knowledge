@@ -9,13 +9,13 @@ Map<String, Object?> _itemJson() => <String, Object?>{
   'title': 'Lambda 表达式',
   'sixAxis': <String, String>{'subject': 'python', 'ability': 'programming'},
   'layer': 'persistent',
-  'type': 'statement',
+  'type': 'declarative',
   'requirements': <String, Object?>{
-    'boundary': 'complete',
+    'boundary': 'present',
     'justification': 'missing',
-    'proposition': 'complete',
+    'proposition': 'present',
     'relation': 'missing',
-    'how': 'notExternalizable',
+    'how': 'not_externalizable',
     'tacit': 'missing',
   },
   'sourceRefs': <String>['src-official'],
@@ -37,7 +37,7 @@ void main() {
       expect(roundTrip.id, original.id);
       expect(roundTrip.sixAxis, original.sixAxis);
       expect(roundTrip.layer, Layer.persistent);
-      expect(roundTrip.type, ItemType.statement);
+      expect(roundTrip.type, ItemType.declarative);
       expect(roundTrip.requirements.toJson(), original.requirements.toJson());
     });
 
@@ -47,6 +47,40 @@ void main() {
           Map<String, Object?>.of(broken['requirements']! as Map<String, Object?>)..remove('tacit');
       broken['requirements'] = requirements;
       expect(() => Item.fromJson(broken), throwsFormatException);
+    });
+  });
+
+  group('枚举取值与包数据同源', () {
+    test('三态用蛇形 not_externalizable，不是 Dart 驼峰（SPEC-PACK-009）', () {
+      expect(RequirementState.fromWire('present'), RequirementState.present);
+      expect(
+        RequirementState.fromWire('not_externalizable'),
+        RequirementState.notExternalizable,
+      );
+      expect(RequirementState.notExternalizable.wire, 'not_externalizable');
+      expect(
+        () => RequirementState.fromWire('notExternalizable'),
+        throwsFormatException,
+      );
+    });
+
+    test('项的 type 与 layer 取数据里的值，不是改写过的名字（无 SPEC：entity-fields §2 取值域）', () {
+      expect(ItemType.fromWire('declarative'), ItemType.declarative);
+      expect(ItemType.fromWire('procedural'), ItemType.procedural);
+      expect(Layer.fromWire('ephemeral'), Layer.ephemeral);
+      expect(() => ItemType.fromWire('statement'), throwsFormatException);
+      expect(() => Layer.fromWire('quick'), throwsFormatException);
+    });
+
+    test('边类型 unknown 能解析 —— 曾因枚举名写成 unknownTarget 而一条都进不来（无 SPEC：entity-fields §3 取值域）', () {
+      final Edge edge = Edge.fromJson(<String, Object?>{
+        'id': 'e-1',
+        'from': 'python/a',
+        'to': 'python/b',
+        'type': 'unknown',
+      });
+      expect(edge.type, EdgeType.unknown);
+      expect(edge.toJson()['type'], 'unknown');
     });
   });
 
