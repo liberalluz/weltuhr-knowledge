@@ -34,16 +34,19 @@
 
 ## 二、pack 格式
 
-### SPEC-PACK-005 pack 五段
-**裁定**：`pack.json` 由五段组成：
+### SPEC-PACK-005 pack 五段 + `meta` 信封
+**裁定**：`pack.json` 由**内容五段**加一个 **`meta` 信封**组成。`meta` 是信封而非内容段 —— 它只回答「这是哪个空间的哪一版」，不含任何知识内容，因此**不构成 `SPEC-PACK-006` 所禁的第三次 schema 扩张**。
 
 | 段 | 内容 | 备注 |
 |---|---|---|
+| `meta` | 信封：`space`（= `KnowledgeSpace.id`）+ `version`（semver） | ⚠️ **不含构建时间戳**：`dist/` 不入库、tag 是唯一指针，时间戳会让同一 commit 两次构建 byte 不等 |
 | `items` | 知识项（id / title / sixAxis / layer / type / requirements / sourceRefs / domainId / inScope） | — |
 | `edges` | 前提边（有限类型） | `⪯` 必须无环 |
 | `schemes` | 体系（`nodes[]` 是 `⪯` 的线性扩展） | 含 `inversions` |
 | `questions` | **声明式题库** —— 为 ⑤ 提供可离线、可复现的题 | ⚠️ 第二次扩 schema |
 | `excerpts` | **源摘录** —— 最小结构化摘录，带出处与许可标记 | ⚠️ 第三次扩 schema |
+
+`meta.version` 的源是源数据 `manifest.json` 的 `version`，`build.py` **原样透传、不改写**；tag `pack/<space>/vX.Y.Z` 须与之逐字一致。
 
 `src:` 第 48 轮 · E3 · V-1
 

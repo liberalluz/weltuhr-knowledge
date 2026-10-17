@@ -17,12 +17,12 @@
 | [VIEW](VIEW-views.md) | Z0–Z4 · 六通道两叠加 · 三视图投影 · HUD 七区块 · 树四类行 · 详情六入口两壳 · 快速定位 | 34 | FND | 掌握度公式（QUANT）· 笔记内容（NOTE） |
 | [PACK](PACK-content-pack.md) | 边界三判据 · 一空间一包 · pack schema · 稳定 `Item.id` · overlay 双平面 · 版本迁移 | 18 | FND | 事件字段（reference/event-types）· 审核裁定（GOV） |
 | [PLAN](PLAN-planning.md) | 源=材料 · 体系=顺序 · 方法=动作+判据 · 三段自建 · 逆序数 · `Plan` 实体 · 实时预览 · 候选排序 | 21 | FND · PACK | 方法与判据的执行（STEP） |
-| [STEP](STEP-learning-steps.md) | 七步行为 · Runner 三入队源 · 会话边界 · 步骤游标 · 六类执行算子 · 检验两出口 · 保持 · 毕业 | 31 | FND · PLAN | SRS 参数与公式（QUANT） |
+| [STEP](STEP-learning-steps.md) | 七步行为 · Runner 三入队源 · 会话边界 · 步骤游标 · 六类执行算子 · 检验两出口 · 保持 · 毕业 | 34 | FND · PLAN | SRS 参数与公式（QUANT） |
 | [QUANT](QUANT-quantification.md) | 掌握度两维 · 进度离散 · 三层单调状态 · `verified/checked` · FSRS 参数落位 | 15 | FND · STEP | 视觉表达（VIEW）· 常量数值（reference/constants） |
-| [NOTE](NOTE-notes.md) | `Note` 实体 · 三层内容 · 两套切换 · 单向导出三戳 · 按节版本 · 与判定的隔离 | 16 | FND · PACK · STEP | 模板排版（平台声明）· 笔记内容正确性（内容作者） |
+| [NOTE](NOTE-notes.md) | `Note` 实体 · 三层内容 · 两套切换 · 单向导出三戳 · 按节版本 · 与判定的隔离 | 19 | FND · PACK · STEP | 模板排版（平台声明）· 笔记内容正确性（内容作者） |
 | [GOV](GOV-governance.md) | 提交四裁定 · 最小三字段 · 即入 overlay · 跨设备 HLC 合并 · 孤儿项 · 降级五档 | 14 | FND · PACK | 包格式（PACK） |
 
-合计 **165 条编号条目**（含同一裁定在不同域的展开表述；裁定总数 140 条，部分跨域裁定在两份中各出现一次，以**首次出现处为主条目**，另一处标 `见 SPEC-XXX-nnn`）。
+合计 **171 条编号条目**（八份文档各自 `1..N` 连续编号，无跨文档重号）。
 
 ## 三、参考层（`../reference/`）
 
