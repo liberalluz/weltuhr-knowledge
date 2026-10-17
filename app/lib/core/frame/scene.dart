@@ -52,6 +52,7 @@ List<SceneNode> buildSceneNodes(LoadedPack pack, {required int sectorCount}) {
   }
 
   final String? defaultAxis = pack.space.defaultPrimaryAxis;
+  final Map<String, List<String>> axisValueOrder = _axisValueOrder(pack.items);
   final List<SceneNode> nodes = <SceneNode>[];
   for (final Item item in pack.items) {
     final int level = levels[item.id] ?? 0;
@@ -65,9 +66,13 @@ List<SceneNode> buildSceneNodes(LoadedPack pack, {required int sectorCount}) {
             ((domainIndex[item.domainId] ?? 0) + radialBandCenterOffset) /
             domainCount,
         sector: sector,
-        // 轴内递归区间分割（`VIEW-002`「含轴内递归区间分割」）需要**轴值序**，
-        // 而包里只有轴取值、没有各轴的取值序列 ⇒ 本笔落 0，笔 2 前补字段再细化。
-        sectorFraction01: 0,
+        // 轴内递归区间分割（`VIEW-002`「含轴内递归区间分割」）：扇区内按
+        // **该轴取值的出现顺序**分成 `n` 段（`ADR-0003` 修订三）。
+        sectorFraction01: _sectorFraction(
+          item.primaryAxis ?? defaultAxis,
+          item.sixAxis,
+          axisValueOrder,
+        ),
         phiLevel: level,
         phiFraction01: phiFractions[level] ?? 0,
         size01: (degrees[item.id] ?? 0) / maxDegree,
@@ -149,6 +154,48 @@ List<EdgeSpan> buildEdgeSpans(LoadedPack pack, List<SceneNode> nodes) {
     );
   }
   return spans;
+}
+
+/// 各轴的**取值出现顺序**。首次出现的次序即内容作者的编排序（`ADR-0003` 修订三）
+/// —— 包与清单都只有取值、没有序列，这是唯一既稳定又不必新增 schema 的来源。
+Map<String, List<String>> _axisValueOrder(List<Item> items) {
+  final Map<String, List<String>> order = <String, List<String>>{};
+  for (final Item item in items) {
+    for (final String axis in sixAxisKeys) {
+      final String? value = item.sixAxis[axis];
+      if (value == null) {
+        continue;
+      }
+      final List<String> seen = order.putIfAbsent(axis, () => <String>[]);
+      if (!seen.contains(value)) {
+        seen.add(value);
+      }
+    }
+  }
+  return order;
+}
+
+/// 轴内细分位置：该取值在轴上排第几，映射到 `(i + 0.5) / n`。
+///
+/// 取段中线而不是段端点：端点会压在扇区边界上，相邻两个取值的点看起来像跨了轴。
+double _sectorFraction(
+  String? axis,
+  Map<String, String> sixAxis,
+  Map<String, List<String>> order,
+) {
+  if (axis == null) {
+    return 0;
+  }
+  final List<String>? values = order[axis];
+  final String? value = sixAxis[axis];
+  if (values == null || value == null || values.isEmpty) {
+    return 0;
+  }
+  final int index = values.indexOf(value);
+  if (index < 0) {
+    return 0;
+  }
+  return (index + radialBandCenterOffset) / values.length;
 }
 
 /// 主轴 → 扇区序号。未声明时给 `sectorCount`（越界值）：调用方据此画
