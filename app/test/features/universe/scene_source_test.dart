@@ -66,7 +66,7 @@ void main() {
   });
 
   group('真实 α 包装配', () {
-    test('装出 150 节点 / 167 有效边 / 最大层号 63（SPEC-PACK-018）', () {
+    test('装出 150 项 + 3 占位 / 170 条边 / 最大层号 63（SPEC-PACK-018）', () {
       final SceneResolution resolution = resolveAlphaScene();
 
       // 回落了就是回落了 —— 不当成「装配成功」放过去。
@@ -76,8 +76,9 @@ void main() {
         reason: resolution.fallbackReason ?? '',
       );
       expect(resolution.bundle.origin, SceneOrigin.alphaPack);
-      expect(resolution.bundle.itemCount, 150);
-      expect(resolution.bundle.edgeCount, 167);
+      // `ADR-0003` §决策 5：3 条指向未知由占位节点接住，边数不再减到 167。
+      expect(resolution.bundle.itemCount, 153);
+      expect(resolution.bundle.edgeCount, 170);
       expect(resolution.bundle.maxPhi, 63);
     });
   });

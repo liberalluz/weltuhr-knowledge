@@ -1,6 +1,7 @@
 /// 内容侧实体：全部来自 pack，客户端只读（`docs/reference/entity-fields.md` §一）。
 library;
 
+import '../constants.dart';
 import '../enums.dart';
 import '../json.dart';
 
@@ -17,7 +18,9 @@ class ItemRequirements {
       }
       result[key] = RequirementState.fromWire(raw);
     }
-    return ItemRequirements(Map<RequirementKey, RequirementState>.unmodifiable(result));
+    return ItemRequirements(
+      Map<RequirementKey, RequirementState>.unmodifiable(result),
+    );
   }
 
   final Map<RequirementKey, RequirementState> states;
@@ -28,8 +31,9 @@ class ItemRequirements {
       .length;
 
   /// 齐备格数 = 深度 `d` 的分子。
-  int get completeCount =>
-      states.values.where((RequirementState s) => s == RequirementState.present).length;
+  int get completeCount => states.values
+      .where((RequirementState s) => s == RequirementState.present)
+      .length;
 
   Map<String, Object?> toJson() => <String, Object?>{
     for (final MapEntry<RequirementKey, RequirementState> e in states.entries)
@@ -47,6 +51,7 @@ class KnowledgeSpace {
     required this.accent,
     required this.order,
     required this.domainIds,
+    this.defaultPrimaryAxis,
   });
 
   factory KnowledgeSpace.fromJson(JsonMap json) => KnowledgeSpace(
@@ -57,6 +62,7 @@ class KnowledgeSpace {
     accent: requireString(json, 'accent'),
     order: requireInt(json, 'order'),
     domainIds: requireStringList(json, 'domainIds'),
+    defaultPrimaryAxis: _optionalAxisKey(json, 'defaultPrimaryAxis'),
   );
 
   final String id;
@@ -74,6 +80,13 @@ class KnowledgeSpace {
 
   final List<String> domainIds;
 
+  /// 空间级的**主取值默认轴**：项上没有 `primaryAxis` 时用它。
+  ///
+  /// 为什么需要它：`channel-table` §一 #5 要求「声明式指定，不按优先级猜」，
+  /// 而 α 包 150 项**每一项都是双轴**（`ability` + `subject`），没有唯一候选。
+  /// 空间级默认是明文声明，不是「按项挑一个像主的」（`ADR-0003` §决策 3 修订）。
+  final String? defaultPrimaryAxis;
+
   JsonMap toJson() => <String, Object?>{
     'id': id,
     'name': name,
@@ -82,6 +95,7 @@ class KnowledgeSpace {
     'accent': accent,
     'order': order,
     'domainIds': domainIds,
+    if (defaultPrimaryAxis != null) 'defaultPrimaryAxis': defaultPrimaryAxis,
   };
 }
 
@@ -97,6 +111,7 @@ class Item {
     required this.sourceRefs,
     required this.domainId,
     required this.inScope,
+    this.primaryAxis,
   });
 
   factory Item.fromJson(JsonMap json) => Item(
@@ -109,6 +124,7 @@ class Item {
     sourceRefs: requireStringList(json, 'sourceRefs'),
     domainId: requireString(json, 'domainId'),
     inScope: requireBool(json, 'inScope'),
+    primaryAxis: _optionalAxisKey(json, 'primaryAxis'),
   );
 
   /// **与版本无关的稳定 id**（`SPEC-PACK-008`）。带版本号会让升级后
@@ -125,6 +141,10 @@ class Item {
   final String domainId;
   final bool inScope;
 
+  /// 项的**主取值**：六个轴键之一。缺省时继承 `KnowledgeSpace.defaultPrimaryAxis`；
+  /// 两者都没有 ⇒ 颜色与扇区按「未声明」处理，**不得拿别的字段顶替**。
+  final String? primaryAxis;
+
   // `depth`（= phi，`⪯` 上的 Kahn 层号）是**派生值，不入库**。
 
   JsonMap toJson() => <String, Object?>{
@@ -137,12 +157,18 @@ class Item {
     'sourceRefs': sourceRefs,
     'domainId': domainId,
     'inScope': inScope,
+    if (primaryAxis != null) 'primaryAxis': primaryAxis,
   };
 }
 
 /// 前提边。`⪯` 必须是 DAG，任意环须在内容校验阶段拒绝（`SPEC-FND-005`）。
 class Edge {
-  const Edge({required this.id, required this.from, required this.to, required this.type});
+  const Edge({
+    required this.id,
+    required this.from,
+    required this.to,
+    required this.type,
+  });
 
   factory Edge.fromJson(JsonMap json) => Edge(
     id: requireString(json, 'id'),
@@ -239,7 +265,11 @@ class Scheme {
 
 /// 源（材料）的一段最小结构化摘录 —— 保证离线可读。
 class SourceSegment {
-  const SourceSegment({required this.text, required this.locator, required this.license});
+  const SourceSegment({
+    required this.text,
+    required this.locator,
+    required this.license,
+  });
 
   factory SourceSegment.fromJson(JsonMap json) => SourceSegment(
     text: requireString(json, 'text'),
@@ -253,7 +283,11 @@ class SourceSegment {
   final String locator;
   final String license;
 
-  JsonMap toJson() => <String, Object?>{'text': text, 'locator': locator, 'license': license};
+  JsonMap toJson() => <String, Object?>{
+    'text': text,
+    'locator': locator,
+    'license': license,
+  };
 }
 
 /// 源（材料）。**换源不改观感**：源不进任何视觉通道（`SPEC-VIEW-004`）。
@@ -272,9 +306,10 @@ class SourceRef {
     name: requireString(json, 'name'),
     authorityLevel: requireString(json, 'authorityLevel'),
     version: requireString(json, 'version'),
-    segments: requireMapList(json, 'segments')
-        .map(SourceSegment.fromJson)
-        .toList(growable: false),
+    segments: requireMapList(
+      json,
+      'segments',
+    ).map(SourceSegment.fromJson).toList(growable: false),
     appliesTo: requireMap(json, 'appliesTo'),
   );
 
@@ -308,8 +343,12 @@ class MethodStep {
   factory MethodStep.fromJson(JsonMap json) {
     final Object? phase = json['phase'];
     return MethodStep(
-      operator: ExecutionOperator.values.byName(requireString(json, 'operator')),
-      params: json['params'] == null ? const <String, Object?>{} : requireMap(json, 'params'),
+      operator: ExecutionOperator.values.byName(
+        requireString(json, 'operator'),
+      ),
+      params: json['params'] == null
+          ? const <String, Object?>{}
+          : requireMap(json, 'params'),
       phase: phase == null ? null : StepPhase.values.byName('$phase'),
       hint: optionalString(json, 'hint'),
       criteria: optionalString(json, 'criteria'),
@@ -368,7 +407,10 @@ class MethodProfile {
   factory MethodProfile.fromJson(JsonMap json) => MethodProfile(
     id: requireString(json, 'id'),
     name: requireString(json, 'name'),
-    steps: requireMapList(json, 'steps').map(MethodStep.fromJson).toList(growable: false),
+    steps: requireMapList(
+      json,
+      'steps',
+    ).map(MethodStep.fromJson).toList(growable: false),
     appliesTo: requireMap(json, 'appliesTo'),
     origin: MethodOrigin.values.byName(requireString(json, 'origin')),
   );
@@ -398,4 +440,17 @@ class MethodProfile {
     'appliesTo': appliesTo,
     'origin': origin.name,
   };
+}
+
+/// 读一个可选的六轴键。**取值不在册就报错** —— 与枚举同一口径：
+/// 差一个字母会让「这条项没有颜色」，而静默忽略会让它看起来像「没声明」。
+String? _optionalAxisKey(JsonMap json, String key) {
+  final String? raw = optionalString(json, key);
+  if (raw == null) {
+    return null;
+  }
+  if (!sixAxisKeys.contains(raw)) {
+    throw FormatException('$key 取值不在册：`$raw`（允许 ${sixAxisKeys.join(" / ")}）');
+  }
+  return raw;
 }
