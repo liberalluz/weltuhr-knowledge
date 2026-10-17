@@ -32,6 +32,7 @@ Future<void> _pump(
   required ItemDetail? detail,
   bool compact = false,
   ValueChanged<String>? onSelectItem,
+  VoidCallback? onBack,
 }) async {
   await tester.pumpWidget(
     MaterialApp(
@@ -45,6 +46,7 @@ Future<void> _pump(
               detail: detail,
               compact: compact,
               onSelectItem: onSelectItem,
+              onBack: onBack,
             ),
           ),
         ),
@@ -173,6 +175,53 @@ void main() {
         findsNothing,
         reason: '可输入的框会让人以为写完能存',
       );
+    });
+
+    testWidgets('返回按钮：给了回调才渲染，点了就原样交出去（SPEC-VIEW-015）', (
+      WidgetTester tester,
+    ) async {
+      final Item item = pack.items.first;
+      int taps = 0;
+
+      await _pump(tester, detail: buildItemDetail(pack, item.id));
+      expect(
+        find.byKey(detailBackKey),
+        findsNothing,
+        reason: '没有可退的地方 ⇒ 按下去什么也不会变，所以不渲染',
+      );
+
+      await _pump(
+        tester,
+        detail: buildItemDetail(pack, item.id),
+        onBack: () => taps++,
+      );
+      expect(find.byKey(detailBackKey), findsOneWidget);
+      expect(find.text(detailBackLabel), findsOneWidget);
+
+      await tester.tap(find.byKey(detailBackKey));
+      await tester.pump();
+      expect(taps, 1, reason: '面板不算「能不能退」，只把点击交出去');
+    });
+
+    testWidgets('返回按钮在标题之上，不挤动三区的顺序（SPEC-VIEW-015 / 017）', (
+      WidgetTester tester,
+    ) async {
+      final Item item = pack.items.first;
+      await _pump(
+        tester,
+        detail: buildItemDetail(pack, item.id),
+        onBack: () {},
+      );
+
+      final double backY = tester.getTopLeft(find.byKey(detailBackKey)).dy;
+      final double titleY = tester.getTopLeft(find.text(item.title)).dy;
+      expect(backY, lessThan(titleY), reason: '返回是出口，放在标题上面才有「往出退」的方位感');
+      expect(_sectionOrder(tester), <Key>[
+        detailRelationsSectionKey,
+        detailRequirementsSectionKey,
+        detailProvenanceSectionKey,
+        detailNotesSectionKey,
+      ]);
     });
   });
 }

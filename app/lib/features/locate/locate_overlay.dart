@@ -124,6 +124,7 @@ class LocateOverlay extends StatefulWidget {
     this.otherSpaces = const <LoadedPack>[],
     this.scopeSpaceId,
     this.domainId,
+    this.initialQuery = '',
     super.key,
   });
 
@@ -158,6 +159,16 @@ class LocateOverlay extends StatefulWidget {
   /// （`VIEW-030`）：知道往哪放才谈得上新增。
   final String? domainId;
 
+  /// 打开时预填的词（`VIEW-015` 的 `selector`）。
+  ///
+  /// 只由「从搜索进详情、再返回」这一条路径给：快照存的是**当时搜了什么**，
+  /// 返回时把词填回去、结果按当下重算 —— 存结果列表会还给用户一份已经过时的
+  /// 命中集（见 `core/view/navigation.dart` 文件头）。
+  ///
+  /// 只在 `initState` 读一次。调用方换了词要换 `key`，否则 `State` 复用、新词
+  /// 不生效。
+  final String initialQuery;
+
   @override
   State<LocateOverlay> createState() => _LocateOverlayState();
 }
@@ -188,6 +199,14 @@ class _LocateOverlayState extends State<LocateOverlay> {
     super.initState();
     // 打开即能打字：进浮层还要先点一下输入框，是把两步并成一步的机会丢了。
     _fieldFocus.requestFocus();
+    final String preset = widget.initialQuery;
+    if (preset.isNotEmpty) {
+      // `VIEW-015`：返回时把当时搜的词填回来。**重算而不是还原结果** ——
+      // 命中集会随内容包变，还给用户一份旧列表比没有列表更糟。
+      _controller.text = preset;
+      // `initState` 里不调 `setState`：首帧还没 build，直接给字段赋值就是结果。
+      _compute(preset);
+    }
   }
 
   @override
@@ -220,27 +239,35 @@ class _LocateOverlayState extends State<LocateOverlay> {
       widget.pack != null &&
       widget.otherSpaces.isNotEmpty;
 
-  void _onChanged(String query) {
+  /// 按 [query] 重算命中与分诊。
+  ///
+  /// 不碰「展开的表单」「留着的说明」—— 那两样是**改输入**这件事的连带后果，
+  /// 由 `_onChanged` 清。预填路径没有「上一轮」，清它们没有意义。
+  void _compute(String query) {
     final LoadedPack? pack = widget.pack;
+    if (pack == null) {
+      _result = null;
+      _diagnosis = null;
+      return;
+    }
+    final LocateResult result = Locator(_searchedPacks).locate(query);
+    _result = result;
+    // 分诊仍读**本空间**：类 ② 的邻近候选是「换词」出口，跨空间换词没有意义
+    // （用户要的是本空间的叫法），而类 ③ 的新增更是只能落在本空间的域里。
+    _diagnosis = diagnose(
+      pack: pack,
+      result: result,
+      domainId: widget.domainId,
+    );
+  }
+
+  void _onChanged(String query) {
     setState(() {
       // 改了输入就是一次新的查询：展开的表单与留着的说明都作废 ——
       // 留着它们会让新输入带着旧结论走。
       _formOpen = false;
       _notice = null;
-      if (pack == null) {
-        _result = null;
-        _diagnosis = null;
-        return;
-      }
-      final LocateResult result = Locator(_searchedPacks).locate(query);
-      _result = result;
-      // 分诊仍读**本空间**：类 ② 的邻近候选是「换词」出口，跨空间换词没有意义
-      // （用户要的是本空间的叫法），而类 ③ 的新增更是只能落在本空间的域里。
-      _diagnosis = diagnose(
-        pack: pack,
-        result: result,
-        domainId: widget.domainId,
-      );
+      _compute(query);
     });
   }
 
@@ -255,8 +282,8 @@ class _LocateOverlayState extends State<LocateOverlay> {
       setState(() {
         _notice =
             '「${hit.label}」在「${hit.spaceName}」里，当前视图停在'
-            '「${pack.space.name}」。跨空间落点要先换根，本笔只做到「搜得到、'
-            '看得见」（换根与 `returnTo` 还原见 `SDP` 遗留项）。';
+            '「${pack.space.name}」。跨空间落点要先换根，而本笔的视图只有一个根'
+            '（`VIEW-031` 修订段），所以只做到「搜得到、看得见」。';
       });
       return;
     }
