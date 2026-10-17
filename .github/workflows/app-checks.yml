@@ -1,0 +1,61 @@
+name: app-checks
+
+# 客户端架构门禁。三件事在这里强制，而不是靠「记得手动跑」：
+#   ① analyze  —— 严格模式（strict-casts / strict-inference / strict-raw-types）
+#   ② tool/lint —— core 的架构不变量：R1 核心层不得反向依赖、R2 核心层禁止数字字面量。
+#      它是独立脚本而非 custom_lint 插件，**analyze 抓不到**，漏掉这一行
+#      等于「core 无 Flutter import」这条只写在文档里。
+#   ③ test     —— core、实体、事件与 lint 规则自身的回归
+#
+# 不跑 `dart format --set-exit-if-changed`：仓库当前不是 format-clean
+# （实跑 17 份里 12 份会被改，疑与 Dart 3.7+ tall style 有关）。
+# 接入前必须先单独一笔把格式化做完，否则这个 job 从第一天就是红的，
+# 而一个常态为红的门禁等于没有门禁。
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "app/**"
+      - ".github/workflows/app-checks.yml"
+  pull_request:
+    paths:
+      - "app/**"
+      - ".github/workflows/app-checks.yml"
+
+# 同一分支连续推送时只保留最新一次，避免排队等旧提交。
+concurrency:
+  group: app-checks-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  app-checks:
+    name: app-checks
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+
+      # 版本与本地环境钉死同一组：Flutter 3.47.7 = Dart 3.13.5，
+      # 与 app/pubspec.yaml 的 `environment.sdk: 3.13.5` 精确对应。
+      # 改这里必须同时改 pubspec 与 docs/guides/environment.md，三处任一不同步
+      # 都会让「本地绿、CI 红」或反过来。
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.47.7"
+          channel: stable
+          cache: true
+
+      - name: 依赖
+        run: flutter pub get
+
+      - name: 静态分析
+        run: flutter analyze
+
+      - name: 架构规则（core 不变量）
+        run: dart run tool/lint/check.dart
+
+      - name: 单元测试
+        run: flutter test --reporter compact
