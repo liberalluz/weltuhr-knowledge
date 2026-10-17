@@ -51,6 +51,7 @@ class SceneBundle {
     required this.nodes,
     required this.edges,
     required this.notes,
+    this.radialSegments = 7,
   }) : maxPhi = _maxPhiOf(nodes);
 
   final SceneOrigin origin;
@@ -60,8 +61,12 @@ class SceneBundle {
   /// 装配过程中值得写在屏幕上的事（回落原因、与真实包的偏差）。
   final List<String> notes;
 
-  /// `φ` 最大层号。`phiGap` 要用它归一 —— 直接当高度会把最深那批推出画面。
+  /// `φ` 最大层号。
   final int maxPhi;
+
+  /// 径向段数 = **域数**（`ADR-0003` §决策 1）。合成场景按 7 段建，故默认 7；
+  /// 真实包由 `resolveAlphaScene` 传 `domainIds.length`。
+  final int radialSegments;
 
   int get itemCount => nodes.length;
   int get edgeCount => edges.length;
@@ -126,6 +131,7 @@ SceneResolution resolveAlphaScene() {
       origin: SceneOrigin.alphaPack,
       nodes: nodes,
       edges: edges,
+      radialSegments: pack.space.domainIds.length,
       notes: <String>[
         '空间 ${pack.space.id} v${pack.space.version}',
         '${chosen.spaceRoot.split('/').last}/dist/pack.json',
