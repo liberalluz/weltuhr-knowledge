@@ -1,0 +1,3456 @@
+[
+  {
+    "id": "python/lex-source-encoding",
+    "title": "源码编码与 PEP 263",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "基础语法"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/lexical",
+    "inScope": true
+  },
+  {
+    "id": "python/lex-identifier",
+    "title": "标识符与命名规则",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "基础语法"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/lexical",
+    "inScope": true
+  },
+  {
+    "id": "python/lex-keyword",
+    "title": "关键字与软关键字",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "基础语法"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/lexical",
+    "inScope": true
+  },
+  {
+    "id": "python/lex-line-structure",
+    "title": "逻辑行与续行",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "基础语法"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/lexical",
+    "inScope": true
+  },
+  {
+    "id": "python/lex-comment",
+    "title": "注释与文档字符串的区别",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "基础语法"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "missing",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/lexical",
+    "inScope": true
+  },
+  {
+    "id": "python/lex-int-literal",
+    "title": "整数字面量",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "基础语法"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/lexical",
+    "inScope": true
+  },
+  {
+    "id": "python/lex-float-literal",
+    "title": "浮点字面量与科学计数法",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "基础语法"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/lexical",
+    "inScope": true
+  },
+  {
+    "id": "python/lex-string-literal",
+    "title": "字符串字面量",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "基础语法"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/lexical",
+    "inScope": true
+  },
+  {
+    "id": "python/lex-raw-string",
+    "title": "原始字符串",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "基础语法"
+    },
+    "layer": "persistent",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/lexical",
+    "inScope": true
+  },
+  {
+    "id": "python/lex-bytes-literal",
+    "title": "字节串字面量",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "基础语法"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/lexical",
+    "inScope": true
+  },
+  {
+    "id": "python/lex-fstring",
+    "title": "f-string 插值",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "基础语法"
+    },
+    "layer": "ephemeral",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/lexical",
+    "inScope": true
+  },
+  {
+    "id": "python/lex-escape",
+    "title": "转义序列",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "基础语法"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/lexical",
+    "inScope": true
+  },
+  {
+    "id": "python/lex-operator-precedence",
+    "title": "运算符优先级",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "基础语法"
+    },
+    "layer": "view",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "present"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/lexical",
+    "inScope": true
+  },
+  {
+    "id": "python/lex-bool-none",
+    "title": "布尔与 None 字面量",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "基础语法"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/lexical",
+    "inScope": true
+  },
+  {
+    "id": "python/lex-expression-statement",
+    "title": "表达式语句与分号",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "基础语法"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/lexical",
+    "inScope": true
+  },
+  {
+    "id": "python/dm-object-identity",
+    "title": "对象、类型与值",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "类型与对象"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/data-model",
+    "inScope": true
+  },
+  {
+    "id": "python/dm-mutable-immutable",
+    "title": "可变与不可变",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "类型与对象"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/data-model",
+    "inScope": true
+  },
+  {
+    "id": "python/dm-numeric",
+    "title": "数值类型与精度",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "类型与对象"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "missing",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/data-model",
+    "inScope": true
+  },
+  {
+    "id": "python/dm-bool-subclass",
+    "title": "布尔是整数的子类",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "类型与对象"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/data-model",
+    "inScope": true
+  },
+  {
+    "id": "python/dm-str-unicode",
+    "title": "字符串与 Unicode",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "类型与对象"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "missing",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/data-model",
+    "inScope": true
+  },
+  {
+    "id": "python/dm-list",
+    "title": "list 与动态数组语义",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "类型与对象"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/data-model",
+    "inScope": true
+  },
+  {
+    "id": "python/dm-tuple",
+    "title": "tuple 与不可变序列",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "类型与对象"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/data-model",
+    "inScope": true
+  },
+  {
+    "id": "python/dm-dict",
+    "title": "dict 与哈希表语义",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "类型与对象"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/data-model",
+    "inScope": true
+  },
+  {
+    "id": "python/dm-set",
+    "title": "set 与 frozenset",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "类型与对象"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/data-model",
+    "inScope": true
+  },
+  {
+    "id": "python/dm-none",
+    "title": "None 与哨兵语义",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "类型与对象"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/data-model",
+    "inScope": true
+  },
+  {
+    "id": "python/dm-copy",
+    "title": "浅拷贝与深拷贝",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "类型与对象"
+    },
+    "layer": "persistent",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "present"
+    },
+    "sourceRefs": [
+      "python-tutorial",
+      "fluent-python"
+    ],
+    "domainId": "python/data-model",
+    "inScope": true
+  },
+  {
+    "id": "python/dm-eq-vs-is",
+    "title": "== 与 is 的区别",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "类型与对象"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "present"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/data-model",
+    "inScope": true
+  },
+  {
+    "id": "python/dm-hashable",
+    "title": "可哈希与键约束",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "类型与对象"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "missing",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/data-model",
+    "inScope": true
+  },
+  {
+    "id": "python/dm-truthiness",
+    "title": "真值判定",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "类型与对象"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/data-model",
+    "inScope": true
+  },
+  {
+    "id": "python/dm-slice",
+    "title": "切片与步长",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "类型与对象"
+    },
+    "layer": "persistent",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/data-model",
+    "inScope": true
+  },
+  {
+    "id": "python/ctl-if",
+    "title": "条件分支",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "控制流"
+    },
+    "layer": "persistent",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/control",
+    "inScope": true
+  },
+  {
+    "id": "python/ctl-while",
+    "title": "while 循环",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "控制流"
+    },
+    "layer": "persistent",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/control",
+    "inScope": true
+  },
+  {
+    "id": "python/ctl-for-range",
+    "title": "for 与 range",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "控制流"
+    },
+    "layer": "persistent",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/control",
+    "inScope": true
+  },
+  {
+    "id": "python/ctl-break-continue",
+    "title": "break / continue / else 子句",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "控制流"
+    },
+    "layer": "persistent",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/control",
+    "inScope": true
+  },
+  {
+    "id": "python/ctl-walrus",
+    "title": "海象运算符",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "控制流"
+    },
+    "layer": "persistent",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "missing",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/control",
+    "inScope": true
+  },
+  {
+    "id": "python/ctl-conditional-expr",
+    "title": "条件表达式",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "控制流"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/control",
+    "inScope": true
+  },
+  {
+    "id": "python/ctl-match-case",
+    "title": "match / case 结构化匹配",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "控制流"
+    },
+    "layer": "persistent",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "missing",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/control",
+    "inScope": true
+  },
+  {
+    "id": "python/ctl-pattern",
+    "title": "模式与守卫",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "控制流"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "missing",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/control",
+    "inScope": true
+  },
+  {
+    "id": "python/ctl-assert",
+    "title": "assert 的用途与禁用场景",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "控制流"
+    },
+    "layer": "persistent",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/control",
+    "inScope": true
+  },
+  {
+    "id": "python/ctl-del",
+    "title": "del 语句语义",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "控制流"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/control",
+    "inScope": true
+  },
+  {
+    "id": "python/ctl-pass-ellipsis",
+    "title": "pass 与省略号",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "控制流"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/control",
+    "inScope": true
+  },
+  {
+    "id": "python/ctl-chained-compare",
+    "title": "链式比较",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "控制流"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/control",
+    "inScope": true
+  },
+  {
+    "id": "python/ctl-short-circuit",
+    "title": "短路求值",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "控制流"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "present"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/control",
+    "inScope": true
+  },
+  {
+    "id": "python/ctl-exception-flow",
+    "title": "异常也是控制流",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "控制流"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "missing",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial",
+      "fluent-python"
+    ],
+    "domainId": "python/control",
+    "inScope": true
+  },
+  {
+    "id": "python/ctl-block-scope",
+    "title": "语句块不引入作用域",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "控制流"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/control",
+    "inScope": true
+  },
+  {
+    "id": "python/fn-def-call",
+    "title": "函数定义与调用",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "抽象"
+    },
+    "layer": "persistent",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/func",
+    "inScope": true
+  },
+  {
+    "id": "python/fn-default-arg",
+    "title": "默认参数与求值时机",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "抽象"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/func",
+    "inScope": true
+  },
+  {
+    "id": "python/fn-keyword-only",
+    "title": "关键字参数与仅关键字参数",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "抽象"
+    },
+    "layer": "persistent",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/func",
+    "inScope": true
+  },
+  {
+    "id": "python/fn-varargs",
+    "title": "*args 与 **kwargs",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "抽象"
+    },
+    "layer": "persistent",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/func",
+    "inScope": true
+  },
+  {
+    "id": "python/fn-legb",
+    "title": "LEGB 作用域规则",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "抽象"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/func",
+    "inScope": true
+  },
+  {
+    "id": "python/fn-global-nonlocal",
+    "title": "global 与 nonlocal",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "抽象"
+    },
+    "layer": "persistent",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/func",
+    "inScope": true
+  },
+  {
+    "id": "python/fn-closure",
+    "title": "闭包与延迟绑定",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "抽象"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "present"
+    },
+    "sourceRefs": [
+      "fluent-python",
+      "python-tutorial"
+    ],
+    "domainId": "python/func",
+    "inScope": true
+  },
+  {
+    "id": "python/fn-lambda",
+    "title": "lambda 的适用边界",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "抽象"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/func",
+    "inScope": true
+  },
+  {
+    "id": "python/fn-decorator",
+    "title": "装饰器",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "抽象"
+    },
+    "layer": "persistent",
+    "type": "skill",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "present"
+    },
+    "sourceRefs": [
+      "fluent-python",
+      "python-tutorial"
+    ],
+    "domainId": "python/func",
+    "inScope": true
+  },
+  {
+    "id": "python/fn-decorator-params",
+    "title": "带参装饰器",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "抽象"
+    },
+    "layer": "persistent",
+    "type": "skill",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "missing",
+      "tacit": "present"
+    },
+    "sourceRefs": [
+      "fluent-python"
+    ],
+    "domainId": "python/func",
+    "inScope": true
+  },
+  {
+    "id": "python/fn-functools-wraps",
+    "title": "functools.wraps 为何必要",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "抽象"
+    },
+    "layer": "persistent",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "fluent-python"
+    ],
+    "domainId": "python/func",
+    "inScope": true
+  },
+  {
+    "id": "python/fn-first-class",
+    "title": "一等函数与高阶函数",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "抽象"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "missing",
+      "tacit": "present"
+    },
+    "sourceRefs": [
+      "fluent-python"
+    ],
+    "domainId": "python/func",
+    "inScope": true
+  },
+  {
+    "id": "python/fn-recursion",
+    "title": "递归与栈深度",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "抽象"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "missing",
+      "tacit": "missing"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/func",
+    "inScope": true
+  },
+  {
+    "id": "python/fn-return-none",
+    "title": "无返回值即 None",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "抽象"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/func",
+    "inScope": true
+  },
+  {
+    "id": "python/fn-docstring",
+    "title": "文档字符串与 __doc__",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "抽象"
+    },
+    "layer": "persistent",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/func",
+    "inScope": true
+  },
+  {
+    "id": "python/oop-class",
+    "title": "类与实例",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "数据建模"
+    },
+    "layer": "persistent",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/oop",
+    "inScope": true
+  },
+  {
+    "id": "python/oop-init",
+    "title": "构造与 __init__",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "数据建模"
+    },
+    "layer": "persistent",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/oop",
+    "inScope": true
+  },
+  {
+    "id": "python/oop-self",
+    "title": "self 的本质",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "数据建模"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/oop",
+    "inScope": true
+  },
+  {
+    "id": "python/oop-attr-lookup",
+    "title": "属性查找顺序",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "数据建模"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "missing",
+      "tacit": "present"
+    },
+    "sourceRefs": [
+      "fluent-python"
+    ],
+    "domainId": "python/oop",
+    "inScope": true
+  },
+  {
+    "id": "python/oop-classmethod-staticmethod",
+    "title": "类方法与静态方法",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "数据建模"
+    },
+    "layer": "persistent",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/oop",
+    "inScope": true
+  },
+  {
+    "id": "python/oop-property",
+    "title": "property 与描述符",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "数据建模"
+    },
+    "layer": "persistent",
+    "type": "skill",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "missing",
+      "tacit": "present"
+    },
+    "sourceRefs": [
+      "fluent-python"
+    ],
+    "domainId": "python/oop",
+    "inScope": true
+  },
+  {
+    "id": "python/oop-inheritance",
+    "title": "单继承",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "数据建模"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/oop",
+    "inScope": true
+  },
+  {
+    "id": "python/oop-mro",
+    "title": "MRO 与 C3 线性化",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "数据建模"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "missing",
+      "tacit": "missing"
+    },
+    "sourceRefs": [
+      "fluent-python"
+    ],
+    "domainId": "python/oop",
+    "inScope": true
+  },
+  {
+    "id": "python/oop-super",
+    "title": "super() 的解析对象",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "数据建模"
+    },
+    "layer": "persistent",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "fluent-python"
+    ],
+    "domainId": "python/oop",
+    "inScope": true
+  },
+  {
+    "id": "python/oop-dunder",
+    "title": "常见双下方法",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "数据建模"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "missing",
+      "tacit": "missing"
+    },
+    "sourceRefs": [
+      "fluent-python"
+    ],
+    "domainId": "python/oop",
+    "inScope": true
+  },
+  {
+    "id": "python/oop-dataclass",
+    "title": "dataclass",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "数据建模"
+    },
+    "layer": "persistent",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "fluent-python"
+    ],
+    "domainId": "python/oop",
+    "inScope": true
+  },
+  {
+    "id": "python/oop-slots",
+    "title": "__slots__ 与内存",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "数据建模"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "missing",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "fluent-python"
+    ],
+    "domainId": "python/oop",
+    "inScope": true
+  },
+  {
+    "id": "python/oop-composition",
+    "title": "组合优于继承",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "数据建模"
+    },
+    "layer": "persistent",
+    "type": "tacit",
+    "requirements": {
+      "boundary": "not_externalizable",
+      "justification": "present",
+      "proposition": "not_externalizable",
+      "relation": "present",
+      "how": "missing",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "fluent-python"
+    ],
+    "domainId": "python/oop",
+    "inScope": true
+  },
+  {
+    "id": "python/oop-abc",
+    "title": "抽象基类与 ABC",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "数据建模"
+    },
+    "layer": "persistent",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "fluent-python"
+    ],
+    "domainId": "python/oop",
+    "inScope": true
+  },
+  {
+    "id": "python/oop-metaclass",
+    "title": "元类的定位",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "数据建模"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "missing",
+      "tacit": "missing"
+    },
+    "sourceRefs": [
+      "fluent-python"
+    ],
+    "domainId": "python/oop",
+    "inScope": true
+  },
+  {
+    "id": "python/it-iterable",
+    "title": "可迭代与迭代器",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "迭代与生成"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/iteration",
+    "inScope": true
+  },
+  {
+    "id": "python/it-for-protocol",
+    "title": "for 语句的协议细节",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "迭代与生成"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/iteration",
+    "inScope": true
+  },
+  {
+    "id": "python/it-generator",
+    "title": "生成器函数",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "迭代与生成"
+    },
+    "layer": "persistent",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/iteration",
+    "inScope": true
+  },
+  {
+    "id": "python/it-yield-send",
+    "title": "yield 与 send",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "迭代与生成"
+    },
+    "layer": "persistent",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "missing",
+      "tacit": "present"
+    },
+    "sourceRefs": [
+      "fluent-python"
+    ],
+    "domainId": "python/iteration",
+    "inScope": true
+  },
+  {
+    "id": "python/it-generator-expr",
+    "title": "生成器表达式",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "迭代与生成"
+    },
+    "layer": "persistent",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/iteration",
+    "inScope": true
+  },
+  {
+    "id": "python/it-lazy",
+    "title": "惰性求值与内存",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "迭代与生成"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "present"
+    },
+    "sourceRefs": [
+      "fluent-python"
+    ],
+    "domainId": "python/iteration",
+    "inScope": true
+  },
+  {
+    "id": "python/it-itertools",
+    "title": "itertools 常用工具",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "迭代与生成"
+    },
+    "layer": "view",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "missing",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/iteration",
+    "inScope": true
+  },
+  {
+    "id": "python/it-list-comp",
+    "title": "列表推导",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "迭代与生成"
+    },
+    "layer": "persistent",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/iteration",
+    "inScope": true
+  },
+  {
+    "id": "python/it-dict-set-comp",
+    "title": "字典与集合推导",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "迭代与生成"
+    },
+    "layer": "persistent",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/iteration",
+    "inScope": true
+  },
+  {
+    "id": "python/it-nested-comp",
+    "title": "嵌套推导的求值顺序",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "迭代与生成"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "missing",
+      "tacit": "missing"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/iteration",
+    "inScope": true
+  },
+  {
+    "id": "python/it-zip-enumerate",
+    "title": "zip 与 enumerate",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "迭代与生成"
+    },
+    "layer": "persistent",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/iteration",
+    "inScope": true
+  },
+  {
+    "id": "python/it-unpacking",
+    "title": "解包与星号",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "迭代与生成"
+    },
+    "layer": "persistent",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/iteration",
+    "inScope": true
+  },
+  {
+    "id": "python/it-sorted-key",
+    "title": "sorted 与 key 函数",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "迭代与生成"
+    },
+    "layer": "persistent",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/iteration",
+    "inScope": true
+  },
+  {
+    "id": "python/it-any-all",
+    "title": "any 与 all 的短路",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "迭代与生成"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/iteration",
+    "inScope": true
+  },
+  {
+    "id": "python/it-custom-iterator",
+    "title": "自定义迭代器协议",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "迭代与生成"
+    },
+    "layer": "persistent",
+    "type": "skill",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "missing",
+      "tacit": "present"
+    },
+    "sourceRefs": [
+      "fluent-python"
+    ],
+    "domainId": "python/iteration",
+    "inScope": true
+  },
+  {
+    "id": "python/err-hierarchy",
+    "title": "异常层次",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "工程实践"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/errors",
+    "inScope": true
+  },
+  {
+    "id": "python/err-try-except",
+    "title": "捕获与匹配",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "工程实践"
+    },
+    "layer": "persistent",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/errors",
+    "inScope": true
+  },
+  {
+    "id": "python/err-else-finally",
+    "title": "else 与 finally 的时序",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "工程实践"
+    },
+    "layer": "persistent",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/errors",
+    "inScope": true
+  },
+  {
+    "id": "python/err-raise-from",
+    "title": "raise from 与异常链",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "工程实践"
+    },
+    "layer": "persistent",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/errors",
+    "inScope": true
+  },
+  {
+    "id": "python/err-custom",
+    "title": "自定义异常",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "工程实践"
+    },
+    "layer": "persistent",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/errors",
+    "inScope": true
+  },
+  {
+    "id": "python/err-assert-vs-exception",
+    "title": "assert 与异常的边界",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "工程实践"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "missing",
+      "tacit": "missing"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/errors",
+    "inScope": true
+  },
+  {
+    "id": "python/err-eafp-lbyl",
+    "title": "宽恕与许可两种风格",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "工程实践"
+    },
+    "layer": "persistent",
+    "type": "tacit",
+    "requirements": {
+      "boundary": "not_externalizable",
+      "justification": "present",
+      "proposition": "not_externalizable",
+      "relation": "present",
+      "how": "missing",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "fluent-python"
+    ],
+    "domainId": "python/errors",
+    "inScope": true
+  },
+  {
+    "id": "python/err-with",
+    "title": "上下文管理器",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "工程实践"
+    },
+    "layer": "persistent",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/errors",
+    "inScope": true
+  },
+  {
+    "id": "python/err-contextlib",
+    "title": "contextlib 工具",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "工程实践"
+    },
+    "layer": "persistent",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/errors",
+    "inScope": true
+  },
+  {
+    "id": "python/err-finally-vs-with",
+    "title": "finally 与 with 的取舍",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "工程实践"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "missing",
+      "tacit": "present"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/errors",
+    "inScope": true
+  },
+  {
+    "id": "python/err-bare-except",
+    "title": "裸 except 的危害",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "工程实践"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/errors",
+    "inScope": true
+  },
+  {
+    "id": "python/err-rethrow",
+    "title": "保留 traceback 的重抛",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "工程实践"
+    },
+    "layer": "persistent",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "missing",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/errors",
+    "inScope": true
+  },
+  {
+    "id": "python/err-implicit-context",
+    "title": "隐式异常上下文",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "工程实践"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "missing",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/errors",
+    "inScope": true
+  },
+  {
+    "id": "python/err-exceptiongroup",
+    "title": "ExceptionGroup 与 except*",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "工程实践"
+    },
+    "layer": "ephemeral",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "missing",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/errors",
+    "inScope": true
+  },
+  {
+    "id": "python/err-cleanup-order",
+    "title": "清理顺序与资源释放",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "工程实践"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "missing",
+      "tacit": "missing"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/errors",
+    "inScope": true
+  },
+  {
+    "id": "python/mod-module",
+    "title": "模块即命名空间",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "工程实践"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/modules",
+    "inScope": true
+  },
+  {
+    "id": "python/mod-package",
+    "title": "包与 __init__",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "工程实践"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/modules",
+    "inScope": true
+  },
+  {
+    "id": "python/mod-import",
+    "title": "导入机制与 sys.path",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "工程实践"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "missing",
+      "tacit": "missing"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/modules",
+    "inScope": true
+  },
+  {
+    "id": "python/mod-import-style",
+    "title": "绝对导入与相对导入",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "工程实践"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/modules",
+    "inScope": true
+  },
+  {
+    "id": "python/mod-main",
+    "title": "__name__ 与程序入口",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "工程实践"
+    },
+    "layer": "persistent",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/modules",
+    "inScope": true
+  },
+  {
+    "id": "python/mod-stdlib-map",
+    "title": "标准库分层地图",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "工程实践"
+    },
+    "layer": "view",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "missing",
+      "tacit": "missing"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/modules",
+    "inScope": true
+  },
+  {
+    "id": "python/mod-pathlib",
+    "title": "pathlib 路径操作",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "工程实践"
+    },
+    "layer": "persistent",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/modules",
+    "inScope": true
+  },
+  {
+    "id": "python/mod-json",
+    "title": "json 序列化",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "工程实践"
+    },
+    "layer": "persistent",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/modules",
+    "inScope": true
+  },
+  {
+    "id": "python/mod-datetime",
+    "title": "时间与日期",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "工程实践"
+    },
+    "layer": "persistent",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/modules",
+    "inScope": true
+  },
+  {
+    "id": "python/mod-re",
+    "title": "正则表达式",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "工程实践"
+    },
+    "layer": "persistent",
+    "type": "skill",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "missing",
+      "tacit": "present"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/modules",
+    "inScope": true
+  },
+  {
+    "id": "python/mod-os-sys",
+    "title": "os 与 sys 的边界",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "工程实践"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "missing",
+      "tacit": "missing"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/modules",
+    "inScope": true
+  },
+  {
+    "id": "python/mod-logging",
+    "title": "logging 基础",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "工程实践"
+    },
+    "layer": "persistent",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/modules",
+    "inScope": true
+  },
+  {
+    "id": "python/mod-argparse",
+    "title": "命令行参数",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "工程实践"
+    },
+    "layer": "persistent",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/modules",
+    "inScope": true
+  },
+  {
+    "id": "python/mod-random",
+    "title": "random 与可复现性",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "工程实践"
+    },
+    "layer": "persistent",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/modules",
+    "inScope": true
+  },
+  {
+    "id": "python/mod-importlib",
+    "title": "动态导入",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "工程实践"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "missing",
+      "tacit": "missing"
+    },
+    "sourceRefs": [
+      "python-tutorial"
+    ],
+    "domainId": "python/modules",
+    "inScope": true
+  },
+  {
+    "id": "python/ty-annotation",
+    "title": "注解语法与运行时",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "类型系统"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "pep-484"
+    ],
+    "domainId": "python/typing",
+    "inScope": true
+  },
+  {
+    "id": "python/ty-optional",
+    "title": "Optional 与 None",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "类型系统"
+    },
+    "layer": "persistent",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "pep-484"
+    ],
+    "domainId": "python/typing",
+    "inScope": true
+  },
+  {
+    "id": "python/ty-union",
+    "title": "联合类型与 | 语法",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "类型系统"
+    },
+    "layer": "ephemeral",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "pep-484"
+    ],
+    "domainId": "python/typing",
+    "inScope": true
+  },
+  {
+    "id": "python/ty-generic",
+    "title": "泛型容器",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "类型系统"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "pep-484"
+    ],
+    "domainId": "python/typing",
+    "inScope": true
+  },
+  {
+    "id": "python/ty-typevar",
+    "title": "TypeVar 与约束",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "类型系统"
+    },
+    "layer": "persistent",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "missing",
+      "tacit": "missing"
+    },
+    "sourceRefs": [
+      "pep-484"
+    ],
+    "domainId": "python/typing",
+    "inScope": true
+  },
+  {
+    "id": "python/ty-protocol",
+    "title": "Protocol 与结构化子类型",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "类型系统"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "missing",
+      "tacit": "missing"
+    },
+    "sourceRefs": [
+      "pep-484"
+    ],
+    "domainId": "python/typing",
+    "inScope": true
+  },
+  {
+    "id": "python/ty-typeddict",
+    "title": "TypedDict",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "类型系统"
+    },
+    "layer": "persistent",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "pep-484"
+    ],
+    "domainId": "python/typing",
+    "inScope": true
+  },
+  {
+    "id": "python/ty-literal-final",
+    "title": "Literal 与 Final",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "类型系统"
+    },
+    "layer": "persistent",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "missing",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "pep-484"
+    ],
+    "domainId": "python/typing",
+    "inScope": true
+  },
+  {
+    "id": "python/ty-callable",
+    "title": "Callable 与函数签名",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "类型系统"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "pep-484"
+    ],
+    "domainId": "python/typing",
+    "inScope": true
+  },
+  {
+    "id": "python/ty-overload",
+    "title": "重载声明",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "类型系统"
+    },
+    "layer": "persistent",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "missing",
+      "tacit": "missing"
+    },
+    "sourceRefs": [
+      "pep-484"
+    ],
+    "domainId": "python/typing",
+    "inScope": true
+  },
+  {
+    "id": "python/ty-narrowing",
+    "title": "类型收窄",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "类型系统"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "missing",
+      "tacit": "present"
+    },
+    "sourceRefs": [
+      "pep-484"
+    ],
+    "domainId": "python/typing",
+    "inScope": true
+  },
+  {
+    "id": "python/ty-any-vs-object",
+    "title": "Any 与 object 的区别",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "类型系统"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "pep-484"
+    ],
+    "domainId": "python/typing",
+    "inScope": true
+  },
+  {
+    "id": "python/ty-runtime-boundary",
+    "title": "静态检查与运行时边界",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "类型系统"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "present"
+    },
+    "sourceRefs": [
+      "pep-484"
+    ],
+    "domainId": "python/typing",
+    "inScope": true
+  },
+  {
+    "id": "python/ty-checker-config",
+    "title": "检查器配置",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "类型系统"
+    },
+    "layer": "persistent",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "pep-484"
+    ],
+    "domainId": "python/typing",
+    "inScope": true
+  },
+  {
+    "id": "python/ty-generic-class",
+    "title": "自写泛型类",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "类型系统"
+    },
+    "layer": "persistent",
+    "type": "skill",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "missing",
+      "tacit": "present"
+    },
+    "sourceRefs": [
+      "pep-484"
+    ],
+    "domainId": "python/typing",
+    "inScope": true
+  },
+  {
+    "id": "python/cc-gil",
+    "title": "GIL 与并发模型",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "并发"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "missing",
+      "tacit": "present"
+    },
+    "sourceRefs": [
+      "python-asyncio-docs"
+    ],
+    "domainId": "python/concurrency",
+    "inScope": true
+  },
+  {
+    "id": "python/cc-thread",
+    "title": "threading 基础",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "并发"
+    },
+    "layer": "persistent",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-asyncio-docs"
+    ],
+    "domainId": "python/concurrency",
+    "inScope": true
+  },
+  {
+    "id": "python/cc-lock",
+    "title": "锁与竞态",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "并发"
+    },
+    "layer": "persistent",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-asyncio-docs"
+    ],
+    "domainId": "python/concurrency",
+    "inScope": true
+  },
+  {
+    "id": "python/cc-queue",
+    "title": "queue 与生产者消费者",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "并发"
+    },
+    "layer": "persistent",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-asyncio-docs"
+    ],
+    "domainId": "python/concurrency",
+    "inScope": true
+  },
+  {
+    "id": "python/cc-process",
+    "title": "multiprocessing 与进程隔离",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "并发"
+    },
+    "layer": "persistent",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-asyncio-docs"
+    ],
+    "domainId": "python/concurrency",
+    "inScope": true
+  },
+  {
+    "id": "python/cc-pool",
+    "title": "线程池与进程池",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "并发"
+    },
+    "layer": "persistent",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-asyncio-docs"
+    ],
+    "domainId": "python/concurrency",
+    "inScope": true
+  },
+  {
+    "id": "python/cc-futures",
+    "title": "concurrent.futures",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "并发"
+    },
+    "layer": "persistent",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-asyncio-docs"
+    ],
+    "domainId": "python/concurrency",
+    "inScope": true
+  },
+  {
+    "id": "python/cc-async-def",
+    "title": "async def 与协程",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "并发"
+    },
+    "layer": "persistent",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-asyncio-docs"
+    ],
+    "domainId": "python/concurrency",
+    "inScope": true
+  },
+  {
+    "id": "python/cc-await",
+    "title": "await 的语义",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "并发"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "missing",
+      "tacit": "missing"
+    },
+    "sourceRefs": [
+      "python-asyncio-docs"
+    ],
+    "domainId": "python/concurrency",
+    "inScope": true
+  },
+  {
+    "id": "python/cc-event-loop",
+    "title": "事件循环",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "并发"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "missing",
+      "tacit": "missing"
+    },
+    "sourceRefs": [
+      "python-asyncio-docs"
+    ],
+    "domainId": "python/concurrency",
+    "inScope": true
+  },
+  {
+    "id": "python/cc-task",
+    "title": "Task 与取消",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "并发"
+    },
+    "layer": "ephemeral",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "missing",
+      "tacit": "missing"
+    },
+    "sourceRefs": [
+      "python-asyncio-docs"
+    ],
+    "domainId": "python/concurrency",
+    "inScope": true
+  },
+  {
+    "id": "python/cc-blocking-call",
+    "title": "阻塞调用与异步的冲突",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "并发"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "present"
+    },
+    "sourceRefs": [
+      "python-asyncio-docs"
+    ],
+    "domainId": "python/concurrency",
+    "inScope": true
+  },
+  {
+    "id": "python/cc-gather",
+    "title": "并发组合与 gather",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "并发"
+    },
+    "layer": "persistent",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-asyncio-docs"
+    ],
+    "domainId": "python/concurrency",
+    "inScope": true
+  },
+  {
+    "id": "python/cc-timeout",
+    "title": "超时与取消边界",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "并发"
+    },
+    "layer": "persistent",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-asyncio-docs"
+    ],
+    "domainId": "python/concurrency",
+    "inScope": true
+  },
+  {
+    "id": "python/cc-choose-model",
+    "title": "线程 / 进程 / 协程选型",
+    "sixAxis": {
+      "subject": "计算机科学",
+      "ability": "并发"
+    },
+    "layer": "persistent",
+    "type": "tacit",
+    "requirements": {
+      "boundary": "not_externalizable",
+      "justification": "present",
+      "proposition": "not_externalizable",
+      "relation": "present",
+      "how": "missing",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [
+      "python-asyncio-docs"
+    ],
+    "domainId": "python/concurrency",
+    "inScope": true
+  }
+]

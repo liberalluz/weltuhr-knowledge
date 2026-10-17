@@ -1,0 +1,1022 @@
+[
+  {
+    "id": "e-lex-identifier-after-lex-source-encoding",
+    "from": "python/lex-source-encoding",
+    "to": "python/lex-identifier",
+    "type": "strong"
+  },
+  {
+    "id": "e-lex-keyword-after-lex-identifier",
+    "from": "python/lex-identifier",
+    "to": "python/lex-keyword",
+    "type": "strong"
+  },
+  {
+    "id": "e-lex-line-structure-after-lex-keyword",
+    "from": "python/lex-keyword",
+    "to": "python/lex-line-structure",
+    "type": "strong"
+  },
+  {
+    "id": "e-lex-comment-after-lex-line-structure",
+    "from": "python/lex-line-structure",
+    "to": "python/lex-comment",
+    "type": "strong"
+  },
+  {
+    "id": "e-lex-int-literal-after-lex-comment",
+    "from": "python/lex-comment",
+    "to": "python/lex-int-literal",
+    "type": "strong"
+  },
+  {
+    "id": "e-lex-float-literal-after-lex-int-literal",
+    "from": "python/lex-int-literal",
+    "to": "python/lex-float-literal",
+    "type": "strong"
+  },
+  {
+    "id": "e-lex-string-literal-after-lex-float-literal",
+    "from": "python/lex-float-literal",
+    "to": "python/lex-string-literal",
+    "type": "strong"
+  },
+  {
+    "id": "e-lex-raw-string-after-lex-string-literal",
+    "from": "python/lex-string-literal",
+    "to": "python/lex-raw-string",
+    "type": "strong"
+  },
+  {
+    "id": "e-lex-bytes-literal-after-lex-raw-string",
+    "from": "python/lex-raw-string",
+    "to": "python/lex-bytes-literal",
+    "type": "strong"
+  },
+  {
+    "id": "e-lex-fstring-after-lex-bytes-literal",
+    "from": "python/lex-bytes-literal",
+    "to": "python/lex-fstring",
+    "type": "strong"
+  },
+  {
+    "id": "e-lex-escape-after-lex-fstring",
+    "from": "python/lex-fstring",
+    "to": "python/lex-escape",
+    "type": "strong"
+  },
+  {
+    "id": "e-lex-operator-precedence-after-lex-escape",
+    "from": "python/lex-escape",
+    "to": "python/lex-operator-precedence",
+    "type": "strong"
+  },
+  {
+    "id": "e-lex-bool-none-after-lex-operator-precedence",
+    "from": "python/lex-operator-precedence",
+    "to": "python/lex-bool-none",
+    "type": "strong"
+  },
+  {
+    "id": "e-lex-expression-statement-after-lex-bool-none",
+    "from": "python/lex-bool-none",
+    "to": "python/lex-expression-statement",
+    "type": "strong"
+  },
+  {
+    "id": "e-dm-mutable-immutable-after-dm-object-identity",
+    "from": "python/dm-object-identity",
+    "to": "python/dm-mutable-immutable",
+    "type": "strong"
+  },
+  {
+    "id": "e-dm-numeric-after-dm-mutable-immutable",
+    "from": "python/dm-mutable-immutable",
+    "to": "python/dm-numeric",
+    "type": "strong"
+  },
+  {
+    "id": "e-dm-bool-subclass-after-dm-numeric",
+    "from": "python/dm-numeric",
+    "to": "python/dm-bool-subclass",
+    "type": "strong"
+  },
+  {
+    "id": "e-dm-str-unicode-after-dm-bool-subclass",
+    "from": "python/dm-bool-subclass",
+    "to": "python/dm-str-unicode",
+    "type": "strong"
+  },
+  {
+    "id": "e-dm-list-after-dm-str-unicode",
+    "from": "python/dm-str-unicode",
+    "to": "python/dm-list",
+    "type": "strong"
+  },
+  {
+    "id": "e-dm-tuple-after-dm-list",
+    "from": "python/dm-list",
+    "to": "python/dm-tuple",
+    "type": "strong"
+  },
+  {
+    "id": "e-dm-dict-after-dm-tuple",
+    "from": "python/dm-tuple",
+    "to": "python/dm-dict",
+    "type": "strong"
+  },
+  {
+    "id": "e-dm-set-after-dm-dict",
+    "from": "python/dm-dict",
+    "to": "python/dm-set",
+    "type": "strong"
+  },
+  {
+    "id": "e-dm-none-after-dm-set",
+    "from": "python/dm-set",
+    "to": "python/dm-none",
+    "type": "strong"
+  },
+  {
+    "id": "e-dm-copy-after-dm-none",
+    "from": "python/dm-none",
+    "to": "python/dm-copy",
+    "type": "strong"
+  },
+  {
+    "id": "e-dm-eq-vs-is-after-dm-copy",
+    "from": "python/dm-copy",
+    "to": "python/dm-eq-vs-is",
+    "type": "strong"
+  },
+  {
+    "id": "e-dm-hashable-after-dm-eq-vs-is",
+    "from": "python/dm-eq-vs-is",
+    "to": "python/dm-hashable",
+    "type": "strong"
+  },
+  {
+    "id": "e-dm-truthiness-after-dm-hashable",
+    "from": "python/dm-hashable",
+    "to": "python/dm-truthiness",
+    "type": "strong"
+  },
+  {
+    "id": "e-dm-slice-after-dm-truthiness",
+    "from": "python/dm-truthiness",
+    "to": "python/dm-slice",
+    "type": "strong"
+  },
+  {
+    "id": "e-ctl-while-after-ctl-if",
+    "from": "python/ctl-if",
+    "to": "python/ctl-while",
+    "type": "strong"
+  },
+  {
+    "id": "e-ctl-for-range-after-ctl-while",
+    "from": "python/ctl-while",
+    "to": "python/ctl-for-range",
+    "type": "strong"
+  },
+  {
+    "id": "e-ctl-break-continue-after-ctl-for-range",
+    "from": "python/ctl-for-range",
+    "to": "python/ctl-break-continue",
+    "type": "strong"
+  },
+  {
+    "id": "e-ctl-walrus-after-ctl-break-continue",
+    "from": "python/ctl-break-continue",
+    "to": "python/ctl-walrus",
+    "type": "strong"
+  },
+  {
+    "id": "e-ctl-conditional-expr-after-ctl-walrus",
+    "from": "python/ctl-walrus",
+    "to": "python/ctl-conditional-expr",
+    "type": "strong"
+  },
+  {
+    "id": "e-ctl-match-case-after-ctl-conditional-expr",
+    "from": "python/ctl-conditional-expr",
+    "to": "python/ctl-match-case",
+    "type": "strong"
+  },
+  {
+    "id": "e-ctl-pattern-after-ctl-match-case",
+    "from": "python/ctl-match-case",
+    "to": "python/ctl-pattern",
+    "type": "strong"
+  },
+  {
+    "id": "e-ctl-assert-after-ctl-pattern",
+    "from": "python/ctl-pattern",
+    "to": "python/ctl-assert",
+    "type": "strong"
+  },
+  {
+    "id": "e-ctl-del-after-ctl-assert",
+    "from": "python/ctl-assert",
+    "to": "python/ctl-del",
+    "type": "strong"
+  },
+  {
+    "id": "e-ctl-pass-ellipsis-after-ctl-del",
+    "from": "python/ctl-del",
+    "to": "python/ctl-pass-ellipsis",
+    "type": "strong"
+  },
+  {
+    "id": "e-ctl-chained-compare-after-ctl-pass-ellipsis",
+    "from": "python/ctl-pass-ellipsis",
+    "to": "python/ctl-chained-compare",
+    "type": "strong"
+  },
+  {
+    "id": "e-ctl-short-circuit-after-ctl-chained-compare",
+    "from": "python/ctl-chained-compare",
+    "to": "python/ctl-short-circuit",
+    "type": "strong"
+  },
+  {
+    "id": "e-ctl-exception-flow-after-ctl-short-circuit",
+    "from": "python/ctl-short-circuit",
+    "to": "python/ctl-exception-flow",
+    "type": "strong"
+  },
+  {
+    "id": "e-ctl-block-scope-after-ctl-exception-flow",
+    "from": "python/ctl-exception-flow",
+    "to": "python/ctl-block-scope",
+    "type": "strong"
+  },
+  {
+    "id": "e-fn-default-arg-after-fn-def-call",
+    "from": "python/fn-def-call",
+    "to": "python/fn-default-arg",
+    "type": "strong"
+  },
+  {
+    "id": "e-fn-keyword-only-after-fn-default-arg",
+    "from": "python/fn-default-arg",
+    "to": "python/fn-keyword-only",
+    "type": "strong"
+  },
+  {
+    "id": "e-fn-varargs-after-fn-keyword-only",
+    "from": "python/fn-keyword-only",
+    "to": "python/fn-varargs",
+    "type": "strong"
+  },
+  {
+    "id": "e-fn-legb-after-fn-varargs",
+    "from": "python/fn-varargs",
+    "to": "python/fn-legb",
+    "type": "strong"
+  },
+  {
+    "id": "e-fn-global-nonlocal-after-fn-legb",
+    "from": "python/fn-legb",
+    "to": "python/fn-global-nonlocal",
+    "type": "strong"
+  },
+  {
+    "id": "e-fn-closure-after-fn-global-nonlocal",
+    "from": "python/fn-global-nonlocal",
+    "to": "python/fn-closure",
+    "type": "strong"
+  },
+  {
+    "id": "e-fn-lambda-after-fn-closure",
+    "from": "python/fn-closure",
+    "to": "python/fn-lambda",
+    "type": "strong"
+  },
+  {
+    "id": "e-fn-decorator-after-fn-lambda",
+    "from": "python/fn-lambda",
+    "to": "python/fn-decorator",
+    "type": "strong"
+  },
+  {
+    "id": "e-fn-decorator-params-after-fn-decorator",
+    "from": "python/fn-decorator",
+    "to": "python/fn-decorator-params",
+    "type": "strong"
+  },
+  {
+    "id": "e-fn-functools-wraps-after-fn-decorator-params",
+    "from": "python/fn-decorator-params",
+    "to": "python/fn-functools-wraps",
+    "type": "strong"
+  },
+  {
+    "id": "e-fn-first-class-after-fn-functools-wraps",
+    "from": "python/fn-functools-wraps",
+    "to": "python/fn-first-class",
+    "type": "strong"
+  },
+  {
+    "id": "e-fn-recursion-after-fn-first-class",
+    "from": "python/fn-first-class",
+    "to": "python/fn-recursion",
+    "type": "strong"
+  },
+  {
+    "id": "e-fn-return-none-after-fn-recursion",
+    "from": "python/fn-recursion",
+    "to": "python/fn-return-none",
+    "type": "strong"
+  },
+  {
+    "id": "e-fn-docstring-after-fn-return-none",
+    "from": "python/fn-return-none",
+    "to": "python/fn-docstring",
+    "type": "strong"
+  },
+  {
+    "id": "e-oop-init-after-oop-class",
+    "from": "python/oop-class",
+    "to": "python/oop-init",
+    "type": "strong"
+  },
+  {
+    "id": "e-oop-self-after-oop-init",
+    "from": "python/oop-init",
+    "to": "python/oop-self",
+    "type": "strong"
+  },
+  {
+    "id": "e-oop-attr-lookup-after-oop-self",
+    "from": "python/oop-self",
+    "to": "python/oop-attr-lookup",
+    "type": "strong"
+  },
+  {
+    "id": "e-oop-classmethod-staticmethod-after-oop-attr-lookup",
+    "from": "python/oop-attr-lookup",
+    "to": "python/oop-classmethod-staticmethod",
+    "type": "strong"
+  },
+  {
+    "id": "e-oop-property-after-oop-classmethod-staticmethod",
+    "from": "python/oop-classmethod-staticmethod",
+    "to": "python/oop-property",
+    "type": "strong"
+  },
+  {
+    "id": "e-oop-inheritance-after-oop-property",
+    "from": "python/oop-property",
+    "to": "python/oop-inheritance",
+    "type": "strong"
+  },
+  {
+    "id": "e-oop-mro-after-oop-inheritance",
+    "from": "python/oop-inheritance",
+    "to": "python/oop-mro",
+    "type": "strong"
+  },
+  {
+    "id": "e-oop-super-after-oop-mro",
+    "from": "python/oop-mro",
+    "to": "python/oop-super",
+    "type": "strong"
+  },
+  {
+    "id": "e-oop-dunder-after-oop-super",
+    "from": "python/oop-super",
+    "to": "python/oop-dunder",
+    "type": "strong"
+  },
+  {
+    "id": "e-oop-dataclass-after-oop-dunder",
+    "from": "python/oop-dunder",
+    "to": "python/oop-dataclass",
+    "type": "strong"
+  },
+  {
+    "id": "e-oop-slots-after-oop-dataclass",
+    "from": "python/oop-dataclass",
+    "to": "python/oop-slots",
+    "type": "strong"
+  },
+  {
+    "id": "e-oop-composition-after-oop-slots",
+    "from": "python/oop-slots",
+    "to": "python/oop-composition",
+    "type": "strong"
+  },
+  {
+    "id": "e-oop-abc-after-oop-composition",
+    "from": "python/oop-composition",
+    "to": "python/oop-abc",
+    "type": "strong"
+  },
+  {
+    "id": "e-oop-metaclass-after-oop-abc",
+    "from": "python/oop-abc",
+    "to": "python/oop-metaclass",
+    "type": "strong"
+  },
+  {
+    "id": "e-it-for-protocol-after-it-iterable",
+    "from": "python/it-iterable",
+    "to": "python/it-for-protocol",
+    "type": "strong"
+  },
+  {
+    "id": "e-it-generator-after-it-for-protocol",
+    "from": "python/it-for-protocol",
+    "to": "python/it-generator",
+    "type": "strong"
+  },
+  {
+    "id": "e-it-yield-send-after-it-generator",
+    "from": "python/it-generator",
+    "to": "python/it-yield-send",
+    "type": "strong"
+  },
+  {
+    "id": "e-it-generator-expr-after-it-yield-send",
+    "from": "python/it-yield-send",
+    "to": "python/it-generator-expr",
+    "type": "strong"
+  },
+  {
+    "id": "e-it-lazy-after-it-generator-expr",
+    "from": "python/it-generator-expr",
+    "to": "python/it-lazy",
+    "type": "strong"
+  },
+  {
+    "id": "e-it-itertools-after-it-lazy",
+    "from": "python/it-lazy",
+    "to": "python/it-itertools",
+    "type": "strong"
+  },
+  {
+    "id": "e-it-list-comp-after-it-itertools",
+    "from": "python/it-itertools",
+    "to": "python/it-list-comp",
+    "type": "strong"
+  },
+  {
+    "id": "e-it-dict-set-comp-after-it-list-comp",
+    "from": "python/it-list-comp",
+    "to": "python/it-dict-set-comp",
+    "type": "strong"
+  },
+  {
+    "id": "e-it-nested-comp-after-it-dict-set-comp",
+    "from": "python/it-dict-set-comp",
+    "to": "python/it-nested-comp",
+    "type": "strong"
+  },
+  {
+    "id": "e-it-zip-enumerate-after-it-nested-comp",
+    "from": "python/it-nested-comp",
+    "to": "python/it-zip-enumerate",
+    "type": "strong"
+  },
+  {
+    "id": "e-it-unpacking-after-it-zip-enumerate",
+    "from": "python/it-zip-enumerate",
+    "to": "python/it-unpacking",
+    "type": "strong"
+  },
+  {
+    "id": "e-it-sorted-key-after-it-unpacking",
+    "from": "python/it-unpacking",
+    "to": "python/it-sorted-key",
+    "type": "strong"
+  },
+  {
+    "id": "e-it-any-all-after-it-sorted-key",
+    "from": "python/it-sorted-key",
+    "to": "python/it-any-all",
+    "type": "strong"
+  },
+  {
+    "id": "e-it-custom-iterator-after-it-any-all",
+    "from": "python/it-any-all",
+    "to": "python/it-custom-iterator",
+    "type": "strong"
+  },
+  {
+    "id": "e-err-try-except-after-err-hierarchy",
+    "from": "python/err-hierarchy",
+    "to": "python/err-try-except",
+    "type": "strong"
+  },
+  {
+    "id": "e-err-else-finally-after-err-try-except",
+    "from": "python/err-try-except",
+    "to": "python/err-else-finally",
+    "type": "strong"
+  },
+  {
+    "id": "e-err-raise-from-after-err-else-finally",
+    "from": "python/err-else-finally",
+    "to": "python/err-raise-from",
+    "type": "strong"
+  },
+  {
+    "id": "e-err-custom-after-err-raise-from",
+    "from": "python/err-raise-from",
+    "to": "python/err-custom",
+    "type": "strong"
+  },
+  {
+    "id": "e-err-assert-vs-exception-after-err-custom",
+    "from": "python/err-custom",
+    "to": "python/err-assert-vs-exception",
+    "type": "strong"
+  },
+  {
+    "id": "e-err-eafp-lbyl-after-err-assert-vs-exception",
+    "from": "python/err-assert-vs-exception",
+    "to": "python/err-eafp-lbyl",
+    "type": "strong"
+  },
+  {
+    "id": "e-err-with-after-err-eafp-lbyl",
+    "from": "python/err-eafp-lbyl",
+    "to": "python/err-with",
+    "type": "strong"
+  },
+  {
+    "id": "e-err-contextlib-after-err-with",
+    "from": "python/err-with",
+    "to": "python/err-contextlib",
+    "type": "strong"
+  },
+  {
+    "id": "e-err-finally-vs-with-after-err-contextlib",
+    "from": "python/err-contextlib",
+    "to": "python/err-finally-vs-with",
+    "type": "strong"
+  },
+  {
+    "id": "e-err-bare-except-after-err-finally-vs-with",
+    "from": "python/err-finally-vs-with",
+    "to": "python/err-bare-except",
+    "type": "strong"
+  },
+  {
+    "id": "e-err-rethrow-after-err-bare-except",
+    "from": "python/err-bare-except",
+    "to": "python/err-rethrow",
+    "type": "strong"
+  },
+  {
+    "id": "e-err-implicit-context-after-err-rethrow",
+    "from": "python/err-rethrow",
+    "to": "python/err-implicit-context",
+    "type": "strong"
+  },
+  {
+    "id": "e-err-exceptiongroup-after-err-implicit-context",
+    "from": "python/err-implicit-context",
+    "to": "python/err-exceptiongroup",
+    "type": "strong"
+  },
+  {
+    "id": "e-err-cleanup-order-after-err-exceptiongroup",
+    "from": "python/err-exceptiongroup",
+    "to": "python/err-cleanup-order",
+    "type": "strong"
+  },
+  {
+    "id": "e-mod-package-after-mod-module",
+    "from": "python/mod-module",
+    "to": "python/mod-package",
+    "type": "strong"
+  },
+  {
+    "id": "e-mod-import-after-mod-package",
+    "from": "python/mod-package",
+    "to": "python/mod-import",
+    "type": "strong"
+  },
+  {
+    "id": "e-mod-import-style-after-mod-import",
+    "from": "python/mod-import",
+    "to": "python/mod-import-style",
+    "type": "strong"
+  },
+  {
+    "id": "e-mod-main-after-mod-import-style",
+    "from": "python/mod-import-style",
+    "to": "python/mod-main",
+    "type": "strong"
+  },
+  {
+    "id": "e-mod-stdlib-map-after-mod-main",
+    "from": "python/mod-main",
+    "to": "python/mod-stdlib-map",
+    "type": "strong"
+  },
+  {
+    "id": "e-mod-pathlib-after-mod-stdlib-map",
+    "from": "python/mod-stdlib-map",
+    "to": "python/mod-pathlib",
+    "type": "strong"
+  },
+  {
+    "id": "e-mod-json-after-mod-pathlib",
+    "from": "python/mod-pathlib",
+    "to": "python/mod-json",
+    "type": "strong"
+  },
+  {
+    "id": "e-mod-datetime-after-mod-json",
+    "from": "python/mod-json",
+    "to": "python/mod-datetime",
+    "type": "strong"
+  },
+  {
+    "id": "e-mod-re-after-mod-datetime",
+    "from": "python/mod-datetime",
+    "to": "python/mod-re",
+    "type": "strong"
+  },
+  {
+    "id": "e-mod-os-sys-after-mod-re",
+    "from": "python/mod-re",
+    "to": "python/mod-os-sys",
+    "type": "strong"
+  },
+  {
+    "id": "e-mod-logging-after-mod-os-sys",
+    "from": "python/mod-os-sys",
+    "to": "python/mod-logging",
+    "type": "strong"
+  },
+  {
+    "id": "e-mod-argparse-after-mod-logging",
+    "from": "python/mod-logging",
+    "to": "python/mod-argparse",
+    "type": "strong"
+  },
+  {
+    "id": "e-mod-random-after-mod-argparse",
+    "from": "python/mod-argparse",
+    "to": "python/mod-random",
+    "type": "strong"
+  },
+  {
+    "id": "e-mod-importlib-after-mod-random",
+    "from": "python/mod-random",
+    "to": "python/mod-importlib",
+    "type": "strong"
+  },
+  {
+    "id": "e-ty-optional-after-ty-annotation",
+    "from": "python/ty-annotation",
+    "to": "python/ty-optional",
+    "type": "strong"
+  },
+  {
+    "id": "e-ty-union-after-ty-optional",
+    "from": "python/ty-optional",
+    "to": "python/ty-union",
+    "type": "strong"
+  },
+  {
+    "id": "e-ty-generic-after-ty-union",
+    "from": "python/ty-union",
+    "to": "python/ty-generic",
+    "type": "strong"
+  },
+  {
+    "id": "e-ty-typevar-after-ty-generic",
+    "from": "python/ty-generic",
+    "to": "python/ty-typevar",
+    "type": "strong"
+  },
+  {
+    "id": "e-ty-protocol-after-ty-typevar",
+    "from": "python/ty-typevar",
+    "to": "python/ty-protocol",
+    "type": "strong"
+  },
+  {
+    "id": "e-ty-typeddict-after-ty-protocol",
+    "from": "python/ty-protocol",
+    "to": "python/ty-typeddict",
+    "type": "strong"
+  },
+  {
+    "id": "e-ty-literal-final-after-ty-typeddict",
+    "from": "python/ty-typeddict",
+    "to": "python/ty-literal-final",
+    "type": "strong"
+  },
+  {
+    "id": "e-ty-callable-after-ty-literal-final",
+    "from": "python/ty-literal-final",
+    "to": "python/ty-callable",
+    "type": "strong"
+  },
+  {
+    "id": "e-ty-overload-after-ty-callable",
+    "from": "python/ty-callable",
+    "to": "python/ty-overload",
+    "type": "strong"
+  },
+  {
+    "id": "e-ty-narrowing-after-ty-overload",
+    "from": "python/ty-overload",
+    "to": "python/ty-narrowing",
+    "type": "strong"
+  },
+  {
+    "id": "e-ty-any-vs-object-after-ty-narrowing",
+    "from": "python/ty-narrowing",
+    "to": "python/ty-any-vs-object",
+    "type": "strong"
+  },
+  {
+    "id": "e-ty-runtime-boundary-after-ty-any-vs-object",
+    "from": "python/ty-any-vs-object",
+    "to": "python/ty-runtime-boundary",
+    "type": "strong"
+  },
+  {
+    "id": "e-ty-checker-config-after-ty-runtime-boundary",
+    "from": "python/ty-runtime-boundary",
+    "to": "python/ty-checker-config",
+    "type": "strong"
+  },
+  {
+    "id": "e-ty-generic-class-after-ty-checker-config",
+    "from": "python/ty-checker-config",
+    "to": "python/ty-generic-class",
+    "type": "strong"
+  },
+  {
+    "id": "e-cc-thread-after-cc-gil",
+    "from": "python/cc-gil",
+    "to": "python/cc-thread",
+    "type": "strong"
+  },
+  {
+    "id": "e-cc-lock-after-cc-thread",
+    "from": "python/cc-thread",
+    "to": "python/cc-lock",
+    "type": "strong"
+  },
+  {
+    "id": "e-cc-queue-after-cc-lock",
+    "from": "python/cc-lock",
+    "to": "python/cc-queue",
+    "type": "strong"
+  },
+  {
+    "id": "e-cc-process-after-cc-queue",
+    "from": "python/cc-queue",
+    "to": "python/cc-process",
+    "type": "strong"
+  },
+  {
+    "id": "e-cc-pool-after-cc-process",
+    "from": "python/cc-process",
+    "to": "python/cc-pool",
+    "type": "strong"
+  },
+  {
+    "id": "e-cc-futures-after-cc-pool",
+    "from": "python/cc-pool",
+    "to": "python/cc-futures",
+    "type": "strong"
+  },
+  {
+    "id": "e-cc-async-def-after-cc-futures",
+    "from": "python/cc-futures",
+    "to": "python/cc-async-def",
+    "type": "strong"
+  },
+  {
+    "id": "e-cc-await-after-cc-async-def",
+    "from": "python/cc-async-def",
+    "to": "python/cc-await",
+    "type": "strong"
+  },
+  {
+    "id": "e-cc-event-loop-after-cc-await",
+    "from": "python/cc-await",
+    "to": "python/cc-event-loop",
+    "type": "strong"
+  },
+  {
+    "id": "e-cc-task-after-cc-event-loop",
+    "from": "python/cc-event-loop",
+    "to": "python/cc-task",
+    "type": "strong"
+  },
+  {
+    "id": "e-cc-blocking-call-after-cc-task",
+    "from": "python/cc-task",
+    "to": "python/cc-blocking-call",
+    "type": "strong"
+  },
+  {
+    "id": "e-cc-gather-after-cc-blocking-call",
+    "from": "python/cc-blocking-call",
+    "to": "python/cc-gather",
+    "type": "strong"
+  },
+  {
+    "id": "e-cc-timeout-after-cc-gather",
+    "from": "python/cc-gather",
+    "to": "python/cc-timeout",
+    "type": "strong"
+  },
+  {
+    "id": "e-cc-choose-model-after-cc-timeout",
+    "from": "python/cc-timeout",
+    "to": "python/cc-choose-model",
+    "type": "strong"
+  },
+  {
+    "id": "e-cross-00",
+    "from": "python/lex-expression-statement",
+    "to": "python/dm-object-identity",
+    "type": "strong"
+  },
+  {
+    "id": "e-cross-01",
+    "from": "python/dm-mutable-immutable",
+    "to": "python/ctl-for-range",
+    "type": "strong"
+  },
+  {
+    "id": "e-cross-02",
+    "from": "python/dm-truthiness",
+    "to": "python/ctl-if",
+    "type": "strong"
+  },
+  {
+    "id": "e-cross-03",
+    "from": "python/dm-list",
+    "to": "python/ctl-for-range",
+    "type": "strong"
+  },
+  {
+    "id": "e-cross-04",
+    "from": "python/fn-closure",
+    "to": "python/oop-class",
+    "type": "strong"
+  },
+  {
+    "id": "e-cross-05",
+    "from": "python/fn-def-call",
+    "to": "python/oop-init",
+    "type": "strong"
+  },
+  {
+    "id": "e-cross-06",
+    "from": "python/oop-dunder",
+    "to": "python/it-iterable",
+    "type": "strong"
+  },
+  {
+    "id": "e-cross-07",
+    "from": "python/dm-hashable",
+    "to": "python/it-iterable",
+    "type": "strong"
+  },
+  {
+    "id": "e-cross-08",
+    "from": "python/ctl-exception-flow",
+    "to": "python/err-try-except",
+    "type": "strong"
+  },
+  {
+    "id": "e-cross-09",
+    "from": "python/fn-def-call",
+    "to": "python/err-custom",
+    "type": "strong"
+  },
+  {
+    "id": "e-cross-10",
+    "from": "python/err-custom",
+    "to": "python/mod-module",
+    "type": "strong"
+  },
+  {
+    "id": "e-cross-11",
+    "from": "python/fn-closure",
+    "to": "python/oop-property",
+    "type": "strong"
+  },
+  {
+    "id": "e-cross-12",
+    "from": "python/mod-module",
+    "to": "python/ty-annotation",
+    "type": "strong"
+  },
+  {
+    "id": "e-cross-13",
+    "from": "python/oop-class",
+    "to": "python/ty-annotation",
+    "type": "strong"
+  },
+  {
+    "id": "e-cross-14",
+    "from": "python/it-generator",
+    "to": "python/cc-async-def",
+    "type": "strong"
+  },
+  {
+    "id": "e-cross-15",
+    "from": "python/err-try-except",
+    "to": "python/cc-async-def",
+    "type": "strong"
+  },
+  {
+    "id": "e-cross-16",
+    "from": "python/dm-dict",
+    "to": "python/cc-gil",
+    "type": "strong"
+  },
+  {
+    "id": "e-weak-00",
+    "from": "python/lex-fstring",
+    "to": "python/mod-logging",
+    "type": "weak"
+  },
+  {
+    "id": "e-weak-01",
+    "from": "python/lex-operator-precedence",
+    "to": "python/ctl-chained-compare",
+    "type": "weak"
+  },
+  {
+    "id": "e-weak-02",
+    "from": "python/it-itertools",
+    "to": "python/mod-stdlib-map",
+    "type": "weak"
+  },
+  {
+    "id": "e-weak-03",
+    "from": "python/dm-str-unicode",
+    "to": "python/mod-re",
+    "type": "weak"
+  },
+  {
+    "id": "e-weak-04",
+    "from": "python/ctl-match-case",
+    "to": "python/oop-dataclass",
+    "type": "weak"
+  },
+  {
+    "id": "e-weak-05",
+    "from": "python/fn-decorator",
+    "to": "python/mod-argparse",
+    "type": "weak"
+  },
+  {
+    "id": "e-weak-06",
+    "from": "python/mod-pathlib",
+    "to": "python/mod-logging",
+    "type": "weak"
+  },
+  {
+    "id": "e-weak-07",
+    "from": "python/err-contextlib",
+    "to": "python/cc-lock",
+    "type": "weak"
+  },
+  {
+    "id": "e-weak-08",
+    "from": "python/fn-docstring",
+    "to": "python/mod-argparse",
+    "type": "weak"
+  },
+  {
+    "id": "e-weak-09",
+    "from": "python/it-generator",
+    "to": "python/ty-generic",
+    "type": "weak"
+  },
+  {
+    "id": "e-unknown-00",
+    "from": "python/dm-object-identity",
+    "to": "python/cpython-object-layout",
+    "type": "unknown"
+  },
+  {
+    "id": "e-unknown-01",
+    "from": "python/cc-gil",
+    "to": "python/cpython-gil-history",
+    "type": "unknown"
+  },
+  {
+    "id": "e-unknown-02",
+    "from": "python/ty-annotation",
+    "to": "python/pep-563-lazy-annotations",
+    "type": "unknown"
+  }
+]
