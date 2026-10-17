@@ -1,12 +1,12 @@
 # Weltuhr
 
-[简体中文](README.md) · **English** · [Deutsch](README.de.md) · [Italiano](README.it.md) · [日本語](README.ja.md) · [Français](README.fr.md)
+[简体中文](../../README.md) · **English** · [Deutsch](de.md) · [Italiano](it.md) · [日本語](ja.md) · [Français](fr.md)
 
-> Translation of [README.md](README.md) · 2026-10-17 · the Chinese version is authoritative.
+> Translation of [README.md](../../README.md) · 2026-10-17 · the Chinese version is authoritative.
 
 > Unfold a field of study into a knowledge space that is **locatable, plannable and measurable**, so that "I want to learn X" becomes "I know what to learn, in what order, and how far along I am when it counts as usable".
 
-[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
+[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](../../LICENSE)
 
 ## Highlights
 
@@ -41,25 +41,25 @@ cd ../app && flutter run -d windows
 
 | Directory | Responsibility |
 |---|---|
-| [app/](app/README.md) | Flutter client (one codebase for Windows / macOS / iOS) |
-| [server/](server/README.md) | Serverpod server: sync, event merging, governance and review |
-| [content/](content/README.md) | Content-pack source data and build pipeline |
-| [docs/](docs/README.md) | Deliverable documents, living docs, ADRs and design specs |
-| [infra/](infra/README.md) | Build / signing / updater / mirror / CI |
+| [app/](../../app/README.md) | Flutter client (one codebase for Windows / macOS / iOS) |
+| [server/](../../server/README.md) | Serverpod server: sync, event merging, governance and review |
+| [content/](../../content/README.md) | Content-pack source data and build pipeline |
+| [docs/](../../docs/README.md) | Deliverable documents, living docs, ADRs and design specs |
+| [infra/](../../infra/README.md) | Build / signing / updater / mirror / CI |
 
-Also: [docs/reference/knowledge-system-learning-methodology.md](docs/reference/knowledge-system-learning-methodology.md) — the **methodological basis** of this project (knowledge-system learning methodology); for the software design specification see [docs/design/](docs/design/00-index.md).
+Also: [docs/reference/knowledge-system-learning-methodology.md](../../docs/reference/knowledge-system-learning-methodology.md) — the **methodological basis** of this project (knowledge-system learning methodology); for the software design specification see [docs/design/](../../docs/design/00-index.md).
 
 ## Documentation
 
-- [docs/README.md](docs/README.md) — documentation index (deliverables / living docs / ADRs)
-- [docs/design/00-index.md](docs/design/00-index.md) — **design specification index** (FND / VIEW / PACK / PLAN / STEP / QUANT / NOTE / GOV + cross-cutting tables)
+- [docs/README.md](../../docs/README.md) — documentation index (deliverables / living docs / ADRs)
+- [docs/design/00-index.md](../../docs/design/00-index.md) — **design specification index** (FND / VIEW / PACK / PLAN / STEP / QUANT / NOTE / GOV + cross-cutting tables)
 
 ## Licence and attribution
 
-Copyright (c) 2026 liberal. This project is released under the [Apache-2.0](LICENSE) licence; see also [NOTICE](NOTICE).
+Copyright (c) 2026 liberal. This project is released under the [Apache-2.0](../../LICENSE) licence; see also [NOTICE](../../NOTICE).
 
 ## Contributing and getting help
 
-- **Security vulnerabilities**: please do not open a public issue — report through the private channel described in [.github/SECURITY.md](.github/SECURITY.md) (we commit to a first response within 7 business days)
+- **Security vulnerabilities**: please do not open a public issue — report through the private channel described in [.github/SECURITY.md](../../.github/SECURITY.md) (we commit to a first response within 7 business days)
 - Questions and suggestions: via repository Issues; for content errata, quote the space identifier and the `itemId`
-- Contribution workflow: [.github/CONTRIBUTING.md](.github/CONTRIBUTING.md)
+- Contribution workflow: [.github/CONTRIBUTING.md](../../.github/CONTRIBUTING.md)

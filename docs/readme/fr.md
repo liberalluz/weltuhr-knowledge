@@ -1,12 +1,12 @@
 # Weltuhr
 
-[简体中文](README.md) · [English](README.en.md) · [Deutsch](README.de.md) · [Italiano](README.it.md) · [日本語](README.ja.md) · **Français**
+[简体中文](../../README.md) · [English](en.md) · [Deutsch](de.md) · [Italiano](it.md) · [日本語](ja.md) · **Français**
 
-> Traduction de [README.md](README.md) · 2026-10-17 · la version chinoise fait foi.
+> Traduction de [README.md](../../README.md) · 2026-10-17 · la version chinoise fait foi.
 
 > Déployer un domaine d'étude en un espace de connaissances **localisable, planifiable et mesurable**, pour que « je veux apprendre X » devienne « je sais quoi apprendre, dans quel ordre, et à quel point j'en suis quand cela compte comme utilisable ».
 
-[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
+[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](../../LICENSE)
 
 ## Points clés
 
@@ -41,25 +41,25 @@ cd ../app && flutter run -d windows
 
 | Répertoire | Responsabilité |
 |---|---|
-| [app/](app/README.md) | Client Flutter (une seule base de code pour Windows / macOS / iOS) |
-| [server/](server/README.md) | Serveur Serverpod : synchronisation, fusion d'événements, gouvernance et révision |
-| [content/](content/README.md) | Données sources des packs de contenu et pipeline de build |
-| [docs/](docs/README.md) | Documents livrables, documents vivants, ADR et spécifications de conception |
-| [infra/](infra/README.md) | Build / signature / mise à jour / miroir / CI |
+| [app/](../../app/README.md) | Client Flutter (une seule base de code pour Windows / macOS / iOS) |
+| [server/](../../server/README.md) | Serveur Serverpod : synchronisation, fusion d'événements, gouvernance et révision |
+| [content/](../../content/README.md) | Données sources des packs de contenu et pipeline de build |
+| [docs/](../../docs/README.md) | Documents livrables, documents vivants, ADR et spécifications de conception |
+| [infra/](../../infra/README.md) | Build / signature / mise à jour / miroir / CI |
 
-Voir aussi : [docs/reference/knowledge-system-learning-methodology.md](docs/reference/knowledge-system-learning-methodology.md) — la **base méthodologique** de ce projet (méthodologie de l'apprentissage en système de connaissances) ; pour la spécification de conception logicielle, voir [docs/design/](docs/design/00-index.md).
+Voir aussi : [docs/reference/knowledge-system-learning-methodology.md](../../docs/reference/knowledge-system-learning-methodology.md) — la **base méthodologique** de ce projet (méthodologie de l'apprentissage en système de connaissances) ; pour la spécification de conception logicielle, voir [docs/design/](../../docs/design/00-index.md).
 
 ## Documentation
 
-- [docs/README.md](docs/README.md) — index de la documentation (livrables / documents vivants / ADR)
-- [docs/design/00-index.md](docs/design/00-index.md) — **index des spécifications de conception** (FND / VIEW / PACK / PLAN / STEP / QUANT / NOTE / GOV + tableaux transversaux)
+- [docs/README.md](../../docs/README.md) — index de la documentation (livrables / documents vivants / ADR)
+- [docs/design/00-index.md](../../docs/design/00-index.md) — **index des spécifications de conception** (FND / VIEW / PACK / PLAN / STEP / QUANT / NOTE / GOV + tableaux transversaux)
 
 ## Licence et attribution
 
-Copyright (c) 2026 liberal. Ce projet est publié sous licence [Apache-2.0](LICENSE) ; voir aussi [NOTICE](NOTICE).
+Copyright (c) 2026 liberal. Ce projet est publié sous licence [Apache-2.0](../../LICENSE) ; voir aussi [NOTICE](../../NOTICE).
 
 ## Contribuer et obtenir de l'aide
 
-- **Vulnérabilités de sécurité** : n'ouvrez pas d'issue publique — signalez-les par le canal privé décrit dans [.github/SECURITY.md](.github/SECURITY.md) (première réponse sous 7 jours ouvrés)
+- **Vulnérabilités de sécurité** : n'ouvrez pas d'issue publique — signalez-les par le canal privé décrit dans [.github/SECURITY.md](../../.github/SECURITY.md) (première réponse sous 7 jours ouvrés)
 - Questions et propositions : via les Issues du dépôt ; pour une erreur de contenu, précisez l'identifiant de l'espace et l'`itemId`
-- Processus de contribution : [.github/CONTRIBUTING.md](.github/CONTRIBUTING.md)
+- Processus de contribution : [.github/CONTRIBUTING.md](../../.github/CONTRIBUTING.md)

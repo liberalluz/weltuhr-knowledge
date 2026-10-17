@@ -1,6 +1,6 @@
 # Weltuhr
 
-**简体中文** · [English](README.en.md) · [Deutsch](README.de.md) · [Italiano](README.it.md) · [日本語](README.ja.md) · [Français](README.fr.md)
+**简体中文** · [English](docs/readme/en.md) · [Deutsch](docs/readme/de.md) · [Italiano](docs/readme/it.md) · [日本語](docs/readme/ja.md) · [Français](docs/readme/fr.md)
 
 > 把一个学习领域展开成**可定位、可规划、可量化**的知识空间，让「我要学 X」变成「我知道该按什么顺序学什么、学到什么程度算能用」。
 

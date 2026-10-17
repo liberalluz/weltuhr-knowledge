@@ -1,12 +1,12 @@
 # Weltuhr
 
-[简体中文](README.md) · [English](README.en.md) · [Deutsch](README.de.md) · [Italiano](README.it.md) · **日本語** · [Français](README.fr.md)
+[简体中文](../../README.md) · [English](en.md) · [Deutsch](de.md) · [Italiano](it.md) · **日本語** · [Français](fr.md)
 
-> [README.md](README.md) の翻訳です · 2026-10-17 · 正文は中国語版です。
+> [README.md](../../README.md) の翻訳です · 2026-10-17 · 正文は中国語版です。
 
 > ある学習領域を、**位置づけでき、計画でき、計量できる**知識空間へと展開します。「X を学びたい」を「何をどの順序で学べばよいか、どこまで進めば使えると言えるかが分かっている」に変えるための仕組みです。
 
-[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
+[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](../../LICENSE)
 
 ## 特長
 
@@ -41,25 +41,25 @@ cd ../app && flutter run -d windows
 
 | ディレクトリ | 責務 |
 |---|---|
-| [app/](app/README.md) | Flutter クライアント（Windows / macOS / iOS を一つのコードで） |
-| [server/](server/README.md) | Serverpod サーバー：同期、イベント統合、ガバナンスと審査 |
-| [content/](content/README.md) | コンテンツパックの元データとビルドパイプライン |
-| [docs/](docs/README.md) | 成果物ドキュメント、生きたドキュメント、ADR、設計仕様 |
-| [infra/](infra/README.md) | ビルド / 署名 / アップデータ / ミラー / CI |
+| [app/](../../app/README.md) | Flutter クライアント（Windows / macOS / iOS を一つのコードで） |
+| [server/](../../server/README.md) | Serverpod サーバー：同期、イベント統合、ガバナンスと審査 |
+| [content/](../../content/README.md) | コンテンツパックの元データとビルドパイプライン |
+| [docs/](../../docs/README.md) | 成果物ドキュメント、生きたドキュメント、ADR、設計仕様 |
+| [infra/](../../infra/README.md) | ビルド / 署名 / アップデータ / ミラー / CI |
 
-そのほか：[docs/reference/knowledge-system-learning-methodology.md](docs/reference/knowledge-system-learning-methodology.md) — 本プロジェクトの**方法論的な根拠**（知識体系学習の方法論）。ソフトウェア設計仕様は [docs/design/](docs/design/00-index.md) を参照してください。
+そのほか：[docs/reference/knowledge-system-learning-methodology.md](../../docs/reference/knowledge-system-learning-methodology.md) — 本プロジェクトの**方法論的な根拠**（知識体系学習の方法論）。ソフトウェア設計仕様は [docs/design/](../../docs/design/00-index.md) を参照してください。
 
 ## ドキュメント
 
-- [docs/README.md](docs/README.md) — ドキュメント体系の索引（成果物 / 生きたドキュメント / ADR）
-- [docs/design/00-index.md](docs/design/00-index.md) — **設計仕様の索引**（FND / VIEW / PACK / PLAN / STEP / QUANT / NOTE / GOV + 横断表）
+- [docs/README.md](../../docs/README.md) — ドキュメント体系の索引（成果物 / 生きたドキュメント / ADR）
+- [docs/design/00-index.md](../../docs/design/00-index.md) — **設計仕様の索引**（FND / VIEW / PACK / PLAN / STEP / QUANT / NOTE / GOV + 横断表）
 
 ## ライセンスとクレジット
 
-Copyright (c) 2026 liberal。本プロジェクトは [Apache-2.0](LICENSE) ライセンスで公開しています。あわせて [NOTICE](NOTICE) をご覧ください。
+Copyright (c) 2026 liberal。本プロジェクトは [Apache-2.0](../../LICENSE) ライセンスで公開しています。あわせて [NOTICE](../../NOTICE) をご覧ください。
 
 ## コントリビュートとサポート
 
-- **セキュリティ脆弱性**：公開 issue は使わず、[.github/SECURITY.md](.github/SECURITY.md) に記載の非公開の窓口から報告してください（7 営業日以内に一次回答することをお約束します）
+- **セキュリティ脆弱性**：公開 issue は使わず、[.github/SECURITY.md](../../.github/SECURITY.md) に記載の非公開の窓口から報告してください（7 営業日以内に一次回答することをお約束します）
 - 質問・提案：リポジトリの Issues へ。内容の誤りは空間識別子と `itemId` を明記してください
-- コントリビュートの流れ：[.github/CONTRIBUTING.md](.github/CONTRIBUTING.md)
+- コントリビュートの流れ：[.github/CONTRIBUTING.md](../../.github/CONTRIBUTING.md)
