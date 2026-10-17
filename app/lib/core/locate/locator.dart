@@ -38,6 +38,7 @@ class LocateHit {
     required this.label,
     required this.strength,
     this.axisKey,
+    this.inScope = true,
   });
 
   final LocateKind kind;
@@ -55,23 +56,45 @@ class LocateHit {
 
   /// 仅筛选类：轴键（`subject` / `ability` …）。落点类为 `null`。
   final String? axisKey;
+
+  /// 这一条**能不能直接落点**。只有项命中可能是 `false` —— `Item.inScope` 为
+  /// `false` 的项（圈外邻项）在库里、在树里（虚线支线，`VIEW-007`）都有，
+  /// 但宇宙只画圈内，跳到它就是跳到一片空白。
+  ///
+  /// 于是它在 `hits` 里、却进不了 `usableHits`：存在性归引擎，可用性归分诊
+  /// （`VIEW-030` 类 ①「项存在但属圈外 → 申请纳入」）。
+  final bool inScope;
 }
 
 /// 一次定位的结果。
 class LocateResult {
-  const LocateResult({required this.query, required this.hits, required this.state});
+  const LocateResult({
+    required this.query,
+    required this.hits,
+    required this.state,
+  });
 
   final String query;
 
-  /// 已按「强度 → 档位 → id」排好序。
+  /// 已按「可用 → 强度 → 档位 → id」排好序。
   final List<LocateHit> hits;
 
   final LocateState state;
 
-  bool get isEmpty => hits.isEmpty;
+  /// 能直接落点的那些命中（`LocateHit.inScope` 为 `true`）。
+  ///
+  /// 视图列的就是这一份；`hits` 里余下的圈外项只在分诊里出现（`VIEW-030` ①）。
+  List<LocateHit> get usableHits =>
+      hits.where((LocateHit hit) => hit.inScope).toList(growable: false);
+
+  /// 「没成」 —— 判的是**有没有能落点的**，不是 `hits` 空不空。
+  bool get isEmpty => usableHits.isEmpty;
 
   /// 最强的那一条（`located` 时即落点）。
-  LocateHit? get top => hits.isEmpty ? null : hits.first;
+  LocateHit? get top {
+    final List<LocateHit> usable = usableHits;
+    return usable.isEmpty ? null : usable.first;
+  }
 }
 
 /// 定位引擎。
@@ -89,12 +112,22 @@ class Locator {
     final String needle = query.trim().toLowerCase();
     if (needle.isEmpty) {
       // 空输入不是「搜不到」：没有输入就没有定位结果，也不该触发四类分诊。
-      return LocateResult(query: query, hits: const <LocateHit>[], state: LocateState.none);
+      return LocateResult(
+        query: query,
+        hits: const <LocateHit>[],
+        state: LocateState.none,
+      );
     }
 
     final Map<String, LocateHit> best = <String, LocateHit>{};
 
-    void consider(LocateKind kind, String target, String label, {String? axisKey}) {
+    void consider(
+      LocateKind kind,
+      String target,
+      String label, {
+      String? axisKey,
+      bool inScope = true,
+    }) {
       final MatchStrength? strength = _match(label, needle);
       if (strength == null) {
         return;
@@ -111,6 +144,7 @@ class Locator {
         label: label,
         strength: strength,
         axisKey: axisKey,
+        inScope: inScope,
       );
     }
 
@@ -119,14 +153,21 @@ class Locator {
       consider(LocateKind.domain, domainId, domainId);
     }
     for (final Item item in _pack.items) {
-      consider(LocateKind.item, item.id, item.title);
+      consider(LocateKind.item, item.id, item.title, inScope: item.inScope);
       for (final MapEntry<String, String> axis in item.sixAxis.entries) {
         consider(LocateKind.axis, axis.value, axis.value, axisKey: axis.key);
       }
     }
     for (final Scheme scheme in _pack.schemes) {
       for (final String nodeId in scheme.nodes) {
-        consider(LocateKind.item, nodeId, nodeId);
+        // 体系的节点可能就是圈外项的 id：`inScope` 要与项命中的判法一致，
+        // 否则同一个项会在这里被当成「可用」。
+        consider(
+          LocateKind.item,
+          nodeId,
+          nodeId,
+          inScope: _pack.itemOf(nodeId)?.inScope ?? true,
+        );
       }
     }
 
@@ -141,23 +182,40 @@ class Locator {
   /// **完整标题**，`SPEC-VIEW-027` 明确「唯一命中直接跳转」—— 让他在列表里
   /// 再点一次，是把引擎的保守当成了产品行为。按最强档判，`装饰器` 唯一精确命中
   /// ⇒ 直接落点；弱一档的那条仍在 `hits` 里，视图要在无命中的分诊里才用得到。
+  ///
+  /// 判在 `usableHits` 上：只命中圈外项时三态是 `none`（**没成**），而「为什么
+  /// 没成」归分诊 —— 见 [LocateHit.inScope]。
   LocateState _stateOf(List<LocateHit> hits) {
-    if (hits.isEmpty) {
+    final List<LocateHit> usable = hits
+        .where((LocateHit hit) => hit.inScope)
+        .toList(growable: false);
+    if (usable.isEmpty) {
       return LocateState.none;
     }
-    final MatchStrength strongest = hits.first.strength;
-    final List<LocateHit> top =
-        hits.where((LocateHit hit) => hit.strength == strongest).toList(growable: false);
+    final MatchStrength strongest = usable.first.strength;
+    final List<LocateHit> top = usable
+        .where((LocateHit hit) => hit.strength == strongest)
+        .toList(growable: false);
     if (top.length > 1) {
       return LocateState.partial;
     }
     // 唯一命中但不是「项」：命中上层（空间 / 域）按 `SPEC-FND-008` 归部分命中；
     // 轴值是筛选类，只写 `axisFilter`、不换根（`SPEC-VIEW-028`），
     // 也就没有「直接落点」这回事。
-    return top.single.kind == LocateKind.item ? LocateState.located : LocateState.partial;
+    return top.single.kind == LocateKind.item
+        ? LocateState.located
+        : LocateState.partial;
   }
 
+  /// 排序：**可用优先**，再强度、再档位、再 id。
+  ///
+  /// 可用优先是分诊的地基：一个圈外项精确命中、一个圈内项前缀命中时，用户要的
+  /// 是后者 —— 前者跳出屏幕外（宇宙只画圈内）。放在同一把排序键里，`top` 才
+  /// 无需再判一次，也就不会出现「`top` 与列表首行不是同一条」。
   int _compare(LocateHit a, LocateHit b) {
+    if (a.inScope != b.inScope) {
+      return a.inScope ? -1 : 1;
+    }
     final int byStrength = a.strength.index.compareTo(b.strength.index);
     if (byStrength != 0) {
       return byStrength;

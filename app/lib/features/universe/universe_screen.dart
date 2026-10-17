@@ -25,8 +25,9 @@
 ///
 /// - 宇宙里点星拾取（`VIEW-014` 的第一个入口）：`FramePainter` 还没有
 ///   hit test，选中只能从树里来。归下一笔（点选）。
-/// - 无命中的四类分诊与表单兜底（`VIEW-030` / `032`）：浮层先如实说「没有命中」。
-///   在「搜不到」上直接挂「新增」正是规格要防的事，所以宁愿先不给。
+/// - 跨空间搜索（`VIEW-031`）：`Locator` 现在只收一个 `LoadedPack`，要收
+///   `List<LoadedPack>` 才能「在全部空间中搜索」。归笔 5。
+/// - ⑥ 罗盘就地选值（`VIEW-020`，第二个筛选输入源）：罗盘还是占位块。
 library;
 
 import 'package:flutter/material.dart';
@@ -118,6 +119,9 @@ class _UniverseScreenState extends State<UniverseScreen>
   /// 定位浮层是否打开（`VIEW-026`：浮层，不常驻）。
   bool _locating = false;
 
+  /// 屏幕根的焦点节点。`⌘K` / `Ctrl+K` 靠它接键（见 `_closeLocate`）。
+  final FocusNode _rootFocus = FocusNode(debugLabel: 'universe-root');
+
   @override
   void initState() {
     super.initState();
@@ -136,6 +140,7 @@ class _UniverseScreenState extends State<UniverseScreen>
     _spin
       ..stop()
       ..dispose();
+    _rootFocus.dispose();
     super.dispose();
   }
 
@@ -184,7 +189,20 @@ class _UniverseScreenState extends State<UniverseScreen>
 
   void _openLocate() => setState(() => _locating = true);
 
-  void _closeLocate() => setState(() => _locating = false);
+  /// 关浮层，并把焦点收回屏幕根。
+  ///
+  /// 为什么必须收：浮层里的输入框占着主焦点，浮层一拆，那个 `FocusNode` 就被
+  /// 销毁 —— 主焦点落空之后 `⌘K` 没有节点接着冒泡，**第二次搜索打不开**
+  /// （表现是「快捷键只灵一次」）。等到这一帧拆完再请求焦点，否则收上来的焦点
+  /// 会在同一帧里被「销毁输入框」这一步又推走。
+  void _closeLocate() {
+    setState(() => _locating = false);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _rootFocus.requestFocus();
+      }
+    });
+  }
 
   /// 一条命中的落点。**这是整个搜索唯一的行为出口**。
   ///
@@ -268,6 +286,16 @@ class _UniverseScreenState extends State<UniverseScreen>
     });
   }
 
+  /// 类 ②「措辞不同」的邻近候选（`VIEW-030`）：**先关门再落点**。
+  ///
+  /// 与命中走同一条落点路径（`_jumpToItem`）—— 它虽然不是命中，但用户选它
+  /// 就是要那一项；区别只在「选完要不要关浮层」，而命中的那条在 `_applyHit`
+  /// 开头已经关了。
+  void _pickNear(String itemId) {
+    _closeLocate();
+    _jumpToItem(itemId);
+  }
+
   void _removeFilter(AxisFilterChip chip) {
     setState(() {
       _axisFilter = withoutAxisValue(_axisFilter, chip.axisKey, chip.value);
@@ -311,6 +339,7 @@ class _UniverseScreenState extends State<UniverseScreen>
         const SingleActivator(LogicalKeyboardKey.keyK, meta: true): _openLocate,
       },
       child: Focus(
+        focusNode: _rootFocus,
         autofocus: true,
         child: Scaffold(
           backgroundColor: paletteBackground,
@@ -456,11 +485,28 @@ class _UniverseScreenState extends State<UniverseScreen>
 
   Widget _locateLayer() => LocateOverlay(
     pack: widget.pack,
+    domainId: _domainId(),
     // `VIEW-033`：只有一个空间时不给前缀 —— 每行都写一遍同一个空间名是噪音，
     // 而它要解决的问题（同名项分不清是哪个空间的）在单空间下不存在。
     onPick: _applyHit,
+    // 类 ②「措辞不同」的邻近候选：点了就是真落点，与命中同一条路径。
+    onPickNear: _pickNear,
     onDismiss: _closeLocate,
   );
+
+  /// 当前视图的域上下文 = **选中项所在的域**（`VIEW-030` ③ / ④ 的分野）。
+  ///
+  /// 为什么不用档位：档位只说「离得多近」。在 `Z1` 上看着一堆星系、什么都
+  /// 没选时，硬说「你在某个域里」会让分诊凭空多出一个 ③，于是把新项塞进
+  /// 一个用户并没有在看的域 —— 那比只记一句需求更糟。
+  String? _domainId() {
+    final LoadedPack? pack = widget.pack;
+    final String? id = _selectedItemId;
+    if (pack == null || id == null) {
+      return null;
+    }
+    return pack.itemOf(id)?.domainId;
+  }
 
   Widget _universeBody(Set<String>? visibleIds) => RepaintBoundary(
     child: CustomPaint(
