@@ -156,7 +156,7 @@ FrameDrawReport paintFrame({
     if (visibleIds != null && !visibleIds.contains(node.id)) {
       continue;
     }
-    final double radius = _dotRadius(node);
+    final double radius = dotScreenRadius(node);
     final double x = origin.dx + node.x * pixelsPerUnit;
     final double y = origin.dy + node.y * pixelsPerUnit;
 
@@ -189,7 +189,10 @@ FrameDrawReport paintFrame({
 
 /// 半径随透视收缩。开方是为了别让远处节点缩成半个像素后被抗锯齿糊掉 ——
 /// 那会让「画了 150 个点」看起来像「画了 20 个点」。
-double _dotRadius(ProjectedNode node) {
+///
+/// **公开**：拾取（`SPEC-VIEW-014` 入口 1）要用同一个圆判断点中了谁。改成
+/// 第二份公式的话，两个半径之差就是「看得见、点边缘无效」的那一圈。
+double dotScreenRadius(ProjectedNode node) {
   final double perspective = math.sqrt(_cameraDistance / node.depth);
   final double radius = (_minDotRadius + _sizeToRadius * node.size01) * perspective;
   if (radius.isNaN || radius < _minDotRadius) {
@@ -214,6 +217,79 @@ int _nodeArgb(ProjectedNode node) {
 /// 每帧回调：把这一帧的绘制报告与两段耗时交给调用方做读数。
 typedef FrameRepaintCallback =
     void Function(FrameDrawReport report, double projectMs, double paintMs);
+
+/// 一帧的几何：投影结果 + 屏幕变换。
+///
+/// 绘制与拾取**必须同源**（见 [buildSceneFrame]）—— 这个类型就是那份同源的
+/// 载体：两边拿到的 `frame / origin / pixelsPerUnit` 出自同一次计算。
+class SceneFrame {
+  const SceneFrame({
+    required this.frame,
+    required this.originX,
+    required this.originY,
+    required this.pixelsPerUnit,
+  });
+
+  final ProjectedFrame frame;
+
+  /// 屏幕原点（视口中心）。
+  final double originX;
+  final double originY;
+
+  /// 一个投影单位折算多少像素。
+  final double pixelsPerUnit;
+}
+
+/// 自转推进到第 [spinValue] 圈（0→1）时的偏航。
+///
+/// 绘制与拾取共用这一条式子。两处各写一遍 `base + value × 2π` 也算重复，
+/// 但更要紧的是：**改了其中一处的方向或取模，点击就会整体偏一个角度**，
+/// 而这种偏差在大星上仍能点中、只在窄星上偶发失效 —— 最难查的那一类。
+double spunYaw(double baseYawRadians, double spinValue) =>
+    baseYawRadians + spinValue * fullTurnRadians;
+
+/// 按场景 + 视口 + 偏航算出一帧。
+///
+/// `paint` 与 `pickSceneNode` 都走这里。**不要在其中任一处另写一遍装配**：
+/// 相机常量、自适应取景、`pixelsPerUnit` 三者只要有一处不同，屏幕上的星与
+/// 可点的位置就会错开，而错开多少取决于窗口尺寸 —— 那是查不出来的偶发 bug。
+SceneFrame buildSceneFrame({
+  required SceneBundle scene,
+  required double viewportWidth,
+  required double viewportHeight,
+  required double yawRadians,
+}) {
+  final Camera baseCamera = Camera(
+    yawRadians: yawRadians,
+    pitchRadians: _cameraPitch,
+    distance: _cameraDistance,
+    focal: _cameraFocal,
+    radialSegments: scene.radialSegments,
+    sectorCount: spikeSectorCount,
+    // φ 归一到一个世界单位高度：α 包最大层号 63，不做归一的话最深那批
+    // 会跑到相机后面，量到的是钳制分支。
+    phiHeight: _phiWorldHeight,
+    minDepth: _minDepth,
+  );
+
+  // 按当前场景与视口**自适应取景**：写死一组 distance/focal，换个包或
+  // 换个窗口尺寸就会裁切（实测反馈：最下一排点被切）。
+  final Camera camera = fitCameraToViewport(
+    nodes: scene.nodes,
+    edges: scene.edges,
+    base: baseCamera,
+    viewportWidth: viewportWidth,
+    viewportHeight: viewportHeight,
+    pixelsPerUnit: math.min(viewportWidth, viewportHeight) * _unitToPixel,
+  );
+
+  return SceneFrame(
+    frame: projectFrame(nodes: scene.nodes, edges: scene.edges, camera: camera),
+    originX: viewportWidth / 2,
+    originY: viewportHeight / 2,
+    pixelsPerUnit: math.min(viewportWidth, viewportHeight) * _unitToPixel,
+  );
+}
 
 /// 把一枚场景画到 `Canvas` 上，每帧按 `spin` 推进自转。
 class FramePainter extends CustomPainter {
@@ -247,34 +323,11 @@ class FramePainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final Stopwatch watch = Stopwatch()..start();
 
-    final Camera baseCamera = Camera(
-      yawRadians: baseYaw + spin.value * fullTurnRadians,
-      pitchRadians: _cameraPitch,
-      distance: _cameraDistance,
-      focal: _cameraFocal,
-      radialSegments: scene.radialSegments,
-      sectorCount: spikeSectorCount,
-      // φ 归一到一个世界单位高度：α 包最大层号 63，不做归一的话最深那批
-      // 会跑到相机后面，量到的是钳制分支。
-      phiHeight: _phiWorldHeight,
-      minDepth: _minDepth,
-    );
-
-    // 按当前场景与视口**自适应取景**：写死一组 distance/focal，换个包或
-    // 换个窗口尺寸就会裁切（实测反馈：最下一排点被切）。
-    final Camera camera = fitCameraToViewport(
-      nodes: scene.nodes,
-      edges: scene.edges,
-      base: baseCamera,
+    final SceneFrame sceneFrame = buildSceneFrame(
+      scene: scene,
       viewportWidth: size.width,
       viewportHeight: size.height,
-      pixelsPerUnit: size.shortestSide * _unitToPixel,
-    );
-
-    final ProjectedFrame frame = projectFrame(
-      nodes: scene.nodes,
-      edges: scene.edges,
-      camera: camera,
+      yawRadians: spunYaw(baseYaw, spin.value),
     );
     final double projectMs = watch.elapsedMicroseconds / 1000;
 
@@ -283,9 +336,9 @@ class FramePainter extends CustomPainter {
       ..start();
     final FrameDrawReport report = paintFrame(
       target: CanvasDrawTarget(canvas),
-      frame: frame,
-      origin: Offset(size.width / 2, size.height / 2),
-      pixelsPerUnit: size.shortestSide * _unitToPixel,
+      frame: sceneFrame.frame,
+      origin: Offset(sceneFrame.originX, sceneFrame.originY),
+      pixelsPerUnit: sceneFrame.pixelsPerUnit,
       viewport: size,
       visibleIds: visibleIds,
     );

@@ -11,6 +11,7 @@ import 'package:project_knowledge/core/pack/pack_parse.dart';
 import 'package:project_knowledge/core/view/filter.dart';
 
 import '../../support/alpha_pack.dart';
+import '../../support/pack_fixture.dart';
 
 void main() {
   late LoadedPack pack;
@@ -120,6 +121,59 @@ void main() {
       );
       expect(withoutAxisValue(filter, 'ability', '不存在'), same(filter));
       expect(withoutAxis(filter, 'topic'), same(filter));
+    });
+  });
+
+  group('⑥ 罗盘的取值域（SPEC-VIEW-020）', () {
+    test('取值只从包里来：一个轴的全部取值等于去重后的实际取值（SPEC-VIEW-020）', () {
+      final List<String> values = axisValuesOf(pack, 'ability');
+      final Set<String> actual = <String>{
+        for (final Item item in pack.items)
+          if ((item.sixAxis['ability'] ?? '').isNotEmpty)
+            item.sixAxis['ability']!,
+      };
+      expect(values.toSet(), actual);
+      expect(values.length, actual.length, reason: '不能有重复值');
+    });
+
+    test('按出现次数降序 —— 一屏放得下时常用的必须在前面（SPEC-VIEW-020）', () {
+      final List<String> values = axisValuesOf(pack, 'ability');
+      for (int i = 1; i < values.length; i++) {
+        expect(
+          countOf('ability', values[i - 1]),
+          greaterThanOrEqualTo(countOf('ability', values[i])),
+          reason: '${values[i - 1]} 比 ${values[i]} 少，序就错了',
+        );
+      }
+    });
+
+    test('同次数按字典序 —— 两次打开顺序不变（SPEC-VIEW-020）', () {
+      final List<String> values = axisValuesOf(pack, 'ability');
+      for (int i = 1; i < values.length; i++) {
+        if (countOf('ability', values[i - 1]) !=
+            countOf('ability', values[i])) {
+          continue;
+        }
+        expect(
+          values[i - 1].compareTo(values[i]),
+          lessThan(0),
+          reason: '同频的两个值没有按字典序排，顺序会随包内项序漂',
+        );
+      }
+    });
+
+    test('这一轴全空 ⇒ 空列表，不造一个占位值（SPEC-VIEW-020）', () {
+      // α 包的 `role` 全为 null：罗盘该说「这一轴没有取值」，而不是给个空串。
+      expect(axisValuesOf(pack, 'role'), isEmpty);
+      expect(axisValuesOf(pack, '不存在的轴'), isEmpty);
+    });
+
+    test('空串按未声明处理，不进候选（SPEC-VIEW-007）', () {
+      final LoadedPack packWithBlank = fixturePack(<FixtureItem>[
+        const FixtureItem('a', '甲', ability: ''),
+        const FixtureItem('b', '乙', ability: '控制流'),
+      ]);
+      expect(axisValuesOf(packWithBlank, 'ability'), <String>['控制流']);
     });
   });
 
