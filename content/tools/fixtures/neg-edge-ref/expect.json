@@ -1,0 +1,8 @@
+{
+  "base": "valid-min",
+  "exit": 1,
+  "codes": [
+    "E-EDGE-REF"
+  ],
+  "note": "from 与 to 各指向一个不存在的项。注意 `type=unknown` 的悬空 to 是合法的（valid-min 里就有一条），所以这条只能抓「声明成强/弱依赖却指向空气」"
+}

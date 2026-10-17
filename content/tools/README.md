@@ -9,7 +9,7 @@ python content/tools/build.py --root <目录> --out <文件>   # 构建任意目
 python content/tools/build.py --root <目录> --check       # 确定性检查，不落盘
 python content/tools/verify.py --root <目录>        # 只校验源数据
 python content/tools/verify.py --pack <pack.json>   # 校验已构建的产出
-python content/tools/verify.py --suite              # 跑 fixtures 回归
+python content/tools/verify.py --suite              # 全部 fixtures（源层 + 产物层）+ 错误码覆盖自检
 ```
 
 ## 三个文件
@@ -72,13 +72,23 @@ python content/tools/verify.py --suite              # 跑 fixtures 回归
 
 ## fixtures
 
-`fixtures/` 下每个目录是一份可回归的源数据。`expect.json` 声明期望：
+分两层，`--suite` 一次跑完：
+
+| 层 | 目录 | 被测对象 |
+|---|---|---|
+| **源数据层** | `fixtures/<name>/` | `load_source` → `validate` → `check_pack_object` 全链路（走 `build.build_text`） |
+| **产物层** | `fixtures/pack/<name>/` | 直接递一个坏 `pack.json` 给 `check_pack_object` |
+
+**为什么必须分两层**：`assemble()` 拼出的 pack 结构恒定（五段 + 两键 `meta`），所以 `E-PACK-*` / `E-META-*` 在源数据路径上**永远触发不了**。它们防的是「有人手改产物」与「构建逻辑退化」，只能直接喂坏对象才测得到。**不测就等于不存在** —— 这正是 `R-07` 的形态。
+
+### `expect.json`
 
 ```json
 {
   "base": "valid-min",
+  "drop": ["manifest.json"],
   "exit": 1,
-  "codes": ["E-CYCLE"],
+  "codes": ["E-MANIFEST-MISSING"],
   "scheme": "scheme-official-tutorial",
   "inversions": 1,
   "note": "为什么需要这个 fixture"
@@ -86,9 +96,15 @@ python content/tools/verify.py --suite              # 跑 fixtures 回归
 ```
 
 - `base` —— 从哪个 fixture 继承完整源数据；本目录只写「被测规则相关的那个文件」。**必须显式写，不按目录名猜**
+- `drop` —— 展开后删除哪些文件。「缺文件」类判据（`E-MANIFEST-MISSING` / `E-SEGMENT-MISSING`）只靠复制造不出来，必须显式声明删哪个；删在最后一步，所以 base 提供的文件也能删
 - `exit` —— 期望构建退出码（`0` 通过 / `1` 拒绝）
 - `codes` —— 期望出现的 issue code（**不要求穷尽**，允许连带错误）
 - `scheme` + `inversions` —— 断言派生值算得对
+- `expectedVersion` —— 仅产物层用：模拟「源 manifest 的版本」，用来触发 `E-META-VERSION`
+
+### 源数据层
+
+原有 9 份：
 
 | fixture | 锁定什么 |
 |---|---|
@@ -101,5 +117,43 @@ python content/tools/verify.py --suite              # 跑 fixtures 回归
 | `neg-req-value` | `partial` 这类「像是对的」取值不在三态内（`E-REQ-VALUE`） |
 | `neg-version-space` | `version` 带前导空格被拒，不静默 trim |
 | `neg-versioned-id` | `python/decorator@2.1.0` 被拒（`PACK-008` 验收向量） |
+
+`R-07` 补齐后新增 23 份（按段分组，每条的具体理由写在各自 `expect.json` 的 `note` 里）：
+
+| 组 | fixture | 锁定的码 |
+|---|---|---|
+| manifest | `neg-manifest-missing` · `neg-manifest-required` · `neg-manifest-field` | `E-MANIFEST-MISSING` · `E-MANIFEST-FIELD` |
+| 段与 JSON | `neg-segment-missing` · `neg-segment-type` · `neg-json` | `E-SEGMENT-MISSING` · `E-SEGMENT-TYPE` · `E-JSON` |
+| 六轴 | `neg-sixaxis` | `E-SIXAXIS` |
+| item | `neg-item-field` · `neg-layer-type` · `neg-id-format` · `neg-domain` | `E-ITEM-FIELD` · `E-LAYER` · `E-TYPE` · `E-ID-FORMAT` · `E-DOMAIN` |
+| edge | `neg-edge-field` · `neg-edge-type` · `neg-edge-ref` · `neg-edge-dup` | `E-EDGE-FIELD` · `E-EDGE-TYPE` · `E-EDGE-REF` · `E-EDGE-DUP` |
+| scheme | `neg-scheme-field` · `neg-scheme-auth` · `neg-scheme-dup` · `neg-scheme-node-ref` | `E-SCHEME-FIELD` · `E-SCHEME-AUTH` · `E-SCHEME-DUP` · `E-SCHEME-NODE-REF` |
+| question | `neg-question-field` · `neg-question-ref` | `E-QUESTION-FIELD` · `E-QUESTION-REF` |
+| 摘录与交叉引用 | `neg-excerpt-field` · `neg-sourceref` | `E-EXCERPT-FIELD` · `E-SOURCEREF` |
+
+### 产物层
+
+| fixture | 锁定什么 |
+|---|---|
+| `pack-ok` | **正例**。没有它，负例变红也说明不了问题 —— 可能整条链都在报错 |
+| `pack-not-object` | 顶层不是 object（`E-PACK-TYPE`） |
+| `pack-extra-key` / `pack-missing-key` | 多段 / 少段（`E-PACK-EXTRA-KEY` / `E-PACK-MISSING-KEY`） |
+| `pack-meta-field` / `pack-meta-extra-key` | `meta` 不是对象 / 混进时间戳（`E-META-FIELD` / `E-META-EXTRA-KEY`） |
+| `pack-meta-version-mismatch` / `pack-meta-version-format` | 版本与源不一致 / 非三段 semver（`E-META-VERSION`） |
+
+### 错误码覆盖自检
+
+`--suite` 最后一步把 `validator.py` 里**定义的全部错误码**与 fixtures 断言过的码对账，缺任何一条即失败：
+
+```
+— 错误码覆盖 —
+错误码覆盖：37/37
+```
+
+两个方向都查：**定义了没断言** = 那条规则从没被执行过；**断言了没定义** = `expect.json` 里写了 typo，永远不可能满足。
+
+> 这条自检才是 `R-07` 的根治。补 23 个 fixture 只解决了当下；自检保证「以后新增规则忘配负例」会立刻红。
+
+### 负例的用法
 
 负例的价值在于**它们会红**。改宽任何一条判据时，先跑 `--suite`，红的那格就是被你改宽的规则；若不想让它红，得先说明为什么那条裁定不再成立。

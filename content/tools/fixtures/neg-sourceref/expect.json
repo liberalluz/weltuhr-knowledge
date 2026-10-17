@@ -1,0 +1,8 @@
+{
+  "base": "valid-min",
+  "exit": 1,
+  "codes": [
+    "E-SOURCEREF"
+  ],
+  "note": "item 引用了不存在的源。这条必须等 excerpts 读完才能判，所以它是「两段之间的交叉引用」而不是单段校验"
+}

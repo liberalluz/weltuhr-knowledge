@@ -1,0 +1,8 @@
+{
+  "base": "valid-min",
+  "exit": 1,
+  "codes": [
+    "E-MANIFEST-FIELD"
+  ],
+  "note": "缺 name / accent / order 三个必填字段。缺字段与字段值错是两条不同路径，前者不会进入取值校验"
+}

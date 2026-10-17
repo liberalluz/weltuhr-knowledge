@@ -1,0 +1,50 @@
+[
+  {
+    "id": "e-type-after-variable",
+    "from": "python/variable",
+    "to": "python/type",
+    "type": "hard"
+  },
+  {
+    "id": "e-flow-after-variable",
+    "from": "python/variable",
+    "to": "python/control-flow",
+    "type": "strong"
+  },
+  {
+    "id": "e-function-after-flow",
+    "from": "python/control-flow",
+    "to": "python/function",
+    "type": "strong"
+  },
+  {
+    "id": "e-closure-after-function",
+    "from": "python/function",
+    "to": "python/closure",
+    "type": "strong"
+  },
+  {
+    "id": "e-decorator-after-closure",
+    "from": "python/closure",
+    "to": "python/decorator",
+    "type": "strong"
+  },
+  {
+    "id": "e-class-after-function",
+    "from": "python/function",
+    "to": "python/class",
+    "type": "strong"
+  },
+  {
+    "id": "e-ctx-after-class",
+    "from": "python/class",
+    "to": "python/context-manager",
+    "type": "strong"
+  },
+  {
+    "id": "e-closure-to-generator",
+    "from": "python/closure",
+    "to": "python/generator",
+    "type": "unknown"
+  }
+]

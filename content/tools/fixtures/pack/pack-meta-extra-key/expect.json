@@ -1,0 +1,7 @@
+{
+  "exit": 1,
+  "codes": [
+    "E-META-EXTRA-KEY"
+  ],
+  "note": "meta 里混进构建时间戳。同一 commit 两次构建会 byte 不等，确定性四项实证当场失效"
+}

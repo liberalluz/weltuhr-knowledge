@@ -1,0 +1,8 @@
+{
+  "base": "valid-min",
+  "exit": 1,
+  "codes": [
+    "E-MANIFEST-FIELD"
+  ],
+  "note": "name 空串 / accent 缺 # / order 是真值而非整数 / domainIds 重复。`order=True` 尤其阴险：Python 里 bool 是 int 的子类，不显式排除就会静默当 1 参与排序"
+}

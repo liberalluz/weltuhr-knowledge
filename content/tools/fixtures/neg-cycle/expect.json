@@ -2,5 +2,5 @@
   "base": "valid-min",
   "exit": 1,
   "codes": ["E-CYCLE"],
-  "note": "decorator → variable 闭合出一条环：variable → control-flow → function → closure → decorator → variable"
+  "note": "decorator → variable 闭合出一条环：variable → control-flow → function → closure → decorator → variable（SPEC-FND-005：⪯ 必须是 DAG，校验阶段拒绝任何环）"
 }

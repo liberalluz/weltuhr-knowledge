@@ -1,0 +1,8 @@
+{
+  "base": "valid-min",
+  "exit": 1,
+  "codes": [
+    "E-SEGMENT-TYPE"
+  ],
+  "note": "schemes.json 是 object 不是数组。JSON 合法但契约不合法 —— 只靠 JSON 语法检查抓不到"
+}

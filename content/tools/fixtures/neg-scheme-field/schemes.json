@@ -1,0 +1,14 @@
+[
+  {
+    "id": "s-empty",
+    "authorityLevel": "L1",
+    "nodes": []
+  },
+  {
+    "id": "s-noname",
+    "authorityLevel": "L1",
+    "nodes": [
+      "python/variable"
+    ]
+  }
+]

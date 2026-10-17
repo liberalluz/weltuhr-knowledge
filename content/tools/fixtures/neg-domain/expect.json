@@ -1,0 +1,8 @@
+{
+  "base": "valid-min",
+  "exit": 1,
+  "codes": [
+    "E-DOMAIN"
+  ],
+  "note": "domainId 不在 manifest.domainIds 里。域清单是空间自己声明的，项不能引一个没声明的域"
+}

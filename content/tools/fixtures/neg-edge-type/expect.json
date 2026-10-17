@@ -1,0 +1,8 @@
+{
+  "base": "valid-min",
+  "exit": 1,
+  "codes": [
+    "E-EDGE-TYPE"
+  ],
+  "note": "`hard` 不在 strong / weak / unknown 内。边类型决定视觉通道与是否阻断排序，乱填会让图算错"
+}
