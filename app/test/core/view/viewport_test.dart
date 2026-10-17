@@ -36,5 +36,31 @@ void main() {
         reason: '两者面积相同 ⇒ 封顶后面积相同，与长宽比无关',
       );
     });
+
+    test('200% 缩放下基准窗口也要降采样：光栅按物理像素算（C-33）', () {
+      // `C-33` 的基准含「100% 缩放」这一前提。逻辑 1920×1080 在 200% 缩放下
+      // 是 3840×2160 物理像素 —— 只看逻辑尺寸的话，这条封顶在 Retina 上失效。
+      final ViewportPlan plan = planViewport(
+        frameBenchWidth,
+        frameBenchHeight,
+        devicePixelRatio: 2,
+      );
+      expect(plan.isDownscaled, isTrue);
+      expect(plan.scale, closeTo(2, 1e-6));
+      expect(
+        plan.surfaceWidth * plan.surfaceHeight * 2 * 2,
+        closeTo(frameBenchWidth * frameBenchHeight, 1e-6),
+        reason: '封顶判在物理面积上',
+      );
+    });
+
+    test('dpr 非法时按 1 处理，画布不会变成 0 或 NaN（C-33）', () {
+      for (final double bad in <double>[0, -1, double.nan]) {
+        final ViewportPlan plan = planViewport(800, 600, devicePixelRatio: bad);
+        expect(plan.surfaceWidth, 800);
+        expect(plan.surfaceHeight, 600);
+        expect(plan.scale, 1);
+      }
+    });
   });
 }
