@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -7,6 +9,7 @@ import 'package:project_knowledge/core/enums.dart';
 import 'package:project_knowledge/core/pack/pack_parse.dart';
 import 'package:project_knowledge/core/view/filter.dart';
 import 'package:project_knowledge/core/view/tree.dart';
+import 'package:project_knowledge/core/view/viewport.dart';
 import 'package:project_knowledge/core/view/zoom.dart';
 import 'package:project_knowledge/core/locate/locator.dart';
 import 'package:project_knowledge/features/detail/detail_panel.dart';
@@ -14,6 +17,7 @@ import 'package:project_knowledge/features/locate/locate_overlay.dart';
 import 'package:project_knowledge/features/universe/filter_chips.dart';
 import 'package:project_knowledge/core/frame/projection.dart';
 import 'package:project_knowledge/core/frame/scene.dart';
+import 'package:project_knowledge/features/universe/frame_painter.dart';
 import 'package:project_knowledge/features/universe/scene_pick.dart';
 import 'package:project_knowledge/features/universe/scene_source.dart';
 import 'package:project_knowledge/features/universe/tree_view.dart';
@@ -64,20 +68,40 @@ SceneBundle _alphaScene(LoadedPack pack) {
   );
 }
 
-/// 在屏幕中部扫出一个「点得到星」（[hit]）或「点不到星」的位置。
+/// 在屏幕中部扫出一个「点得到星」（[hit]）或「点不到星」的**窗口坐标**位置。
 ///
 /// 扫描区间避开了四角 HUD：① 与 ③ 在顶部（高约 60），⑥ 在左下，⑦ 在底部，
 /// ④ 详情抽屉占右侧 380 —— 点进这些地方等于点控件，验的就不是拾取了。
-Offset _findPoint(SceneBundle scene, Size viewport, {required bool hit}) {
-  for (double y = 140; y < viewport.height - 160; y += 13) {
-    for (double x = 40; x < viewport.width - 420; x += 13) {
+///
+/// [devicePixelRatio] 必须与 widget 读到的一致：`C-33` 的面积封顶按**物理面积**
+/// 判，dpr 变了画布尺寸就变，拾取用的坐标系也跟着变。
+Offset _findPoint(
+  SceneBundle scene,
+  Size window, {
+  required bool hit,
+  required double devicePixelRatio,
+}) {
+  final ViewportPlan plan = planViewport(
+    window.width,
+    window.height,
+    devicePixelRatio: devicePixelRatio,
+  );
+  final Size surface = Size(plan.surfaceWidth, plan.surfaceHeight);
+  // 只扫窗口中心 800×600 那一块：4K 窗口下全屏扫描要几万次拾取，而拾取
+  // 每次都要重算一帧 —— 用例会慢到没人愿意跑，覆盖却没多一分。
+  final double left = math.max(40, window.width / 2 - 400);
+  final double right = math.min(window.width - 420, window.width / 2 + 400);
+  final double top = math.max(140, window.height / 2 - 300);
+  final double bottom = math.min(window.height - 160, window.height / 2 + 300);
+  for (double y = top; y < bottom; y += 13) {
+    for (double x = left; x < right; x += 13) {
       final Offset point = Offset(x, y);
       final String? id = pickSceneNode(
         scene: scene,
-        viewport: viewport,
+        viewport: surface,
         // 测试里 ticker 只推进了 0 ms，`spin.value == 0` ⇒ 拾取用的偏航 = 0。
         yawRadians: 0,
-        point: point,
+        point: Offset(x / plan.scale, y / plan.scale),
       );
       if ((id != null) == hit) {
         return point;
@@ -498,7 +522,12 @@ void main() {
       await tester.pump();
 
       final Size viewport = tester.getSize(find.byType(UniverseScreen));
-      final Offset at = _findPoint(scene, viewport, hit: true);
+      final Offset at = _findPoint(
+        scene,
+        viewport,
+        hit: true,
+        devicePixelRatio: tester.view.devicePixelRatio,
+      );
       await tester.tapAt(at);
       await tester.pump();
 
@@ -530,11 +559,16 @@ void main() {
       await tester.pump();
 
       final Size viewport = tester.getSize(find.byType(UniverseScreen));
-      await tester.tapAt(_findPoint(scene, viewport, hit: true));
+      final double dpr = tester.view.devicePixelRatio;
+      await tester.tapAt(
+        _findPoint(scene, viewport, hit: true, devicePixelRatio: dpr),
+      );
       await tester.pump();
       expect(find.byKey(hudDetailDrawerKey), findsOneWidget);
 
-      await tester.tapAt(_findPoint(scene, viewport, hit: false));
+      await tester.tapAt(
+        _findPoint(scene, viewport, hit: false, devicePixelRatio: dpr),
+      );
       await tester.pump();
       expect(
         find.byKey(hudDetailDrawerKey),
@@ -600,6 +634,53 @@ void main() {
         findsNothing,
         reason: 'VIEW-019：⑥ 上再点一次取消，与 ② 的 × 等价',
       );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('4K 窗口：画布缩到 C-33 的面积并铺满窗口，照样能点中（C-33）', (
+      WidgetTester tester,
+    ) async {
+      tester.view.physicalSize = const Size(3840, 2160);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+
+      final LoadedPack pack = loadAlphaPack();
+      final SceneBundle scene = _alphaScene(pack);
+      await tester.pumpWidget(
+        MaterialApp(
+          home: UniverseScreen(scene: scene, pack: pack),
+        ),
+      );
+      await tester.pump();
+
+      // 画布缩到基准面积（4K 逻辑尺寸 = 4 倍面积 ⇒ 线性缩一半）。
+      final Finder canvas = find.byWidgetPredicate(
+        (Widget widget) =>
+            widget is CustomPaint && widget.painter is FramePainter,
+      );
+      final Size surface = tester.getSize(canvas);
+      expect(surface.width, closeTo(frameBenchWidth, 1));
+      expect(surface.height, closeTo(frameBenchHeight, 1));
+
+      // 铺满：画布盒在窗口里的全局位置是 (0,0)、被放大 2 倍 —— 若外层没给
+      // tight 尺寸，`FittedBox` 会「按比例缩到装得下」，画布居中、四周留底。
+      final Rect box = tester.getRect(
+        find.ancestor(of: canvas, matching: find.byType(SizedBox)).first,
+      );
+      expect(box.topLeft, Offset.zero);
+      expect(box.width, closeTo(3840, 1));
+      expect(box.height, closeTo(2160, 1));
+
+      await tester.tapAt(
+        _findPoint(
+          scene,
+          const Size(3840, 2160),
+          hit: true,
+          devicePixelRatio: 1,
+        ),
+      );
+      await tester.pump();
+      expect(find.byKey(hudDetailDrawerKey), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
 
