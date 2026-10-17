@@ -25,7 +25,7 @@ void main() {
 
     test('全部 150 项用自己的标题自定位，唯一命中且命中自身（SPEC-FND-008）', () {
       final LoadedPack pack = loadAlphaPack();
-      final Locator locator = Locator(pack);
+      final Locator locator = Locator.single(pack);
       final List<String> failures = <String>[];
       for (final Item item in pack.items) {
         final LocateResult result = locator.locate(item.title);

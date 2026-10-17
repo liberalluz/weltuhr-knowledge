@@ -29,7 +29,8 @@ void main() {
     bool withPack = true,
     String? domainId,
     LoadedPack? packOverride,
-    String? spacePrefix,
+    List<LoadedPack> otherSpaces = const <LoadedPack>[],
+    String? scopeSpaceId,
     VoidCallback? onDismiss,
   }) async {
     await tester.pumpWidget(
@@ -40,7 +41,8 @@ void main() {
             height: 700,
             child: LocateOverlay(
               pack: withPack ? (packOverride ?? pack) : null,
-              spacePrefix: spacePrefix,
+              otherSpaces: otherSpaces,
+              scopeSpaceId: scopeSpaceId,
               domainId: domainId,
               onPick: onPick,
               onPickNear: onPickNear ?? (String _) {},
@@ -71,7 +73,7 @@ void main() {
     await pump(tester, onPick: (_, _) {});
     await type(tester, '装饰器');
 
-    final LocateResult result = Locator(pack).locate('装饰器');
+    final LocateResult result = Locator.single(pack).locate('装饰器');
     expect(result.state, LocateState.located, reason: '前提：α 包里这是唯一精确命中');
 
     expect(find.textContaining('唯一命中'), findsOneWidget);
@@ -97,7 +99,7 @@ void main() {
     // 「抽象」在 α 包里既是能力轴的取值，又是某标题的子串 ⇒ 多条命中。
     await type(tester, '抽象');
 
-    final LocateResult result = Locator(pack).locate('抽象');
+    final LocateResult result = Locator.single(pack).locate('抽象');
     expect(result.hits.length, greaterThan(1), reason: '前提：这句输入给多条命中');
 
     final LocateHit second = result.hits[1];
@@ -112,7 +114,7 @@ void main() {
     await pump(tester, onPick: (_, _) {});
     await type(tester, '计算机科学');
 
-    final LocateResult result = Locator(pack).locate('计算机科学');
+    final LocateResult result = Locator.single(pack).locate('计算机科学');
     expect(result.hits.first.kind, LocateKind.axis, reason: '前提：α 包里这是轴值');
 
     final Finder row = find.byKey(locateRowKey(result.hits.first));
@@ -152,28 +154,142 @@ void main() {
     expect(find.byKey(locateFormKey), findsNothing);
   });
 
-  testWidgets('多空间才带前缀，单空间不重复写空间名（SPEC-VIEW-033）', (WidgetTester tester) async {
-    await pump(tester, onPick: (_, _) {}, spacePrefix: 'Python');
-    await type(tester, '装饰器');
-    final LocateHit hit = Locator(pack).locate('装饰器').hits.first;
-    expect(
-      find.descendant(
-        of: find.byKey(locateRowKey(hit)),
-        matching: find.text('Python › 装饰器'),
-      ),
-      findsOneWidget,
+  testWidgets('同名跨空间才写前缀，单空间不重复写空间名（SPEC-VIEW-033）', (
+    WidgetTester tester,
+  ) async {
+    final LoadedPack here = fixturePack(
+      const <FixtureItem>[FixtureItem('p1', '装饰器')],
+      spaceId: 'python',
+      spaceName: 'Python',
+    );
+    final LoadedPack there = fixturePack(
+      const <FixtureItem>[FixtureItem('g1', '装饰器')],
+      spaceId: 'go',
+      spaceName: 'Go',
     );
 
-    await pump(tester, onPick: (_, _) {});
+    // 只有本空间：一条命中，不写前缀 —— 每行都写一遍同样的空间名是噪音。
+    await pump(
+      tester,
+      onPick: (_, _) {},
+      packOverride: here,
+      scopeSpaceId: 'python',
+    );
     await type(tester, '装饰器');
+    final LocateHit only = Locator.single(here).locate('装饰器').hits.first;
     expect(
       find.descendant(
-        of: find.byKey(locateRowKey(hit)),
+        of: find.byKey(locateRowKey(only)),
         matching: find.text('装饰器'),
       ),
       findsOneWidget,
     );
-    expect(find.textContaining(' › '), findsNothing, reason: '单空间不该有前缀分隔符');
+    expect(
+      find.textContaining(locateSpaceSeparator),
+      findsNothing,
+      reason: '单空间不该有前缀分隔符',
+    );
+
+    // 放宽到全部空间：两个空间各有同名项 ⇒ 两条都带各自的空间名。
+    // 判据取自命中集本身，不由调用方注入「该不该写」。
+    await pump(
+      tester,
+      onPick: (_, _) {},
+      packOverride: here,
+      otherSpaces: <LoadedPack>[there],
+      scopeSpaceId: 'python',
+    );
+    await type(tester, '装饰器');
+    await tester.tap(find.byKey(locateSearchAllKey));
+    await tester.pump();
+    expect(find.text('Python$locateSpaceSeparator装饰器'), findsOneWidget);
+    expect(find.text('Go$locateSpaceSeparator装饰器'), findsOneWidget);
+  });
+
+  testWidgets('窄作用域才给「在全部空间中搜索」，Z0 与单空间都不给（SPEC-VIEW-031）', (
+    WidgetTester tester,
+  ) async {
+    final LoadedPack here = fixturePack(
+      const <FixtureItem>[FixtureItem('p1', '装饰器')],
+      spaceId: 'python',
+      spaceName: 'Python',
+    );
+    final LoadedPack there = fixturePack(
+      const <FixtureItem>[FixtureItem('g1', '闭包')],
+      spaceId: 'go',
+      spaceName: 'Go',
+    );
+
+    // 窄作用域 + 还有别的空间 ⇒ 给。
+    await pump(
+      tester,
+      onPick: (_, _) {},
+      packOverride: here,
+      otherSpaces: <LoadedPack>[there],
+      scopeSpaceId: 'python',
+    );
+    await type(tester, '装饰器');
+    expect(find.byKey(locateSearchAllKey), findsOneWidget);
+
+    // 本空间没有命中时也要给 —— 那一刻它比「新增」更值得先给。
+    await type(tester, '闭包');
+    expect(find.byKey(locateTriageKey), findsOneWidget);
+    expect(
+      find.byKey(locateSearchAllKey),
+      findsOneWidget,
+      reason: '本空间搜不到时，正是最该放宽作用域的时刻',
+    );
+
+    // Z0（作用域为 null）本来就是全部空间 ⇒ 不给。
+    await pump(
+      tester,
+      onPick: (_, _) {},
+      packOverride: here,
+      otherSpaces: <LoadedPack>[there],
+    );
+    await type(tester, '闭包');
+    expect(find.byKey(locateSearchAllKey), findsNothing);
+
+    // 只有一个空间 ⇒ 不给：按下去什么也不会变的按钮比没有更糟。
+    await pump(
+      tester,
+      onPick: (_, _) {},
+      packOverride: here,
+      scopeSpaceId: 'python',
+    );
+    await type(tester, '闭包');
+    expect(find.byKey(locateSearchAllKey), findsNothing);
+  });
+
+  testWidgets('跨空间的命中不交给 onPick：说清它在哪个空间（SPEC-VIEW-031）', (
+    WidgetTester tester,
+  ) async {
+    final LoadedPack here = fixturePack(
+      const <FixtureItem>[FixtureItem('p1', '装饰器')],
+      spaceId: 'python',
+      spaceName: 'Python',
+    );
+    final LoadedPack there = fixturePack(
+      const <FixtureItem>[FixtureItem('g1', '闭包')],
+      spaceId: 'go',
+      spaceName: 'Go',
+    );
+
+    int picked = 0;
+    await pump(
+      tester,
+      onPick: (_, _) => picked++,
+      packOverride: here,
+      otherSpaces: <LoadedPack>[there],
+    );
+    await type(tester, '闭包');
+    final LocateHit foreign = Locator.single(there).locate('闭包').hits.first;
+    await tester.tap(find.byKey(locateRowKey(foreign)));
+    await tester.pump();
+
+    expect(picked, 0, reason: '换根不在本笔，跳过去只会把界面停在原处');
+    expect(find.byKey(locateNoticeKey), findsOneWidget);
+    expect(find.textContaining('在「Go」里'), findsOneWidget);
   });
 
   testWidgets('没有内容包时浮层照样打开并说明原因（SPEC-FND-014）', (WidgetTester tester) async {
