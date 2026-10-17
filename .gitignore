@@ -1,0 +1,35 @@
+# ── 三条纪律（细则见 references/project-skeleton.md §4）──
+# ① 构建产物 / 生成物不入库；代码生成物是否入库按项目口径逐项确认
+# ② 带斜杠的模式锚定在【本文件所在目录】→ 子目录需自己的 .gitignore，或改用尾斜杠形式
+# ③ 判据不用 git check-ignore <目录>/（对目录误报）→ 权威判据 = git add -A --dry-run
+
+# 依赖与构建产物
+.dart_tool/
+build/
+*.iml
+
+# 内容包产物（由 content/tools/build.py 生成，须本地构建）
+content/*/dist/
+
+# 服务端密钥（生产经环境变量注入，不入库）
+config/passwords.yaml
+config/development.yaml
+config/*.local.yaml
+
+# 日志与临时目录
+*.log
+tmp/
+.workbuddy/tmp/
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Flutter / 平台构建副产物
+app/windows/flutter/ephemeral/
+app/macos/Flutter/ephemeral/
+app/ios/Flutter/ephemeral/
+**/Pods/
+**/.symlinks/

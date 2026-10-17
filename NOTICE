@@ -1,0 +1,21 @@
+Weltuhr
+Copyright 2026 liberal
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+---
+
+第三方组件与素材的署名与许可要求，随依赖引入逐项登记于此。
+
+当前状态：**尚无第三方依赖** —— 依赖锁定（`pubspec.yaml` / `pubspec.lock`）后，
+须按 `docs/guides/dependency-licenses.md` 逐项核查，传染型依赖单独标注合规结论。
