@@ -3,6 +3,7 @@ library;
 
 import '../enums.dart';
 import '../json.dart';
+import '../view/zoom.dart';
 
 /// 每项的记忆状态（**派生**，由事件折叠）。
 ///

@@ -74,9 +74,14 @@ class SceneBundle {
 
 /// 一次装配的结果。`bundle` 恒有值（真实包失败就回落合成）。
 class SceneResolution {
-  const SceneResolution({required this.bundle, this.fallbackReason});
+  const SceneResolution({required this.bundle, this.pack, this.fallbackReason});
 
   final SceneBundle bundle;
+
+  /// 真实包的 `LoadedPack`。**合成回落的路径没有它** —— 合成节点是凭空造的
+  /// 编号（`s0…s149`），背后没有 `Item`，所以树视图与详情都**无从谈起**。
+  /// 这一层只如实转达「有没有包」，由界面决定降级成什么样。
+  final LoadedPack? pack;
 
   /// 非 `null` 表示走的是回落路径，内容是原因。
   final String? fallbackReason;
@@ -127,6 +132,7 @@ SceneResolution resolveAlphaScene() {
   final List<EdgeSpan> edges = buildEdgeSpans(pack, nodes);
 
   return SceneResolution(
+    pack: pack,
     bundle: SceneBundle(
       origin: SceneOrigin.alphaPack,
       nodes: nodes,

@@ -11,6 +11,7 @@ import '../constants.dart';
 import '../entities/content.dart';
 import '../frame/scene.dart';
 import '../graph/levels.dart';
+import '../ids.dart';
 import '../pack/pack_parse.dart';
 
 /// 一行属于哪一类。四类的视觉必须可区分（`SPEC-VIEW-007`）。
@@ -57,6 +58,26 @@ class TreeRow {
 int initialExpandPhi(int maxPhi) =>
     maxPhi >= deepChainPhi ? treeInitialExpandPhi : maxPhi;
 
+/// 包内每项的 `φ` 层号（`⪯` 上的 Kahn 层号）。
+Map<String, int> phiLevelsOf(LoadedPack pack) => kahnLevels(
+  nodeIds: pack.items.map((Item item) => item.id),
+  edges: pack.edges,
+);
+
+/// 包内 `φ` 的最大层号。
+///
+/// 树视图要它定「首屏展开到第几层」。**不要拿 `SceneBundle.maxPhi` 顶替** ——
+/// 那条是场景的层号（含占位节点、按 `SceneNode` 算），口径不同。
+int maxPhiOf(LoadedPack pack) {
+  int maxPhi = 0;
+  for (final int level in phiLevelsOf(pack).values) {
+    if (level > maxPhi) {
+      maxPhi = level;
+    }
+  }
+  return maxPhi;
+}
+
 /// 构树。
 ///
 /// [expandedDomains] 里没有的域只出一行（可展开）；有的话按
@@ -97,7 +118,7 @@ List<TreeRow> buildTree(
     final String domain = domainOf[edge.from]!;
     holesByDomain
         .putIfAbsent(domain, () => <String>[])
-        .add('$placeholderIdPrefix$i|${_slug(edge.to)}');
+        .add('$placeholderIdPrefix$i|${idTail(edge.to)}');
   }
 
   final List<TreeRow> rows = <TreeRow>[];
@@ -110,7 +131,7 @@ List<TreeRow> buildTree(
       TreeRow(
         kind: TreeRowKind.domain,
         id: domainId,
-        label: _slug(domainId),
+        label: idTail(domainId),
         depth: 0,
         expandable: expandable,
         dashed: false,
@@ -153,10 +174,4 @@ List<TreeRow> buildTree(
     }
   }
   return rows;
-}
-
-/// 末段 id：`python/lexical` → `lexical`。
-String _slug(String id) {
-  final int slash = id.lastIndexOf('/');
-  return slash < 0 ? id : id.substring(slash + 1);
 }

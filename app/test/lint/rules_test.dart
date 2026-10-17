@@ -137,23 +137,39 @@ class EventStore {
   });
 
   group('R4 源不进视觉通道', () {
-    test('视图层按类型收源被拦（R4）', () {
+    test('绘制层按类型收源被拦（R4）', () {
       final issues = checkSource(
-        path: 'lib/features/universe/view.dart',
-        source: 'class UniverseView {\n  UniverseView(SourceRef s) {}\n}\n',
+        path: 'lib/features/universe/frame_painter.dart',
+        source: 'class FramePainter {\n  FramePainter(SourceRef s) {}\n}\n',
       );
       expect(issues.map((LintIssue i) => i.ruleId), contains(ruleSourceNotVisual));
     });
 
-    test('视图层按参数名收源被拦（R4：类型写成 Object 也躲不掉）', () {
+    test('绘制层按参数名收源被拦（R4：类型写成 Object 也躲不掉）', () {
       final issues = checkSource(
-        path: 'lib/features/universe/view.dart',
-        source: 'class UniverseView {\n  void render(Object? sourceRefs) {}\n}\n',
+        path: 'lib/features/universe/frame_painter.dart',
+        source: 'class FramePainter {\n  void render(Object? sourceRefs) {}\n}\n',
       );
       expect(issues.map((LintIssue i) => i.ruleId), contains(ruleSourceNotVisual));
     });
 
-    test('core 层收源不拦（R4 只管视图层）', () {
+    test('场景装配层收源被拦（R4：core/frame 也算视觉通道）', () {
+      final issues = checkSource(
+        path: 'lib/core/frame/scene.dart',
+        source: 'class Scene {\n  Scene(SourceSegment segment) {}\n}\n',
+      );
+      expect(issues.map((LintIssue i) => i.ruleId), contains(ruleSourceNotVisual));
+    });
+
+    test('详情页显示源名不拦（R4 收窄后只管通道，SPEC-VIEW-004 要求写进详情）', () {
+      final issues = checkSource(
+        path: 'lib/features/detail/detail_panel.dart',
+        source: 'class DetailPanel {\n  DetailPanel(SourceRef ref) {}\n}\n',
+      );
+      expect(issues, isEmpty);
+    });
+
+    test('core 实体层收源不拦（R4 只管视觉通道）', () {
       final issues = checkSource(
         path: 'lib/core/entities/content.dart',
         source: 'class Item {\n  Item(SourceRef s) {}\n}\n',
