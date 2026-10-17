@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'features/universe/universe_spike_screen.dart';
+
 void main() {
   runApp(const WeltuhrApp());
 }
@@ -47,6 +49,18 @@ class EmptySpaceScreen extends StatelessWidget {
             Text(
               '内容包就位后，这里会出现星系图',
               style: text.bodySmall,
+            ),
+            const SizedBox(height: 32),
+            // 「绘制 spike」入口 —— `B2` 第 5 笔的测量装置，不是产品功能。
+            // 它之所以挂在空态页上：**没有别的地方可挂**（`features/` 此前是空的），
+            // 而帧率实测必须在真设备上跑。`B3` 建好真实路由后这一颗按钮就该删。
+            OutlinedButton(
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (BuildContext context) => const UniverseSpikeScreen(),
+                ),
+              ),
+              child: const Text('绘制 spike（帧率实测）'),
             ),
           ],
         ),
