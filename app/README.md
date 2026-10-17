@@ -13,11 +13,15 @@ dart run tool/lint/check.dart   # 架构规则 R1–R5（见下）
 flutter run -d windows        # 必须在 app/ 目录内运行（内容包按运行期 CWD 查找）
 ```
 
+> ⚠️ `flutter test` 里的 α 包用例读**真实产物** `../content/python/dist/pack.json`，
+> 而 `dist/` 不入库（`SPEC-PACK-018`）⇒ 首次或内容改动后先跑
+> `python content/tools/build.py python`，否则这几条会**明确失败**（不 skip）。
+
 ## 分层
 
 | 目录 | 内容 | 约束 |
 |---|---|---|
-| `lib/core/` | 常量 · 实体 · 事件 · 定位引擎 · 量化（W0 已建常量与实体） | **纯 Dart，禁 import Flutter**（R1）；**禁数字字面量**，除 `constants.dart`（R2） |
+| `lib/core/` | 常量 · 实体 · 事件 · 包加载（探测 / 解析 / 环校验） · 定位引擎 · 量化（W0 常量与实体，B2 加载与定位） | **纯 Dart，禁 import Flutter**（R1）；**禁数字字面量**，除 `constants.dart`（R2） |
 | `lib/features/` | 界面：宇宙 / 树 / 详情 / 定位结果 / 进展 / 修习（**W2 起建**） | 可用 Flutter，不持有可写状态 |
 | `tool/lint/` | R1 跨层依赖 · R2 字面量常量 · R3 事件只 append · R4 源不进视觉通道 · R5 测试须标裁定来源 | 纯函数 `(path, source) → issues`，由 `test/lint/` 覆盖 |
 
