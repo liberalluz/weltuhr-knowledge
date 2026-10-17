@@ -1,6 +1,6 @@
 # 软件测试计划（STP）
 
-> **版号**：`v0.6.0` · **状态**：§五 用例已回填（174 条），§六 错误码覆盖 37/37 无缺口
+> **版号**：`v0.7.0` · **状态**：§五 用例已回填（191 条），§六 错误码覆盖 37/37 无缺口
 > 本文件规定**测什么、怎么判通过**。用例正文在 [`STD`](STD-软件测试说明.md)，实际执行结果在 [`STR`](STR-软件测试报告.md)。
 > **追溯补录**：2026-10-17 · §五 §六 依据 `app/test/` 与 `content/tools/` 的既有测试反推，非当时所写。
 
@@ -14,6 +14,7 @@
 | `v0.4.0` | 2026-10-17 | §五 汇总 73 → **86** 条（`R3` / `R4` / `R5` 各 5 · 4 · 4 条）；§5.2 改判 —— 「靠形状保证」挡不住**新增** `copyWith`，已由 `R3` / `R4` 补机制 |
 | `v0.5.0` | 2026-10-17 | §五 汇总 86 → **126** 条：新增「单元（加载与定位）」40 条（`TC-LOAD-001`–`040`）；注明其中 4 条读真实 α 包产物、需先构建（`SPEC-PACK-018`） |
 | `v0.6.0` | 2026-10-17 | §五 汇总 126 → **174** 条：新增「单元（事件内核）」48 条（`TC-EVT-001`–`048`）；§5.2 改口径 —— `FND-010` 的核心层半边已由断言锁住，UI 半边随 `features/` 开工后补 |
+| `v0.7.0` | 2026-10-17 | §五 汇总 174 → **191** 条：新增「单元（构图与投影）」17 条（`TC-VIEW-002`–`018`）；§一 单元测试范围补「构图与投影」。**本版为补记**：第 4 笔代码已随 PR #33 合并，当时只改了 `constants.md` |
 
 ---
 
@@ -21,7 +22,7 @@
 
 | 层 | 范围 | 命令 | 跑在哪 |
 |---|---|---|---|
-| 单元测试 | 纯函数与算法（`fold` · 定位 · 量化 · `⪯` 校验） | `flutter test` | 本机 + CI |
+| 单元测试 | 纯函数与算法（`fold` · 定位 · 量化 · `⪯` 校验 · 构图与投影） | `flutter test` | 本机 + CI |
 | 组件/Widget 测试 | 视图投影、状态变化、交互 | `flutter test` | 本机 + CI |
 | 内容管线回归 | `content/tools/` 的校验器与构建器 | `python content/tools/verify.py --suite` | 本机 + CI |
 | 架构约束 | 跨层依赖、字面量常量等**机械化**约束 | `dart run tool/lint/check.dart` | 本机（CI 待接入） |
@@ -69,12 +70,13 @@
 | 单元 | 23 | `TC-FND-001`–`006` · `TC-PACK-001`–`002` · `TC-QUANT-001`–`009` · `TC-STEP-001`–`003` · `TC-PLAN-001` · `TC-NOTE-001` · `TC-VIEW-001` | `flutter test`（在 `app/` 下） |
 | 单元（加载与定位） | 40 | `TC-LOAD-001`–`040` | `flutter test`（在 `app/` 下；`TC-LOAD-037`–`040` 需先跑 `python content/tools/build.py python`） |
 | 单元（事件内核） | 48 | `TC-EVT-001`–`048` | `flutter test`（在 `app/` 下，不依赖内容包） |
+| 单元（构图与投影） | 17 | `TC-VIEW-002`–`018` | `flutter test`（在 `app/` 下；`TC-VIEW-010` / `017` / `018` 需先跑 `python content/tools/build.py python`） |
 | 管线 | 40 | `TC-FND-007` · `TC-PACK-003`–`041` | `python content/tools/verify.py --suite` |
 | 架构 | 22 | `TC-INF-001`–`009` · `TC-INF-011`–`023` | `dart run tool/lint/check.dart`（在 `app/` 下） |
 | Widget | 1 | `TC-INF-010` | `flutter test` |
-| **合计** | **174** | — | — |
+| **合计** | **191** | — | — |
 
-> 174 = **Dart 134**（`constants` 8 · `entities` 12 · `events` 6 · `hlc_clock` 13 · `fold` 26 · `migration` 9 · `lint` 22 · `widget` 1 · `pack` 21 · `locate` 12 · `alpha` 4）+ **管线 fixture 40**（源层 32 + 产物层 8）。`v0.5.0` → `v0.6.0` 新增 48 条（事件内核：发号 13 · 折叠 35），**既有 126 条一字未改**。
+> 191 = **Dart 151**（`constants` 8 · `entities` 12 · `events` 6 · `hlc_clock` 13 · `fold` 26 · `migration` 9 · `levels` 9 · `projection` 8 · `lint` 22 · `widget` 1 · `pack` 21 · `locate` 12 · `alpha` 4）+ **管线 fixture 40**（源层 32 + 产物层 8）。`v0.6.0` → `v0.7.0` 新增 17 条（构图与投影：`φ` 层号 9 · 投影 8），**既有 174 条一字未改**。
 
 ### 5.2 一条已修正的判断
 
