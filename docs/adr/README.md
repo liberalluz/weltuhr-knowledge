@@ -7,6 +7,7 @@
 |---|---|---|---|
 | [0001](0001-project-baseline.md) | 项目基线：架构形态与开源协议 | 已接受 | 全部 |
 | [0002](0002-dev-order-vertical-slice.md) | 开发顺序：纵切优先与风险前置 | 已接受 | 全部 |
+| [0003](0003-view-radial-axis-and-channel-thresholds.md) | 宇宙视图的径向语义与三处通道判据 | 已接受 | `VIEW-002` / `VIEW-003` / `VIEW-007` · `channel-table` · `entity-fields` · `C-34` |
 
 ## 何时需要 ADR
 

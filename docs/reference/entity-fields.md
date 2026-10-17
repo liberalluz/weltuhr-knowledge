@@ -29,6 +29,7 @@
 | `id` | string | **必须与版本无关的稳定 id**。格式 `<manifest.id>/<slug>`（如 `python/variable`，两侧小写字母起、可含数字与连字符）。带版本号会导致升级后所有已学事件指向旧 id |
 | `title` | string | 标题；六轴之外的**唯一自由文本匹配面** |
 | `sixAxis` | object | 六轴取值，每轴**单值**（这是「同轴多选取 OR」的前提）。键名见下表 |
+| `primaryAxis` | enum | **主取值**：六个键之一。决定颜色通道（`channel-table` §一 #5）与 `θ` 扇区归属。**必填** —— 通道表明文「声明式指定，不按优先级猜」，故不得由轴序或稀有度推导（`ADR-0003` §决策 3，第 4 次扩 schema） |
 | `layer` | enum | `persistent` 持久 / `view` 视图 / `ephemeral` 快消，驱动形态通道 |
 | `type` | enum | 决定方法派发：`declarative` 陈述 / `procedural` 程序 / `skill` 技能 / `tacit` 默会 |
 | `requirements` | object | 六要件 × 三态，键与取值见下表 |
