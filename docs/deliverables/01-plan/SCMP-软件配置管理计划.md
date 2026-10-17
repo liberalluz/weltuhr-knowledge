@@ -53,8 +53,8 @@
 | 组成 | 内容 | 状态 |
 |---|---|---|
 | 第 1 笔 `docs/deliverables-skeleton`（PR `#14`） | 六段 25 份 + `.gitattributes` + `.github/PULL_REQUEST_TEMPLATE.md` + `docs/AGENTS.md`；`check_s0` FAIL 8 → 0 | ✅ 已合 |
-| 第 2 笔 `docs/deliverables-backfill` | `SDP` §7 风险台账 · `SDD` §二 §三 · `STP` §五 §六 · `STD` §三 §四 · `SCMP` §5 · `adr/0002` 修订段 | 🔄 本笔 |
-| 第 3 笔 `docs/srs-scope-slice` | `SRS` 的 v0.1.0 范围切片（`SPEC` 编号级，不复制正文） | ⬜ 未开始 |
+| 第 2 笔 `docs/deliverables-backfill`（PR `#15`） | `SDP` §七 风险台账 · `SDD` §二 §三 · `STP` §五 §六 · `STD` §三 §四 · `SCMP` §五 · `adr/0002` 修订段 | ✅ 已合 |
+| 第 3 笔 `docs/srs-scope-slice` | `SRS` §三 `v0.1.0` 切片（128 条）· §四 归属全量（171 条）· §五 基线缺口 | 🔄 **本笔** |
 
 **`BL-1` 的边界**：只含**交付物文档**。`app/` `content/` 代码不在其中 —— 它们是 `BL-2` 的候选（`B1` 骨架）。
 
@@ -99,8 +99,8 @@
 
 | 版号 | 份数 | 文件 |
 |---|---|---|
-| `v0.2.0` | 5 | `SDP` · `SCMP` · `SDD` · `STP` · `STD`（本笔由 `v0.1.0` 升至 `v0.2.0`） |
-| `v0.1.0` | 3 | `DPMR` · `STR` · `SRS`（内容已可用，本笔未改动） |
+| `v0.2.0` | 6 | `SDP` · `SCMP` · `SDD` · `STP` · `STD` · `SRS`（第 2 笔五份，`SRS` 于第 3 笔升至本版） |
+| `v0.1.0` | 2 | `DPMR` · `STR`（记录类，按判据不补录，故停在首建版） |
 | `v0.1.0`（骨架） | 17 | 其余 17 份待填骨架，首建即 `v0.1.0` |
 | — | 1 | `../README.md`（索引，不设版号） |
 
