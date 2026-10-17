@@ -202,3 +202,8 @@ const double fitViewportRadiusRatio = 0.46;
 
 /// 焦距变化小于这个量就不重算 —— 避免每帧在「重算」与「沿用」间来回。
 const double fitFocalEpsilon = 0.001;
+
+/// `C-40` 深链空间在树里**首屏展开到 `φ` 几层**（`SPEC-VIEW-008`）。
+///
+/// 不展开会让人误判「就这么点东西」；全展开则 63 层一次铺满，反而看不出骨架。
+const int treeInitialExpandPhi = 2;
