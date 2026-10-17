@@ -8,6 +8,11 @@
 build/
 *.iml
 
+# Python 字节码缓存（content/tools/*.py 被 import 即生成）
+# 尾斜杠形式不含中间斜杠 ⇒ 非锚定，覆盖任意层级，无需子目录另建 .gitignore
+__pycache__/
+*.pyc
+
 # 内容包产物（由 content/tools/build.py 生成，须本地构建）
 content/*/dist/
 # fixtures 也是源目录，同样可能被直接构建；上面那条只覆盖一层，故单列
