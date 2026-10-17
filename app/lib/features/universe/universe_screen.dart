@@ -23,11 +23,15 @@
 ///
 /// ## 本笔没有做的
 ///
-/// - 宇宙里点星拾取（`VIEW-014` 的第一个入口）：`FramePainter` 还没有
-///   hit test，选中只能从树里来。归下一笔（点选）。
 /// - 跨空间搜索（`VIEW-031`）：`Locator` 现在只收一个 `LoadedPack`，要收
-///   `List<LoadedPack>` 才能「在全部空间中搜索」。归笔 5。
-/// - ⑥ 罗盘就地选值（`VIEW-020`，第二个筛选输入源）：罗盘还是占位块。
+///   `List<LoadedPack>` 才能「在全部空间中搜索」。归笔 6。
+///
+/// ## 点星与罗盘（本笔接上的两个输入器）
+///
+/// 这个宿主此前是**只读**的：宇宙画得出来，但点不动 —— 所有输入只能从树或
+/// 定位浮层走。`VIEW-014` 的六入口里，宇宙点星是第一个；`VIEW-019` 把 ⑥ 定成
+/// 「加筛选」的输入器、② 定成「看和删」的状态栏，此前只有后者是真的。
+///
 library;
 
 import 'package:flutter/material.dart';
@@ -47,6 +51,7 @@ import '../locate/locate_overlay.dart';
 import '../palette.dart';
 import 'filter_chips.dart';
 import 'frame_painter.dart';
+import 'scene_pick.dart';
 import 'scene_source.dart';
 import 'tree_view.dart';
 
@@ -61,6 +66,20 @@ const Key hudZoomScaleKey = Key('hud-zoom-scale');
 
 /// 模式切换的容器（在 ① 内，见文件头表格）。
 const Key hudModeSwitchKey = Key('hud-mode-switch');
+
+/// ⑥ 罗盘里某个轴按钮（点它展开 / 收起该轴的取值）。`VIEW-020`。
+Key compassAxisKey(String axisKey) => Key('compass-axis-$axisKey');
+
+/// ⑥ 罗盘展开后，某个轴取值的那一行（点它写 / 取消筛选）。
+Key compassValueKey(String axisKey, String value) =>
+    Key('compass-value-$axisKey-$value');
+
+/// ⑥ 罗盘面板宽度。六个轴名一行排得下，取值列表也不至于把画面挤没。
+const double _compassWidth = 236;
+
+/// ⑥ 罗盘展开取值列表的最大高度。超出就滚动 —— 一个轴的取值可能几十个，
+/// 不封顶会把整块画面吃掉（而它是左下角的**输入器**，不是主视图）。
+const double _compassValuesMaxHeight = 220;
 
 /// 自转一圈的时长。慢到能看清，又不至于让人以为界面卡住。
 const Duration _spinPeriod = Duration(seconds: 24);
@@ -118,6 +137,12 @@ class _UniverseScreenState extends State<UniverseScreen>
 
   /// 定位浮层是否打开（`VIEW-026`：浮层，不常驻）。
   bool _locating = false;
+
+  /// ⑥ 罗盘当前展开的轴（`VIEW-020` 就地展开）。`null` = 六个轴都收起。
+  ///
+  /// 一次只展开一个轴：罗盘是「选一个轴、挑几个值」的短流程，同时摊开六个
+  /// 轴的取值会变成长列表，而 `VIEW-020` 否掉的正是「让用户在两处往返挑」。
+  String? _compassAxis;
 
   /// 屏幕根的焦点节点。`⌘K` / `Ctrl+K` 靠它接键（见 `_closeLocate`）。
   final FocusNode _rootFocus = FocusNode(debugLabel: 'universe-root');
@@ -296,6 +321,32 @@ class _UniverseScreenState extends State<UniverseScreen>
     _jumpToItem(itemId);
   }
 
+  // ── 宇宙点星（`SPEC-VIEW-014` 入口 1） ──────────────────────────────────
+
+  /// 点星 → 进详情。
+  ///
+  /// 落点与搜索命中**完全一致**（`_jumpToItem`：选中 + 推到 `Z4`），因为
+  /// `VIEW-013` 把详情定义成「`Z4` 的渲染形态」，而不是另一个页面。两处若
+  /// 各判各的档，同一个项从搜索进去和从星图点进去会落在不同视距上 —— 用户
+  /// 会以为点错了东西。
+  ///
+  /// **点空白什么都不做**（见 `core/frame/pick.dart` 文件头）：清掉选中会让
+  /// 详情抽屉毫无预警地消失，而点歪是常态。
+  void _pickAt(Offset point, Size viewport, Set<String>? visibleIds) {
+    final String? id = pickSceneNode(
+      scene: widget.scene,
+      viewport: viewport,
+      // 自转一直在动：用**这一刻**的偏航，不是基准偏航。
+      yawRadians: spunYaw(_camera.yawRadians, _spin.value),
+      point: point,
+      visibleIds: visibleIds,
+    );
+    if (id == null) {
+      return;
+    }
+    _jumpToItem(id);
+  }
+
   void _removeFilter(AxisFilterChip chip) {
     setState(() {
       _axisFilter = withoutAxisValue(_axisFilter, chip.axisKey, chip.value);
@@ -303,6 +354,30 @@ class _UniverseScreenState extends State<UniverseScreen>
   }
 
   void _clearFilter() => setState(() => _axisFilter = emptyAxisFilter);
+
+  // ── ⑥ 罗盘（`SPEC-VIEW-019` / `020`） ───────────────────────────────────
+
+  /// 展开 / 收起某个轴的取值。再点同一个轴就收起。
+  void _toggleCompassAxis(String axisKey) {
+    setState(() => _compassAxis = _compassAxis == axisKey ? null : axisKey);
+  }
+
+  /// 点一个取值：已选则去掉，未选则加上。
+  ///
+  /// 与 ② 的 `×` 是**同一个操作的两处入口**（`VIEW-019`：⑥ 负责加、② 负责
+  /// 看和删，「删除与取消等价」）。两处都调 `withoutAxisValue` —— 若在这里
+  /// 另写「从列表里摘掉」，空轴就不会被删键，`axisFilter` 里会留下一个
+  /// 没有值的幽灵轴，而 ② 会数出一个空 chip。
+  void _toggleCompassValue(String axisKey, String value) {
+    final bool selected = (_axisFilter[axisKey] ?? const <String>[]).contains(
+      value,
+    );
+    setState(() {
+      _axisFilter = selected
+          ? withoutAxisValue(_axisFilter, axisKey, value)
+          : toggleAxisValue(_axisFilter, axisKey, value);
+    });
+  }
 
   /// 当前筛选下可见的项 id。`null` = 没筛（**不是空集**）。
   Set<String>? _visibleIds() {
@@ -430,21 +505,7 @@ class _UniverseScreenState extends State<UniverseScreen>
               // ⑤ 焦点星：树里不渲染 —— 树里「选中行」就是焦点（见文件头表格）。
               if (!tree) Center(child: _hiddenSlot(hudFocusStarKey, '焦点星')),
               // ⑥ 六轴罗盘：`VIEW-011` 树里没有方位，保留即成假控件。
-              if (!tree)
-                _positioned(
-                  left: 16,
-                  bottom: 72,
-                  child: _panel(
-                    key: hudAxisCompassKey,
-                    child: const Text(
-                      '六轴罗盘',
-                      style: TextStyle(
-                        color: paletteTextSecondary,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ),
-                ),
+              if (!tree) _positioned(left: 16, bottom: 72, child: _compass()),
               _positioned(
                 left: 16,
                 right: 16,
@@ -508,17 +569,30 @@ class _UniverseScreenState extends State<UniverseScreen>
     return pack.itemOf(id)?.domainId;
   }
 
-  Widget _universeBody(Set<String>? visibleIds) => RepaintBoundary(
-    child: CustomPaint(
-      painter: FramePainter(
-        scene: widget.scene,
-        spin: _spin,
-        baseYaw: _camera.yawRadians,
-        visibleIds: visibleIds,
-        onRepaint: (_, _, _) {},
-      ),
-      size: Size.infinite,
-    ),
+  Widget _universeBody(Set<String>? visibleIds) => LayoutBuilder(
+    builder: (BuildContext context, BoxConstraints constraints) {
+      // 视口尺寸要**与 painter 拿到的一致**。用 `constraints` 而不是
+      // `context.size`：后者在首帧是 null，而首帧就点是不该崩的。
+      final Size viewport = Size(constraints.maxWidth, constraints.maxHeight);
+      return GestureDetector(
+        // `opaque`：空白处也要接住点击，否则点在星与星的缝里会穿透到底下。
+        behavior: HitTestBehavior.opaque,
+        onTapUp: (TapUpDetails details) =>
+            _pickAt(details.localPosition, viewport, visibleIds),
+        child: RepaintBoundary(
+          child: CustomPaint(
+            painter: FramePainter(
+              scene: widget.scene,
+              spin: _spin,
+              baseYaw: _camera.yawRadians,
+              visibleIds: visibleIds,
+              onRepaint: (_, _, _) {},
+            ),
+            size: Size.infinite,
+          ),
+        ),
+      );
+    },
   );
 
   Widget _treeBody(bool filtered) => Padding(
@@ -570,6 +644,147 @@ class _UniverseScreenState extends State<UniverseScreen>
       ],
     ),
   );
+
+  // ── ⑥ 罗盘的渲染 ────────────────────────────────────────────────────────
+
+  /// ⑥ = **输入器**（`VIEW-019`）：六个轴名 → 就地展开取值 → 点一次选、再点取消。
+  ///
+  /// 不做「点 ⑥ 唤起 ② 再在 ② 上选」：`VIEW-020` 明确否掉了那条路 ——
+  /// 六个轴各 5–8 个值，本来是一屏装得下的短选择，变成两处往返之后就没人用了。
+  Widget _compass() {
+    final LoadedPack? pack = widget.pack;
+    final String? openAxis = _compassAxis;
+    return SizedBox(
+      width: _compassWidth,
+      child: _panel(
+        key: hudAxisCompassKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Text(
+              // 没有包就没有轴值可选。写清原因而不是给一排按不动的按钮 ——
+              // 按不动的控件会被读成「功能坏了」。
+              pack == null ? '六轴罗盘 · 没有内容包' : '六轴罗盘',
+              style: const TextStyle(color: paletteTextSecondary, fontSize: 10),
+            ),
+            if (pack != null) ...<Widget>[
+              const SizedBox(height: 4),
+              Wrap(
+                spacing: 2,
+                runSpacing: 2,
+                children: <Widget>[
+                  for (final String axisKey in sixAxisKeys)
+                    _compassAxisChip(axisKey),
+                ],
+              ),
+              if (openAxis != null) ...<Widget>[
+                const Divider(height: 14, color: paletteLine),
+                _compassValues(pack, openAxis),
+              ],
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 一个轴按钮。带「·N」= 这个轴已选了多少个值（`VIEW-019` 要求不看 ②
+  /// 也知道自己筛了什么 —— ② 会被滚出视线的场景就是「筛完继续看星」）。
+  Widget _compassAxisChip(String axisKey) {
+    final int count = (_axisFilter[axisKey] ?? const <String>[]).length;
+    final bool open = _compassAxis == axisKey;
+    return TextButton(
+      key: compassAxisKey(axisKey),
+      onPressed: () => _toggleCompassAxis(axisKey),
+      style: TextButton.styleFrom(
+        backgroundColor: open ? paletteSelected : null,
+        foregroundColor: count > 0 ? paletteTextPrimary : paletteTextSecondary,
+        minimumSize: const Size(0, 26),
+        padding: const EdgeInsets.symmetric(horizontal: 6),
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      ),
+      child: Text(
+        count > 0
+            ? '${sixAxisLabels[axisKey] ?? axisKey} ·$count'
+            : sixAxisLabels[axisKey] ?? axisKey,
+        style: const TextStyle(fontSize: 11),
+      ),
+    );
+  }
+
+  /// 展开后的取值列表。取值域来自包（`axisValuesOf`），**不写死任何选项**：
+  /// 换个包就是另一批值，预设选项在第二个包上立刻过时。
+  Widget _compassValues(LoadedPack pack, String axisKey) {
+    final List<String> values = axisValuesOf(pack, axisKey);
+    final List<String> selected = _axisFilter[axisKey] ?? const <String>[];
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Text(
+          '${sixAxisLabels[axisKey] ?? axisKey} · 再点一次取消',
+          style: const TextStyle(color: paletteTextSecondary, fontSize: 10),
+        ),
+        const SizedBox(height: 2),
+        if (values.isEmpty)
+          const Text(
+            '这一轴在包里没有取值',
+            style: TextStyle(color: paletteTextSecondary, fontSize: 11),
+          )
+        else
+          ConstrainedBox(
+            // 上限 + 滚动，而不是 `Flexible`：外层是 `mainAxisSize.min` 的
+            // `Column`，`Flexible` 在那里会拿到 0 高度（笔 4a 踩过）。
+            constraints: const BoxConstraints(
+              maxHeight: _compassValuesMaxHeight,
+            ),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  for (final String value in values)
+                    _compassValueRow(axisKey, value, selected.contains(value)),
+                ],
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _compassValueRow(String axisKey, String value, bool selected) {
+    return InkWell(
+      key: compassValueKey(axisKey, value),
+      onTap: () => _toggleCompassValue(axisKey, value),
+      borderRadius: BorderRadius.circular(4),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 5),
+        child: Row(
+          children: <Widget>[
+            Icon(
+              selected ? Icons.check_box : Icons.check_box_outline_blank,
+              size: 13,
+              color: selected ? paletteTextPrimary : paletteTextSecondary,
+            ),
+            const SizedBox(width: 6),
+            Expanded(
+              child: Text(
+                value,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: selected ? paletteTextPrimary : paletteTextSecondary,
+                  fontSize: 12,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   Widget _zoomChip(ZoomLevel level) {
     final bool selected = level == _camera.zoom && _mode == ViewMode.universe;
