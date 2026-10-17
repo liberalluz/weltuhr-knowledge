@@ -42,6 +42,7 @@ class TreeView extends StatefulWidget {
     required this.pack,
     required this.selectedItemId,
     required this.onSelect,
+    this.visibleIds,
     super.key,
   });
 
@@ -49,6 +50,9 @@ class TreeView extends StatefulWidget {
   final LoadedPack? pack;
   final String? selectedItemId;
   final ValueChanged<String> onSelect;
+
+  /// ② 的筛选结果（`SPEC-VIEW-021`），`null` = 不过滤。
+  final Set<String>? visibleIds;
 
   @override
   State<TreeView> createState() => _TreeViewState();
@@ -109,7 +113,9 @@ class _TreeViewState extends State<TreeView> {
       pack,
       expandedDomains: _expandedOf(pack),
       expandToPhi: initialExpandPhi(maxPhi),
+      visibleIds: widget.visibleIds,
     );
+    final int shown = widget.visibleIds?.length ?? pack.items.length;
 
     return Container(
       key: treeViewKey,
@@ -124,7 +130,7 @@ class _TreeViewState extends State<TreeView> {
           Padding(
             padding: const EdgeInsets.fromLTRB(12, 10, 12, 6),
             child: Text(
-              '树 · ${pack.items.length} 项 · ${pack.space.domainIds.length} 域'
+              '树 · $shown 项 · ${pack.space.domainIds.length} 域'
               ' · 展开到 φ=${initialExpandPhi(maxPhi)}',
               style: const TextStyle(color: paletteTextSecondary, fontSize: 11),
             ),

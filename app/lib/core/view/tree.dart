@@ -83,10 +83,15 @@ int maxPhiOf(LoadedPack pack) {
 /// [expandedDomains] 里没有的域只出一行（可展开）；有的话按
 /// 「`φ` 升序、同层标题升序」列出该域的项（域内排序是 `B3` 笔 3 的裁定，
 /// 与宇宙的深度一致，用户在同一空间里看到的「上下」才是同一个）。
+///
+/// [visibleIds] 来自 ② 的筛选（`SPEC-VIEW-021`），`null` = 不过滤。
+/// **黑洞行不参与过滤**：它不是"某一项"，是「这里有个缺口」的结构标记，
+/// 被筛掉之后用户就再也看不见缺口的痕迹了；而缺口不属于任何轴的取值。
 List<TreeRow> buildTree(
   LoadedPack pack, {
   required Set<String> expandedDomains,
   required int expandToPhi,
+  Set<String>? visibleIds,
 }) {
   final Map<String, int> levels = kahnLevels(
     nodeIds: pack.items.map((Item item) => item.id),
@@ -123,8 +128,13 @@ List<TreeRow> buildTree(
 
   final List<TreeRow> rows = <TreeRow>[];
   for (final String domainId in pack.space.domainIds) {
-    final List<Item> items = byDomain[domainId] ?? const <Item>[];
+    final List<Item> items = <Item>[
+      for (final Item item in byDomain[domainId] ?? const <Item>[])
+        if (visibleIds == null || visibleIds.contains(item.id)) item,
+    ];
     final List<String> holes = holesByDomain[domainId] ?? const <String>[];
+    // 箭头判在**筛后**的项数上：筛空的域还挂着展开箭头，点开什么都没有 ——
+    // 那正是「假控件」的定义。
     final bool expandable = items.isNotEmpty || holes.isNotEmpty;
 
     rows.add(
