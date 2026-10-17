@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'features/universe/scene_source.dart';
+import 'features/universe/universe_screen.dart';
 import 'features/universe/universe_spike_screen.dart';
 
 void main() {
@@ -51,9 +53,20 @@ class EmptySpaceScreen extends StatelessWidget {
               style: text.bodySmall,
             ),
             const SizedBox(height: 32),
-            // 「绘制 spike」入口 —— `B2` 第 5 笔的测量装置，不是产品功能。
-            // 它之所以挂在空态页上：**没有别的地方可挂**（`features/` 此前是空的），
-            // 而帧率实测必须在真设备上跑。`B3` 建好真实路由后这一颗按钮就该删。
+            // 「宇宙视图」入口 —— `B3` 笔 2 的正式界面（五档刻度 + HUD 七区块）。
+            // 真实入口（从空间列表进）归笔 2 收尾，这里先让它可达。
+            FilledButton(
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (BuildContext context) =>
+                      UniverseScreen(scene: resolveAlphaScene().bundle),
+                ),
+              ),
+              child: const Text('宇宙视图'),
+            ),
+            const SizedBox(height: 12),
+            // 「绘制 spike」入口 —— `B2` 第 5 笔的测量装置，**保留**：`STR` 轮次
+            // `R1` 的帧率读数靠它复跑。产品功能不挂这里，测量装置挂这里。
             OutlinedButton(
               onPressed: () => Navigator.of(context).push(
                 MaterialPageRoute<void>(

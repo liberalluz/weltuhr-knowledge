@@ -186,3 +186,10 @@ const double placeholderRadialOffset = 0.02;
 /// 它不是「调到顺手」的数：`φ` 是 `⪯` 上的 Kahn 层号，前两层属于「刚起步」，
 /// 三层以上已经要看局部子图了。
 const int zoomPhiMaxForNebula = 2;
+
+/// `C-33` 基准窗口：`1920×1080` 客户区。帧率判据只在这个尺寸下解释
+/// （`ADR-0002` 修订二），绘制表面也按它封顶。
+const double frameBenchWidth = 1920;
+
+/// `C-33` 基准窗口的高。
+const double frameBenchHeight = 1080;
