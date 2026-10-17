@@ -1,7 +1,7 @@
 # Git 规范
 
 > 活文档，不设版号。**流程与格式权威处**：仓库结构 · 分支 · 提交 · 评审与合并 · 版本与 tag · 交付物版号。
-> **本文件管不到的**：协作治理（谁能改哪一级裁定 · 角色 · 许可与 DCO · 行为期望 · 响应时限 · **评审关注点**）见 [`.github/CONTRIBUTING.md`](../../.github/CONTRIBUTING.md)，此处不重复。
+> **本文件管不到的**：协作治理（谁能改哪一级裁定 · 角色 · 许可与 DCO · 行为期望 · 响应时限 · **评审关注点**）见 [`.github/CONTRIBUTING.zh.md`](../../.github/CONTRIBUTING.zh.md)，此处不重复。
 
 
 
@@ -63,6 +63,8 @@
 | `CODE_OF_CONDUCT.md`       | ⏸ 暂缓          | 无可执行的社区即空义务；公开接受外部贡献时再补                                |
 | `CITATION.cff`             | ⏸ 暂缓          | 仅学术引用场景需要；且只能放仓根，会打破本节统一落点                             |
 | `PULL_REQUEST_TEMPLATE.md` | ✅ 已落          | 「1 批次 = 1 PR + 正文附自验证证据 + 交付物增量 + 批次号」已固化；正文格式只此一处 |
+
+**文件名是英文，源仍是中文**：`SECURITY` 与 `CONTRIBUTING` 两份按六语落盘，`<原名>.md` 为英文（GitHub 按精确文件名读取，见 `.github` 的 Security 页与新 issue 界面），中文原文为同名 `.zh.md`。命名例外与译本规则见 [`../AGENTS.md`](../AGENTS.md) §译本规范，此处不复制。
 
 ### 1.4 `.gitignore` 判据
 
@@ -226,7 +228,7 @@
 
 ### 4.4 变更分级（A/B/C/D）
 
-> **定义权威处 = 技能 `references/dev-workflow.md` §S3**。本表落在项目内，因为 A/B/C/D 是 **PR 判据**，判据必须在项目内可查；两者冲突时**以技能 §S3 为准**。各级由谁批准，见 [`.github/CONTRIBUTING.md`](../../.github/CONTRIBUTING.md) §一。
+> **定义权威处 = 技能 `references/dev-workflow.md` §S3**。本表落在项目内，因为 A/B/C/D 是 **PR 判据**，判据必须在项目内可查；两者冲突时**以技能 §S3 为准**。各级由谁批准，见 [`.github/CONTRIBUTING.zh.md`](../../.github/CONTRIBUTING.zh.md) §一。
 
 | 级     | 判据                                     | 动作                                   |
 | ----- | -------------------------------------- | ------------------------------------ |
