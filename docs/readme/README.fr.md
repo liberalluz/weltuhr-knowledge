@@ -1,8 +1,8 @@
 # Weltuhr
 
-[简体中文](../../README.md) · [English](en.md) · [Deutsch](de.md) · [Italiano](it.md) · [日本語](ja.md) · **Français**
+[English](../../README.md) · [简体中文](README.zh.md) · [Deutsch](README.de.md) · [Italiano](README.it.md) · [日本語](README.ja.md) · **Français**
 
-> Traduction de [README.md](../../README.md) · 2026-10-17 · la version chinoise fait foi.
+> Traduction de [docs/readme/README.zh.md](../../docs/readme/README.zh.md) · 2026-10-17 · la version chinoise fait foi.
 
 > Déployer un domaine d'étude en un espace de connaissances **localisable, planifiable et mesurable**, pour que « je veux apprendre X » devienne « je sais quoi apprendre, dans quel ordre, et à quel point j'en suis quand cela compte comme utilisable ».
 
