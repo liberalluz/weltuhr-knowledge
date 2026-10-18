@@ -86,6 +86,7 @@ class StarPlanet {
     required this.id,
     required this.level,
     required this.center,
+    required this.phase,
   });
 
   final String id;
@@ -94,6 +95,14 @@ class StarPlanet {
   final int level;
 
   final Offset center;
+
+  /// 椭圆**参数角**（rad，`0` = 长轴正方向）。
+  ///
+  /// 单列出来是给 `Z4` 用的：那一档的轨道比例与这里不同（`C-79` / `C-80` vs
+  /// `C-73` / `C-74`），要按自己的半长轴重算落点。带上参数角就不必在 `Z4` 里
+  /// 把「同层均分 + 哈希抖动」再写一遍 —— 两处各写一遍，迟早一处改了另一处
+  /// 没改，而表现只是「推近之后行星换了位置」（`R-08` 同族）。
+  final double phase;
 }
 
 /// 一团残余云气。数量固定（`C-77`），**不跟项数走**。
@@ -317,7 +326,12 @@ StarSystemLayout layoutStarSystem({
         continue;
       }
       planets.add(
-        StarPlanet(id: id, level: level, center: center + rotated),
+        StarPlanet(
+          id: id,
+          level: level,
+          center: center + rotated,
+          phase: t,
+        ),
       );
     }
   }
