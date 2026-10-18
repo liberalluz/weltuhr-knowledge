@@ -110,8 +110,21 @@ Key compassAxisKey(String axisKey) => Key('compass-axis-$axisKey');
 Key compassValueKey(String axisKey, String value) =>
     Key('compass-value-$axisKey-$value');
 
-/// ⑥ 罗盘面板宽度。六个轴名一行排得下，取值列表也不至于把画面挤没。
-const double _compassWidth = 236;
+/// ⑥ 罗盘面板宽度**下限**。六个轴名要一行排得下。
+///
+/// 236 这句「一行排得下」原是**没实测过的假设**：内宽 212，而按钮内边距 6 +
+/// 间距 2 让六个按钮占 225 —— 「技术栈」被挤到第二行。实测（内边距 4 / 间距 1）
+/// 六个按钮合计 192.3，236 够了。
+///
+/// 为什么不是写死一个更宽的数：`·N` 后缀在 11px 字号下要占 33.3 ——
+/// 「能力」宽 30.2，带上「·1」变 63.5。两个轴同时筛就要 263.9，任何「写宽一点」
+/// 的常数都得越过 288 才够，而那会让空状态下留一大片空白。所以宽度改成
+/// **下限 + 上限、由内容撑开**（见 `_compass()`），空状态仍是 236。
+const double _compassMinWidth = 236;
+
+/// ⑥ 罗盘面板宽度**上限**。留到「两个轴同时筛」还排得下（263.9 + 内边距 24）。
+/// 再多的轴一起筛就换行 —— `Wrap` 在那里是兜底，不是主路径。
+const double _compassMaxWidth = 288;
 
 /// ⑥ 罗盘展开取值列表的最大高度。超出就滚动 —— 一个轴的取值可能几十个，
 /// 不封顶会把整块画面吃掉（而它是左下角的**输入器**，不是主视图）。
@@ -971,8 +984,13 @@ class _UniverseScreenState extends State<UniverseScreen>
   Widget _compass() {
     final LoadedPack? pack = _pack;
     final String? openAxis = _compassAxis;
-    return SizedBox(
-      width: _compassWidth,
+    return ConstrainedBox(
+      // 下限 + 上限，中间由内容撑开：空状态 236（六轴一行最窄），两个轴同时筛
+      // 时自己长到 263.9 —— 写死任一常数都会在另一个状态下难看。
+      constraints: const BoxConstraints(
+        minWidth: _compassMinWidth,
+        maxWidth: _compassMaxWidth,
+      ),
       child: _panel(
         key: hudAxisCompassKey,
         child: Column(
@@ -988,7 +1006,7 @@ class _UniverseScreenState extends State<UniverseScreen>
             if (pack != null) ...<Widget>[
               const SizedBox(height: 4),
               Wrap(
-                spacing: 2,
+                spacing: 1,
                 runSpacing: 2,
                 children: <Widget>[
                   for (final String axisKey in sixAxisKeys)
@@ -1018,13 +1036,17 @@ class _UniverseScreenState extends State<UniverseScreen>
         backgroundColor: open ? paletteSelected : null,
         foregroundColor: count > 0 ? paletteTextPrimary : paletteTextSecondary,
         minimumSize: const Size(0, 26),
-        padding: const EdgeInsets.symmetric(horizontal: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 4),
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
       ),
       child: Text(
         count > 0
             ? '${sixAxisLabels[axisKey] ?? axisKey} ·$count'
             : sixAxisLabels[axisKey] ?? axisKey,
+        // 轴名很短，任何折行都只发生在「这个按钮自己断了」的坏情形里 ——
+        // 那种折行比换行更难看，且没有任何信息上的必要。
+        maxLines: 1,
+        softWrap: false,
         style: const TextStyle(fontSize: 11),
       ),
     );
