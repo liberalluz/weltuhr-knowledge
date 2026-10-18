@@ -579,6 +579,52 @@ void main() {
   });
 
   group('宇宙的两个输入器（SPEC-VIEW-014 点星 / 019 罗盘）', () {
+    testWidgets('六轴罗盘六个轴名排在同一行（无 SPEC：布局口径，2026-10-18 提出）', (
+      WidgetTester tester,
+    ) async {
+      final LoadedPack pack = loadAlphaPack();
+      await _pumpScreen(tester, pack: pack);
+
+      // 判据是**纵坐标相同**，不是「找得到六个按钮」—— 换行时六个按钮照样都
+      // 找得到，所以「找得到」这件事本身证明不了一行。这条用例挡的是
+      // `_compassMinWidth` / `_compassMaxWidth` 被调窄、或某个轴名变长之后
+      // 悄悄折成两行。
+      final Set<double> tops = <double>{
+        for (final String axisKey in sixAxisKeys)
+          tester.getTopLeft(find.byKey(compassAxisKey(axisKey))).dy,
+      };
+      expect(tops, hasLength(1), reason: '六个轴名必须在同一行：折行后「技术栈」孤零零落在第二行');
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('两个轴都筛过、按钮带 ·N 后仍排在一行（无 SPEC：布局口径，2026-10-18 提出）', (
+      WidgetTester tester,
+    ) async {
+      final LoadedPack pack = loadAlphaPack();
+      await _pumpScreen(tester, pack: pack);
+
+      // α 包里**只有 `subject` 与 `ability` 有取值**（`role` / `industry` /
+      // `topic` / `stack` 全空），所以两个 `·N` 只能落在这两个轴上 ——
+      // 只测收起态会漏掉 `·N` 这一截宽度，而那正是收窄面板后最先炸的地方。
+      for (final String axisKey in <String>['subject', 'ability']) {
+        await tester.tap(find.byKey(compassAxisKey(axisKey)));
+        await _pump(tester);
+        await tester.tap(
+          find.byKey(
+            compassValueKey(axisKey, axisValuesOf(pack, axisKey).first),
+          ),
+        );
+        await _pump(tester);
+      }
+
+      final Set<double> tops = <double>{
+        for (final String axisKey in sixAxisKeys)
+          tester.getTopLeft(find.byKey(compassAxisKey(axisKey))).dy,
+      };
+      expect(tops, hasLength(1), reason: '`·N` 不该把按钮挤到第二行');
+      expect(tester.takeException(), isNull);
+    });
+
     testWidgets('点中一颗星 ⇒ 选中它并直接进 Z4 详情（SPEC-VIEW-014）', (
       WidgetTester tester,
     ) async {
