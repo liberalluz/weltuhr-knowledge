@@ -26,6 +26,8 @@ import 'package:project_knowledge/features/universe/scene_pick.dart';
 import 'package:project_knowledge/features/universe/scene_source.dart';
 import 'package:project_knowledge/features/universe/spiral_map.dart';
 import 'package:project_knowledge/features/universe/spiral_painter.dart';
+import 'package:project_knowledge/features/universe/star_map.dart';
+import 'package:project_knowledge/features/universe/star_painter.dart';
 import 'package:project_knowledge/features/universe/tree_view.dart';
 import 'package:project_knowledge/features/universe/universe_screen.dart';
 
@@ -2339,6 +2341,167 @@ void main() {
       expect(tester.takeException(), isNull);
     });
   });
+
+  group('Z3 恒星系（SPEC-VIEW-039 · V-1e）', () {
+    /// 单域单链 `a → b → c` —— `english` / `german` 那种「每域 10 项 9 边」
+    /// 的最小版。链是 `VIEW-039` 明写的常态形状。
+    LoadedPack starPack() => fixturePack(
+      const <FixtureItem>[
+        FixtureItem('a', '甲'),
+        FixtureItem('b', '乙'),
+        FixtureItem('c', '丙'),
+      ],
+      edges: const <List<String>>[
+        <String>['a', 'b'],
+        <String>['b', 'c'],
+      ],
+    );
+
+    testWidgets('从 Z2 点亮结进来，画的是恒星系而不是项投影（SPEC-VIEW-039）', (
+      WidgetTester tester,
+    ) async {
+      final LoadedPack pack = starPack();
+      await _pumpScreen(tester, pack: pack);
+      final String rootId = await _enterStarSystem(tester, pack);
+
+      expect(
+        find.byWidgetPredicate(
+          (Widget widget) =>
+              widget is CustomPaint && widget.painter is StarPainter,
+        ),
+        findsOneWidget,
+        reason: 'VIEW-039：Z3 是一颗恒星 + 共面轨道',
+      );
+      expect(
+        find.byWidgetPredicate(
+          (Widget widget) =>
+              widget is CustomPaint && widget.painter is FramePainter,
+        ),
+        findsNothing,
+        reason: '两套几何不能并存 —— 并存时哪一套在上层是运气',
+      );
+      expect(
+        find.byKey(starLabelKey(rootId)),
+        findsOneWidget,
+        reason: '恒星标名（根项标题），行星不标名',
+      );
+      expect(_crumbCount(tester), _crumbsFor(ZoomLevel.z3));
+      expect(
+        find.byKey(hudDetailDrawerKey),
+        findsNothing,
+        reason: 'Z3 不是详情 —— 抽屉只在 Z4（VIEW-001）',
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('点行星 ⇒ Z4 详情，选中的是那颗行星（SPEC-VIEW-039 / 014）', (
+      WidgetTester tester,
+    ) async {
+      final LoadedPack pack = starPack();
+      await _pumpScreen(tester, pack: pack);
+      final String rootId = await _enterStarSystem(tester, pack);
+      final StarSystemLayout layout = _starSystemOf(tester, pack, rootId);
+      final StarPlanet planet = layout.planets.first;
+
+      await tester.tapAt(planet.center * _pointScaleOf(tester));
+      await tester.pump();
+
+      expect(_crumbCount(tester), _crumbsFor(ZoomLevel.z4));
+      expect(find.byKey(hudDetailDrawerKey), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byKey(detailPanelKey),
+          matching: find.text('乙'),
+        ),
+        findsWidgets,
+        reason: '点的是 b（乙）—— 抽屉里必须是它，不是恒星',
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('点恒星 ⇒ Z4，选中的是根项（SPEC-VIEW-039）', (
+      WidgetTester tester,
+    ) async {
+      final LoadedPack pack = starPack();
+      await _pumpScreen(tester, pack: pack);
+      final String rootId = await _enterStarSystem(tester, pack);
+      final StarSystemLayout layout = _starSystemOf(tester, pack, rootId);
+
+      await tester.tapAt(layout.starCenter * _pointScaleOf(tester));
+      await tester.pump();
+
+      expect(_crumbCount(tester), _crumbsFor(ZoomLevel.z4));
+      expect(
+        find.descendant(
+          of: find.byKey(detailPanelKey),
+          matching: find.text('甲'),
+        ),
+        findsWidgets,
+        reason: '恒星就是根项 a（甲）—— 点它进的是它自己的特写',
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('点空白不动选中 —— 详情不会毫无预警地消失（SPEC-VIEW-039 / 014）', (
+      WidgetTester tester,
+    ) async {
+      final LoadedPack pack = starPack();
+      await _pumpScreen(tester, pack: pack);
+      final String rootId = await _enterStarSystem(tester, pack);
+      final StarSystemLayout layout = _starSystemOf(tester, pack, rootId);
+
+      // 先点一颗行星进 Z4，再退回 Z3 点空白 —— 空白要真的什么都没中就退出
+      // 这一步就白测了，所以空白点先按几何验一遍。
+      await tester.tapAt(layout.planets.first.center * _pointScaleOf(tester));
+      await tester.pump();
+      expect(find.byKey(hudDetailDrawerKey), findsOneWidget);
+
+      final Offset blank = _starBlankPoint(tester, layout);
+      await tester.tapAt(blank);
+      await tester.pump();
+
+      expect(
+        find.byKey(hudDetailDrawerKey),
+        findsOneWidget,
+        reason: '点歪是常态 —— 不该因为点空白就把抽屉收掉',
+      );
+      expect(_crumbCount(tester), _crumbsFor(ZoomLevel.z4));
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('4K 窗口：画布照旧降采样，行星照样点得中（C-33）', (
+      WidgetTester tester,
+    ) async {
+      tester.view.physicalSize = const Size(3840, 2160);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+
+      final LoadedPack pack = starPack();
+      const Size window = Size(3840, 2160);
+      await _pumpScreen(tester, pack: pack);
+      final String rootId = await _enterStarSystem(
+        tester,
+        pack,
+        window: window,
+      );
+      final StarSystemLayout layout = _starSystemOf(
+        tester,
+        pack,
+        rootId,
+        window: window,
+      );
+
+      await tester.tapAt(layout.planets.first.center * _pointScaleOf(tester));
+      await tester.pump();
+
+      expect(
+        find.byKey(hudDetailDrawerKey),
+        findsOneWidget,
+        reason: '降采样时画布比窗口小 —— 坐标不乘 `scale` 就整体偏左上',
+      );
+      expect(tester.takeException(), isNull);
+    });
+  });
 }
 
 /// `Z0` 用例里的第二个空间：**60 项**而不是 [_goPack] 的 1 项。
@@ -2354,3 +2517,91 @@ LoadedPack _z0Space() => fixturePack(
   spaceId: 'go',
   spaceName: 'Go 语言',
 );
+
+/// 画布坐标 → 窗口坐标的倍数。降采样时画布比窗口小，不乘它整体偏左上。
+double _pointScaleOf(WidgetTester tester, {Size? window}) {
+  final Size size = window ?? tester.getSize(find.byType(UniverseScreen));
+  return planViewport(
+    size.width,
+    size.height,
+    devicePixelRatio: tester.view.devicePixelRatio,
+  ).scale;
+}
+
+/// 从 `Z1` 经 `Z2` 点亮结进 `Z3`，返回进去的那棵子树的根 id。
+///
+/// 走**真实入口**而不是直接 `pumpWidget(initialZoom: z3)`：后者 `_selectedItemId`
+/// 是 `null`，`Z3` 拿不到恒星 ⇒ 退回项投影 —— 那样测的就不是 `VIEW-039` 了。
+/// 这条路径也正是 `V-1d` 建好的那条（`_jumpToKnot()`）。
+Future<String> _enterStarSystem(
+  WidgetTester tester,
+  LoadedPack pack, {
+  Size? window,
+}) async {
+  await _enterDomain(tester, pack, window: window);
+  await tester.pump();
+
+  final Size size = window ?? tester.getSize(find.byType(UniverseScreen));
+  final ViewportPlan plan = planViewport(
+    size.width,
+    size.height,
+    devicePixelRatio: tester.view.devicePixelRatio,
+  );
+  final NebulaLayout nebula = layoutNebula(
+    pack: pack,
+    domainId: pack.space.domainIds.first,
+    viewport: Size(plan.surfaceWidth, plan.surfaceHeight),
+  );
+  // 非单项子树才会进 `Z3`（单项由 `VIEW-038` 直接送 `Z4`）。
+  final NebulaKnot knot = nebula.knots.firstWhere(
+    (NebulaKnot each) => !each.isSingle,
+  );
+  await tester.tapAt(knot.center * plan.scale);
+  await tester.pump();
+  return knot.rootId;
+}
+
+/// 重算 `Z3` 的恒星系布局 —— 与 `_domainPoint` / `_nebulaItemPoint` 同一个做法：
+/// `layoutStarSystem` 是纯函数，入参与画布一致，两边各算一次、算错就会红。
+StarSystemLayout _starSystemOf(
+  WidgetTester tester,
+  LoadedPack pack,
+  String rootId, {
+  Size? window,
+}) {
+  final Size size = window ?? tester.getSize(find.byType(UniverseScreen));
+  final ViewportPlan plan = planViewport(
+    size.width,
+    size.height,
+    devicePixelRatio: tester.view.devicePixelRatio,
+  );
+  return layoutStarSystem(
+    pack: pack,
+    rootId: rootId,
+    viewport: Size(plan.surfaceWidth, plan.surfaceHeight),
+  );
+}
+
+/// `Z3` 里一个「点不中任何东西」的窗口坐标 —— 既不在行星的 12 px 命中圈里，
+/// 也不在恒星的命中圈里，且避开了右侧 ④ 详情抽屉。
+Offset _starBlankPoint(
+  WidgetTester tester,
+  StarSystemLayout layout, {
+  Size? window,
+}) {
+  final Size size = window ?? tester.getSize(find.byType(UniverseScreen));
+  final double scale = _pointScaleOf(tester, window: window);
+  for (double y = 160; y < size.height - 160; y += 13) {
+    for (double x = 40; x < size.width - 420; x += 13) {
+      final Offset canvas = Offset(x / scale, y / scale);
+      if (pickStarPlanetAt(layout: layout, point: canvas) != null) {
+        continue;
+      }
+      if (hitsStarAt(layout: layout, point: canvas)) {
+        continue;
+      }
+      return Offset(x, y);
+    }
+  }
+  throw StateError('扫不出空白点 —— 夹具或视口变了，这条用例需要重挑窗口');
+}
