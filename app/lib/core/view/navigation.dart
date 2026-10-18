@@ -35,7 +35,7 @@ import '../json.dart';
 import 'filter.dart';
 import 'zoom.dart';
 
-/// 进详情前的一帧视图。`VIEW-015` 列的五个字段一一对应。
+/// 进详情前的一帧视图。`VIEW-015` 的字段一一对应（`B12` 起七个）。
 ///
 /// 值类：`==` 按字段比 —— 快照是「还原目标」，两个字段都一样的快照还原出同样的
 /// 画面，不重写 `==` 会让「有没有变过」只能靠引用比，而引用在每次 `setState`
@@ -45,6 +45,7 @@ class ViewSnapshot {
     required this.mode,
     required this.zoomLevel,
     this.spaceId,
+    this.domainId,
     this.selectedItemId,
     this.axisFilter = emptyAxisFilter,
     this.selector,
@@ -56,12 +57,15 @@ class ViewSnapshot {
   /// 存的代码漏了项，猜一个默认值会把 bug 变成「返回后位置有点怪」这种查不动的
   /// 现象。
   ///
-  /// `spaceId` 是例外 —— 它**可真缺**：合成回落的根背后没有 `KnowledgeSpace`，
-  /// 那时「在哪个空间」这个问题没有答案。与 `selectedItemId` / `selector` 同类。
+  /// `spaceId` / `domainId` 是例外 —— 它们**可真缺**：合成回落的根背后没有
+  /// `KnowledgeSpace`，那时「在哪个空间」没有答案；而只有「只画一个域」的那种
+  /// 视野（`Z2`）才需要一个能推出域之外的东西（见字段注释）。与
+  /// `selectedItemId` / `selector` 同类。
   factory ViewSnapshot.fromJson(JsonMap json) => ViewSnapshot(
     mode: ViewMode.values.byName(requireString(json, 'mode')),
     zoomLevel: ZoomLevel.values.byName(requireString(json, 'zoomLevel')),
     spaceId: optionalString(json, 'spaceId'),
+    domainId: optionalString(json, 'domainId'),
     selectedItemId: optionalString(json, 'selectedItemId'),
     axisFilter: _filterFromJson(json),
     selector: optionalString(json, 'selector'),
@@ -78,6 +82,18 @@ class ViewSnapshot {
   /// `null` = 合成回落的根（没有包就没有空间 id）。
   final String? spaceId;
 
+  /// 这一帧在**哪个域**里（`SPEC-VIEW-015` 修订三）。
+  ///
+  /// 只有 `Z2` 非它不可：那一档画面只画一个域，而「在哪个域」推不出来 ——
+  /// `zoomLevel` + `spaceId` 只说了「在这个空间的某个域里」。缺了它，从 `Z4`
+  /// 返回 `Z2` 会落在第一个域（或干脆不画云）：档位、模式、空间全对，只有内容
+  /// 错，没有任何东西会变红（`R-08` 同族）。
+  ///
+  /// `Z0` / `Z1` 不画域，存了也不会被读；`Z3` / `Z4` 的域由选中项反推 ——
+  /// 存下来反而多一条可能与选中项不一致的真相。所以写入方按**目标档位**判，
+  /// 不无条件复制当前状态。
+  final String? domainId;
+
   final String? selectedItemId;
   final AxisFilter axisFilter;
 
@@ -90,6 +106,7 @@ class ViewSnapshot {
     'mode': mode.name,
     'zoomLevel': zoomLevel.name,
     if (spaceId != null) 'spaceId': spaceId,
+    if (domainId != null) 'domainId': domainId,
     if (selectedItemId != null) 'selectedItemId': selectedItemId,
     'axisFilter': <String, Object?>{
       for (final MapEntry<String, List<String>> entry in axisFilter.entries)
@@ -104,6 +121,7 @@ class ViewSnapshot {
       other.mode == mode &&
       other.zoomLevel == zoomLevel &&
       other.spaceId == spaceId &&
+      other.domainId == domainId &&
       other.selectedItemId == selectedItemId &&
       other.selector == selector &&
       _sameFilter(other.axisFilter, axisFilter);
@@ -119,6 +137,7 @@ class ViewSnapshot {
       mode,
       zoomLevel,
       spaceId,
+      domainId,
       selectedItemId,
       selector,
       Object.hashAll(<Object>[

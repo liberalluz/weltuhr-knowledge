@@ -93,8 +93,9 @@
 ///
 /// 跨空间的命中**能跳了**：换根之后落到目标空间的那一项（`VIEW-031` 末句）。
 /// 跳过去算「走过一步」—— 若当时在详情里，离开的那一项（**连同它的空间**）压进
-/// `trail`；若不在详情里，则记 `returnTo` 快照（快照带 `spaceId`）。两条都不重置：
-/// 用户是从 A 空间某处走到 B 空间某处，不是「刚打开详情」。
+/// `trail`；若不在详情里，则记 `returnTo` 快照（快照带 `spaceId`，`Z2` 起还带
+/// `domainId`）。两条都不重置：用户是从 A 空间某处走到 B 空间某处，不是「刚打开
+/// 详情」。
 ///
 /// `VIEW-031` 给的两条路（作用域、跨空间落点）**都在浮层里**。屏幕上的入口是
 /// `Z0` 那些星系本身（`VIEW-036`：一个空间一个星系，点它 ⇒ 换根 + `Z1`），
@@ -407,8 +408,9 @@ class _UniverseScreenState extends State<UniverseScreen>
   /// 清掉选中项（那一项已经不在视图里），而 `Z2` 的面包屑仍要显示域名 —— 现推
   /// 的话，退完立刻掉回两段，用户会以为点到了更外层。
   ///
-  /// `VIEW-015` 的快照要带它（`V-1f`）：缺了它，从 `Z4` 返回 `Z2` 会落在**第一个
-  /// 域**上 —— 档位 / 模式 / 空间全对、只有内容错，没有任何东西会变红。
+  /// `VIEW-015` 的快照带它（`V-1f` 起）：缺了它，从 `Z4` 返回 `Z2` 会落在
+  /// **第一个域**上（或干脆不画云）—— 档位 / 模式 / 空间全对、只有内容错，
+  /// 没有任何东西会变红。
   String? _domainId;
 
   /// ② 的筛选表达式（DNF）。空 = 不过滤，② 整块不渲染（`VIEW-018`）。
@@ -510,10 +512,16 @@ class _UniverseScreenState extends State<UniverseScreen>
   bool get _canGoBack => _trail.isNotEmpty || _returnTo != null;
 
   /// 当前视野的一帧。`selector` 只由「从搜索进来」的那条路径给。
+  ///
+  /// `domainId` 按**目标档位**判，不无条件复制 `_domainId`（`VIEW-015` 修订三
+  /// 第 8 / 9 条）：只有 `Z2` 需要它 —— 那一档画面只画一个域，而这个域推不出来。
+  /// `Z0` / `Z1` 不画域，存了不会被读；`Z3` / `Z4` 的域由选中项反推，存下来
+  /// 反而多一条可能与选中项不一致的真相。
   ViewSnapshot _snapshot({String? selector}) => ViewSnapshot(
     mode: _mode,
     zoomLevel: _camera.zoom,
     spaceId: _spaceId,
+    domainId: _camera.zoom == ZoomLevel.z2 ? _domainId : null,
     selectedItemId: _selectedItemId,
     axisFilter: _axisFilter,
     selector: selector,
@@ -607,12 +615,7 @@ class _UniverseScreenState extends State<UniverseScreen>
       _mode = snapshot.mode;
       _axisFilter = snapshot.axisFilter;
       _selectedItemId = snapshot.selectedItemId;
-      // 快照还没带 `domainId`（`V-1f` 才加）⇒ 先按选中项回推。回推结果与当初
-      // 存下的那个必然一致（域是选中项的属性），所以这一版没有信息损失 ——
-      // 字段补上之后这行改成读快照，理由见 `VIEW-015` 修订。
-      _domainId = _rootOf(snapshot.spaceId)?.pack
-          ?.itemOf(snapshot.selectedItemId ?? '')
-          ?.domainId;
+      _domainId = _domainOf(snapshot);
       _camera = _camera.withZoom(
         snapshot.zoomLevel,
         selectedItemId: snapshot.selectedItemId,
@@ -621,6 +624,32 @@ class _UniverseScreenState extends State<UniverseScreen>
       _restoreSelector = snapshot.selector;
       _locating = snapshot.selector != null;
     });
+  }
+
+  /// 从快照还原域（`VIEW-015` 修订三）。判据是「**目标档位画不画域**」，不是
+  /// 「离开时在不在域里」：
+  ///
+  /// | 目标档位 | 域 | 为什么 |
+  /// |---|---|---|
+  /// | `Z0` / `Z1` | 空 | 这两档不画域；`Z1` 是全景，带着域会让面包屑多出一段 |
+  /// | `Z2` | **读快照** | 这一档只画一个域，而域推不出来 —— 缺它就是「全对、只有内容错」 |
+  /// | `Z3` / `Z4` | 按选中项反推 | 恒星 / 详情里的那一项自带域，反推与当初那个必然一致 |
+  ///
+  /// `Z2` 为什么不能也反推：从 `Z3` 点面包屑退回 `Z2` 时选中项被清空，而域
+  /// 留着 —— 那一帧进详情，`selectedItemId` 是 `null`，反推只能得到 `null`。
+  String? _domainOf(ViewSnapshot snapshot) {
+    if (snapshot.zoomLevel == ZoomLevel.z0 ||
+        snapshot.zoomLevel == ZoomLevel.z1) {
+      return null;
+    }
+    if (snapshot.domainId != null) {
+      return snapshot.domainId;
+    }
+    final String? id = snapshot.selectedItemId;
+    if (id == null) {
+      return null;
+    }
+    return _rootOf(snapshot.spaceId)?.pack?.itemOf(id)?.domainId;
   }
 
   /// 面包屑前段点击：退到该层（`VIEW-018` 修订 2，「走 `returnTo` 同一入口」）。
