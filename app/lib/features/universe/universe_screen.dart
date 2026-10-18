@@ -4,13 +4,27 @@
 ///
 /// | # | 位置 | 宇宙 | 树 |
 /// |---|---|---|---|
-/// | ① | 顶部左 | 常显（面包屑 + **换根 chips** + 模式切换） | 面包屑 + 模式切换（**无**换根，见 `_spaceSwitch()`） |
+/// | ① | 顶部左 | 面包屑 + 模式图标（`Z0` 另有放大镜） | 同左 |
 /// | ② | 顶部第二行 | 有筛选才出现 | 同左 |
 /// | ③ | 右上 | 常显 | 常显 |
 /// | ④ | 右侧 | **仅 `Z4`** | **常驻右栏**（`VIEW-012`） |
 /// | ⑤ | 中心偏左 | 常显（焦点星） | **不渲染** —— 树里选中行就是焦点 |
 /// | ⑥ | 左下 | 常显（六轴罗盘） | **不渲染**（`VIEW-011`：二维没有方位） |
-/// | ⑦ | 底部中央 | 常显（视距刻度） | 常显，点击 = 切回宇宙并定档 |
+/// | ⑦ | 底部中央 | **留白** | **留白** |
+///
+/// `V-1a`（`VIEW-018` 修订）把 ① 收成三段式、⑦ 整条作废、换根 chips 撤掉：
+///
+/// - **⑦ 视距刻度条作废**。下钻模型成立后，刻度会造出「直达某档但容器不明」
+///   —— `Z0` 点 `Z2` 该开哪个域？没选过，没有答案。而面包屑每一段都是**实际
+///   走过的**。空着比塞一个占位清楚：占位会被读成待填的坑。
+/// - **① 的段数 = 走到第几层**（`VIEW-001`：面包屑段数 = 档位）。`知识` ›
+///   空间 › 域 › 项，前段可点（退到该层），末段不可点（已在）。
+/// - **模式切换从两个文字按钮收成 14 px 图标**，跟随面包屑末尾、命中区 44 px。
+///   图标只有 14 px，直接按图形判会「看得见点不中」。
+/// - **换根 chips 撤掉**（PR #59 回退）。`B3` 收尾时它是「星系不可点」的替代
+///   入口；现在星系本身是入口（`VIEW-036`），且 chips 落 `Z0` 与「点星系
+///   ⇒ `Z1`」直接冲突。**不留开关** —— 换根已有两个正式入口：点星系、点面包屑
+///   第 1 段。
 ///
 /// ## 切换为什么是交叉淡入
 ///
@@ -36,10 +50,11 @@
 /// `trail`；若不在详情里，则记 `returnTo` 快照（快照带 `spaceId`）。两条都不重置：
 /// 用户是从 A 空间某处走到 B 空间某处，不是「刚打开详情」。
 ///
-/// `VIEW-031` 给的两条路（作用域、跨空间落点）**都在浮层里**：不给屏幕上的
-/// 入口，「装了三个包」在界面上看不出区别 —— 用户只看得到 `order` 最小的那个根。
-/// 所以 `Z0` 右上面包屑旁多一排换根 chips（`_spaceSwitch()`），点它就是一次
-/// `_jumpToSpace`，与搜索落点走同一条路径。
+/// `VIEW-031` 给的两条路（作用域、跨空间落点）**都在浮层里**。屏幕上的入口是
+/// `Z0` 那些星系本身（`VIEW-036`：一个空间一个星系，点它 ⇒ 换根 + `Z1`），
+/// 以及面包屑第 1 段。`B3` 收尾时加过一排换根 chips，`V-1a` 已撤 —— 同一个
+/// 动作两个入口，语义迟早分叉（chips 推 `Z0`、星系推 `Z1` 就是已经发生过的
+/// 分叉）。
 ///
 /// 面板上的空间名只有 `VIEW-033` 要求的前缀，没有额外的「已切换」提示 ——
 /// 换根之后面包屑与诊断行都会写新的空间，那比一句 toast 更早也更准。
@@ -103,16 +118,31 @@ const Key hudScopeSettingsKey = Key('hud-scope-settings');
 const Key hudDetailDrawerKey = Key('hud-detail-drawer');
 const Key hudFocusStarKey = Key('hud-focus-star');
 const Key hudAxisCompassKey = Key('hud-axis-compass');
+
+/// ⑦ 视距刻度条 —— **已作废**（`VIEW-018` 修订 1）。
+///
+/// 常量留着只作**断言靶子**：要让「这里空着」可观测，得有个确定的“不在”可以
+/// 断言。靠「找不到 `Z0 宇宙` 这五个字」间接证明不行 —— 别的面板里出现同名
+/// 文字时就会假绿，而那种巧合在后续笔次里迟早发生。
 const Key hudZoomScaleKey = Key('hud-zoom-scale');
 
-/// 模式切换的容器（在 ① 内，见文件头表格）。
-const Key hudModeSwitchKey = Key('hud-mode-switch');
-
-/// 换根 chips 的容器（在 ① 内）。只在宇宙模式出现 —— 见 `_spaceSwitch()`。
+/// 换根 chips —— **已作废**（`VIEW-018` 修订 3，PR #59 回退）。同上，只作靶子。
 const Key hudSpaceSwitchKey = Key('hud-space-switch');
 
-/// ① 里某个根（空间）的 chip。点它换根。
-Key spaceChipKey(String spaceId) => Key('space-chip-$spaceId');
+/// 模式切换的命中盒（在 ① 内）。图标跟随面包屑末尾，盒子 44 px。
+const Key hudModeSwitchKey = Key('hud-mode-switch');
+
+/// ① 里的模式图标本体（14 px，`VIEW-018` 修订 2）。
+const Key hudModeIconKey = Key('hud-mode-icon');
+
+/// ① 里 `Z0` 的放大镜（`VIEW-018` 修订 2：`Z0` 不出项，搜索是唯一通路）。
+const Key hudSearchKey = Key('hud-search');
+
+/// 面包屑的**一段**。`index` 从 0 起。
+///
+/// 只有前段**有**这个 key —— 末段是纯文字（已在，点它没有意义），拿不到 key
+/// 本身就是「不可点」这条规则的证据。
+Key hudCrumbKey(int index) => Key('hud-crumb-$index');
 
 /// ⑥ 罗盘里某个轴按钮（点它展开 / 收起该轴的取值）。`VIEW-020`。
 Key compassAxisKey(String axisKey) => Key('compass-axis-$axisKey');
@@ -155,6 +185,28 @@ const double _drawerReserve = _drawerWidth + 32;
 /// ② 所在的一行占多高。树视图要在有筛选时把顶部让出这么多，
 /// 否则 chips 会压在树的第一行上（`VIEW-018` 把 ② 定在顶部第二行）。
 const double _filterRowHeight = 40;
+
+/// ① 从窗口顶端算起占多高（含 16 px 外边距）。
+///
+/// ② 与树的让位都读它，**不能各自写一个数**：`V-1a` 之前 ① 是两行文字（约 46），
+/// 模式图标换成 44 px 命中盒之后长到 76 —— 若 ② 仍按 72 摆，就会压在 ① 的下沿。
+/// 一个高度出现在两处，改一处忘一处不会有任何东西变红（`R-08`）。
+const double _hudTopHeight = 96;
+
+/// 模式图标与放大镜的**图形**尺寸（`VIEW-018` 修订 2：与面包屑字号同大）。
+const double _hudIconSize = 14;
+
+/// 图标命中盒。图标只有 14 px，直接按图形判会「看得见点不中」。
+const double _hudIconHit = 44;
+
+/// 面包屑字号。与图标同大（`VIEW-018` 修订 2 把两者写成同一个数）。
+const double _crumbFontSize = 14;
+
+/// 面包屑单段的宽度上限。
+///
+/// 项标题可能是整句（α 包里最长 40 余字）。不封顶的话四段面包屑会把 ③ 挤出
+/// 屏幕 —— 而 ③ 是「圈内/圈外 · 设置」，被挤掉时用户只会觉得少了个按钮。
+const double _crumbMaxWidth = 160;
 
 class UniverseScreen extends StatefulWidget {
   const UniverseScreen({
@@ -212,6 +264,16 @@ class _UniverseScreenState extends State<UniverseScreen>
   /// Z4 聚焦谁」，退出 Z4 就该清（`VIEW-013`）；而选中项跨模式保留，否则
   /// 树 → 宇宙 → 树 一走，用户还得重新找自己刚才在看什么。
   String? _selectedItemId;
+
+  /// 当前所在的域（`VIEW-018` 修订 2 的面包屑第 3 段）。`null` = 还没进任何域。
+  ///
+  /// **为什么是独立状态，而不是从选中项现推**：点面包屑第 3 段要退到 `Z2` 并
+  /// 清掉选中项（那一项已经不在视图里），而 `Z2` 的面包屑仍要显示域名 —— 现推
+  /// 的话，退完立刻掉回两段，用户会以为点到了更外层。
+  ///
+  /// `VIEW-015` 的快照要带它（`V-1f`）：缺了它，从 `Z4` 返回 `Z2` 会落在**第一个
+  /// 域**上 —— 档位 / 模式 / 空间全对、只有内容错，没有任何东西会变红。
+  String? _domainId;
 
   /// ② 的筛选表达式（DNF）。空 = 不过滤，② 整块不渲染（`VIEW-018`）。
   AxisFilter _axisFilter = emptyAxisFilter;
@@ -326,11 +388,15 @@ class _UniverseScreenState extends State<UniverseScreen>
   /// 为什么不让每个方法各自记：要不要写导航记忆是这些动作**共有**的后果，而
   /// 分散在七八处各写一遍必然漏一处 —— 漏了不会有任何东西变红（`R-08`）。
   ///
-  /// 两条判据：
+  /// 三条判据：
   /// - **详情从不可见变为可见** ⇒ 记 `returnTo`、`trail` 归零。这是「进详情」。
   /// - **已在详情里又换了一项** ⇒ `trail` 压入离开的那一项，`returnTo` **不动**。
   ///   覆盖它会让「返回」从「回出发地」退化成「回上一步」—— 而上一步本来就由
   ///   `trail` 管着，两处都管等于两处都不准。
+  /// - **详情从可见变为不可见** ⇒ 两者一起清。这是「离开详情」。
+  ///   ⚠️ 少了这一条，`Z4` 点面包屑退回上层之后 `returnTo` 会残留：抽屉里那个
+  ///   「返回」按钮下一帧又出现在 `Z4`，按下去跳回**上一个** `Z4`。面包屑给了
+  ///   「逐级后退」这个新入口（`V-1a`）之后，这条从「理论上可能」变成日常路径。
   ///
   /// 「换了一项」包含**换了根**：跨空间的两个同名项是两条不同的路，只比
   /// `itemId` 会把它们当成同一步，返回时落进错误的空间。
@@ -354,6 +420,9 @@ class _UniverseScreenState extends State<UniverseScreen>
               ? null
               : TrailStep(spaceId: previousSpaceId, itemId: previousId),
         );
+      } else if (wasVisible && !nowVisible) {
+        _returnTo = null;
+        _trail = const <TrailStep>[];
       }
     });
   }
@@ -377,6 +446,12 @@ class _UniverseScreenState extends State<UniverseScreen>
         _trail = stepped.trail;
         _spaceId = previous.spaceId;
         _selectedItemId = previous.itemId;
+        // 域必须跟着选中项重算：`trail` 存的是「离开的那一项」，跨域返回时
+        // 域也跟着换。漏了这一行，面包屑会写着**上一项**的域配**这一项**的
+        // 名字（两段都渲染得出来，只是彼此矛盾）。
+        _domainId = _rootOf(
+          previous.spaceId,
+        )?.pack?.itemOf(previous.itemId)?.domainId;
         // 返回详情内的一项 ⇒ 它必然在 `Z4`（那是详情唯一可见的宇宙态）。
         _camera = _camera.withZoom(
           ZoomLevel.z4,
@@ -396,6 +471,12 @@ class _UniverseScreenState extends State<UniverseScreen>
       _mode = snapshot.mode;
       _axisFilter = snapshot.axisFilter;
       _selectedItemId = snapshot.selectedItemId;
+      // 快照还没带 `domainId`（`V-1f` 才加）⇒ 先按选中项回推。回推结果与当初
+      // 存下的那个必然一致（域是选中项的属性），所以这一版没有信息损失 ——
+      // 字段补上之后这行改成读快照，理由见 `VIEW-015` 修订。
+      _domainId = _rootOf(
+        snapshot.spaceId,
+      )?.pack?.itemOf(snapshot.selectedItemId ?? '')?.domainId;
       _camera = _camera.withZoom(
         snapshot.zoomLevel,
         selectedItemId: snapshot.selectedItemId,
@@ -406,15 +487,26 @@ class _UniverseScreenState extends State<UniverseScreen>
     });
   }
 
-  void _switchZoom(ZoomLevel next) {
-    if (next == _camera.zoom && _mode == ViewMode.universe) {
-      return;
-    }
+  /// 面包屑前段点击：退到该层（`VIEW-018` 修订 2，「走 `returnTo` 同一入口」）。
+  ///
+  /// 三个分支的差别只在**清到哪一层**：
+  ///
+  /// | 目标 | 选中项 | 域 | 为什么 |
+  /// |---|---|---|---|
+  /// | `Z0` | 清 | 清 | 宇宙层不出项，也不属于任何域 |
+  /// | `Z1` | 清 | 清 | 星系层里项是背景（`VIEW-037`），留着会让「我选中了谁」失去所指 |
+  /// | `Z2` | 清 | **留** | 域就是这一层的容器；清了面包屑立刻掉回两段 |
+  ///
+  /// 也顺手切回宇宙：树里点第 1 段等于「回 `Z0`」，而树没有 `Z0` 形态。
+  /// `withZoom` 保留 yaw / pitch —— 退层不重置视角（`SPEC-VIEW-009`）。
+  void _toLevel(ZoomLevel level) {
     _navigate(() {
-      // `withZoom` 保留 yaw / pitch —— 切档不重置视角（`SPEC-VIEW-009`）。
-      _camera = _camera.withZoom(next, selectedItemId: _selectedItemId);
-      // 视距是宇宙的导航层级：点刻度即回宇宙（树里没有「Z2 的树」这种东西）。
       _mode = ViewMode.universe;
+      if (level != ZoomLevel.z2) {
+        _domainId = null;
+      }
+      _selectedItemId = null;
+      _camera = _camera.withZoom(level, selectedItemId: null);
     });
   }
 
@@ -449,7 +541,13 @@ class _UniverseScreenState extends State<UniverseScreen>
   ///
   /// 树里点项也走这里：树里的详情是常驻右栏，「从 A 翻到 B」与宇宙里「从 A 跳
   /// 到 B」对用户是同一件事。
-  void _select(String itemId) => _navigate(() => _selectedItemId = itemId);
+  void _select(String itemId) => _navigate(() {
+    _selectedItemId = itemId;
+    // 域跟着选中项走：树里点一项，面包屑第 3 段必须是**它所在的域** —— 否则
+    // 第 3、4 段会来自两个不同的位置（看着 A、面包屑写着 B），而两段都渲染得
+    // 出来，只是彼此矛盾，没有任何东西会变红（`R-08` 同族）。
+    _domainId = _pack?.itemOf(itemId)?.domainId ?? _domainId;
+  });
 
   // ── 快速定位（`SPEC-VIEW-024`–`033`） ───────────────────────────────────
 
@@ -515,15 +613,23 @@ class _UniverseScreenState extends State<UniverseScreen>
     _navigate(() {
       _spaceId = spaceId;
       _selectedItemId = itemId;
+      // 域先按目标包取：`_spaceId` 刚改，`_pack` 下一次读才是新的 —— 这里显式
+      // 从 `_rootOf` 取，不依赖 getter 的时序（读 getter 也对，但那样正确性
+      // 挂在「setState 里字段已经换过」这个隐含前提上）。
+      _domainId = _rootOf(spaceId)?.pack?.itemOf(itemId)?.domainId;
       _mode = ViewMode.universe;
       _camera = _camera.withZoom(ZoomLevel.z4, selectedItemId: itemId);
     }, selector: selector);
   }
 
-  /// 空间是落点类（`VIEW-001` 末句：`Z0` 展示全部空间）⇒ 换根到它并推到 `Z0`。
+  /// 空间是落点类（`VIEW-001`）⇒ 换根到它并推到 **`Z1`**。
   ///
-  /// 顺带清掉选中项：旧空间的 id 在新空间里通常不存在，留着虽然当下看不出差别
-  /// （`_detail()` 找不到 `Item` 就返回 `null`，抽屉本来就空），但「树 → 宇宙」
+  /// ⚠️ `V-1a` 之前这里推的是 `Z0`。`Z0` 现在是**宇宙层**（全部空间并列，
+  /// `VIEW-036`），落到单个空间应当是「进去了」⇒ `Z1`。同一条规则从「进去了」
+  /// 变成「没进去」只是因为 `Z0` 改了含义（`VIEW-027` / `VIEW-031` 同批修订）。
+  ///
+  /// 顺带清掉选中项与域：旧空间的 id 在新空间里通常不存在，留着虽然当下看不出
+  /// 差别（`_detail()` 找不到 `Item` 就返回 `null`，抽屉本来就空），但「树 → 宇宙」
   /// 会按 `phiLevelsOf(newPack)[旧 id] ?? 0` 猜成 0 层 —— 那是拿一个不存在的项
   /// 去定档。**这一条没有断言**：残留 id 在任何视图里都取不出内容，与 `null`
   /// 同效，可观测差异只在那个「猜档」上，而它本身没有独立出口。
@@ -534,8 +640,9 @@ class _UniverseScreenState extends State<UniverseScreen>
     _navigate(() {
       _spaceId = spaceId;
       _selectedItemId = null;
+      _domainId = null;
       _mode = ViewMode.universe;
-      _camera = _camera.withZoom(ZoomLevel.z0, selectedItemId: null);
+      _camera = _camera.withZoom(ZoomLevel.z1, selectedItemId: null);
     });
   }
 
@@ -565,6 +672,7 @@ class _UniverseScreenState extends State<UniverseScreen>
     });
     _navigate(() {
       _spaceId = spaceId;
+      _domainId = domainId;
       _selectedItemId = inDomain.first.id;
       _mode = ViewMode.universe;
       _camera = _camera.withZoom(
@@ -588,6 +696,11 @@ class _UniverseScreenState extends State<UniverseScreen>
     // 不再校验「这个取值在该空间里存在」：命中就是从那个包的 `sixAxis` 里搜出来
     // 的，再查一遍等于立第二套判据 —— 两套迟早不一致，而不一致不会有东西变红。
     _navigate(() {
+      if (hit.spaceId != _spaceId) {
+        // 跨空间写筛选：域属于**旧**空间，留着会让 `Z2` 的面包屑第 3 段指向一个
+        // 当前根里不存在的域 —— 名字照样渲染得出来，只是它不指任何东西。
+        _domainId = null;
+      }
       _spaceId = hit.spaceId;
       _axisFilter = toggleAxisValue(_axisFilter, axisKey, hit.target);
     });
@@ -745,43 +858,35 @@ class _UniverseScreenState extends State<UniverseScreen>
                 top: 16,
                 child: _panel(
                   key: hudBreadcrumbKey,
-                  child: Row(
+                  child: Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
                         children: <Widget>[
-                          Text(
-                            tree
-                                ? '树 › 全空间'
-                                : '宇宙 › ${_camera.zoom.code} ${_camera.zoom.label}',
-                            style: const TextStyle(
-                              color: paletteTextPrimary,
-                              fontSize: 12,
-                            ),
-                          ),
-                          // 诊断行：**空画面时先看这一行**。若写「合成」，说明内容包没找到
-                          // （运行期 CWD 不在 `app/`），而不是渲染坏了。
-                          // 换根后这里跟着换 —— 它是「我现在画的是哪个空间」的唯一出处。
-                          Text(
-                            '${_scene.origin.label} · ${_scene.itemCount} 项'
-                            ' · ${_scene.edgeCount} 边'
-                            ' · ${_scene.radialSegments} 段',
-                            style: const TextStyle(
-                              color: paletteTextSecondary,
-                              fontSize: 10,
-                            ),
-                          ),
+                          // ① = 面包屑 · 模式图标 · 放大镜（`VIEW-018` 修订 2）。
+                          // 图标**跟面包屑走**，不锚在 ① 的最右：① 的宽度随路径
+                          // 长度变，固定锚点会让图标与文字之间长出一段随档位伸缩的
+                          // 空白（4 段时约 174 px）。「位置随档位漂移」是规格里写明
+                          // 的既定行为，不是缺陷。
+                          ..._breadcrumbRow(),
+                          _modeIcon(),
+                          if (!tree && _camera.zoom == ZoomLevel.z0) _searchIcon(),
                         ],
                       ),
-                      // 换根挨着面包屑：「我在哪个空间」与「我在哪一层」是同一类
-                      // 问题，放进 ③ 设置或底部会变成用户找不到的功能。
-                      if (!tree) _spaceSwitch(),
-                      // 模式切换挂在 ① 内：面包屑是「我在哪」，模式也是「我在哪」的
-                      // 一部分；进 ⑦ 会污染「视距刻度」的单一职责，进 ③ 会把它变成
-                      // 用户找不到的功能。
-                      _modeSwitch(),
+                      // 诊断行：**空画面时先看这一行**。若写「合成」，说明内容包没找到
+                      // （运行期 CWD 不在 `app/`），而不是渲染坏了。
+                      // 换根后这里跟着换 —— 它是「我现在画的是哪个空间」的唯一出处。
+                      Text(
+                        '${_scene.origin.label} · ${_scene.itemCount} 项'
+                        ' · ${_scene.edgeCount} 边'
+                        ' · ${_scene.radialSegments} 段',
+                        style: const TextStyle(
+                          color: paletteTextSecondary,
+                          fontSize: 10,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -801,26 +906,20 @@ class _UniverseScreenState extends State<UniverseScreen>
               if (!tree) Center(child: _hiddenSlot(hudFocusStarKey, '焦点星')),
               // ⑥ 六轴罗盘：`VIEW-011` 树里没有方位，保留即成假控件。
               if (!tree) _positioned(left: 16, bottom: 72, child: _compass()),
-              _positioned(
-                left: 16,
-                right: 16,
-                bottom: 16,
-                child: _panel(
-                  key: hudZoomScaleKey,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      for (final ZoomLevel level in ZoomLevel.values)
-                        _zoomChip(level),
-                    ],
-                  ),
-                ),
-              ),
+              // ⑦ **留白**（`VIEW-018` 修订 1）。刻度条已作废：下钻模型下它会
+              // 造出「直达某档但容器不明」—— `Z0` 点 `Z2` 该开哪个域？没选过，
+              // 没有答案。而面包屑每一段都是实际走过的。
+              //
+              // 空着而不是塞个占位：占位会被读成「待填的坑」，而这一格不再有
+              // 内容要填。`hudZoomScaleKey` 因此是本文件里唯一一个**渲染时不用**
+              // 的 key —— 它留着给测试断言「这里空着」。
               // ② 筛选状态栏：**有筛选才出现**（`VIEW-018`），放在 ① 下方。
               if (filtered)
                 _positioned(
                   left: 16,
-                  top: 72,
+                  // ① 现在是 44 px 的图标行 + 诊断行（见 `_hudTopHeight`）——
+                  // 写死 72 会让 ② 压在 ① 的下沿上。
+                  top: _hudTopHeight,
                   child: FilterChips(
                     key: hudFilterChipsKey,
                     filter: _axisFilter,
@@ -850,19 +949,23 @@ class _UniverseScreenState extends State<UniverseScreen>
     // `VIEW-031` 的作用域：`Z0` 本就是跨空间视角 ⇒ 不限空间；其余档位默认只搜
     // 本空间，浮层顶部给一行「在全部空间中搜索」。
     scopeSpaceId: _camera.zoom == ZoomLevel.z0 ? null : _pack?.space.id,
-    domainId: _domainId(),
+    domainId: _domainContext(),
     onPick: _applyHit,
     // 类 ②「措辞不同」的邻近候选：点了就是真落点，与命中同一条路径。
     onPickNear: _pickNear,
     onDismiss: _closeLocate,
   );
 
-  /// 当前视图的域上下文 = **选中项所在的域**（`VIEW-030` ③ / ④ 的分野）。
+  /// 定位浮层的域上下文 = **选中项所在的域**（`VIEW-030` ③ / ④ 的分野）。
   ///
   /// 为什么不用档位：档位只说「离得多近」。在 `Z1` 上看着一堆星系、什么都
   /// 没选时，硬说「你在某个域里」会让分诊凭空多出一个 ③，于是把新项塞进
   /// 一个用户并没有在看的域 —— 那比只记一句需求更糟。
-  String? _domainId() {
+  ///
+  /// 与 ① 面包屑第 3 段**不同源**：那里读 [`_domainId`]（可以比选中项活得久 ——
+  /// 点面包屑第 3 段会清掉选中项而保留域）。这里要的是「用户此刻在看哪一项」，
+  /// 选中项一空就必须返回 `null`。
+  String? _domainContext() {
     final LoadedPack? pack = _pack;
     final String? id = _selectedItemId;
     if (pack == null || id == null) {
@@ -943,8 +1046,9 @@ class _UniverseScreenState extends State<UniverseScreen>
     padding: EdgeInsets.only(
       // 右栏是浮层（`hudDetailDrawerKey`），树要给它让位，否则末端的 φ 标签被盖住。
       right: _drawerReserve,
-      // 有筛选时 ② 占着顶部第二行，树整体下移 —— 树自己的 margin 只留出了 ① 的高度。
-      top: filtered ? _filterRowHeight : 0,
+      // ① 常显 ⇒ 树永远从它下面开始；② 出现时再让一行。两个数都从常量来：
+      // ① 的高度若在两处各写一个数，改一处忘一处不会有任何东西变红（`R-08`）。
+      top: _hudTopHeight + (filtered ? _filterRowHeight : 0),
     ),
     child: TreeView(
       pack: _pack,
@@ -954,104 +1058,173 @@ class _UniverseScreenState extends State<UniverseScreen>
     ),
   );
 
-  /// 宇宙 ⇄ 树。两个按钮而不是一个 toggle：**当前在哪**应该一眼看到，而不是
-  /// 从「按钮上的字是什么」倒推。
-  /// ① 里的**换根**入口：`roots` 里每个有 `KnowledgeSpace` 的根一枚 chip。
-  ///
-  /// 为什么要有它：`VIEW-031` 只规定了「`Z0` 的作用域是全部空间」与「跨空间
-  /// 命中 ⇒ 换根」，两条都发生在**定位浮层**里。于是三个包装好了、`Z0` 也确实
-  /// 一次装了三个根，但用户在屏幕上只看得到 `order` 最小的那一个 —— 换根的唯一
-  /// 入口是先知道搜什么词。这不是「没有多根」，是**多根没有入口**。
-  ///
-  /// 只列真包：合成回落那条的「空间」是凭空造的（`bundle.synthetic` 的 id 是
-  /// `s0…s149`），列进来等于给用户一个点不动也看不懂的根。
-  ///
-  /// 树里不渲染（与 ⑤⑥ 同一条理由的反面）：树读的是当前根，换根之后该重画树，
-  /// 而 `_jumpToSpace` 会把用户推回宇宙 —— 那就成了「点了一个按钮，视图变了
-  /// 但东西没换」。树里换根归 `B4`（树要按 `⪯` 重组，换根等于换整棵树）。
-  Widget _spaceSwitch() {
-    final List<LoadedPack> packs = <LoadedPack>[
-      for (final SceneResolution root in widget.roots)
-        if (root.pack != null) root.pack!,
-    ];
-    // 一个根没有「切换」可言；一枚恒亮的 chip 只会被读成「坏了」。
-    if (packs.length < 2) {
-      return const SizedBox.shrink();
-    }
-    return Padding(
-      key: hudSpaceSwitchKey,
-      padding: const EdgeInsets.only(left: 12),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          for (final LoadedPack pack in packs)
-            Padding(
-              padding: const EdgeInsets.only(left: 4),
-              child: TextButton(
-                key: spaceChipKey(pack.space.id),
-                // 换根复用 `_jumpToSpace`，不另写一条路径：空间是落点类
-                // （`VIEW-001` 末句），落到它并推到 `Z0`。两条换根路径迟早
-                // 不一致，而不一致不会有任何东西变红（`R-08`）。
-                onPressed: pack.space.id == _spaceId
-                    ? null
-                    : () => _jumpToSpace(pack.space.id),
-                style: TextButton.styleFrom(
-                  backgroundColor: pack.space.id == _spaceId
-                      ? paletteSelected
-                      : null,
-                  foregroundColor: pack.space.id == _spaceId
-                      ? paletteTextPrimary
-                      : paletteTextSecondary,
-                  minimumSize: const Size(48, 28),
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                ),
-                // 显示 `space.id` 而不是 `space.name`：三个名字是「Python 语法
-                // 分层 / 英语语法分层 / 德语语法分层」，横排要占满半屏；而 id
-                // 就是包目录名，用户核对得上的也正是它。
-                child: Text(
-                  pack.space.id,
-                  style: const TextStyle(fontSize: 11),
-                ),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
+  // ── ① 面包屑与图标（`VIEW-018` 修订 2） ─────────────────────────────────
 
-  Widget _modeSwitch() => Padding(
-    key: hudModeSwitchKey,
-    padding: const EdgeInsets.only(left: 12),
-    child: Row(
-      mainAxisSize: MainAxisSize.min,
-      children: <Widget>[
-        for (final ViewMode mode in <ViewMode>[
-          ViewMode.universe,
-          ViewMode.tree,
-        ])
-          Padding(
-            padding: const EdgeInsets.only(left: 4),
-            child: TextButton(
-              onPressed: () => _switchMode(mode),
-              style: TextButton.styleFrom(
-                backgroundColor: _mode == mode ? paletteSelected : null,
-                foregroundColor: _mode == mode
-                    ? paletteTextPrimary
-                    : paletteTextSecondary,
-                minimumSize: const Size(48, 28),
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              ),
-              child: Text(
-                mode == ViewMode.universe ? '宇宙' : '树',
-                style: const TextStyle(fontSize: 11),
+  /// 面包屑的段与分隔符。
+  ///
+  /// 每段单独成 widget 而不是拼一整个字符串：`知识 › English` 作为一条文本
+  /// 没法让「前段可点、末段不可」，而那正是这一行唯一的行为。
+  List<Widget> _breadcrumbRow() {
+    final List<_Crumb> crumbs = _crumbs();
+    return <Widget>[
+      for (int i = 0; i < crumbs.length; i++) ...<Widget>[
+        if (i > 0)
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 4),
+            child: Text(
+              '\u203a',
+              style: TextStyle(
+                color: paletteTextSecondary,
+                fontSize: _crumbFontSize,
               ),
             ),
           ),
+        _crumbWidget(i, crumbs[i]),
       ],
+    ];
+  }
+
+  /// 当前位置的路径（`VIEW-018` 修订 2）。段数 = 走到第几层。
+  ///
+  /// | 档 | 段 | 内容 |
+  /// |---|---|---|
+  /// | `Z0` | 1 | `知识` |
+  /// | `Z1` | 2 | + 空间 |
+  /// | `Z2` | 3 | + 域 |
+  /// | `Z3` / `Z4` | 4 | + 项（`VIEW-001`：两者同形，区分靠抽屉） |
+  ///
+  /// **少一段就是「这一层还没有确定的对象」**：不补占位、不猜名字。`Z2` 只有
+  /// 在真进过某个域之后才有第 3 段；合成回落没有空间名，永远只有第 1 段。
+  List<_Crumb> _crumbs() {
+    final List<_Crumb> raw = _rawCrumbs();
+    // **末段一律抹掉 `level`** —— `VIEW-018` 修订 2 的「末段不可点」。
+    // 不抹的话，`Z1` 的「空间」段会同时是「第 2 段」与「可点」：点它等于原地
+    // 不动，而且测试里「末段没有 key」这条判据直接失效（`_crumbCount` 会多算
+    // 一段，所有段数断言一起偏 1）。
+    return <_Crumb>[...raw.take(raw.length - 1), _Crumb(raw.last.label)];
+  }
+
+  /// 未标末段的原始路径 —— 每一段都带着「点了退到哪一档」。
+  List<_Crumb> _rawCrumbs() {
+    final LoadedPack? pack = _pack;
+    final List<_Crumb> crumbs = <_Crumb>[
+      const _Crumb('知识', level: ZoomLevel.z0),
+    ];
+    if (pack == null) {
+      // 合成回落的根背后没有 `KnowledgeSpace` —— 没有名字可写，就只写位置。
+      return crumbs;
+    }
+    final bool tree = _mode == ViewMode.tree;
+    // `Z0` 是宇宙层：并列的是全部空间，没有「进去了哪一个」这回事。
+    if (!tree && _camera.zoom == ZoomLevel.z0) {
+      return crumbs;
+    }
+    crumbs.add(_Crumb(_spaceLabel(pack.space.id), level: ZoomLevel.z1));
+    if (_domainId == null || (!tree && _camera.zoom == ZoomLevel.z1)) {
+      return crumbs;
+    }
+    // ⚠️ 第 3 段显示的是 `domainId`，不是中文域名：包里**没有** Domain 实体，
+    // 域只有 `Item.domainId` 与 `KnowledgeSpace.domainIds` 两个字符串字段。
+    // `VIEW-018` 的例子写「`词法形态`」，那是数据里不存在的名字 —— 等包格式补
+    // `domains` 段再换（属 PACK 域修订，本笔不假造一个）。
+    crumbs.add(_Crumb(_domainId!, level: ZoomLevel.z2));
+    final Item? item = _selectedItem();
+    if (item == null) {
+      return crumbs;
+    }
+    // `Z2` 的形态是「一朵云」，不是某一项 ⇒ 第 3 段就是末段。
+    if (!tree && _camera.zoom == ZoomLevel.z2) {
+      return crumbs;
+    }
+    crumbs.add(_Crumb(item.title));
+    return crumbs;
+  }
+
+  /// 一段面包屑。**末段没有 key** —— 它是纯文字，点了没有去处。
+  Widget _crumbWidget(int index, _Crumb crumb) {
+    final Widget label = ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: _crumbMaxWidth),
+      child: Text(
+        crumb.label,
+        maxLines: 1,
+        softWrap: false,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+          color: crumb.level == null
+              ? paletteTextPrimary
+              : paletteTextSecondary,
+          fontSize: _crumbFontSize,
+        ),
+      ),
+    );
+    if (crumb.level == null) {
+      return label;
+    }
+    return TextButton(
+      key: hudCrumbKey(index),
+      onPressed: () => _toLevel(crumb.level!),
+      style: TextButton.styleFrom(
+        // 24 px 是项目的最小可点尺寸；再矮就得靠「文字恰好够长」凑命中。
+        minimumSize: const Size(0, 24),
+        padding: EdgeInsets.zero,
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        foregroundColor: paletteTextSecondary,
+      ),
+      child: label,
+    );
+  }
+
+  /// 空间的显示名：`space.id` 首字母大写（`VIEW-036` 的标注口径）。
+  ///
+  /// 不用 `space.name`：三个包的 `name` 是「Python 语法分层 / 英语语法分层 /
+  /// 德语语法分层」，四段面包屑里再塞这种长度就要换行；而 id 就是包目录名，
+  /// 用户核对得上的也正是它。
+  String _spaceLabel(String id) =>
+      id.isEmpty ? id : id[0].toUpperCase() + id.substring(1);
+
+  /// 模式图标（`VIEW-018` 修订 2）：14 px 图形、44 px 命中盒。
+  ///
+  /// 图上画的是**当前**模式而不是目标：① 的职责是「我在哪」。画目标的话，同一个
+  /// 图标在宇宙里叫「树」、在树里叫「宇宙」，读起来像两个不同的按钮。
+  Widget _modeIcon() => SizedBox(
+    key: hudModeSwitchKey,
+    width: _hudIconHit,
+    height: _hudIconHit,
+    child: InkResponse(
+      key: hudModeIconKey,
+      onTap: _toggleMode,
+      radius: _hudIconHit / 2,
+      child: Icon(
+        _mode == ViewMode.tree ? Icons.account_tree : Icons.public,
+        size: _hudIconSize,
+        color: paletteTextSecondary,
+      ),
     ),
   );
+
+  /// `Z0` 的放大镜（`VIEW-018` 修订 2）。
+  ///
+  /// 只给 `Z0`：那一档不出项 ⇒ 搜索是进 `Z4` 的唯一通路，不给入口等于只有出口
+  /// 没有入口（触屏设备没有 `⌘K`）。
+  Widget _searchIcon() => SizedBox(
+    key: hudSearchKey,
+    width: _hudIconHit,
+    height: _hudIconHit,
+    child: InkResponse(
+      onTap: _openLocate,
+      radius: _hudIconHit / 2,
+      child: const Icon(
+        Icons.search,
+        size: _hudIconSize,
+        color: paletteTextSecondary,
+      ),
+    ),
+  );
+
+  void _toggleMode() =>
+      _switchMode(_mode == ViewMode.tree ? ViewMode.universe : ViewMode.tree);
+
+  Item? _selectedItem() => _pack?.itemOf(_selectedItemId ?? '');
 
   // ── ⑥ 罗盘的渲染 ────────────────────────────────────────────────────────
 
@@ -1203,25 +1376,6 @@ class _UniverseScreenState extends State<UniverseScreen>
     );
   }
 
-  Widget _zoomChip(ZoomLevel level) {
-    final bool selected = level == _camera.zoom && _mode == ViewMode.universe;
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4),
-      child: TextButton(
-        onPressed: () => _switchZoom(level),
-        style: TextButton.styleFrom(
-          backgroundColor: selected ? paletteSelected : null,
-          foregroundColor: selected ? paletteTextPrimary : paletteTextSecondary,
-          minimumSize: const Size(56, 32),
-        ),
-        child: Text(
-          '${level.code} ${level.label}',
-          style: const TextStyle(fontSize: 12),
-        ),
-      ),
-    );
-  }
-
   Widget _positioned({
     double? left,
     double? right,
@@ -1255,4 +1409,18 @@ class _UniverseScreenState extends State<UniverseScreen>
       style: const TextStyle(color: paletteTextSecondary, fontSize: 10),
     ),
   );
+}
+
+/// 面包屑的一段（`VIEW-018` 修订 2）。
+///
+/// `level == null` = **末段**：当前位置本身，渲染成纯文字。拿它当「不可点」的
+/// 唯一判据（而不是另存一个 `bool last`），是因为两条判据迟早会出现「level 有值
+/// 但 last 也是 true」的中间态 —— 那时画出来是可点按钮、语义却是末段。
+class _Crumb {
+  const _Crumb(this.label, {this.level});
+
+  final String label;
+
+  /// 点它退到哪一档。`null` = 不可点。
+  final ZoomLevel? level;
 }

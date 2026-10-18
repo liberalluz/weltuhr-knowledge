@@ -144,9 +144,39 @@ Offset _findPoint(
   fail('扫描区间里找不到「${hit ? "有星" : "没有星"}」的位置');
 }
 
+/// 面包屑的段数（`VIEW-018` 修订 2：段数 = 走到第几层）。
+///
+/// **末段没有 key** —— 它是纯文字、点了没有去处，所以数到的 key 个数是
+/// `段数 - 1`。这条接口本身就是「末段不可点」的证据：末段若哪天也带上 key，
+/// 这个 helper 会多算一段，用例立刻红。
+int _crumbCount(WidgetTester tester) {
+  int n = 0;
+  while (find.byKey(hudCrumbKey(n)).evaluate().isNotEmpty) {
+    n++;
+  }
+  return n + 1;
+}
+
+/// 面包屑里有没有某段文字。诊断行也在 ① 里，所以必须限定在面包屑的
+/// **段**上 —— 用 `Text` 全搜会把「Python · 153 项 · …」也数进来。
+bool _crumbHas(WidgetTester tester, String text) => find
+    .descendant(of: find.byKey(hudBreadcrumbKey), matching: find.text(text))
+    .evaluate()
+    .isNotEmpty;
+
+/// 某一档对应的段数（`VIEW-018` 修订 2 的段数表）。
+///
+/// `Z3` 与 `Z4` **同形**（`VIEW-001`：4 段），区分靠抽屉在不在。
+int _crumbsFor(ZoomLevel level) => switch (level) {
+  ZoomLevel.z0 => 1,
+  ZoomLevel.z1 => 2,
+  ZoomLevel.z2 => 3,
+  ZoomLevel.z3 || ZoomLevel.z4 => 4,
+};
+
 void main() {
   group('宇宙视图的 HUD 七区块（SPEC-VIEW-018）', () {
-    testWidgets('默认 Z1：①③⑤⑥⑦ 在，② 与 ④ 不在（SPEC-VIEW-018）', (
+    testWidgets('默认 Z1：①③⑤⑥ 在，②④⑦ 不在（SPEC-VIEW-018 修订）', (
       WidgetTester tester,
     ) async {
       await _pumpScreen(tester);
@@ -155,7 +185,11 @@ void main() {
       expect(find.byKey(hudScopeSettingsKey), findsOneWidget);
       expect(find.byKey(hudFocusStarKey), findsOneWidget);
       expect(find.byKey(hudAxisCompassKey), findsOneWidget);
-      expect(find.byKey(hudZoomScaleKey), findsOneWidget);
+      expect(
+        find.byKey(hudZoomScaleKey),
+        findsNothing,
+        reason: '⑦ 已作废（VIEW-018 修订 1）—— 那一格留白，不是换成别的东西',
+      );
 
       expect(
         find.byKey(hudFilterChipsKey),
@@ -170,31 +204,113 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('切到 Z4 ⇒ ④ 出现、面包屑含 Z4（SPEC-VIEW-018）', (
+    testWidgets('⑦ 作废后底部没有任何档位按钮（SPEC-VIEW-018 修订 1）', (
       WidgetTester tester,
     ) async {
       await _pumpScreen(tester);
 
-      await tester.tap(find.text('Z4 单星'));
-      await _pump(tester);
-
-      expect(find.byKey(hudDetailDrawerKey), findsOneWidget);
-      expect(find.text('宇宙 › Z4 单星'), findsOneWidget);
+      // 五枚按钮没了：`VIEW-001` 的导航层级改由面包屑承担。这里逐档查字面，
+      // 而不是只查 `hudZoomScaleKey` —— 前者证明「少了功能」，后者只证明
+      // 「少了一块面板」，两个不同的结论。
+      for (final ZoomLevel level in ZoomLevel.values) {
+        expect(
+          find.text('${level.code} ${level.label}'),
+          findsNothing,
+          reason: '${level.code} 的刻度按钮已随 ⑦ 一起作废',
+        );
+      }
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('五档刻度全在，且当前档可反复切换不崩（SPEC-VIEW-001）', (
+    testWidgets('Z0 面包屑只有一段「知识」，不写空间名（SPEC-VIEW-018 修订 2）', (
       WidgetTester tester,
     ) async {
-      await _pumpScreen(tester);
+      final LoadedPack pack = loadAlphaPack();
+      await _pumpScreen(
+        tester,
+        pack: pack,
+        scene: _alphaScene(pack),
+        zoom: ZoomLevel.z0,
+      );
 
-      for (final ZoomLevel level in ZoomLevel.values) {
-        expect(find.text('${level.code} ${level.label}'), findsOneWidget);
-      }
-      for (final ZoomLevel level in ZoomLevel.values.reversed) {
-        await tester.tap(find.text('${level.code} ${level.label}'));
-        await _pump(tester);
-      }
+      expect(_crumbCount(tester), _crumbsFor(ZoomLevel.z0));
+      expect(
+        _crumbHas(tester, '知识'),
+        isTrue,
+        reason: '第 1 段是位置名，不是模式名（原先写的是「宇宙」）',
+      );
+      expect(
+        _crumbHas(tester, 'Python'),
+        isFalse,
+        reason: 'Z0 是宇宙层：并列的是全部空间，没有「进去了哪一个」',
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('Z1 面包屑两段：知识 › Python（SPEC-VIEW-018 修订 2）', (
+      WidgetTester tester,
+    ) async {
+      final LoadedPack pack = loadAlphaPack();
+      await _pumpScreen(tester, pack: pack, scene: _alphaScene(pack));
+
+      expect(_crumbCount(tester), _crumbsFor(ZoomLevel.z1));
+      expect(_crumbHas(tester, '知识'), isTrue);
+      expect(
+        _crumbHas(tester, 'Python'),
+        isTrue,
+        reason: '用 space.id 首字母大写，不用 space.name（VIEW-036 的标注口径）',
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('Z2 面包屑三段：加上域名（SPEC-VIEW-018 修订 2 / VIEW-028）', (
+      WidgetTester tester,
+    ) async {
+      final LoadedPack pack = loadAlphaPack();
+      await _pumpScreen(tester, pack: pack, scene: _alphaScene(pack));
+
+      // 域落点是 `Z2` 唯一的正式入口（`_jumpToDomain`）。点星系下钻要等 `V-1b`。
+      final String domainId = pack.space.domainIds.first;
+      await _search(tester, domainId);
+      final LocateHit domain = Locator.single(pack)
+          .locate(domainId)
+          .hits
+          .firstWhere((LocateHit h) => h.kind == LocateKind.domain);
+      await tester.tap(find.byKey(locateRowKey(domain)));
+      await _pump(tester);
+
+      expect(_crumbCount(tester), _crumbsFor(ZoomLevel.z2));
+      expect(
+        _crumbHas(tester, domainId),
+        isTrue,
+        reason: '包里没有中文域名（只有 domainId），面包屑如实显示 id',
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('Z4 面包屑四段、且有抽屉（SPEC-VIEW-001 / 018 修订 2）', (
+      WidgetTester tester,
+    ) async {
+      final LoadedPack pack = loadAlphaPack();
+      await _pumpScreen(tester, pack: pack, scene: _alphaScene(pack));
+
+      await _search(tester, '装饰器');
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await _pump(tester);
+
+      // `Z3` 与 `Z4` 同形（4 段）⇒ 段数不能区分它们，抽屉才能。`Z3` 的入口
+      // 随 `V-1d`（恒星系下钻）出现，届时在同一张段数表上补一行。
+      expect(_crumbCount(tester), _crumbsFor(ZoomLevel.z4));
+      expect(
+        _crumbHas(tester, '装饰器'),
+        isTrue,
+        reason: '第 4 段是项标题 —— 末段就是「此刻看的这一项」',
+      );
+      expect(
+        find.byKey(hudDetailDrawerKey),
+        findsOneWidget,
+        reason: 'Z4 的判据是抽屉，不是段数（VIEW-001）',
+      );
       expect(tester.takeException(), isNull);
     });
   });
@@ -224,11 +340,20 @@ void main() {
     ) async {
       await _pumpScreen(tester, pack: loadAlphaPack());
 
-      await tester.tap(find.text('树'));
+      await tester.tap(find.byKey(hudModeIconKey));
       await _pump(tester);
 
       expect(find.byKey(treeViewKey), findsOneWidget);
-      expect(find.text('树 › 全空间'), findsOneWidget);
+      expect(
+        _crumbCount(tester),
+        2,
+        reason: '树的面包屑与宇宙同构：知识 › 空间（VIEW-006 修订 / 018 修订 2）',
+      );
+      expect(
+        _crumbHas(tester, '知识'),
+        isTrue,
+        reason: '首段是位置名而不是「树」—— 原先写的是「树 › 全空间」',
+      );
       expect(
         find.byKey(hudAxisCompassKey),
         findsNothing,
@@ -281,26 +406,30 @@ void main() {
         reason: '点行后详情页头应是这一项的标题',
       );
 
-      await tester.tap(find.text('宇宙'));
+      await tester.tap(find.byKey(hudModeIconKey));
       await _pump(tester);
 
       final ZoomLevel expected = zoomForPhi(levels[row.id]!, hasChildren: true);
       expect(
-        find.text('宇宙 › ${expected.code} ${expected.label}'),
-        findsOneWidget,
+        _crumbCount(tester),
+        _crumbsFor(expected),
+        reason: '段数 = 档位 —— 切回宇宙后走 φ 定档（VIEW-009），面包屑跟着它',
       );
       expect(find.byKey(treeViewKey), findsNothing, reason: '回宇宙后树不该还留着');
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('树里点刻度 ⇒ 回宇宙并定到该档（SPEC-VIEW-001）', (WidgetTester tester) async {
+    testWidgets('树里点面包屑第 1 段 ⇒ 回 Z0 并切回宇宙（SPEC-VIEW-018 修订 2）', (
+      WidgetTester tester,
+    ) async {
       await _pumpScreen(tester, pack: loadAlphaPack(), mode: ViewMode.tree);
 
-      await tester.tap(find.text('Z2 星云'));
+      // ⑦ 作废之后，树 → 宇宙只剩这一个入口：面包屑前段。
+      await tester.tap(find.byKey(hudCrumbKey(0)));
       await _pump(tester);
 
-      expect(find.text('宇宙 › Z2 星云'), findsOneWidget);
-      expect(find.byKey(treeViewKey), findsNothing);
+      expect(find.byKey(treeViewKey), findsNothing, reason: '树没有 Z0 形态');
+      expect(_crumbCount(tester), _crumbsFor(ZoomLevel.z0));
       expect(tester.takeException(), isNull);
     });
 
@@ -309,7 +438,7 @@ void main() {
     ) async {
       await _pumpScreen(tester);
 
-      await tester.tap(find.text('树'));
+      await tester.tap(find.byKey(hudModeIconKey));
       await _pump(tester);
 
       expect(find.byKey(treeEmptyKey), findsOneWidget);
@@ -363,9 +492,14 @@ void main() {
       expect(find.byKey(hudFilterChipsKey), findsOneWidget);
       expect(find.byKey(locateOverlayKey), findsNothing, reason: '选完即关');
       expect(
-        find.text('宇宙 › Z1 星系'),
-        findsOneWidget,
-        reason: '筛选是收窄视野，不换根（VIEW-028）',
+        _crumbCount(tester),
+        _crumbsFor(ZoomLevel.z1),
+        reason: '筛选是收窄视野，不换档（VIEW-028）—— 面包屑仍是两段',
+      );
+      expect(
+        _crumbHas(tester, 'Python'),
+        isTrue,
+        reason: '筛选也不换根 —— 第 2 段还是同一个空间',
       );
       expect(
         find.byKey(
@@ -413,8 +547,8 @@ void main() {
       final LocateHit hit = Locator.single(pack).locate('装饰器').hits.first;
       expect(find.byKey(locateOverlayKey), findsNothing);
       expect(
-        find.text('宇宙 › Z4 单星'),
-        findsOneWidget,
+        _crumbCount(tester),
+        _crumbsFor(ZoomLevel.z4),
         reason: '搜索的落点是这一项本身，不是它所在的星云（VIEW-027）',
       );
       expect(
@@ -463,7 +597,7 @@ void main() {
       await _pump(tester);
 
       expect(find.byKey(locateOverlayKey), findsNothing);
-      expect(find.text('宇宙 › Z4 单星'), findsOneWidget);
+      expect(_crumbCount(tester), _crumbsFor(ZoomLevel.z4));
       expect(
         find.descendant(
           of: find.byKey(detailPanelKey),
@@ -654,11 +788,9 @@ void main() {
         reason: 'VIEW-013：进详情 = 写选中项并推进到 Z4',
       );
       expect(
-        find.descendant(
-          of: find.byKey(hudBreadcrumbKey),
-          matching: find.textContaining('Z4'),
-        ),
-        findsOneWidget,
+        _crumbCount(tester),
+        _crumbsFor(ZoomLevel.z4),
+        reason: '点星与搜索落点同一条路径 ⇒ 面包屑也到四段',
       );
       expect(tester.takeException(), isNull);
     });
@@ -857,11 +989,9 @@ void main() {
         reason: 'Z1 没有详情（VIEW-013）⇒ 已经退回来了',
       );
       expect(
-        find.descendant(
-          of: find.byKey(hudBreadcrumbKey),
-          matching: find.textContaining('Z1'),
-        ),
-        findsOneWidget,
+        _crumbCount(tester),
+        _crumbsFor(ZoomLevel.z1),
+        reason: '退回出发地 ⇒ 面包屑也跟着回到两段',
       );
       expect(find.byKey(detailBackKey), findsNothing, reason: '退无可退之后按钮再次消失');
       expect(tester.takeException(), isNull);
@@ -1144,7 +1274,7 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('空间命中 ⇒ 换根到它并推到 Z0，选中项清空（SPEC-VIEW-001 / 031）', (
+    testWidgets('空间命中 ⇒ 换根到它并推到 Z1，选中项清空（SPEC-VIEW-001 / 027 / 031）', (
       WidgetTester tester,
     ) async {
       final LoadedPack pack = loadAlphaPack();
@@ -1173,13 +1303,12 @@ void main() {
         reason: '换根到 Go —— 画的是它那一项',
       );
       expect(
-        find.descendant(
-          of: find.byKey(hudBreadcrumbKey),
-          matching: find.textContaining('Z0'),
-        ),
-        findsOneWidget,
-        reason: '空间是 Z0 那一层',
+        _crumbCount(tester),
+        _crumbsFor(ZoomLevel.z1),
+        reason: '空间落点推到 Z1（VIEW-027 / 031 修订）：Z0 现在是宇宙层，'
+            '落到单个空间应当是「进去了」',
       );
+      expect(_crumbHas(tester, 'Go'), isTrue, reason: '第 2 段是目标空间');
       expect(
         find.byKey(hudDetailDrawerKey),
         findsNothing,
@@ -1229,12 +1358,14 @@ void main() {
         reason: '换根到 Go —— 不换根的话这条取值在 α 包里筛出空集',
       );
       expect(
-        find.descendant(
-          of: find.byKey(hudBreadcrumbKey),
-          matching: find.textContaining('Z1'),
-        ),
-        findsOneWidget,
+        _crumbCount(tester),
+        _crumbsFor(ZoomLevel.z1),
         reason: '筛选类不改档位（VIEW-028）—— 改的只是根',
+      );
+      expect(
+        _crumbHas(tester, 'Go'),
+        isTrue,
+        reason: '换根之后第 2 段是 Go；域属于旧空间，已随换根清掉（仍在两段）',
       );
       expect(tester.takeException(), isNull);
     });
@@ -1262,7 +1393,9 @@ void main() {
       await tester.tap(find.byKey(locateRowKey(space)));
       await _pump(tester);
 
-      // 在 Go 里再搜：`Z0` 不限空间，所以直接能看到 α 包的项。
+      // 在 Go 里再搜：`Z1` 默认只搜本空间 ⇒ 另一个空间的项要先点浮层顶部那行
+      // 放宽。⚠️ 换根后落到的是 `Z1` 而不是 `Z0`（`VIEW-027` / `031` 修订：
+      // `Z0` 变成宇宙层，「落到某个空间」= 进去了），作用域因此跟着收窄。
       await _search(tester, '装饰器');
       final LocateHit remote = Locator(<LoadedPack>[pack, go])
           .locate('装饰器')
@@ -1275,8 +1408,16 @@ void main() {
       );
       expect(
         find.byKey(locateRowKey(remote)),
+        findsNothing,
+        reason: 'Z1 只搜本空间（VIEW-031），另一个空间的项默认不列',
+      );
+
+      await tester.tap(find.byKey(locateSearchAllKey));
+      await _pump(tester);
+      expect(
+        find.byKey(locateRowKey(remote)),
         findsOneWidget,
-        reason: 'Z0 搜全部空间，另一个空间的项照样列出来',
+        reason: '点「在全部空间中搜索」之后它才出现 —— 那一行就是作用域的出口',
       );
       expect(tester.takeException(), isNull);
     });
@@ -1302,10 +1443,7 @@ void main() {
       await tester.tap(find.byKey(locateRowKey(space)));
       await _pump(tester);
 
-      await tester.tap(find.descendant(
-        of: find.byKey(hudModeSwitchKey),
-        matching: find.text('树'),
-      ));
+      await tester.tap(find.byKey(hudModeIconKey));
       await _pump(tester);
 
       expect(
@@ -1317,94 +1455,161 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('两个根 ⇒ ① 里给出一排换根 chips，当前根那枚停用（SPEC-VIEW-031）', (
+    testWidgets('换根 chips 已撤：① 右侧不再有一排空间按钮（SPEC-VIEW-018 修订 3）', (
       WidgetTester tester,
     ) async {
-      final LoadedPack pack = loadAlphaPack();
-      final LoadedPack go = _goPack();
-      await _pumpScreen(
-        tester,
-        pack: pack,
-        scene: _alphaScene(pack),
-        others: <LoadedPack>[go],
-      );
-
-      expect(
-        find.byKey(hudSpaceSwitchKey),
-        findsOneWidget,
-        reason: '两个根都在 `roots` 里 —— 不给入口的话界面上只看得到 order 最小的那个',
-      );
-      expect(find.byKey(spaceChipKey('python')), findsOneWidget);
-      expect(find.byKey(spaceChipKey('go')), findsOneWidget);
-      expect(
-        tester.widget<TextButton>(find.byKey(spaceChipKey('python'))).onPressed,
-        isNull,
-        reason: '当前根那枚按不动 —— 点它什么都不变的按钮比没有更糟',
-      );
-      expect(
-        tester.widget<TextButton>(find.byKey(spaceChipKey('go'))).onPressed,
-        isNotNull,
-        reason: '别的根可点',
-      );
-
-      // 只有一个根时整排不出现：一枚恒亮的 chip 只会被读成「坏了」。
-      await _pumpScreen(tester, pack: pack, scene: _alphaScene(pack));
-      expect(find.byKey(hudSpaceSwitchKey), findsNothing);
-      expect(tester.takeException(), isNull);
-    });
-
-    testWidgets('树里不给换根 chips（SPEC-VIEW-031）', (WidgetTester tester) async {
       final LoadedPack pack = loadAlphaPack();
       await _pumpScreen(
         tester,
         pack: pack,
         scene: _alphaScene(pack),
         others: <LoadedPack>[_goPack()],
-        mode: ViewMode.tree,
       );
 
+      // `B3` 收尾时加过这排 chips（PR #59），作为「星系不可点」的替代入口。
+      // 现在星系本身是入口（`VIEW-036`），chips 与它语义重复，且 chips 落 `Z0`
+      // 与「点星系 ⇒ `Z1`」直接冲突 —— 整排删除，不留开关。
+      expect(find.byKey(hudSpaceSwitchKey), findsNothing);
       expect(
-        find.byKey(hudSpaceSwitchKey),
+        find.text('go'),
         findsNothing,
-        reason: '树里换根会把用户弹回宇宙 —— 那是「点了按钮、视图变了、东西没换」',
+        reason: '另一个空间的名字（小写 id）不该出现在 ① 里',
+      );
+      expect(tester.takeException(), isNull);
+    });
+  });
+
+  group('① 面包屑与图标（SPEC-VIEW-018 修订 2 · V-1a）', () {
+    testWidgets('前段可点：点「知识」回 Z0（SPEC-VIEW-018 修订 2）', (
+      WidgetTester tester,
+    ) async {
+      final LoadedPack pack = loadAlphaPack();
+      await _pumpScreen(tester, pack: pack, scene: _alphaScene(pack));
+      expect(_crumbCount(tester), _crumbsFor(ZoomLevel.z1));
+
+      await tester.tap(find.byKey(hudCrumbKey(0)));
+      await _pump(tester);
+
+      expect(
+        _crumbCount(tester),
+        _crumbsFor(ZoomLevel.z0),
+        reason: '点第 1 段 = 退到宇宙层，面包屑跟着收成一段',
+      );
+      expect(_crumbHas(tester, 'Python'), isFalse, reason: 'Z0 不写空间名');
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('末段不可点：点「Python」什么都不变（SPEC-VIEW-018 修订 2）', (
+      WidgetTester tester,
+    ) async {
+      final LoadedPack pack = loadAlphaPack();
+      await _pumpScreen(tester, pack: pack, scene: _alphaScene(pack));
+
+      // 末段是纯文字、**没有 key** —— `_crumbCount` 依赖这一点，所以「点它」
+      // 只能按文本点。点完段数不变即证明它没有去处。
+      await tester.tap(find.text('Python'));
+      await _pump(tester);
+
+      expect(
+        _crumbCount(tester),
+        _crumbsFor(ZoomLevel.z1),
+        reason: '已在的位置点了没有去处；退层会让它变成一段',
       );
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('点另一个空间的 chip ⇒ 换根并回到 Z0（SPEC-VIEW-031 / 001）', (
+    testWidgets('图标命中盒 44 px：盒外不切、盒内切（SPEC-VIEW-018 修订 2）', (
       WidgetTester tester,
     ) async {
       final LoadedPack pack = loadAlphaPack();
-      final LoadedPack go = _goPack();
+      await _pumpScreen(tester, pack: pack, scene: _alphaScene(pack));
+
+      // 图形只有 14 px，命中盒 44 px（半径 22）。两个采样点分别落在盒外 3 px
+      // 与盒内 3 px：若命中区退回图形大小，两点都会「点不中」。
+      final Offset center = tester.getCenter(find.byKey(hudModeIconKey));
+
+      await tester.tapAt(center + const Offset(25, 0));
+      await _pump(tester);
+      expect(
+        find.byKey(treeViewKey),
+        findsNothing,
+        reason: '盒外 25 px（半径 22 之外）不该切换',
+      );
+
+      await tester.tapAt(center + const Offset(19, 0));
+      await _pump(tester);
+      expect(
+        find.byKey(treeViewKey),
+        findsOneWidget,
+        reason: '盒内 19 px 可点 —— 看得见（14 px）与点得中（44 px）是两回事',
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('Z0 有放大镜，点它开浮层（SPEC-VIEW-018 修订 2）', (
+      WidgetTester tester,
+    ) async {
+      final LoadedPack pack = loadAlphaPack();
       await _pumpScreen(
         tester,
         pack: pack,
         scene: _alphaScene(pack),
-        others: <LoadedPack>[go],
-        zoom: ZoomLevel.z1,
+        zoom: ZoomLevel.z0,
       );
 
-      await tester.tap(find.byKey(spaceChipKey('go')));
+      expect(
+        find.byKey(hudSearchKey),
+        findsOneWidget,
+        reason: 'Z0 不出项 ⇒ 搜索是进 Z4 的唯一通路，触屏设备还没有 ⌘K',
+      );
+
+      await tester.tap(find.byKey(hudSearchKey));
       await _pump(tester);
+      expect(find.byKey(locateOverlayKey), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
 
-      expect(
-        find.textContaining('· 1 项'),
-        findsOneWidget,
-        reason: '诊断行跟着换 —— 153 项变 1 项，是换根唯一看得见的证据',
+    testWidgets('退回上层之后 returnTo 不残留（SPEC-VIEW-015 / 018 修订 2）', (
+      WidgetTester tester,
+    ) async {
+      final LoadedPack pack = loadAlphaPack();
+      final SceneBundle scene = _alphaScene(pack);
+      await tester.pumpWidget(
+        MaterialApp(home: UniverseScreen.single(scene: scene, pack: pack)),
       );
-      expect(
-        find.descendant(
-          of: find.byKey(hudBreadcrumbKey),
-          matching: find.textContaining('Z0'),
-        ),
-        findsOneWidget,
-        reason: '空间是落点类（VIEW-001 末句）—— 落到它并推到 Z0，不留在 Z1',
+      await tester.pump();
+
+      final Size viewport = tester.getSize(find.byType(UniverseScreen));
+      final Offset star = _findPoint(
+        scene,
+        viewport,
+        hit: true,
+        devicePixelRatio: tester.view.devicePixelRatio,
       );
+      await tester.tapAt(star);
+      await _pump(tester);
+      expect(find.byKey(detailBackKey), findsOneWidget, reason: '前提：点星进了详情');
+
+      // 面包屑给了「不用返回按钮、直接退到上层」这条新路（`V-1a`）。
+      await tester.tap(find.byKey(hudCrumbKey(0)));
+      await _pump(tester);
+      expect(find.byKey(hudDetailDrawerKey), findsNothing);
+
+      // 再点同一颗星进详情，然后按返回：必须回到 **Z0**（本轮进详情的出发地），
+      // 不是「上一颗星的 `Z4`」。残留的 `returnTo` 会让后者发生，而它看起来完全
+      // 正常 —— 抽屉还开着，只是内容换了一颗星。
+      await tester.tapAt(star);
+      await _pump(tester);
+      expect(find.byKey(detailBackKey), findsOneWidget, reason: '刚进详情 ⇒ 有出发地可回');
+
+      await tester.tap(find.byKey(detailBackKey));
+      await _pump(tester);
       expect(
-        tester.widget<TextButton>(find.byKey(spaceChipKey('go'))).onPressed,
-        isNull,
-        reason: '换过去之后它变成当前根',
+        find.byKey(hudDetailDrawerKey),
+        findsNothing,
+        reason: 'VIEW-015：返回的是出发地（Z0），不是上一颗星的 Z4',
       );
+      expect(_crumbCount(tester), _crumbsFor(ZoomLevel.z0));
       expect(tester.takeException(), isNull);
     });
   });
