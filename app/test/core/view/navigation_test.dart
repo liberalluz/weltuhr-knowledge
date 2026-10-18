@@ -97,11 +97,12 @@ void main() {
   });
 
   group('returnTo 快照（SPEC-VIEW-015）', () {
-    test('六个字段往返 JSON 不丢（SPEC-VIEW-015）', () {
+    test('七个字段往返 JSON 不丢（SPEC-VIEW-015）', () {
       const ViewSnapshot snapshot = ViewSnapshot(
         mode: ViewMode.tree,
         zoomLevel: ZoomLevel.z2,
         spaceId: 'python',
+        domainId: 'python/data-model',
         selectedItemId: 'python/fn-decorator',
         axisFilter: <String, List<String>>{
           'ability': <String>['抽象', '具象'],
@@ -113,6 +114,7 @@ void main() {
       expect(back.mode, ViewMode.tree);
       expect(back.zoomLevel, ZoomLevel.z2);
       expect(back.spaceId, 'python');
+      expect(back.domainId, 'python/data-model');
       expect(back.selectedItemId, 'python/fn-decorator');
       expect(back.selector, '装饰器');
       expect(back.axisFilter, <String, List<String>>{
@@ -120,18 +122,39 @@ void main() {
       });
     });
 
-    test('可缺的三项是真缺：没选中项、不是从搜索进来、合成根没有空间（SPEC-VIEW-015）', () {
+    test('只有域不同 ⇒ 两份快照不相等，hash 也不同（SPEC-VIEW-015）', () {
+      // 守的是 `==` / `hashCode` **没有漏字段**：漏了的话「返回时域错了」这件事
+      // 在值层看起来是「同一帧」，而画面上是两个不同的域 —— 错得没有声音。
+      const ViewSnapshot first = ViewSnapshot(
+        mode: ViewMode.universe,
+        zoomLevel: ZoomLevel.z2,
+        spaceId: 'python',
+        domainId: 'python/data-model',
+      );
+      const ViewSnapshot second = ViewSnapshot(
+        mode: ViewMode.universe,
+        zoomLevel: ZoomLevel.z2,
+        spaceId: 'python',
+        domainId: 'python/func',
+      );
+      expect(first == second, isFalse);
+      expect(first.hashCode == second.hashCode, isFalse);
+    });
+
+    test('可缺的四项是真缺：没选中项、不是从搜索进来、合成根没有空间、没有域（SPEC-VIEW-015）', () {
       const ViewSnapshot snapshot = ViewSnapshot(
         mode: ViewMode.universe,
         zoomLevel: ZoomLevel.z1,
       );
       final Map<String, Object?> json = snapshot.toJson();
       expect(json.containsKey('spaceId'), isFalse, reason: '合成回落的根没有空间 id');
+      expect(json.containsKey('domainId'), isFalse, reason: 'Z1 是全盘视角，没有「在哪个域」');
       expect(json.containsKey('selectedItemId'), isFalse);
       expect(json.containsKey('selector'), isFalse);
 
       final ViewSnapshot back = ViewSnapshot.fromJson(json);
       expect(back.spaceId, isNull);
+      expect(back.domainId, isNull);
       expect(back.selectedItemId, isNull);
       expect(back.selector, isNull);
       expect(back.axisFilter, isEmpty);
