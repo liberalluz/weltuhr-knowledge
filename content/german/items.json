@@ -1,0 +1,1682 @@
+[
+  {
+    "id": "german/cs-nominative",
+    "title": "主格与句子主语",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "格与格位"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "german/case-system",
+    "inScope": true
+  },
+  {
+    "id": "german/cs-accusative",
+    "title": "宾格与直接宾语",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "格与格位"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "german/case-system",
+    "inScope": true
+  },
+  {
+    "id": "german/cs-dative",
+    "title": "与格与间接宾语",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "格与格位"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "german/case-system",
+    "inScope": true
+  },
+  {
+    "id": "german/cs-genitive",
+    "title": "属格与定语",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "格与格位"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "german/case-system",
+    "inScope": true
+  },
+  {
+    "id": "german/cs-case-preposition",
+    "title": "支配格的介词",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "格与格位"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "german/case-system",
+    "inScope": true
+  },
+  {
+    "id": "german/cs-two-way-preposition",
+    "title": "方位介词的双格：Wohin 与 Wo",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "格与格位"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "german/case-system",
+    "inScope": true
+  },
+  {
+    "id": "german/cs-case-verb",
+    "title": "动词支配的格",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "格与格位"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "german/case-system",
+    "inScope": true
+  },
+  {
+    "id": "german/cs-case-adjective",
+    "title": "形容词支配的格",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "格与格位"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "missing",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "german/case-system",
+    "inScope": true
+  },
+  {
+    "id": "german/cs-apposition",
+    "title": "同位语与格的呼应",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "格与格位"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "missing",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "german/case-system",
+    "inScope": true
+  },
+  {
+    "id": "german/cs-case-loss",
+    "title": "格标记的弱化与语序补偿",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "格与格位"
+    },
+    "layer": "view",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "missing",
+      "tacit": "present"
+    },
+    "sourceRefs": [],
+    "domainId": "german/case-system",
+    "inScope": true
+  },
+  {
+    "id": "german/ng-three-genders",
+    "title": "三性体系与冠词提示",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "名词形态"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "german/noun-gender",
+    "inScope": true
+  },
+  {
+    "id": "german/ng-gender-suffix",
+    "title": "后缀与性别的对应",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "名词形态"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "german/noun-gender",
+    "inScope": true
+  },
+  {
+    "id": "german/ng-gender-semantic",
+    "title": "语义类与性别",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "名词形态"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "german/noun-gender",
+    "inScope": true
+  },
+  {
+    "id": "german/ng-compound-gender",
+    "title": "复合名词的性别由末位成分决定",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "名词形态"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "german/noun-gender",
+    "inScope": true
+  },
+  {
+    "id": "german/ng-plural-umlaut",
+    "title": "复数加 -e 并变音",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "名词形态"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "german/noun-gender",
+    "inScope": true
+  },
+  {
+    "id": "german/ng-plural-er",
+    "title": "复数加 -er",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "名词形态"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "german/noun-gender",
+    "inScope": true
+  },
+  {
+    "id": "german/ng-plural-en",
+    "title": "复数加 -(e)n",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "名词形态"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "german/noun-gender",
+    "inScope": true
+  },
+  {
+    "id": "german/ng-plural-s",
+    "title": "复数加 -s 的外来词",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "名词形态"
+    },
+    "layer": "ephemeral",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "missing",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "german/noun-gender",
+    "inScope": true
+  },
+  {
+    "id": "german/ng-plural-invariant",
+    "title": "复数同形与仅复数名词",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "名词形态"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "german/noun-gender",
+    "inScope": true
+  },
+  {
+    "id": "german/ng-n-declension",
+    "title": "弱变化名词（n-Deklination）",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "名词形态"
+    },
+    "layer": "persistent",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "present"
+    },
+    "sourceRefs": [],
+    "domainId": "german/noun-gender",
+    "inScope": true
+  },
+  {
+    "id": "german/art-definite",
+    "title": "定冠词变格表",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "限定词"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "german/article",
+    "inScope": true
+  },
+  {
+    "id": "german/art-indefinite",
+    "title": "不定冠词与否定冠词",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "限定词"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "german/article",
+    "inScope": true
+  },
+  {
+    "id": "german/art-possessive",
+    "title": "物主冠词的变格",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "限定词"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "german/article",
+    "inScope": true
+  },
+  {
+    "id": "german/art-demonstrative",
+    "title": "指示冠词：dieser 与 jener",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "限定词"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "german/article",
+    "inScope": true
+  },
+  {
+    "id": "german/art-relative",
+    "title": "关系代词与定冠词同形",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "限定词"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "german/article",
+    "inScope": true
+  },
+  {
+    "id": "german/art-interrogative",
+    "title": "疑问限定词：welcher 与 was für ein",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "限定词"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "german/article",
+    "inScope": true
+  },
+  {
+    "id": "german/art-quantifier",
+    "title": "不定量词的变格：alle、viele、einige",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "限定词"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "german/article",
+    "inScope": true
+  },
+  {
+    "id": "german/art-use",
+    "title": "定冠词与不定冠词的语篇条件",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "限定词"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "missing",
+      "tacit": "present"
+    },
+    "sourceRefs": [],
+    "domainId": "german/article",
+    "inScope": true
+  },
+  {
+    "id": "german/art-zero",
+    "title": "零冠词与物质、抽象名词",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "限定词"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "german/article",
+    "inScope": true
+  },
+  {
+    "id": "german/art-proper",
+    "title": "专名与地名的冠词使用",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "限定词"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "missing",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "german/article",
+    "inScope": true
+  },
+  {
+    "id": "german/adj-weak",
+    "title": "弱变化：定冠词之后",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "形容词"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "present"
+    },
+    "sourceRefs": [],
+    "domainId": "german/adjective",
+    "inScope": true
+  },
+  {
+    "id": "german/adj-mixed",
+    "title": "混合变化：不定冠词之后",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "形容词"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "present"
+    },
+    "sourceRefs": [],
+    "domainId": "german/adjective",
+    "inScope": true
+  },
+  {
+    "id": "german/adj-strong",
+    "title": "强变化：无冠词",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "形容词"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "present"
+    },
+    "sourceRefs": [],
+    "domainId": "german/adjective",
+    "inScope": true
+  },
+  {
+    "id": "german/adj-choice",
+    "title": "三种变格的触发条件",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "形容词"
+    },
+    "layer": "persistent",
+    "type": "skill",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "present"
+    },
+    "sourceRefs": [],
+    "domainId": "german/adjective",
+    "inScope": true
+  },
+  {
+    "id": "german/adj-predicative",
+    "title": "表语形容词不变格",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "形容词"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "missing",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "german/adjective",
+    "inScope": true
+  },
+  {
+    "id": "german/adj-comparative",
+    "title": "比较级构成与变音",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "形容词"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "german/adjective",
+    "inScope": true
+  },
+  {
+    "id": "german/adj-superlative",
+    "title": "最高级的两种形式",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "形容词"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "german/adjective",
+    "inScope": true
+  },
+  {
+    "id": "german/adj-irregular",
+    "title": "不规则比较等级",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "形容词"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "german/adjective",
+    "inScope": true
+  },
+  {
+    "id": "german/adj-comparison",
+    "title": "als 与 wie 的比较结构",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "形容词"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "german/adjective",
+    "inScope": true
+  },
+  {
+    "id": "german/adj-participle-attribute",
+    "title": "分词作定语与扩展定语",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "形容词"
+    },
+    "layer": "persistent",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "present"
+    },
+    "sourceRefs": [],
+    "domainId": "german/adjective",
+    "inScope": true
+  },
+  {
+    "id": "german/vc-present",
+    "title": "现在时人称词尾",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "动词形态"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "german/verb-conjugation",
+    "inScope": true
+  },
+  {
+    "id": "german/vc-strong",
+    "title": "强变化动词与词干元音交替",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "动词形态"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "german/verb-conjugation",
+    "inScope": true
+  },
+  {
+    "id": "german/vc-modal-present",
+    "title": "情态动词的现在时变位",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "动词形态"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "german/verb-conjugation",
+    "inScope": true
+  },
+  {
+    "id": "german/vc-past",
+    "title": "过去时（Präteritum）形式",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "动词形态"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "german/verb-conjugation",
+    "inScope": true
+  },
+  {
+    "id": "german/vc-perfect-haben",
+    "title": "用 haben 构成完成时",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "动词形态"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "german/verb-conjugation",
+    "inScope": true
+  },
+  {
+    "id": "german/vc-perfect-sein",
+    "title": "用 sein 构成完成时",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "动词形态"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "german/verb-conjugation",
+    "inScope": true
+  },
+  {
+    "id": "german/vc-plusquamperfect",
+    "title": "过去完成时",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "动词形态"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "german/verb-conjugation",
+    "inScope": true
+  },
+  {
+    "id": "german/vc-future-1",
+    "title": "将来时 I：werden 加不定式",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "动词形态"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "german/verb-conjugation",
+    "inScope": true
+  },
+  {
+    "id": "german/vc-future-2",
+    "title": "将来时 II 与推测",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "动词形态"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "missing",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "german/verb-conjugation",
+    "inScope": true
+  },
+  {
+    "id": "german/vc-passive",
+    "title": "过程被动与状态被动",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "动词形态"
+    },
+    "layer": "persistent",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "present"
+    },
+    "sourceRefs": [],
+    "domainId": "german/verb-conjugation",
+    "inScope": true
+  },
+  {
+    "id": "german/vf-transitive",
+    "title": "及物动词与四格宾语",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "动词配价"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "german/verb-frame",
+    "inScope": true
+  },
+  {
+    "id": "german/vf-dative",
+    "title": "支配与格的动词",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "动词配价"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "german/verb-frame",
+    "inScope": true
+  },
+  {
+    "id": "german/vf-genitive",
+    "title": "支配属格的动词",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "动词配价"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "missing",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "german/verb-frame",
+    "inScope": true
+  },
+  {
+    "id": "german/vf-prepositional",
+    "title": "介词宾语与固定搭配",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "动词配价"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "german/verb-frame",
+    "inScope": true
+  },
+  {
+    "id": "german/vf-reflexive",
+    "title": "反身动词与反身代词",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "动词配价"
+    },
+    "layer": "persistent",
+    "type": "skill",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "present"
+    },
+    "sourceRefs": [],
+    "domainId": "german/verb-frame",
+    "inScope": true
+  },
+  {
+    "id": "german/vf-separable",
+    "title": "可分动词与框型结构",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "动词配价"
+    },
+    "layer": "persistent",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "present"
+    },
+    "sourceRefs": [],
+    "domainId": "german/verb-frame",
+    "inScope": true
+  },
+  {
+    "id": "german/vf-inseparable",
+    "title": "不可分前缀",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "动词配价"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "german/verb-frame",
+    "inScope": true
+  },
+  {
+    "id": "german/vf-modal-use",
+    "title": "情态动词的客观与主观用法",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "动词配价"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "missing",
+      "tacit": "present"
+    },
+    "sourceRefs": [],
+    "domainId": "german/verb-frame",
+    "inScope": true
+  },
+  {
+    "id": "german/vf-infinitive-zu",
+    "title": "zu 加不定式结构",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "动词配价"
+    },
+    "layer": "persistent",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "present"
+    },
+    "sourceRefs": [],
+    "domainId": "german/verb-frame",
+    "inScope": true
+  },
+  {
+    "id": "german/vf-imperative",
+    "title": "命令式与礼貌形式",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "动词配价"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "german/verb-frame",
+    "inScope": true
+  },
+  {
+    "id": "german/wo-verb-second",
+    "title": "主句动词第二位",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "语序"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "present"
+    },
+    "sourceRefs": [],
+    "domainId": "german/word-order",
+    "inScope": true
+  },
+  {
+    "id": "german/wo-vorfeld",
+    "title": "前置场与信息结构",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "语序"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "missing",
+      "tacit": "present"
+    },
+    "sourceRefs": [],
+    "domainId": "german/word-order",
+    "inScope": true
+  },
+  {
+    "id": "german/wo-satzklammer",
+    "title": "句框结构与动词末位",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "语序"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "present"
+    },
+    "sourceRefs": [],
+    "domainId": "german/word-order",
+    "inScope": true
+  },
+  {
+    "id": "german/wo-mittelfeld",
+    "title": "中场成分顺序：TeKaMoLo",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "语序"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "missing",
+      "tacit": "present"
+    },
+    "sourceRefs": [],
+    "domainId": "german/word-order",
+    "inScope": true
+  },
+  {
+    "id": "german/wo-negation",
+    "title": "nicht 与 kein 的位置",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "语序"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "german/word-order",
+    "inScope": true
+  },
+  {
+    "id": "german/wo-pronoun-order",
+    "title": "代词宾语的排序",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "语序"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "german/word-order",
+    "inScope": true
+  },
+  {
+    "id": "german/wo-question",
+    "title": "疑问句与倒装",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "语序"
+    },
+    "layer": "persistent",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "present"
+    },
+    "sourceRefs": [],
+    "domainId": "german/word-order",
+    "inScope": true
+  },
+  {
+    "id": "german/wo-subordinate",
+    "title": "从句动词末位",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "语序"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "present"
+    },
+    "sourceRefs": [],
+    "domainId": "german/word-order",
+    "inScope": true
+  },
+  {
+    "id": "german/wo-emphasis-shift",
+    "title": "强调引起的中场移位",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "语序"
+    },
+    "layer": "view",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "missing",
+      "tacit": "present"
+    },
+    "sourceRefs": [],
+    "domainId": "german/word-order",
+    "inScope": true
+  },
+  {
+    "id": "german/wo-ausklammerung",
+    "title": "外置（Ausklammerung）",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "语序"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "missing",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "german/word-order",
+    "inScope": true
+  },
+  {
+    "id": "german/cc-dass",
+    "title": "dass 从句",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "从句"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "german/clause-complex",
+    "inScope": true
+  },
+  {
+    "id": "german/cc-relative",
+    "title": "关系从句与关系代词",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "从句"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "german/clause-complex",
+    "inScope": true
+  },
+  {
+    "id": "german/cc-relative-special",
+    "title": "关系代词 was 与关系副词 wo",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "从句"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "german/clause-complex",
+    "inScope": true
+  },
+  {
+    "id": "german/cc-time",
+    "title": "时间从句：als、wenn 与 während",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "从句"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "german/clause-complex",
+    "inScope": true
+  },
+  {
+    "id": "german/cc-causal",
+    "title": "原因、条件与让步从句",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "从句"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "german/clause-complex",
+    "inScope": true
+  },
+  {
+    "id": "german/cc-indirect-question",
+    "title": "间接疑问句",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "从句"
+    },
+    "layer": "persistent",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "present"
+    },
+    "sourceRefs": [],
+    "domainId": "german/clause-complex",
+    "inScope": true
+  },
+  {
+    "id": "german/cc-konjunktiv-2",
+    "title": "虚拟式 II 与反事实",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "从句"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "german/clause-complex",
+    "inScope": true
+  },
+  {
+    "id": "german/cc-konjunktiv-1",
+    "title": "虚拟式 I 与间接引语",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "从句"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "german/clause-complex",
+    "inScope": true
+  },
+  {
+    "id": "german/cc-modal-particle",
+    "title": "情态小品词：doch、mal、ja",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "从句"
+    },
+    "layer": "ephemeral",
+    "type": "tacit",
+    "requirements": {
+      "boundary": "not_externalizable",
+      "justification": "present",
+      "proposition": "not_externalizable",
+      "relation": "present",
+      "how": "missing",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "german/clause-complex",
+    "inScope": true
+  },
+  {
+    "id": "german/cc-nominalization",
+    "title": "名词化与从句的短语转换",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "从句"
+    },
+    "layer": "persistent",
+    "type": "skill",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "present"
+    },
+    "sourceRefs": [],
+    "domainId": "german/clause-complex",
+    "inScope": true
+  }
+]

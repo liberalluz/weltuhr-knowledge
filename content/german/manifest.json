@@ -1,0 +1,23 @@
+{
+  "id": "german",
+  "name": "德语语法分层",
+  "version": "0.1.0",
+  "sixAxis": {
+    "subject": "语言",
+    "topic": "语法",
+    "stack": "德语"
+  },
+  "defaultPrimaryAxis": "ability",
+  "accent": "#8c1515",
+  "order": 30,
+  "domainIds": [
+    "german/case-system",
+    "german/noun-gender",
+    "german/article",
+    "german/adjective",
+    "german/verb-conjugation",
+    "german/verb-frame",
+    "german/word-order",
+    "german/clause-complex"
+  ]
+}

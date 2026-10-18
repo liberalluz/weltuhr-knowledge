@@ -6,7 +6,9 @@
 library;
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:project_knowledge/core/entities/content.dart';
 import 'package:project_knowledge/core/frame/projection.dart';
+import 'package:project_knowledge/core/pack/pack_parse.dart';
 import 'package:project_knowledge/features/universe/scene_source.dart';
 
 void main() {
@@ -139,6 +141,67 @@ void main() {
       expect(resolution.bundle.itemCount, 153);
       expect(resolution.bundle.edgeCount, 170);
       expect(resolution.bundle.maxPhi, 63);
+    });
+  });
+
+  group('新增空间的独立成包（SPEC-PACK-001）', () {
+    test('english / german 各自装得出：独立 ⪯、独立版本、三层齐全（SPEC-PACK-001）', () {
+      // 这条钉的是**架构铁律的实证面**：接入新空间不改一行核心代码，
+      // 只往 `content/` 放一个目录。所以断言必须落在「装出来的形状」上，
+      // 而不是「目录存在」—— 后者在 dist/ 没构建时照样为真。
+      final Map<String, SceneResolution> byId = <String, SceneResolution>{
+        for (final SceneResolution root in resolveAllScenes())
+          if (root.pack != null) root.pack!.space.id: root,
+      };
+
+      // 期望值 = 当前源数据的实测形状（域数取 `manifest.domainIds` 的条数）。
+      // 包升版改了形状，这里要跟着改 —— 那正是「形状变了」该被复核的时刻。
+      const Map<String, ({int items, int edges, int domains})> expected =
+          <String, ({int items, int edges, int domains})>{
+            'english': (items: 80, edges: 84, domains: 8),
+            'german': (items: 80, edges: 84, domains: 8),
+          };
+
+      for (final MapEntry<String, ({int items, int edges, int domains})> entry
+          in expected.entries) {
+        expect(
+          byId[entry.key],
+          isNotNull,
+          reason:
+              '${entry.key} 装不出来 —— `dist/` 不入库，先在仓根跑 `python content/tools/build.py`',
+        );
+        final SceneResolution root = byId[entry.key]!;
+        expect(root.fellBack, isFalse, reason: root.fallbackReason ?? '');
+        expect(
+          root.bundle.itemCount,
+          entry.value.items,
+          reason: '没有指向未知的边 ⇒ 无占位节点',
+        );
+        expect(root.bundle.edgeCount, entry.value.edges);
+        expect(
+          root.bundle.radialSegments,
+          entry.value.domains,
+          reason: '径向段数 = 域数（ADR-0003）—— 8 段与 python 的 10 段本来就该不同',
+        );
+
+        final LoadedPack pack = root.pack!;
+        expect(pack.space.version, isNotEmpty, reason: '独立版本是成包判据之一');
+        expect(
+          pack.edges,
+          isNotEmpty,
+          reason: '空边集缺独立前提偏序，按 SPEC-PACK-001 只能降为域',
+        );
+        expect(
+          pack.items.map((Item item) => item.layer).toSet().length,
+          3,
+          reason: '三层齐全（SPEC-PACK-001）—— 缺一层说明包被裁成了骨架',
+        );
+        expect(
+          pack.space.domainIds.toSet().length,
+          pack.space.domainIds.length,
+          reason: '域 id 重复会让 Z0 的那一段分不清归属',
+        );
+      }
     });
   });
 }
