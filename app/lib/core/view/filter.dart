@@ -150,15 +150,42 @@ int matchedCount(LoadedPack pack, AxisFilter filter) {
 ///   跟着 `pack.items` 的排列走，换一份同内容的包（不同项序）就换个样。
 ///
 /// 空串按「没声明」处理，不进候选（`VIEW-007`：未声明即不渲染）。
-List<String> axisValuesOf(LoadedPack pack, String axisKey) {
+List<String> axisValuesOf(LoadedPack pack, String axisKey) =>
+    _sortedByCount(_countAxisValues(<LoadedPack>[pack], axisKey));
+
+/// **多个包**合并后的取值域（`SPEC-VIEW-020` 修订 5，`V-1f2`）。
+///
+/// `Z0` 画的是**全部空间**：那时 ⑥ 罗盘若只读当前根，看到的就是「这个宇宙
+/// 只有一种学科」—— 而盘上明明并着三个星系。缺陷不是「值少了一个」，是
+/// 「罗盘在说一件与画面矛盾的事」。
+///
+/// 计数**跨包累加**：同一个取值在三个包里各出现 N 次，合并后算 3N 次。
+/// 排序口径与 [axisValuesOf] 完全一致（共用 [_sortedByCount]）—— 两处各写
+/// 一遍的话，「点开语言包」与「在宇宙层筛」看到的是两个不同的序，而这个差别
+/// 不会有任何东西变红。
+///
+/// **不改单包口径**：`Z1` / `Z2` / `Z3` 只画一个空间，罗盘该给的是**那一根**
+/// 的取值 —— 在那儿列出别的根的值，选中的那一下正好会把当前空间筛空。
+List<String> axisValuesOfAll(Iterable<LoadedPack> packs, String axisKey) =>
+    _sortedByCount(_countAxisValues(packs, axisKey));
+
+/// 取值 → 出现次数。空串按「没声明」处理（`VIEW-007`）。
+Map<String, int> _countAxisValues(Iterable<LoadedPack> packs, String axisKey) {
   final Map<String, int> counts = <String, int>{};
-  for (final Item item in pack.items) {
-    final String? value = item.sixAxis[axisKey];
-    if (value == null || value.isEmpty) {
-      continue;
+  for (final LoadedPack pack in packs) {
+    for (final Item item in pack.items) {
+      final String? value = item.sixAxis[axisKey];
+      if (value == null || value.isEmpty) {
+        continue;
+      }
+      counts[value] = (counts[value] ?? 0) + 1;
     }
-    counts[value] = (counts[value] ?? 0) + 1;
   }
+  return counts;
+}
+
+/// 计数 → 有序取值表（次数降序、同次数字典序）。两个入口共用这一处。
+List<String> _sortedByCount(Map<String, int> counts) {
   final List<String> values = counts.keys.toList(growable: false);
   return values..sort((String a, String b) {
     final int byCount = counts[b]!.compareTo(counts[a]!);
