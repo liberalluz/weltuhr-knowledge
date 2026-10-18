@@ -298,3 +298,24 @@ const double galaxyDiscTiltDeg = 55;
 /// 兜底 —— 否则盘小到画得出、点不中，而用户只会以为「这个不支持点击」。
 /// 与 ① 面包屑同一条 24 px 口径（`VIEW-018`）。
 const double galaxyMinTapDiameter = 24;
+
+/// `C-58` 旋臂对数螺线 `r(θ) = r₀·e^(bθ)` 的**螺距角**（度），`b = tan(螺距)`。
+///
+/// ⚠️ 因子是 `tan` 不是 `1/tan`：螺距角定义为「切线与**切向**的夹角」α，
+/// 沿曲线 `dr/dθ = b·r` ⇒ `tan α = b`。原表写 `1/tan(15°) = 3.73`，在盘半径比
+/// 12.5 下旋臂只转 39°（几根近乎笔直的径向短刺）；改回 `tan(15°) = 0.268`
+/// 同一盘转约 1.5 圈。勘误记在 `docs/reference/constants.md`。
+const double spiralPitchDeg = 15;
+
+/// 旋臂条数。真实旋涡星系多为两条（密度波 `m = 2` 模），也是 `VIEW-037` 的写法。
+const int spiralArmCount = 2;
+
+/// `C-60` 核球半径占盘半径的比例。
+///
+/// 旋臂从核球**边缘**起、不从圆心起 —— 从圆心起的臂会在正中叠成一个亮点，
+/// 而那正是核球该在的位置。0.10 让核球看得出是个球，又不吃掉旋臂的弧长。
+const double galaxyBulgeRadiusRatio = 0.10;
+
+/// `Z1` 域点的**最小可点直径**（px）。域点本身只画 4 px，直接按图形判会
+/// 「看得见点不中」；`VIEW-037` 明写命中 24 px。
+const double domainMarkMinTapDiameter = 24;
