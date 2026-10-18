@@ -163,6 +163,8 @@ import 'scene_pick.dart';
 import 'scene_source.dart';
 import 'spiral_map.dart';
 import 'spiral_painter.dart';
+import 'star_closeup.dart';
+import 'star_closeup_painter.dart';
 import 'star_map.dart';
 import 'star_painter.dart';
 import 'tree_view.dart';
@@ -1623,7 +1625,6 @@ class _UniverseScreenState extends State<UniverseScreen>
       final bool spiralDisc = !spiral.isEmpty;
 
       // `Z2` 画的是**一个域**：一朵分子云 + 亮结 + 跨域出口（`VIEW-038`）。
-      // `Z4` 仍走项投影 —— 单星特写（`VIEW-040`）不在 `B12` 的九笔里，另立一笔。
       final NebulaLayout nebula =
           _camera.zoom == ZoomLevel.z2 && _pack != null && _domainId != null
           ? layoutNebula(
@@ -1653,6 +1654,25 @@ class _UniverseScreenState extends State<UniverseScreen>
           : StarSystemLayout.empty;
       final bool starView = !starSystem.isEmpty;
 
+      // `Z4` 画的是**一颗恒星的特写**（`VIEW-040`）：恒星占满短边、只露最内
+      // `C-81` 条轨道。恒星仍是 `_selectedItemId` —— 与 `Z3` 同一个对象，只是
+      // 推近一档；不新增「当前恒星」状态的理由与 `Z3` 那段相同（两个状态说同
+      // 一件事，迟早有一处忘同步）。
+      //
+      // ⚠️ 与 `Z3` 的一处关键差别：`Z3` 在「这一项没有后继」时退回项投影
+      // （一颗孤星配空轨道等于说它有行星），而 `Z4` 是单星特写，**孤星正是
+      // 常态** —— 所以这里只有「项不在包里」才空。
+      final StarCloseupLayout closeup =
+          _camera.zoom == ZoomLevel.z4 && _pack != null && _selectedItemId != null
+          ? layoutStarCloseup(
+              pack: _pack!,
+              itemId: _selectedItemId!,
+              viewport: surface,
+              visibleIds: visibleIds,
+            )
+          : StarCloseupLayout.empty;
+      final bool starCloseup = !closeup.isEmpty;
+
       final Widget canvas = RepaintBoundary(
         // ⚠️ 尺寸必须由 `SizedBox` **强制**给，不能只写 `CustomPaint.size`：
         // `size` 只是 preferred，父级给的 tight 约束会把它推翻 —— 那样绘制按
@@ -1678,6 +1698,10 @@ class _UniverseScreenState extends State<UniverseScreen>
                 // 相位推进，不是重画几何 —— 相位方向已经排好了。
                 : starView
                 ? StarPainter(layout: starSystem)
+                // `Z4` 不接 `spin`：`VIEW-040` 明写恒星自转在这一档不可见，
+                // 行星公转 `C-56` 归 `V-1i`。
+                : starCloseup
+                ? StarCloseupPainter(layout: closeup)
                 : FramePainter(
                     scene: _scene,
                     spin: _spin,
@@ -1717,6 +1741,13 @@ class _UniverseScreenState extends State<UniverseScreen>
               _pickNebulaAt(point, nebula);
             } else if (starView) {
               _pickStarAt(point, starSystem);
+            } else if (starCloseup) {
+              // `Z4` 的可点对象是「—」（`VIEW-001`）：**详情抽屉就是它的形态**。
+              // 这一档画布上没有「点了去哪」这回事 —— 想换一项要经抽屉里点前置
+              // 项（`VIEW-016`，走 `trail`），或在面包屑上退一档。
+              //
+              // 不这么做的话，点画面回到 `pickSceneNode` 会按项投影的坐标判命中，
+              // 而那一套坐标这一档根本没画 —— 点哪儿都是随机命中率。
             } else {
               _pickAt(point, surface, visibleIds);
             }

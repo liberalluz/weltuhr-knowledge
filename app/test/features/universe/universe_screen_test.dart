@@ -26,6 +26,8 @@ import 'package:project_knowledge/features/universe/scene_pick.dart';
 import 'package:project_knowledge/features/universe/scene_source.dart';
 import 'package:project_knowledge/features/universe/spiral_map.dart';
 import 'package:project_knowledge/features/universe/spiral_painter.dart';
+import 'package:project_knowledge/features/universe/star_closeup.dart';
+import 'package:project_knowledge/features/universe/star_closeup_painter.dart';
 import 'package:project_knowledge/features/universe/star_map.dart';
 import 'package:project_knowledge/features/universe/star_painter.dart';
 import 'package:project_knowledge/features/universe/tree_view.dart';
@@ -2630,6 +2632,152 @@ void main() {
       expect(tester.takeException(), isNull);
     });
   });
+
+  group('Z4 恒星特写（SPEC-VIEW-040 · V-1f 后半）', () {
+    /// 与 `Z3` 那组同一份链 —— `Z4` 是它的推近，两档必须看同一个对象。
+    LoadedPack closeupPack() => fixturePack(
+      const <FixtureItem>[
+        FixtureItem('a', '甲'),
+        FixtureItem('b', '乙'),
+        FixtureItem('c', '丙'),
+      ],
+      edges: const <List<String>>[
+        <String>['a', 'b'],
+        <String>['b', 'c'],
+      ],
+    );
+
+    /// 走到 `Z4`：`Z1` 点域点 → `Z2` 点亮结 → `Z3` → 点第一颗行星。
+    Future<StarPlanet> enterCloseup(
+      WidgetTester tester,
+      LoadedPack pack,
+    ) async {
+      final String rootId = await _enterStarSystem(tester, pack);
+      final StarSystemLayout system = _starSystemOf(tester, pack, rootId);
+      final StarPlanet planet = system.planets.first;
+      await tester.tapAt(planet.center * _pointScaleOf(tester));
+      await tester.pump();
+      return planet;
+    }
+
+    testWidgets('从 Z3 点行星进 Z4，画的是恒星特写而不是项投影（SPEC-VIEW-040）', (
+      WidgetTester tester,
+    ) async {
+      final LoadedPack pack = closeupPack();
+      await _pumpScreen(tester, pack: pack);
+      await enterCloseup(tester, pack);
+
+      expect(
+        find.byWidgetPredicate(
+          (Widget widget) =>
+              widget is CustomPaint && widget.painter is StarCloseupPainter,
+        ),
+        findsOneWidget,
+        reason: 'VIEW-040：Z4 是一颗恒星的特写 + 最内 1–2 条轨道',
+      );
+      expect(
+        find.byWidgetPredicate(
+          (Widget widget) =>
+              widget is CustomPaint && widget.painter is FramePainter,
+        ),
+        findsNothing,
+        reason: '项投影与恒星特写不能并存 —— 并存时哪一套在上层是运气',
+      );
+      expect(
+        find.byWidgetPredicate(
+          (Widget widget) => widget is CustomPaint && widget.painter is StarPainter,
+        ),
+        findsNothing,
+        reason: 'Z3 的恒星系也已不在画面里 —— 这一档只有特写',
+      );
+
+      final StarCloseupLayout layout = _starCloseupOf(tester);
+      expect(layout.itemId, 'b', reason: '特写的是刚点的那颗行星（b），不是恒星');
+      expect(
+        layout.starRadius,
+        greaterThan(_halfOf(tester) * stellarRadiusRatio * 5),
+        reason: 'Z4 的恒星比 Z3 大一个量级 —— 否则「推近」看不出来',
+      );
+      expect(_crumbCount(tester), _crumbsFor(ZoomLevel.z4));
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('Z4 不是「又一档星图」：只露最内两条轨道（SPEC-VIEW-040）', (
+      WidgetTester tester,
+    ) async {
+      // 五项链 ⇒ `Z3` 画四条轨道，`Z4` 只该露两条。
+      final LoadedPack pack = fixturePack(
+        const <FixtureItem>[
+          FixtureItem('a', '甲'),
+          FixtureItem('b', '乙'),
+          FixtureItem('c', '丙'),
+          FixtureItem('d', '丁'),
+          FixtureItem('e', '戊'),
+        ],
+        edges: const <List<String>>[
+          <String>['a', 'b'],
+          <String>['b', 'c'],
+          <String>['c', 'd'],
+          <String>['d', 'e'],
+        ],
+      );
+      await _pumpScreen(tester, pack: pack);
+      await enterCloseup(tester, pack);
+
+      final StarCloseupLayout layout = _starCloseupOf(tester);
+      expect(
+        layout.orbits.length,
+        closeupMaxOrbits,
+        reason: 'VIEW-040 的边界：「只露能放进画面边缘的 1–2 条」',
+      );
+      expect(
+        layout.orbits.map((StarOrbit each) => each.level).toList(),
+        <int>[1, 2],
+        reason: '露的是**最内**两条，不是随便两条',
+      );
+      expect(
+        find.byKey(starLabelKey(layout.itemId)),
+        findsNothing,
+        reason: '这一档不标名 —— 面包屑末段已经是这一项，邻域只靠抽屉文字',
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('Z4 画布不响应点击：可点对象是「—」（SPEC-VIEW-001）', (
+      WidgetTester tester,
+    ) async {
+      final LoadedPack pack = closeupPack();
+      await _pumpScreen(tester, pack: pack);
+      final StarPlanet planet = await enterCloseup(tester, pack);
+      final StarCloseupLayout layout = _starCloseupOf(tester);
+
+      // 点恒星中心、点空白、再点一次行星该在的位置 —— 三处都不该有反应。
+      final Size size = tester.getSize(find.byType(UniverseScreen));
+      for (final Offset point in <Offset>[
+        layout.starCenter * _pointScaleOf(tester),
+        Offset(size.width - 40, 90),
+        planet.center * _pointScaleOf(tester),
+      ]) {
+        await tester.tapAt(point);
+        await tester.pump();
+      }
+
+      expect(
+        _crumbCount(tester),
+        _crumbsFor(ZoomLevel.z4),
+        reason: 'VIEW-001 的 Z4 行：可点对象「—」，点画布不产生任何跳转',
+      );
+      expect(
+        find.descendant(
+          of: find.byKey(detailPanelKey),
+          matching: find.text('乙'),
+        ),
+        findsWidgets,
+        reason: '选中项仍是那颗行星 —— 点画布既不该换项，也不该关抽屉',
+      );
+      expect(tester.takeException(), isNull);
+    });
+  });
 }
 
 /// `Z0` 用例里的第二个空间：**60 项**而不是 [_goPack] 的 1 项。
@@ -2732,4 +2880,30 @@ Offset _starBlankPoint(
     }
   }
   throw StateError('扫不出空白点 —— 夹具或视口变了，这条用例需要重挑窗口');
+}
+
+/// 取 `Z4` 画布上的特写布局。
+///
+/// **直接读 painter，不重算**：这一档的入参里有 `visibleIds`（筛选结果），从屏幕
+/// 外面重算一次要么漏传、要么传错，两种都会把「画的和算的不一致」藏起来 —— 而
+/// 本组要验的正是「画出来的是不是特写」。
+StarCloseupLayout _starCloseupOf(WidgetTester tester) {
+  final CustomPaint paint = tester.widget<CustomPaint>(
+    find.byWidgetPredicate(
+      (Widget widget) =>
+          widget is CustomPaint && widget.painter is StarCloseupPainter,
+    ),
+  );
+  return (paint.painter! as StarCloseupPainter).layout;
+}
+
+/// 画布短边的一半（画布坐标）—— `Z4` 的恒星半径按它算。
+double _halfOf(WidgetTester tester) {
+  final Size window = tester.getSize(find.byType(UniverseScreen));
+  final ViewportPlan plan = planViewport(
+    window.width,
+    window.height,
+    devicePixelRatio: tester.view.devicePixelRatio,
+  );
+  return math.min(plan.surfaceWidth, plan.surfaceHeight) / 2;
 }

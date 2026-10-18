@@ -39,12 +39,16 @@ class FixtureItem {
 /// [edges] 是 `[from, to]` 对（`from` = 前置、`to` = 后继），全部按 `strong`
 /// 建边。缺省无边 ⇒ **每一项都是 `⪯` 树的根**，而「恒星系数量」这类判据要的
 /// 正是「有几棵树」，所以需要造边时由调用方给。
+///
+/// [itemType] 只给需要验「某个视觉通道**不看** `type`」的用（`VIEW-040` 第 1 条：
+/// `Z4` 的恒星外观不能按 `type` 分）。缺省 `declarative`，与其它用例无关。
 LoadedPack fixturePack(
   List<FixtureItem> items, {
   String spaceId = 'python',
   String spaceName = 'Python 语法分层',
   List<String>? domainIds,
   List<List<String>> edges = const <List<String>>[],
+  String itemType = 'declarative',
 }) {
   final Map<String, Object?> manifest = <String, Object?>{
     'id': spaceId,
@@ -70,7 +74,7 @@ LoadedPack fixturePack(
             'ability': item.ability,
           },
           'layer': 'persistent',
-          'type': 'declarative',
+          'type': itemType,
           'requirements': <String, Object?>{
             'boundary': 'present',
             'justification': 'present',
