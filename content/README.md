@@ -21,7 +21,7 @@ python content/tools/verify.py --suite          # 跑 fixtures 回归
 ```
 content/
 ├── tools/                构建与校验（纯标准库，无第三方依赖）
-└── <空间>/                一个知识空间一个目录（如 python/、english/）
+└── <空间>/                一个知识空间一个目录（如 python/、english/、german/）
     ├── manifest.json      空间声明：id / 名称 / version / 六轴取值 / accent / order
     ├── items.json         知识项：稳定 id、标题、六要件三态、六轴取值、layer
     ├── edges.json         前提边（有限类型）
@@ -34,6 +34,8 @@ content/
 > `manifest.json` 的 `version` 是包版本的**唯一事实源**（semver）。`build.py` **原样透传**到 `dist/pack.json` 的 `meta.version`，不得改写 —— 否则同一 commit 两次构建产出不同版本，而 `dist/` 不入库、tag 是唯一指针，无从比对。tag `pack/<space>/vX.Y.Z` 须与它**逐字一致**。口径见 [git-conventions §五](../docs/guides/git-conventions.md)。
 
 > `content/python/` 是**第一个真实空间**（α 参考包：150 项 · 170 条边 · 10 域），`B2` 起作为定位引擎与投影帧预算的输入。`tools/fixtures/` 下的示例源数据仍在，用 `python content/tools/build.py --root content/tools/fixtures/valid-min` 可单独验证管线本身。
+>
+> `content/english/` 与 `content/german/` 是 `B3` 收尾后新增的两个空间（各 80 项 · 84 条边 · 8 域 · 24 题），**除内容外未改一行核心代码** —— 它们是「零核心代码接入新空间」这条铁律的实证面，也让多根视图与跨空间换根第一次能在终端上验到（此前只有 python 一个根，凑不出第二个）。两包的 `excerpts` 为**空数组**：源摘录须逐条可核验并带许可标记，不代写 —— 登记为缺口，摘录落地后逐条回填。
 
 ## 相关文档
 

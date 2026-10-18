@@ -219,7 +219,11 @@ def _check_items(items: list, space_id: str | None, manifest: dict) -> tuple[lis
             else:
                 seen[item_id] = idx
 
-        for key in ("title", "sixAxis", "layer", "type", "requirements"):
+        # `sourceRefs` 也在这里守：客户端 `Item.fromJson` 把它当**必填**，
+        # 省略不会让校验红，但会让整个空间在 `parsePack` 抛异常、界面上直接
+        # 少一个根 —— 「校验绿、装不出来」是最坏的失败形态。允许空数组
+        # （`[]` = 暂无出处），只禁止「这个键不存在」。
+        for key in ("title", "sixAxis", "layer", "type", "requirements", "sourceRefs"):
             if key not in item:
                 out.append(_issue("E-ITEM-FIELD", where, f"缺必填字段 `{key}`"))
 

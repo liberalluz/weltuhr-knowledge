@@ -1,0 +1,146 @@
+[
+  {
+    "id": "q-cs-two-way-preposition",
+    "itemId": "german/cs-two-way-preposition",
+    "prompt": "in die Stadt 与 in der Stadt 的格为何不同？",
+    "answer": "前者第四格（Wohin，表方向），后者第三格（Wo，表位置）"
+  },
+  {
+    "id": "q-cs-dative",
+    "itemId": "german/cs-dative",
+    "prompt": "helfen 支配第几格？",
+    "answer": "第三格（与格）—— danken、gehören、folgen 等也是"
+  },
+  {
+    "id": "q-cs-case-adjective",
+    "itemId": "german/cs-case-adjective",
+    "prompt": "Ich bin mir dessen bewusst. 里的 dessen 是什么格？",
+    "answer": "第二格（属格）—— bewusst 支配属格"
+  },
+  {
+    "id": "q-ng-compound-gender",
+    "itemId": "german/ng-compound-gender",
+    "prompt": "die Haustür 为什么是阴性？",
+    "answer": "复合名词的性别由末位成分决定 —— Tür 是阴性"
+  },
+  {
+    "id": "q-ng-n-declension",
+    "itemId": "german/ng-n-declension",
+    "prompt": "der Student 在第三格里是什么形式？",
+    "answer": "dem Studenten —— 弱变化名词在二、三格及复数加 -en"
+  },
+  {
+    "id": "q-ng-plural-umlaut",
+    "itemId": "german/ng-plural-umlaut",
+    "prompt": "der Apfel 的复数是什么？",
+    "answer": "die Äpfel —— 加变音，词尾不变"
+  },
+  {
+    "id": "q-art-definite",
+    "itemId": "german/art-definite",
+    "prompt": "定冠词阴性第三格是什么形式？",
+    "answer": "der —— 同一个 der 还兼阳性第一格与复数第二格"
+  },
+  {
+    "id": "q-art-possessive",
+    "itemId": "german/art-possessive",
+    "prompt": "mein Vater 在第四格里是什么形式？",
+    "answer": "meinen Vater —— 物主冠词按不定冠词变格，阳性第四格加 -en"
+  },
+  {
+    "id": "q-art-zero",
+    "itemId": "german/art-zero",
+    "prompt": "Ich trinke gern Kaffee. 为什么不用冠词？",
+    "answer": "物质名词泛指时用零冠词"
+  },
+  {
+    "id": "q-adj-weak",
+    "itemId": "german/adj-weak",
+    "prompt": "定冠词后的形容词有哪几种词尾？",
+    "answer": "只有 -e 与 -en 两种 —— 单数主格各性用 -e，其余多为 -en"
+  },
+  {
+    "id": "q-adj-choice",
+    "itemId": "german/adj-choice",
+    "prompt": "没有冠词时形容词用哪种变格？",
+    "answer": "强变化 —— 形容词自己承担冠词的格标记"
+  },
+  {
+    "id": "q-adj-comparison",
+    "itemId": "german/adj-comparison",
+    "prompt": "besser als 还是 besser wie？",
+    "answer": "als —— 不等比较用 als；wie 只用于同等比较（so ... wie）"
+  },
+  {
+    "id": "q-vc-perfect-sein",
+    "itemId": "german/vc-perfect-sein",
+    "prompt": "哪些动词用 sein 构成完成时？",
+    "answer": "位移动词与状态变化动词，以及 sein、werden、bleiben"
+  },
+  {
+    "id": "q-vc-future-2",
+    "itemId": "german/vc-future-2",
+    "prompt": "Er wird das gemacht haben. 表达什么？",
+    "answer": "将来完成，也可表示对过去事实的推测"
+  },
+  {
+    "id": "q-vc-passive",
+    "itemId": "german/vc-passive",
+    "prompt": "Das Haus wird gebaut. 与 Das Haus ist gebaut. 有何不同？",
+    "answer": "前者是过程被动（正在被建），后者是状态被动（已建成）"
+  },
+  {
+    "id": "q-vf-separable",
+    "itemId": "german/vf-separable",
+    "prompt": "可分动词在从句里怎么放？",
+    "answer": "不再分开，整体放到句末：..., weil ich früh aufstehe"
+  },
+  {
+    "id": "q-vf-infinitive-zu",
+    "itemId": "german/vf-infinitive-zu",
+    "prompt": "可分动词加 zu 时 zu 放在哪？",
+    "answer": "放在前缀与词干之间：aufzustehen"
+  },
+  {
+    "id": "q-vf-reflexive",
+    "itemId": "german/vf-reflexive",
+    "prompt": "Ich wasche mich. 与 Ich wasche mir die Hände. 的格差别？",
+    "answer": "前者反身代词用第四格（直接宾语），后者用第三格（与格 + 第四格身体部位）"
+  },
+  {
+    "id": "q-wo-verb-second",
+    "itemId": "german/wo-verb-second",
+    "prompt": "Gestern ich ging ins Kino. 错在哪？",
+    "answer": "主句动词必须占第二位 —— Gestern ging ich ins Kino"
+  },
+  {
+    "id": "q-wo-subordinate",
+    "itemId": "german/wo-subordinate",
+    "prompt": "..., weil ich krank bin. 里动词在什么位置？",
+    "answer": "从句动词末位"
+  },
+  {
+    "id": "q-wo-mittelfeld",
+    "itemId": "german/wo-mittelfeld",
+    "prompt": "TeKaMoLo 指什么顺序？",
+    "answer": "Temporal（时间）→ Kausal（原因）→ Modal（方式）→ Lokal（地点）"
+  },
+  {
+    "id": "q-cc-konjunktiv-2",
+    "itemId": "german/cc-konjunktiv-2",
+    "prompt": "Wenn ich Zeit hätte, würde ich kommen. 表达什么？",
+    "answer": "与现在事实相反的虚拟（第二虚拟式）"
+  },
+  {
+    "id": "q-cc-relative-special",
+    "itemId": "german/cc-relative-special",
+    "prompt": "先行词是 alles、nichts 时关系代词用什么？",
+    "answer": "was"
+  },
+  {
+    "id": "q-cc-indirect-question",
+    "itemId": "german/cc-indirect-question",
+    "prompt": "Er fragt, ob ich komme. 为什么用 ob 而不是 dass？",
+    "answer": "是非问句转间接引语用 ob（是否）；dass 不带疑问语义"
+  }
+]

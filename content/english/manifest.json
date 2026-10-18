@@ -1,0 +1,23 @@
+{
+  "id": "english",
+  "name": "英语语法分层",
+  "version": "0.1.0",
+  "sixAxis": {
+    "subject": "语言",
+    "topic": "语法",
+    "stack": "英语"
+  },
+  "defaultPrimaryAxis": "ability",
+  "accent": "#1f4e79",
+  "order": 20,
+  "domainIds": [
+    "english/word-class",
+    "english/noun-phrase",
+    "english/tense",
+    "english/aspect-voice",
+    "english/nonfinite",
+    "english/clause",
+    "english/word-order",
+    "english/cohesion"
+  ]
+}

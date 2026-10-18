@@ -1,0 +1,146 @@
+[
+  {
+    "id": "q-wc-determiner",
+    "itemId": "english/wc-determiner",
+    "prompt": "限定词与形容词能不能同时出现在名词前？",
+    "answer": "能，但占两个位次 —— 限定词在限定位（the / my / some），形容词在描写位（big / red），次序是「限定词 + 形容词 + 名词」"
+  },
+  {
+    "id": "q-wc-conjunction",
+    "itemId": "english/wc-conjunction",
+    "prompt": "for 作连词时与 because 有什么不同？",
+    "answer": "for 是并列连词，引导的分句只能后置且不能回答 why；because 是从属连词，可前置也可后置"
+  },
+  {
+    "id": "q-wc-compound",
+    "itemId": "english/wc-compound",
+    "prompt": "look up 的宾语是代词时放在哪里？",
+    "answer": "放中间：look it up。名词宾语两个位置都行：look up the word / look the word up"
+  },
+  {
+    "id": "q-np-countability",
+    "itemId": "english/np-countability",
+    "prompt": "information 有复数形式吗？",
+    "answer": "没有 —— 它是不可数名词，计数量用 a piece of information"
+  },
+  {
+    "id": "q-np-zero-article",
+    "itemId": "english/np-zero-article",
+    "prompt": "go to school 与 go to the school 差在哪？",
+    "answer": "前者指「上学」这一制度性活动，后者指「去那栋校舍」这个具体地点"
+  },
+  {
+    "id": "q-np-agreement",
+    "itemId": "english/np-agreement",
+    "prompt": "The number of students ___ increasing. 填 is 还是 are？",
+    "answer": "is —— 主语中心词是 the number，of students 只是修饰成分"
+  },
+  {
+    "id": "q-tense-present-perfect",
+    "itemId": "english/tense-present-perfect",
+    "prompt": "I have seen him yesterday 为什么不对？",
+    "answer": "现在完成时不能与确定的过去时间状语连用 —— 应改为 I saw him yesterday"
+  },
+  {
+    "id": "q-tense-past-perfect",
+    "itemId": "english/tense-past-perfect",
+    "prompt": "过去完成时必须有一个参照点吗？",
+    "answer": "要 —— 它表示「过去的过去」，参照点是另一个过去的事件或时刻"
+  },
+  {
+    "id": "q-tense-future-going-to",
+    "itemId": "english/tense-future-going-to",
+    "prompt": "Look at those clouds. It ___ rain. 用 will 还是 be going to？",
+    "answer": "be going to —— 有既存迹象（乌云）时用它；will 偏预测与临时决定"
+  },
+  {
+    "id": "q-av-passive-form",
+    "itemId": "english/av-passive-form",
+    "prompt": "现在完成时的被动语态怎么构成？",
+    "answer": "have / has been + 过去分词"
+  },
+  {
+    "id": "q-av-modal-epistemic",
+    "itemId": "english/av-modal-epistemic",
+    "prompt": "He must be tired. 与 He must rest. 里的 must 有何不同？",
+    "answer": "前者是认知情态（推测「一定」），后者是道义情态（义务「必须」）"
+  },
+  {
+    "id": "q-av-conditional",
+    "itemId": "english/av-conditional",
+    "prompt": "If I had known, I would have told you. 属于哪一型条件句？",
+    "answer": "第三型 —— 与过去事实相反的虚拟条件"
+  },
+  {
+    "id": "q-nf-bare-infinitive",
+    "itemId": "english/nf-bare-infinitive",
+    "prompt": "make him ___ (go) 填什么？",
+    "answer": "go —— 使役动词 make / let / have 后接不带 to 的不定式"
+  },
+  {
+    "id": "q-nf-gerund-vs-infinitive",
+    "itemId": "english/nf-gerund-vs-infinitive",
+    "prompt": "remember doing 与 remember to do 的区别？",
+    "answer": "remember doing 是「记得做过」，remember to do 是「记得要去做」"
+  },
+  {
+    "id": "q-nf-participle-clause",
+    "itemId": "english/nf-participle-clause",
+    "prompt": "Walking down the street, the tower came into view. 有什么问题？",
+    "answer": "悬垂分词 —— walking 的逻辑主语应是人，主句主语却是 the tower"
+  },
+  {
+    "id": "q-cl-relative-nondefining",
+    "itemId": "english/cl-relative-nondefining",
+    "prompt": "非限制性关系从句能用 that 吗？",
+    "answer": "不能 —— 逗号隔开的从句用 which / who，that 只用于限制性从句"
+  },
+  {
+    "id": "q-cl-relative-pronoun-choice",
+    "itemId": "english/cl-relative-pronoun-choice",
+    "prompt": "先行词是 everything 时关系代词用什么？",
+    "answer": "只能用 that，不用 which"
+  },
+  {
+    "id": "q-cl-adverbial-time",
+    "itemId": "english/cl-adverbial-time",
+    "prompt": "主句用将来时，时间状语从句用什么时态？",
+    "answer": "用一般现在时表将来：When he arrives, we will start"
+  },
+  {
+    "id": "q-wo-inversion-negative",
+    "itemId": "english/wo-inversion-negative",
+    "prompt": "Never ___ I seen such a thing. 填什么？",
+    "answer": "have —— 否定词前置触发主谓倒装"
+  },
+  {
+    "id": "q-wo-cleft-it",
+    "itemId": "english/wo-cleft-it",
+    "prompt": "把 Tom broke the window 改成分裂句强调 Tom",
+    "answer": "It was Tom who broke the window"
+  },
+  {
+    "id": "q-wo-negation-scope",
+    "itemId": "english/wo-negation-scope",
+    "prompt": "All that glitters is not gold. 该怎样理解？",
+    "answer": "是部分否定「并非所有发光的都是金子」，不是「所有发光的都不是金子」"
+  },
+  {
+    "id": "q-co-reference",
+    "itemId": "english/co-reference",
+    "prompt": "this 与 that 回指上文时倾向有什么不同？",
+    "answer": "this 偏指刚刚说过的那一段（近指），that 偏指更远或对方已知的内容"
+  },
+  {
+    "id": "q-co-substitution",
+    "itemId": "english/co-substitution",
+    "prompt": "She can swim and so can he. 里的 so 起什么作用？",
+    "answer": "替代前文的谓语部分（can swim），避免重复并保持衔接"
+  },
+  {
+    "id": "q-co-connective-adversative",
+    "itemId": "english/co-connective-adversative",
+    "prompt": "however 与 although 在句法位置上有什么不同？",
+    "answer": "however 是副词，可置句首、句中或句末并用逗号隔开；although 是从属连词，引导从句且不能与 but 连用"
+  }
+]

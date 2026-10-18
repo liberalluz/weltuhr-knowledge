@@ -34,7 +34,7 @@
 | `layer` | enum | `persistent` 持久 / `view` 视图 / `ephemeral` 快消，驱动形态通道 |
 | `type` | enum | 决定方法派发：`declarative` 陈述 / `procedural` 程序 / `skill` 技能 / `tacit` 默会 |
 | `requirements` | object | 六要件 × 三态，键与取值见下表 |
-| `sourceRefs` | string[] | 引用 `SourceRef.id` |
+| `sourceRefs` | string[] | 引用 `SourceRef.id`。**键必须出现**，可为 `[]`（暂无出处）—— 客户端 `Item.fromJson` 按必填解析，省略会让整个空间装不出来 |
 | `domainId` | string | 所属域（Z2），须在 `manifest.domainIds` 内 |
 | `inScope` | bool | 圈内 / 圈外 |
 | `depth` | int | **派生** = `φ`（`⪯` 上的 Kahn 层号），不入库 |
