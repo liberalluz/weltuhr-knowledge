@@ -33,6 +33,22 @@
 /// 不同源，于是 `_universeBody` 在 `Z0` 换一套几何（`galaxy_map.dart`）与一套
 /// 绘制（`galaxy_painter.dart`）。
 ///
+/// ## `Z1` 画的是一张盘（`V-1c` · `VIEW-037`）
+///
+/// `Z1` 也换了一套几何（`spiral_map.dart` + `spiral_painter.dart`），理由是
+/// 实测出来的：走项投影时 `Z1` 是「极坐标环带 + 24° 侧视」，而 α 包 150 项
+/// **全部没有 `primaryAxis`**（继承 `ability`）⇒ 所有项落在同一个 60° 扇区里，
+/// 十个域只是十条同心环 ⇒ 屏幕上是一条竖列，域与域分不开（`ADR-0003`
+/// 2026-10-18 修订 §1 记的就是这件事）。
+///
+/// 换过之后三条行为变了，都是规格要求而不是顺手改：
+///
+/// - **可点对象只有域点**（亮 + 光晕），落 `Z2`。项是**背景**：照画、不参与
+///   拾取、点它什么都不发生 —— 所以 `onTapUp` 里没有「点项」这条分支。
+/// - **项的位置不再承载 `θ`**。它是背景，不承载语义；`θ` 通道仍由 `Z2` 起的
+///   项位置承载（那一段没动）。
+/// - **域点有标注**（`domainLabelKey`），只标第一条臂那个落点。
+///
 /// 三个后果值得记住：
 ///
 /// - **可点对象只有星系盘**，点它 ⇒ 换根并落 `Z1`（`_jumpToSpace`，与搜索命中
@@ -127,6 +143,8 @@ import 'galaxy_map.dart';
 import 'galaxy_painter.dart';
 import 'scene_pick.dart';
 import 'scene_source.dart';
+import 'spiral_map.dart';
+import 'spiral_painter.dart';
 import 'tree_view.dart';
 
 /// 七区块的 `Key` —— widget test 靠它断言「该出现的出现了、不该出现的没出现」。
@@ -175,6 +193,13 @@ Key galaxyLabelKey(String spaceId) => Key('z0-galaxy-$spaceId');
 /// 本笔不实现列表形态，但**必须把这件事说出来** —— 不说的话，用户看到的是
 /// 「几个小得看不清的盘」，而不是「这一档画不出星系」。
 const Key hudZ0DegradedKey = Key('z0-degraded');
+
+/// `Z1` 里某个域的标注（`VIEW-037`）。一个域一个 —— 测试靠它数「盘上有几个域」，
+/// 也靠它确认标注是**屏幕空间里的文字**而不是画上去的像素（同 `Z0` 的标注口径）。
+///
+/// ⚠️ 只有**第一条臂**那个落点带标注：两条臂各一个域点，但同一个域写两遍名字
+/// 会让盘上出现成对的重复文字，反而看不出「两个点是一个域」。
+Key domainLabelKey(String domainId) => Key('z1-domain-$domainId');
 
 /// ⑥ 罗盘展开后，某个轴取值的那一行（点它写 / 取消筛选）。
 Key compassValueKey(String axisKey, String value) =>
@@ -245,6 +270,15 @@ const double _galaxyLabelGap = 6;
 /// 编码项数的通道，与盘半径打架（`VIEW-036` / `X-02`）。
 const double _galaxyNameFontSize = 12;
 const double _galaxyMetaFontSize = 10;
+
+/// `Z1` 域点标注的宽度、与域点的间距、字号（`VIEW-037`）。
+///
+/// 12 个域 × 120 px 在 800 px 宽的窗口里必然有重叠 —— 本笔接受重叠（域名是
+/// 辨认用的，不是布局对象），归终端观感验收。宽度取 120 是为了 `data-model`
+/// 这类 10 字符的末段名一行放得下。
+const double _domainLabelWidth = 120;
+const double _domainLabelGap = 10;
+const double _domainLabelFontSize = 10;
 
 class UniverseScreen extends StatefulWidget {
   const UniverseScreen({
@@ -487,9 +521,9 @@ class _UniverseScreenState extends State<UniverseScreen>
         // 域必须跟着选中项重算：`trail` 存的是「离开的那一项」，跨域返回时
         // 域也跟着换。漏了这一行，面包屑会写着**上一项**的域配**这一项**的
         // 名字（两段都渲染得出来，只是彼此矛盾）。
-        _domainId = _rootOf(
-          previous.spaceId,
-        )?.pack?.itemOf(previous.itemId)?.domainId;
+        _domainId = _rootOf(previous.spaceId)?.pack
+            ?.itemOf(previous.itemId)
+            ?.domainId;
         // 返回详情内的一项 ⇒ 它必然在 `Z4`（那是详情唯一可见的宇宙态）。
         _camera = _camera.withZoom(
           ZoomLevel.z4,
@@ -512,9 +546,9 @@ class _UniverseScreenState extends State<UniverseScreen>
       // 快照还没带 `domainId`（`V-1f` 才加）⇒ 先按选中项回推。回推结果与当初
       // 存下的那个必然一致（域是选中项的属性），所以这一版没有信息损失 ——
       // 字段补上之后这行改成读快照，理由见 `VIEW-015` 修订。
-      _domainId = _rootOf(
-        snapshot.spaceId,
-      )?.pack?.itemOf(snapshot.selectedItemId ?? '')?.domainId;
+      _domainId = _rootOf(snapshot.spaceId)?.pack
+          ?.itemOf(snapshot.selectedItemId ?? '')
+          ?.domainId;
       _camera = _camera.withZoom(
         snapshot.zoomLevel,
         selectedItemId: snapshot.selectedItemId,
@@ -803,6 +837,51 @@ class _UniverseScreenState extends State<UniverseScreen>
     _jumpToSpace(spaceId);
   }
 
+  /// `Z1` 点域点 ⇒ 进 `Z2`（`VIEW-037`：**唯一可点对象**）。
+  ///
+  /// 落点复用 [`_jumpToDomain`]：搜索「域」类命中走的是同一条路。两处各写一遍
+  /// 的话，「点域点」与「搜域」会落到不同档位 —— 而两条路对用户是同一个动作。
+  ///
+  /// ⚠️ **项不在这里判**。`VIEW-037` 明写「点项位置不产生任何跳转」，所以点空
+  /// 白与点项**走同一条分支**：什么都不做。这不是省事 —— 给项留一条「至少选中
+  /// 它」的软响应，就等于让它可点，而规格要的正是「暗 = 背景」这一条视觉契约。
+  void _pickDomainAt(Offset point, SpiralLayout layout) {
+    final String? domainId = pickSpiralDomainAt(layout: layout, point: point);
+    final String? spaceId = _pack?.space.id;
+    if (domainId == null || spaceId == null) {
+      return;
+    }
+    _jumpToDomain(spaceId, domainId);
+  }
+
+  /// `Z1` 的域标注层（`VIEW-037`）。
+  ///
+  /// 与 `Z0` 的星系标注同一套理由：**屏幕空间、不随盘自转旋转、字号统一**。
+  /// 只给第一条臂的落点写名字 —— 同一个域写两遍会让盘上出现成对的重复文字，
+  /// 反而看不出「那两个点是一个域」。
+  List<Widget> _domainLayer(SpiralLayout layout, Size surface, Size window) {
+    final double scale = surface.width <= 0 ? 1 : window.width / surface.width;
+    return <Widget>[
+      for (final DomainMark mark in layout.marks)
+        Positioned(
+          left: mark.primary.dx * scale - _domainLabelWidth / 2,
+          top: mark.primary.dy * scale + _domainLabelGap,
+          width: _domainLabelWidth,
+          child: Text(
+            mark.label,
+            key: domainLabelKey(mark.domainId),
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: paletteTextSecondary,
+              fontSize: _domainLabelFontSize,
+            ),
+          ),
+        ),
+    ];
+  }
+
   /// `Z0` 的标注层（`VIEW-036`）。
   ///
   /// 做成 widget 而不是画进画布，是因为规格里有两条它才守得住：
@@ -817,8 +896,7 @@ class _UniverseScreenState extends State<UniverseScreen>
         Positioned(
           left: disc.centerX * scale - _galaxyLabelWidth / 2,
           // 盘是压扁的椭圆 ⇒ 从**半短轴**往下摆，不是从半径往下摆。
-          top:
-              (disc.centerY + disc.minorRadius) * scale + _galaxyLabelGap,
+          top: (disc.centerY + disc.minorRadius) * scale + _galaxyLabelGap,
           width: _galaxyLabelWidth,
           child: Column(
             key: galaxyLabelKey(disc.spaceId),
@@ -993,7 +1071,8 @@ class _UniverseScreenState extends State<UniverseScreen>
                           // 的既定行为，不是缺陷。
                           ..._breadcrumbRow(),
                           _modeIcon(),
-                          if (!tree && _camera.zoom == ZoomLevel.z0) _searchIcon(),
+                          if (!tree && _camera.zoom == ZoomLevel.z0)
+                            _searchIcon(),
                         ],
                       ),
                       // 诊断行：**空画面时先看这一行**。若写「合成」，说明内容包没找到
@@ -1109,14 +1188,27 @@ class _UniverseScreenState extends State<UniverseScreen>
       );
       final Size surface = Size(plan.surfaceWidth, plan.surfaceHeight);
 
-      // `Z0` 画的是**空间之间**（一个空间一个星系，`VIEW-036`），`Z1` 起画的
-      // 是某个空间**内部**。两者不同源，所以这里先问一次布局：有星系就换几何，
-      // 一个包都没装出来时（`layout.isEmpty`）退回项场景 —— 那条是诊断路径，
+      // `Z0` 画的是**空间之间**（一个空间一个星系，`VIEW-036`），`Z1` 画的是
+      // **一个空间的盘面**（核球 + 两条旋臂 + 域点，`VIEW-037`），`Z2` 起才走
+      // 项投影。三者不同源，所以这里先问两次布局：有星系就换几何、有盘就换
+      // 几何，都没装出来时（两个 `isEmpty`）退回项场景 —— 那条是诊断路径，
       // 界面上真正要看的是「为什么一个包都没有」。
       final GalaxyLayout galaxies = _camera.zoom == ZoomLevel.z0
           ? layoutGalaxies(roots: widget.roots, viewport: surface)
           : GalaxyLayout.empty;
       final bool galaxyMap = !galaxies.isEmpty;
+
+      // `Z1` 的盘。⚠️ 项在这一档**只是背景**（`VIEW-037`）：照画、不参与拾取 ——
+      // 所以下面 `onTapUp` 里没有「点项」这条分支，那是规格要求，不是漏写。
+      // 进项走搜索 / 树；`V-1d` / `V-1e` 落地后还有「域 → 恒星系」那条路。
+      final SpiralLayout spiral = _camera.zoom == ZoomLevel.z1 && _pack != null
+          ? layoutSpiral(
+              pack: _pack!,
+              viewport: surface,
+              visibleIds: visibleIds,
+            )
+          : SpiralLayout.empty;
+      final bool spiralDisc = !spiral.isEmpty;
 
       final Widget canvas = RepaintBoundary(
         // ⚠️ 尺寸必须由 `SizedBox` **强制**给，不能只写 `CustomPaint.size`：
@@ -1131,6 +1223,9 @@ class _UniverseScreenState extends State<UniverseScreen>
                 // 这一笔只画形态。接了会让一片不动的画面每帧重绘，帧预算读数
                 // 会凭空多出一档成本。
                 ? GalaxyPainter(layout: galaxies)
+                // `Z1` 同理：盘自转 `C-54` 与减速停转 `C-57` 归 `V-1i`。
+                : spiralDisc
+                ? SpiralPainter(layout: spiral)
                 : FramePainter(
                     scene: _scene,
                     spin: _spin,
@@ -1164,6 +1259,8 @@ class _UniverseScreenState extends State<UniverseScreen>
             final Offset point = box.globalToLocal(details.globalPosition);
             if (galaxyMap) {
               _pickGalaxyAt(point, galaxies);
+            } else if (spiralDisc) {
+              _pickDomainAt(point, spiral);
             } else {
               _pickAt(point, surface, visibleIds);
             }
@@ -1179,6 +1276,17 @@ class _UniverseScreenState extends State<UniverseScreen>
                           : canvas,
                     ),
                     ..._galaxyLayer(galaxies, surface, window),
+                  ],
+                )
+              : spiralDisc
+              ? Stack(
+                  children: <Widget>[
+                    Positioned.fill(
+                      child: plan.isDownscaled
+                          ? FittedBox(fit: BoxFit.fill, child: canvas)
+                          : canvas,
+                    ),
+                    ..._domainLayer(spiral, surface, window),
                   ],
                 )
               : (plan.isDownscaled

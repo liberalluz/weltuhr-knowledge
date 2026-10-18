@@ -35,11 +35,16 @@ class FixtureItem {
 }
 
 /// 搭一个包。[domainIds] 缺省取各项用到的域（去重、保序）。
+///
+/// [edges] 是 `[from, to]` 对（`from` = 前置、`to` = 后继），全部按 `strong`
+/// 建边。缺省无边 ⇒ **每一项都是 `⪯` 树的根**，而「恒星系数量」这类判据要的
+/// 正是「有几棵树」，所以需要造边时由调用方给。
 LoadedPack fixturePack(
   List<FixtureItem> items, {
   String spaceId = 'python',
   String spaceName = 'Python 语法分层',
   List<String>? domainIds,
+  List<List<String>> edges = const <List<String>>[],
 }) {
   final Map<String, Object?> manifest = <String, Object?>{
     'id': spaceId,
@@ -79,7 +84,15 @@ LoadedPack fixturePack(
           'inScope': item.inScope,
         },
     ],
-    'edges': <Map<String, Object?>>[],
+    'edges': <Map<String, Object?>>[
+      for (int i = 0; i < edges.length; i++)
+        <String, Object?>{
+          'id': 'edge-$i',
+          'from': edges[i][0],
+          'to': edges[i][1],
+          'type': 'strong',
+        },
+    ],
     'schemes': <Map<String, Object?>>[],
     'questions': <Map<String, Object?>>[],
     'excerpts': <Map<String, Object?>>[],

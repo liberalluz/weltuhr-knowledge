@@ -22,6 +22,8 @@ import 'package:project_knowledge/features/universe/frame_painter.dart';
 import 'package:project_knowledge/features/universe/galaxy_map.dart';
 import 'package:project_knowledge/features/universe/scene_pick.dart';
 import 'package:project_knowledge/features/universe/scene_source.dart';
+import 'package:project_knowledge/features/universe/spiral_map.dart';
+import 'package:project_knowledge/features/universe/spiral_painter.dart';
 import 'package:project_knowledge/features/universe/tree_view.dart';
 import 'package:project_knowledge/features/universe/universe_screen.dart';
 
@@ -50,10 +52,7 @@ Future<void> _pumpScreen(
     MaterialApp(
       home: UniverseScreen(
         roots: <SceneResolution>[
-          SceneResolution(
-            bundle: scene ?? buildSyntheticScene(),
-            pack: pack,
-          ),
+          SceneResolution(bundle: scene ?? buildSyntheticScene(), pack: pack),
           // 其它空间按各自的包装场景 —— 换根之后画的必须是**那一份**数据。
           for (final LoadedPack other in others)
             SceneResolution(bundle: _alphaScene(other), pack: other),
@@ -143,6 +142,53 @@ Offset _findPoint(
     }
   }
   fail('扫描区间里找不到「${hit ? "有星" : "没有星"}」的位置');
+}
+
+/// `Z1` 盘面上某个域点的**窗口坐标**。
+///
+/// 重算同一份盘面布局（`layoutSpiral` 是纯函数，入参与画布一致），而不是从
+/// widget 树里反推位置 —— 与 `_findPoint` 同一个做法：位置由几何唯一决定，
+/// 两边各算一次、算错就会红。
+Offset _domainPoint(
+  WidgetTester tester,
+  LoadedPack pack, {
+  String? domainId,
+  Size? window,
+}) {
+  final Size size = window ?? tester.getSize(find.byType(UniverseScreen));
+  final ViewportPlan plan = planViewport(
+    size.width,
+    size.height,
+    devicePixelRatio: tester.view.devicePixelRatio,
+  );
+  final SpiralLayout layout = layoutSpiral(
+    pack: pack,
+    viewport: Size(plan.surfaceWidth, plan.surfaceHeight),
+  );
+  final DomainMark mark = domainId == null
+      ? layout.marks.first
+      : layout.markOf(domainId)!;
+  // 画布坐标 → 窗口坐标：降采样时画布比窗口小，乘 `scale` 才落回手指的位置。
+  return mark.primary * plan.scale;
+}
+
+/// 进 `Z1` 盘面上的第一个域（点域点 ⇒ `Z2`，`VIEW-037`）。
+///
+/// `V-1c` 起 `Z1` 的项**不可点**（`VIEW-037`：项是背景），所以「点星进详情」
+/// 这条既有断言必须先落到 `Z2`。这一步不是绕过新行为 —— 它就是新行为：
+/// 域点成为 `Z1` 唯一的入口。
+///
+/// ⚠️ 这里只推**一帧**（`pump()`，不推时长）。推时长会让 `spin` 走起来，而
+/// `_findPoint` 是按 `yaw = 0` 算的位置 —— 走 4.5° 之后 150 个点整体转过去，
+/// 预计算的那一点就落在别的星上或落空。换档位不经过 `AnimatedSwitcher`
+/// （变的是同一棵子树的 painter），所以一帧足够。
+Future<void> _enterDomain(
+  WidgetTester tester,
+  LoadedPack pack, {
+  Size? window,
+}) async {
+  await tester.tapAt(_domainPoint(tester, pack, window: window));
+  await tester.pump();
 }
 
 /// 面包屑的段数（`VIEW-018` 修订 2：段数 = 走到第几层）。
@@ -773,6 +819,9 @@ void main() {
       // 只推 0 ms：`spin.value` 仍是 0，`_findPoint` 与 `_pickAt` 用同一个偏航。
       await tester.pump();
 
+      // `V-1c` 起 `Z1` 的项不可点（`VIEW-037`）⇒ 先进一个域，到 `Z2` 再点星。
+      await _enterDomain(tester, pack);
+
       final Size viewport = tester.getSize(find.byType(UniverseScreen));
       final Offset at = _findPoint(
         scene,
@@ -810,6 +859,8 @@ void main() {
 
       final Size viewport = tester.getSize(find.byType(UniverseScreen));
       final double dpr = tester.view.devicePixelRatio;
+      // `Z1` 的项不可点（`VIEW-037`）⇒ 先进域到 `Z2`。
+      await _enterDomain(tester, pack);
       await tester.tapAt(
         _findPoint(scene, viewport, hit: true, devicePixelRatio: dpr),
       );
@@ -903,6 +954,10 @@ void main() {
       );
       await tester.pump();
 
+      // `V-1c` 起 `Z1` 画的是盘面（`SpiralPainter`），项不可点 ⇒ 先进域到 `Z2`，
+      // 那里才是 `FramePainter` 与可点的星。
+      await _enterDomain(tester, pack, window: const Size(3840, 2160));
+
       // 画布缩到基准面积（4K 逻辑尺寸 = 4 倍面积 ⇒ 线性缩一半）。
       final Finder canvas = find.byWidgetPredicate(
         (Widget widget) =>
@@ -969,6 +1024,8 @@ void main() {
       );
 
       final Size viewport = tester.getSize(find.byType(UniverseScreen));
+      // `V-1c` 起 `Z1` 的项不可点（`VIEW-037`）⇒ 先进域到 `Z2`。
+      await _enterDomain(tester, pack);
       await tester.tapAt(
         _findPoint(
           scene,
@@ -987,12 +1044,12 @@ void main() {
       expect(
         find.byKey(hudDetailDrawerKey),
         findsNothing,
-        reason: 'Z1 没有详情（VIEW-013）⇒ 已经退回来了',
+        reason: 'Z2 没有详情（VIEW-013）⇒ 已经退回来了',
       );
       expect(
         _crumbCount(tester),
-        _crumbsFor(ZoomLevel.z1),
-        reason: '退回出发地 ⇒ 面包屑也跟着回到两段',
+        _crumbsFor(ZoomLevel.z2),
+        reason: '退回出发地 ⇒ 面包屑也跟着回到三段（域那一层）',
       );
       expect(find.byKey(detailBackKey), findsNothing, reason: '退无可退之后按钮再次消失');
       expect(tester.takeException(), isNull);
@@ -1011,6 +1068,8 @@ void main() {
       await tester.pump();
 
       final Size viewport = tester.getSize(find.byType(UniverseScreen));
+      // `V-1c` 起 `Z1` 的项不可点（`VIEW-037`）⇒ 先进域到 `Z2`。
+      await _enterDomain(tester, pack);
       await tester.tapAt(
         _findPoint(
           scene,
@@ -1225,6 +1284,8 @@ void main() {
       await tester.pump();
 
       // 点星进详情 —— 这是「出发的那一项」，在 python 空间。
+      // `V-1c` 起 `Z1` 的项不可点（`VIEW-037`）⇒ 先进域到 `Z2`。
+      await _enterDomain(tester, pack);
       final Size viewport = tester.getSize(find.byType(UniverseScreen));
       await tester.tapAt(
         _findPoint(
@@ -1306,7 +1367,8 @@ void main() {
       expect(
         _crumbCount(tester),
         _crumbsFor(ZoomLevel.z1),
-        reason: '空间落点推到 Z1（VIEW-027 / 031 修订）：Z0 现在是宇宙层，'
+        reason:
+            '空间落点推到 Z1（VIEW-027 / 031 修订）：Z0 现在是宇宙层，'
             '落到单个空间应当是「进去了」',
       );
       expect(_crumbHas(tester, 'Go'), isTrue, reason: '第 2 段是目标空间');
@@ -1348,11 +1410,7 @@ void main() {
       await tester.tap(find.byKey(locateRowKey(axis)));
       await _pump(tester);
 
-      expect(
-        find.byKey(hudFilterChipsKey),
-        findsOneWidget,
-        reason: '筛选写进去了',
-      );
+      expect(find.byKey(hudFilterChipsKey), findsOneWidget, reason: '筛选写进去了');
       expect(
         find.textContaining('· 1 项'),
         findsOneWidget,
@@ -1402,11 +1460,7 @@ void main() {
           .locate('装饰器')
           .usableHits
           .first;
-      expect(
-        remote.spaceId,
-        'python',
-        reason: '命中来自另一个空间 —— 换根之后它成了「别人」',
-      );
+      expect(remote.spaceId, 'python', reason: '命中来自另一个空间 —— 换根之后它成了「别人」');
       expect(
         find.byKey(locateRowKey(remote)),
         findsNothing,
@@ -1423,9 +1477,7 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('换根后树里是新根的项（SPEC-VIEW-031 / 021）', (
-      WidgetTester tester,
-    ) async {
+    testWidgets('换根后树里是新根的项（SPEC-VIEW-031 / 021）', (WidgetTester tester) async {
       final LoadedPack pack = loadAlphaPack();
       final LoadedPack go = _goPack();
       await _pumpScreen(
@@ -1471,11 +1523,7 @@ void main() {
       // 现在星系本身是入口（`VIEW-036`），chips 与它语义重复，且 chips 落 `Z0`
       // 与「点星系 ⇒ `Z1`」直接冲突 —— 整排删除，不留开关。
       expect(find.byKey(hudSpaceSwitchKey), findsNothing);
-      expect(
-        find.text('go'),
-        findsNothing,
-        reason: '另一个空间的名字（小写 id）不该出现在 ① 里',
-      );
+      expect(find.text('go'), findsNothing, reason: '另一个空间的名字（小写 id）不该出现在 ① 里');
       expect(tester.takeException(), isNull);
     });
   });
@@ -1576,7 +1624,9 @@ void main() {
       final LoadedPack pack = loadAlphaPack();
       final SceneBundle scene = _alphaScene(pack);
       await tester.pumpWidget(
-        MaterialApp(home: UniverseScreen.single(scene: scene, pack: pack)),
+        MaterialApp(
+          home: UniverseScreen.single(scene: scene, pack: pack),
+        ),
       );
       await tester.pump();
 
@@ -1587,6 +1637,8 @@ void main() {
         hit: true,
         devicePixelRatio: tester.view.devicePixelRatio,
       );
+      // `V-1c` 起 `Z1` 的项不可点（`VIEW-037`）⇒ 先进域到 `Z2` 再点星。
+      await _enterDomain(tester, pack);
       await tester.tapAt(star);
       await _pump(tester);
       expect(find.byKey(detailBackKey), findsOneWidget, reason: '前提：点星进了详情');
@@ -1595,26 +1647,35 @@ void main() {
       //
       // 退到 **`Z1`（第 2 段）** 而不是 `Z0`：`Z0` 自 `V-1b` 起是宇宙层、不出项
       // （`VIEW-036`），在那里点不出「同一颗星」—— 点到的是星系，落点变成换根。
-      // 这一条验的是 `returnTo` 残留，不是宇宙层的形态，所以退到还能点星的那一层。
+      // 这一条验的是 `returnTo` 残留，不是宇宙层的形态，所以退到还能进域的那一层。
       await tester.tap(find.byKey(hudCrumbKey(1)));
       await _pump(tester);
       expect(find.byKey(hudDetailDrawerKey), findsNothing);
 
-      // 再点同一颗星进详情，然后按返回：必须回到 **`Z1`**（本轮进详情的出发地），
-      // 不是「上一颗星的 `Z4`」。残留的 `returnTo` 会让后者发生，而它看起来完全
-      // 正常 —— 抽屉还开着，只是内容换了一颗星。
+      // 再从 `Z1` 进同一个域、点同一颗星。`V-1c` 之后 `Z1` 上没有「同一颗星」
+      // 可点（项是背景），所以中间这一步是**重新进域** —— 位置与第一次相同，
+      // 因为盘面布局是纯函数。
+      await _enterDomain(tester, pack);
+
+      // 按返回：必须回到 **`Z2`**（本轮进详情的出发地），不是「上一颗星的
+      // `Z4`」。残留的 `returnTo` 会让后者发生，而它看起来完全正常 ——
+      // 抽屉还开着，只是内容换了一颗星。
       await tester.tapAt(star);
       await _pump(tester);
-      expect(find.byKey(detailBackKey), findsOneWidget, reason: '刚进详情 ⇒ 有出发地可回');
+      expect(
+        find.byKey(detailBackKey),
+        findsOneWidget,
+        reason: '刚进详情 ⇒ 有出发地可回',
+      );
 
       await tester.tap(find.byKey(detailBackKey));
       await _pump(tester);
       expect(
         find.byKey(hudDetailDrawerKey),
         findsNothing,
-        reason: 'VIEW-015：返回的是出发地（Z1），不是上一颗星的 Z4',
+        reason: 'VIEW-015：返回的是出发地（Z2），不是上一颗星的 Z4',
       );
-      expect(_crumbCount(tester), _crumbsFor(ZoomLevel.z1));
+      expect(_crumbCount(tester), _crumbsFor(ZoomLevel.z2));
       expect(tester.takeException(), isNull);
     });
   });
@@ -1661,9 +1722,7 @@ void main() {
       expect(find.byKey(galaxyLabelKey('go')), findsOneWidget);
       // 标注副行给的是**规模**（`VIEW-035`：不放事件计数）。
       expect(
-        find.text(
-          '${pack.items.length} 项 · ${pack.space.domainIds.length} 域',
-        ),
+        find.text('${pack.items.length} 项 · ${pack.space.domainIds.length} 域'),
         findsOneWidget,
       );
       // `Z0` 不出项 ⇒ 没有详情抽屉，面包屑只有第 1 段。
@@ -1695,9 +1754,7 @@ void main() {
       );
 
       // 画布坐标 → 窗口坐标：降采样时两者不等，直接用画布坐标会点偏。
-      await tester.tapAt(
-        Offset(target.centerX, target.centerY) * plan.scale,
-      );
+      await tester.tapAt(Offset(target.centerX, target.centerY) * plan.scale);
       await _pump(tester);
 
       expect(
@@ -1745,6 +1802,119 @@ void main() {
         find.byKey(hudZ0DegradedKey),
         findsOneWidget,
         reason: 'VIEW-036：k 触底是**可计算的判据**，且必须让人看到',
+      );
+      expect(tester.takeException(), isNull);
+    });
+  });
+
+  group('Z1 星系盘（SPEC-VIEW-037 · V-1c）', () {
+    testWidgets('一个域一个标注，且画的是盘面而不是项投影（SPEC-VIEW-037）', (
+      WidgetTester tester,
+    ) async {
+      final LoadedPack pack = loadAlphaPack();
+      await _pumpScreen(tester, pack: pack, scene: _alphaScene(pack));
+
+      for (final String domainId in pack.space.domainIds) {
+        expect(
+          find.byKey(domainLabelKey(domainId)),
+          findsOneWidget,
+          reason: '域 $domainId 在盘上没有落点标注',
+        );
+      }
+      final Finder spiral = find.byWidgetPredicate(
+        (Widget widget) =>
+            widget is CustomPaint && widget.painter is SpiralPainter,
+      );
+      expect(spiral, findsOneWidget, reason: 'Z1 走自己的几何与绘制（VIEW-037）');
+      expect(
+        find.byWidgetPredicate(
+          (Widget widget) =>
+              widget is CustomPaint && widget.painter is FramePainter,
+        ),
+        findsNothing,
+        reason: '同一时刻只该有一种几何 —— 两套叠着画会让拾取与画面各说一套',
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('点域点 ⇒ 落到 Z2，选中该域最浅的一项（SPEC-VIEW-037 / 028）', (
+      WidgetTester tester,
+    ) async {
+      final LoadedPack pack = loadAlphaPack();
+      await _pumpScreen(tester, pack: pack, scene: _alphaScene(pack));
+
+      await _enterDomain(tester, pack);
+
+      expect(
+        _crumbCount(tester),
+        _crumbsFor(ZoomLevel.z2),
+        reason: '域点是唯一可点对象，落点就是「进这个域」',
+      );
+      expect(_crumbHas(tester, pack.space.domainIds.first), isTrue);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('点项什么都不发生 —— 项是背景（SPEC-VIEW-037）', (WidgetTester tester) async {
+      // ⚠️ 用**三个域**的夹具而不是 α 包：α 包十个域挤在 126 px 的盘上，
+      // 域点之间只隔 11 px、24 px 命中圈连成一片 —— 那时「点项」落进某个域的
+      // 命中圈是**规格内**的行为（「先判域点，再一律不响应」），验不出
+      // 「点项无反应」。三个域时段长 37.8 px，段边缘的项确实在圈外。
+      final LoadedPack pack = fixturePack(<FixtureItem>[
+        for (final String domain in <String>['s/a', 's/b', 's/c'])
+          for (int i = 0; i < 4; i++)
+            FixtureItem('$domain-$i', '$domain 第 $i 项', domainId: domain),
+      ]);
+      await _pumpScreen(tester, pack: pack, scene: _alphaScene(pack));
+
+      final Size window = tester.getSize(find.byType(UniverseScreen));
+      final ViewportPlan plan = planViewport(
+        window.width,
+        window.height,
+        devicePixelRatio: tester.view.devicePixelRatio,
+      );
+      final SpiralLayout layout = layoutSpiral(
+        pack: pack,
+        viewport: Size(plan.surfaceWidth, plan.surfaceHeight),
+      );
+      // 挑一个在**所有** 12 px 命中圈之外的背景项。
+      const double floor = domainMarkMinTapDiameter / 2 + 1;
+      final Offset? outside = layout.items
+          .where(
+            (Offset point) => layout.marks.every(
+              (DomainMark mark) => mark.points.every(
+                (Offset markPoint) => (markPoint - point).distance > floor,
+              ),
+            ),
+          )
+          .firstOrNull;
+      expect(outside, isNotNull, reason: '盘上总有圈外的背景项；没有说明布局挤成一团');
+
+      await tester.tapAt(outside! * plan.scale);
+      await _pump(tester);
+
+      expect(
+        _crumbCount(tester),
+        _crumbsFor(ZoomLevel.z1),
+        reason: 'VIEW-037：点项不产生任何跳转',
+      );
+      expect(
+        find.byKey(hudDetailDrawerKey),
+        findsNothing,
+        reason: '连选中都不该发生 —— 暗 = 背景，给软响应就等于让它可点',
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('没有包时不画盘面，只留诊断行（SPEC-FND-014）', (WidgetTester tester) async {
+      await _pumpScreen(tester);
+
+      expect(
+        find.byWidgetPredicate(
+          (Widget widget) =>
+              widget is CustomPaint && widget.painter is SpiralPainter,
+        ),
+        findsNothing,
+        reason: '没有 KnowledgeSpace 就没有域 → 没有盘（不凭空造一个）',
       );
       expect(tester.takeException(), isNull);
     });
