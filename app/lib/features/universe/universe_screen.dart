@@ -49,6 +49,18 @@
 ///   项位置承载（那一段没动）。
 /// - **域点有标注**（`domainLabelKey`），只标第一条臂那个落点。
 ///
+/// ## `Z2` 画的是一朵云（`V-1d` · `VIEW-038`）
+///
+/// `Z2` 又是一套几何（`nebula_map.dart` + `nebula_painter.dart`）：一个域
+/// = 一朵**无边界粒子云** + 云里的项 + **亮结**（`⪯` 子树）+ 跨域出口标记。
+/// 粒子数固定（`C-62`），不跟项数走 —— 否则它是第三条「项数」通道。
+///
+/// 可点对象在这一档**有两个**（`VIEW-001`：`Z2` 容器与星都能点）：亮结 ⇒ `Z3`
+/// （单项子树直接 `Z4`）、项 ⇒ `Z4`；重叠处算容器的（亮结画在上方）。跨域边
+/// 画成**朝外的箭头**而不是断线 —— 断线会被读成数据缺了。
+///
+/// `Z3` / `Z4` 仍走项投影，等 `V-1e` 换成恒星系。
+///
 /// 三个后果值得记住：
 ///
 /// - **可点对象只有星系盘**，点它 ⇒ 换根并落 `Z1`（`_jumpToSpace`，与搜索命中
@@ -141,6 +153,8 @@ import 'filter_chips.dart';
 import 'frame_painter.dart';
 import 'galaxy_map.dart';
 import 'galaxy_painter.dart';
+import 'nebula_map.dart';
+import 'nebula_painter.dart';
 import 'scene_pick.dart';
 import 'scene_source.dart';
 import 'spiral_map.dart';
@@ -200,6 +214,16 @@ const Key hudZ0DegradedKey = Key('z0-degraded');
 /// ⚠️ 只有**第一条臂**那个落点带标注：两条臂各一个域点，但同一个域写两遍名字
 /// 会让盘上出现成对的重复文字，反而看不出「两个点是一个域」。
 Key domainLabelKey(String domainId) => Key('z1-domain-$domainId');
+
+/// `Z2` 里某个亮结的标注（`VIEW-038`）。一个亮结一个 —— 测试靠它数「云里有
+/// 几棵 `⪯` 子树」，也靠它确认标注是屏幕空间里的文字。
+Key nebulaKnotKey(String rootId) => Key('z2-knot-$rootId');
+
+/// `Z2` 里某个跨域出口的标注（`VIEW-038`：`→ 进入〈域名〉`）。
+///
+/// ⚠️ 规格写的是「〈动词形态〉」，而包里没有域的动词形态（无 `Domain` 实体）
+/// ⇒ 退成末段域名。与 `VIEW-018` 的中文域名同一个 `PACK` 缺口。
+Key nebulaExitKey(String targetDomainId) => Key('z2-exit-$targetDomainId');
 
 /// ⑥ 罗盘展开后，某个轴取值的那一行（点它写 / 取消筛选）。
 Key compassValueKey(String axisKey, String value) =>
@@ -279,6 +303,17 @@ const double _galaxyMetaFontSize = 10;
 const double _domainLabelWidth = 120;
 const double _domainLabelGap = 10;
 const double _domainLabelFontSize = 10;
+
+/// `Z2` 亮结标注与跨域出口的尺寸（`VIEW-038`）。
+///
+/// 132 比 `Z1` 的域标注宽一点：亮结标的是**项标题**（「装饰器的参数顺序」这类
+/// 比 `domainId` 末段长），一行放不下就省略号 —— 字号仍统一，不承载任何语义。
+const double _nebulaLabelWidth = 132;
+const double _nebulaLabelGap = 8;
+const double _nebulaLabelFontSize = 10;
+
+/// 出口标签离云缘的距离（px）。往外让一格，免得压在粒子上。
+const double _nebulaExitLabelGap = 12;
 
 class UniverseScreen extends StatefulWidget {
   const UniverseScreen({
@@ -854,6 +889,96 @@ class _UniverseScreenState extends State<UniverseScreen>
     _jumpToDomain(spaceId, domainId);
   }
 
+  /// `Z2` 的拾取：**先判亮结，再判星**（`VIEW-038`）。
+  ///
+  /// 容器优先与 `Z1` 同一条口径（`VIEW-037` 第 3 条：拾取先判容器）。这里两个
+  /// 都能点（`VIEW-001`：`Z2` 两种都有），所以不是「挡住后者」，而是「重叠处
+  /// 算容器的」—— 亮结画在星上方，点在它上面本来就该进它。
+  ///
+  /// 空处什么都不做：清掉选中会让右侧抽屉毫无预警地消失，而点歪是常态。
+  void _pickNebulaAt(Offset point, NebulaLayout layout) {
+    final NebulaKnot? knot = pickNebulaKnotAt(layout: layout, point: point);
+    if (knot != null) {
+      _jumpToKnot(knot);
+      return;
+    }
+    final String? itemId = pickNebulaItemAt(layout: layout, point: point);
+    if (itemId == null) {
+      return;
+    }
+    _jumpToItem(_spaceId, itemId);
+  }
+
+  /// 点亮结：**单项子树直接进 `Z4`**（`VIEW-038`），其余进 `Z3`。
+  ///
+  /// 为什么单项要跳过 `Z3`：给一个只有一颗行星的恒星系画共面轨道是纯粹的空转
+  /// —— 点进去看到的就是那一项，还要再点一次才到详情。
+  ///
+  /// `Z3` 落在哪一棵子树上记在 `selectedItemId`（= 子树根）。`V-1e` 实现恒星系
+  /// 时按它取链，**不新增一个「当前子树」状态** —— 两个状态说同一件事，迟早
+  /// 有一处忘同步。
+  void _jumpToKnot(NebulaKnot knot) {
+    if (knot.isSingle) {
+      _jumpToItem(_spaceId, knot.rootId);
+      return;
+    }
+    _navigate(() {
+      _selectedItemId = knot.rootId;
+      _mode = ViewMode.universe;
+      _camera = _camera.withZoom(ZoomLevel.z3, selectedItemId: knot.rootId);
+    });
+  }
+
+  /// `Z2` 的标注层（`VIEW-038`）：亮结标题 + 跨域出口。
+  ///
+  /// 与 `Z1` 的域标注同一套理由：**屏幕空间、不随画面旋转、字号统一**。标签
+  /// 不画进画布是因为画布里的文字会跟着降采样一起糊。
+  List<Widget> _nebulaLayer(NebulaLayout layout, Size surface, Size window) {
+    final double scale = surface.width <= 0 ? 1 : window.width / surface.width;
+    return <Widget>[
+      for (final NebulaKnot knot in layout.knots)
+        Positioned(
+          left: knot.center.dx * scale - _nebulaLabelWidth / 2,
+          top: knot.center.dy * scale + _nebulaLabelGap,
+          width: _nebulaLabelWidth,
+          child: Text(
+            knot.label,
+            key: nebulaKnotKey(knot.rootId),
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: paletteTextPrimary,
+              fontSize: _nebulaLabelFontSize,
+            ),
+          ),
+        ),
+      for (final NebulaExit exit in layout.exits)
+        Positioned(
+          // 出口标签按箭头方向往外让一格 —— 压在云缘上会被粒子糊住。
+          left:
+              (exit.center.dx + exit.direction.dx * _nebulaExitLabelGap) *
+                  scale -
+              _nebulaLabelWidth / 2,
+          top:
+              (exit.center.dy + exit.direction.dy * _nebulaExitLabelGap) *
+                  scale,
+          width: _nebulaLabelWidth,
+          child: Text(
+            exit.label,
+            key: nebulaExitKey(exit.targetDomainId),
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: paletteTextSecondary,
+              fontSize: _nebulaLabelFontSize,
+            ),
+          ),
+        ),
+    ];
+  }
+
   /// `Z1` 的域标注层（`VIEW-037`）。
   ///
   /// 与 `Z0` 的星系标注同一套理由：**屏幕空间、不随盘自转旋转、字号统一**。
@@ -1103,7 +1228,16 @@ class _UniverseScreenState extends State<UniverseScreen>
                 ),
               ),
               // ⑤ 焦点星：树里不渲染 —— 树里「选中行」就是焦点（见文件头表格）。
-              if (!tree) Center(child: _hiddenSlot(hudFocusStarKey, '焦点星')),
+              // ⚠️ `IgnorePointer`：这是一个**纯占位**，却正好落在屏幕正中。
+              // `V-1d` 之前没人发现它会吃点击 —— `Z2` 的云心那一项就在它下面
+              // （离画面中心不到 10 px），点上去什么都不发生，而画面上一切正常。
+              // 占位不该接住任何手势；将来 ⑤ 真有了内容，它自己带 gesture。
+              if (!tree)
+                Center(
+                  child: IgnorePointer(
+                    child: _hiddenSlot(hudFocusStarKey, '焦点星'),
+                  ),
+                ),
               // ⑥ 六轴罗盘：`VIEW-011` 树里没有方位，保留即成假控件。
               if (!tree) _positioned(left: 16, bottom: 72, child: _compass()),
               // ⑦ **留白**（`VIEW-018` 修订 1）。刻度条已作废：下钻模型下它会
@@ -1210,6 +1344,19 @@ class _UniverseScreenState extends State<UniverseScreen>
           : SpiralLayout.empty;
       final bool spiralDisc = !spiral.isEmpty;
 
+      // `Z2` 画的是**一个域**：一朵分子云 + 亮结 + 跨域出口（`VIEW-038`）。
+      // `Z3` / `Z4` 仍走项投影 —— 恒星系与单星交给 `V-1e`。
+      final NebulaLayout nebula =
+          _camera.zoom == ZoomLevel.z2 && _pack != null && _domainId != null
+          ? layoutNebula(
+              pack: _pack!,
+              domainId: _domainId!,
+              viewport: surface,
+              visibleIds: visibleIds,
+            )
+          : NebulaLayout.empty;
+      final bool nebulaCloud = !nebula.isEmpty;
+
       final Widget canvas = RepaintBoundary(
         // ⚠️ 尺寸必须由 `SizedBox` **强制**给，不能只写 `CustomPaint.size`：
         // `size` 只是 preferred，父级给的 tight 约束会把它推翻 —— 那样绘制按
@@ -1226,6 +1373,10 @@ class _UniverseScreenState extends State<UniverseScreen>
                 // `Z1` 同理：盘自转 `C-54` 与减速停转 `C-57` 归 `V-1i`。
                 : spiralDisc
                 ? SpiralPainter(layout: spiral)
+                // `Z2` 也一样 —— 云的整体自转归 `V-1i`（`VIEW-038`：亮结无
+                // 独立轨道，只随盘整体转）。
+                : nebulaCloud
+                ? NebulaPainter(layout: nebula)
                 : FramePainter(
                     scene: _scene,
                     spin: _spin,
@@ -1261,6 +1412,8 @@ class _UniverseScreenState extends State<UniverseScreen>
               _pickGalaxyAt(point, galaxies);
             } else if (spiralDisc) {
               _pickDomainAt(point, spiral);
+            } else if (nebulaCloud) {
+              _pickNebulaAt(point, nebula);
             } else {
               _pickAt(point, surface, visibleIds);
             }
@@ -1275,7 +1428,13 @@ class _UniverseScreenState extends State<UniverseScreen>
                           ? FittedBox(fit: BoxFit.fill, child: canvas)
                           : canvas,
                     ),
-                    ..._galaxyLayer(galaxies, surface, window),
+                    Positioned.fill(
+                      child: IgnorePointer(
+                        child: Stack(
+                          children: _galaxyLayer(galaxies, surface, window),
+                        ),
+                      ),
+                    ),
                   ],
                 )
               : spiralDisc
@@ -1286,7 +1445,30 @@ class _UniverseScreenState extends State<UniverseScreen>
                           ? FittedBox(fit: BoxFit.fill, child: canvas)
                           : canvas,
                     ),
-                    ..._domainLayer(spiral, surface, window),
+                    Positioned.fill(
+                      child: IgnorePointer(
+                        child: Stack(
+                          children: _domainLayer(spiral, surface, window),
+                        ),
+                      ),
+                    ),
+                  ],
+                )
+              : nebulaCloud
+              ? Stack(
+                  children: <Widget>[
+                    Positioned.fill(
+                      child: plan.isDownscaled
+                          ? FittedBox(fit: BoxFit.fill, child: canvas)
+                          : canvas,
+                    ),
+                    Positioned.fill(
+                      child: IgnorePointer(
+                        child: Stack(
+                          children: _nebulaLayer(nebula, surface, window),
+                        ),
+                      ),
+                    ),
                   ],
                 )
               : (plan.isDownscaled

@@ -20,6 +20,8 @@ import 'package:project_knowledge/core/frame/projection.dart';
 import 'package:project_knowledge/core/frame/scene.dart';
 import 'package:project_knowledge/features/universe/frame_painter.dart';
 import 'package:project_knowledge/features/universe/galaxy_map.dart';
+import 'package:project_knowledge/features/universe/nebula_map.dart';
+import 'package:project_knowledge/features/universe/nebula_painter.dart';
 import 'package:project_knowledge/features/universe/scene_pick.dart';
 import 'package:project_knowledge/features/universe/scene_source.dart';
 import 'package:project_knowledge/features/universe/spiral_map.dart';
@@ -189,6 +191,88 @@ Future<void> _enterDomain(
 }) async {
   await tester.tapAt(_domainPoint(tester, pack, window: window));
   await tester.pump();
+}
+
+/// `Z2` 云里某一项（默认第一项）的**窗口坐标**。
+///
+/// 与 `_domainPoint` 同一个做法：`layoutNebula` 是纯函数，入参与画布一致，
+/// 位置由几何唯一决定 —— 两边各算一次、算错就会红。
+Offset _nebulaItemPoint(
+  WidgetTester tester,
+  LoadedPack pack, {
+  int index = 0,
+  Size? window,
+}) {
+  final Size size = window ?? tester.getSize(find.byType(UniverseScreen));
+  final ViewportPlan plan = planViewport(
+    size.width,
+    size.height,
+    devicePixelRatio: tester.view.devicePixelRatio,
+  );
+  final NebulaLayout layout = layoutNebula(
+    pack: pack,
+    domainId: pack.space.domainIds.first,
+    viewport: Size(plan.surfaceWidth, plan.surfaceHeight),
+  );
+  return layout.items[index].center * plan.scale;
+}
+
+/// `Z2` 里第一个亮结的**窗口坐标**（`VIEW-038`：亮结可点 ⇒ `Z3`）。
+Offset _nebulaKnotPoint(
+  WidgetTester tester,
+  LoadedPack pack, {
+  int index = 0,
+  Size? window,
+}) {
+  final Size size = window ?? tester.getSize(find.byType(UniverseScreen));
+  final ViewportPlan plan = planViewport(
+    size.width,
+    size.height,
+    devicePixelRatio: tester.view.devicePixelRatio,
+  );
+  final NebulaLayout layout = layoutNebula(
+    pack: pack,
+    domainId: pack.space.domainIds.first,
+    viewport: Size(plan.surfaceWidth, plan.surfaceHeight),
+  );
+  return layout.knots[index].center * plan.scale;
+}
+
+/// `Z2` 里一个「点不中任何东西」的窗口坐标 —— 既不在亮结的 24 px 命中圈里，
+/// 也不在项的 8 px 圈里。
+///
+/// 不复用 `_findPoint(hit: false)`：那一条问的是项投影的拾取，而 `Z2` 现在不
+/// 走那条路（`V-1d`）。两种空白定义混用会让「点空白不动选中」在换形态后假绿。
+Offset _nebulaBlankPoint(
+  WidgetTester tester,
+  LoadedPack pack, {
+  Size? window,
+}) {
+  final Size size = window ?? tester.getSize(find.byType(UniverseScreen));
+  final ViewportPlan plan = planViewport(
+    size.width,
+    size.height,
+    devicePixelRatio: tester.view.devicePixelRatio,
+  );
+  final NebulaLayout layout = layoutNebula(
+    pack: pack,
+    domainId: pack.space.domainIds.first,
+    viewport: Size(plan.surfaceWidth, plan.surfaceHeight),
+  );
+  for (double y = 160; y < size.height - 160; y += 13) {
+    for (double x = 40; x < size.width - 420; x += 13) {
+      final Offset point = Offset(x, y);
+      final Offset inCanvas = point / plan.scale;
+      if (pickNebulaKnotAt(layout: layout, point: inCanvas) != null) {
+        continue;
+      }
+      if (pickNebulaItemAt(layout: layout, point: inCanvas) != null) {
+        continue;
+      }
+      return point;
+    }
+  }
+  fail('扫不到「点不中亮结也点不中项」的位置');
 }
 
 /// 面包屑的段数（`VIEW-018` 修订 2：段数 = 走到第几层）。
@@ -822,14 +906,9 @@ void main() {
       // `V-1c` 起 `Z1` 的项不可点（`VIEW-037`）⇒ 先进一个域，到 `Z2` 再点星。
       await _enterDomain(tester, pack);
 
-      final Size viewport = tester.getSize(find.byType(UniverseScreen));
-      final Offset at = _findPoint(
-        scene,
-        viewport,
-        hit: true,
-        devicePixelRatio: tester.view.devicePixelRatio,
-      );
-      await tester.tapAt(at);
+      // `V-1d` 起 `Z2` 画的是云（`NebulaPainter`）：星的位置由 `layoutNebula`
+      // 定，不再是项投影 —— 落点也必须按那一套算。
+      await tester.tapAt(_nebulaItemPoint(tester, pack));
       await tester.pump();
 
       expect(
@@ -857,19 +936,14 @@ void main() {
       );
       await tester.pump();
 
-      final Size viewport = tester.getSize(find.byType(UniverseScreen));
-      final double dpr = tester.view.devicePixelRatio;
-      // `Z1` 的项不可点（`VIEW-037`）⇒ 先进域到 `Z2`。
+      // `Z1` 的项不可点（`VIEW-037`）⇒ 先进域到 `Z2`。`V-1d` 起那一档是云，
+      // 「点中」与「点空白」都按 `layoutNebula` 的那一套判。
       await _enterDomain(tester, pack);
-      await tester.tapAt(
-        _findPoint(scene, viewport, hit: true, devicePixelRatio: dpr),
-      );
+      await tester.tapAt(_nebulaItemPoint(tester, pack));
       await tester.pump();
       expect(find.byKey(hudDetailDrawerKey), findsOneWidget);
 
-      await tester.tapAt(
-        _findPoint(scene, viewport, hit: false, devicePixelRatio: dpr),
-      );
+      await tester.tapAt(_nebulaBlankPoint(tester, pack));
       await tester.pump();
       expect(
         find.byKey(hudDetailDrawerKey),
@@ -959,9 +1033,11 @@ void main() {
       await _enterDomain(tester, pack, window: const Size(3840, 2160));
 
       // 画布缩到基准面积（4K 逻辑尺寸 = 4 倍面积 ⇒ 线性缩一半）。
+      // ⚠️ `V-1d` 起 `Z2` 的 painter 是 `NebulaPainter` —— 这一条问的是**画布
+      // 尺寸与铺满**（`C-33`），与画的是什么无关，predicate 跟着形态走。
       final Finder canvas = find.byWidgetPredicate(
         (Widget widget) =>
-            widget is CustomPaint && widget.painter is FramePainter,
+            widget is CustomPaint && widget.painter is NebulaPainter,
       );
       final Size surface = tester.getSize(canvas);
       expect(surface.width, closeTo(frameBenchWidth, 1));
@@ -977,12 +1053,7 @@ void main() {
       expect(box.height, closeTo(2160, 1));
 
       await tester.tapAt(
-        _findPoint(
-          scene,
-          const Size(3840, 2160),
-          hit: true,
-          devicePixelRatio: 1,
-        ),
+        _nebulaItemPoint(tester, pack, window: const Size(3840, 2160)),
       );
       await tester.pump();
       expect(find.byKey(hudDetailDrawerKey), findsOneWidget);
@@ -1023,17 +1094,9 @@ void main() {
         reason: '还没进过详情 ⇒ 没有可退的地方，按钮不渲染',
       );
 
-      final Size viewport = tester.getSize(find.byType(UniverseScreen));
       // `V-1c` 起 `Z1` 的项不可点（`VIEW-037`）⇒ 先进域到 `Z2`。
       await _enterDomain(tester, pack);
-      await tester.tapAt(
-        _findPoint(
-          scene,
-          viewport,
-          hit: true,
-          devicePixelRatio: tester.view.devicePixelRatio,
-        ),
-      );
+      await tester.tapAt(_nebulaItemPoint(tester, pack));
       await tester.pump();
       expect(find.byKey(hudDetailDrawerKey), findsOneWidget);
       expect(find.byKey(detailBackKey), findsOneWidget);
@@ -1067,17 +1130,9 @@ void main() {
       );
       await tester.pump();
 
-      final Size viewport = tester.getSize(find.byType(UniverseScreen));
       // `V-1c` 起 `Z1` 的项不可点（`VIEW-037`）⇒ 先进域到 `Z2`。
       await _enterDomain(tester, pack);
-      await tester.tapAt(
-        _findPoint(
-          scene,
-          viewport,
-          hit: true,
-          devicePixelRatio: tester.view.devicePixelRatio,
-        ),
-      );
+      await tester.tapAt(_nebulaItemPoint(tester, pack));
       await tester.pump();
 
       final ItemDetail first = tester
@@ -1286,15 +1341,7 @@ void main() {
       // 点星进详情 —— 这是「出发的那一项」，在 python 空间。
       // `V-1c` 起 `Z1` 的项不可点（`VIEW-037`）⇒ 先进域到 `Z2`。
       await _enterDomain(tester, pack);
-      final Size viewport = tester.getSize(find.byType(UniverseScreen));
-      await tester.tapAt(
-        _findPoint(
-          scene,
-          viewport,
-          hit: true,
-          devicePixelRatio: tester.view.devicePixelRatio,
-        ),
-      );
+      await tester.tapAt(_nebulaItemPoint(tester, pack));
       await tester.pump();
       final ItemDetail origin = tester
           .widget<DetailPanel>(find.byKey(hudDetailDrawerKey))
@@ -1630,15 +1677,10 @@ void main() {
       );
       await tester.pump();
 
-      final Size viewport = tester.getSize(find.byType(UniverseScreen));
-      final Offset star = _findPoint(
-        scene,
-        viewport,
-        hit: true,
-        devicePixelRatio: tester.view.devicePixelRatio,
-      );
       // `V-1c` 起 `Z1` 的项不可点（`VIEW-037`）⇒ 先进域到 `Z2` 再点星。
+      // `V-1d` 起 `Z2` 是云 ⇒ 「同一颗星」按 `layoutNebula` 的那一套算位置。
       await _enterDomain(tester, pack);
+      final Offset star = _nebulaItemPoint(tester, pack);
       await tester.tapAt(star);
       await _pump(tester);
       expect(find.byKey(detailBackKey), findsOneWidget, reason: '前提：点星进了详情');
@@ -1915,6 +1957,156 @@ void main() {
         ),
         findsNothing,
         reason: '没有 KnowledgeSpace 就没有域 → 没有盘（不凭空造一个）',
+      );
+      expect(tester.takeException(), isNull);
+    });
+  });
+
+  group('Z2 分子云（SPEC-VIEW-038 · V-1d）', () {
+    /// 单域单链：`a → b → c`，外加一个两项的 `vocab` 域。
+    LoadedPack cloudPack() => fixturePack(
+      const <FixtureItem>[
+        FixtureItem('a', '甲'),
+        FixtureItem('b', '乙'),
+        FixtureItem('c', '丙'),
+        FixtureItem('x', '习', domainId: 'python/vocab'),
+        FixtureItem('y', '记', domainId: 'python/vocab'),
+      ],
+      edges: const <List<String>>[
+        <String>['a', 'b'],
+        <String>['b', 'c'],
+        <String>['c', 'x'],
+      ],
+    );
+
+    /// 只有一个域的包 —— 那个域是**单项子树**（点它要跳过 `Z3`）。
+    LoadedPack singleItemPack() => fixturePack(
+      const <FixtureItem>[FixtureItem('only', '唯一的项')],
+    );
+
+    testWidgets('画的是云而不是项投影，亮结带标注（SPEC-VIEW-038）', (
+      WidgetTester tester,
+    ) async {
+      final LoadedPack pack = cloudPack();
+      await _pumpScreen(tester, pack: pack);
+      await _enterDomain(tester, pack);
+      await tester.pump();
+
+      expect(
+        find.byWidgetPredicate(
+          (Widget widget) =>
+              widget is CustomPaint && widget.painter is NebulaPainter,
+        ),
+        findsOneWidget,
+        reason: 'VIEW-038：Z2 是一朵分子云',
+      );
+      expect(
+        find.byWidgetPredicate(
+          (Widget widget) =>
+              widget is CustomPaint && widget.painter is FramePainter,
+        ),
+        findsNothing,
+        reason: '两套几何不能并存 —— 并存时哪一套在上层是运气',
+      );
+      expect(
+        find.byKey(nebulaKnotKey('a')),
+        findsOneWidget,
+        reason: 'a→b→c 是一棵子树 ⇒ 一个亮结，标注写根项标题',
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('亮点结 ⇒ 落到 Z3（SPEC-VIEW-038）', (WidgetTester tester) async {
+      final LoadedPack pack = cloudPack();
+      await _pumpScreen(tester, pack: pack);
+      await _enterDomain(tester, pack);
+      await tester.pump();
+
+      await tester.tapAt(_nebulaKnotPoint(tester, pack));
+      await tester.pump();
+
+      expect(
+        _crumbCount(tester),
+        _crumbsFor(ZoomLevel.z3),
+        reason: '亮结是容器 ⇒ 进恒星系（VIEW-001：Z2 容器与星都能点）',
+      );
+      expect(
+        find.byKey(hudDetailDrawerKey),
+        findsNothing,
+        reason: 'Z3 不是详情 —— 详情只在 Z4',
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('单项子树的亮结 ⇒ 直接 Z4，跳过 Z3（SPEC-VIEW-038）', (
+      WidgetTester tester,
+    ) async {
+      final LoadedPack pack = singleItemPack();
+      await _pumpScreen(tester, pack: pack);
+      await _enterDomain(tester, pack);
+      await tester.pump();
+
+      await tester.tapAt(_nebulaKnotPoint(tester, pack));
+      await tester.pump();
+
+      expect(
+        find.byKey(hudDetailDrawerKey),
+        findsOneWidget,
+        reason: '给只有一颗行星的恒星系画共面轨道是纯粹的空转',
+      );
+      expect(_crumbCount(tester), _crumbsFor(ZoomLevel.z4));
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('点云里的星 ⇒ Z4 详情（SPEC-VIEW-014）', (WidgetTester tester) async {
+      final LoadedPack pack = cloudPack();
+      await _pumpScreen(tester, pack: pack);
+      await _enterDomain(tester, pack);
+      await tester.pump();
+
+      // 取最后一项：它是链尾，离亮结（质心）最远，不会被容器抢走。
+      await tester.tapAt(_nebulaItemPoint(tester, pack, index: 2));
+      await tester.pump();
+
+      expect(find.byKey(hudDetailDrawerKey), findsOneWidget, reason: '星是可点对象');
+      expect(_crumbCount(tester), _crumbsFor(ZoomLevel.z4));
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('跨域边画成出口标记，不画断线（SPEC-VIEW-038）', (
+      WidgetTester tester,
+    ) async {
+      final LoadedPack pack = cloudPack();
+      await _pumpScreen(tester, pack: pack);
+      await _enterDomain(tester, pack);
+      await tester.pump();
+
+      expect(
+        find.byKey(nebulaExitKey('python/vocab')),
+        findsOneWidget,
+        reason: 'c→x 跨到 vocab ⇒ 云缘一个朝外的箭头 + 一行「→ 进入 vocab」',
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('云心的那一项点得中 —— ⑤ 占位不吃点击（SPEC-VIEW-038）', (
+      WidgetTester tester,
+    ) async {
+      // α 包一个域 15 项、全落同一扇区 ⇒ 最内那一项离画面中心不到 10 px，
+      // 正好压在 ⑤「焦点星」的占位槽下面。`V-1d` 之前没人点过那里：
+      // 占位是个普通 `Container`，它会把手势吃掉，而画面上一切正常。
+      final LoadedPack pack = loadAlphaPack();
+      await _pumpScreen(tester, pack: pack, scene: _alphaScene(pack));
+      await _enterDomain(tester, pack);
+      await tester.pump();
+
+      await tester.tapAt(_nebulaItemPoint(tester, pack));
+      await tester.pump();
+
+      expect(
+        find.byKey(hudDetailDrawerKey),
+        findsOneWidget,
+        reason: '占位是纯装饰 —— 它不该接住任何手势（R-08：违反它现在会红）',
       );
       expect(tester.takeException(), isNull);
     });
