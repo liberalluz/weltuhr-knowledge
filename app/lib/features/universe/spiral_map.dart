@@ -34,6 +34,8 @@ import 'dart:ui' show Offset, Size;
 
 import '../../core/constants.dart';
 import '../../core/entities/content.dart';
+import '../../core/graph/subtrees.dart';
+import '../../core/ids.dart';
 import '../../core/pack/pack_parse.dart';
 import 'galaxy_map.dart' show accentArgbOf, galaxyHash01;
 
@@ -206,17 +208,9 @@ SpiralLayout layoutSpiral({
     byDomain[item.domainId]?.add(item);
   }
 
-  // 域内 `⪯` 子树的根：没有任何**同域**前置的项（`from` = 前置、`to` = 后继）。
-  final Map<String, Set<String>> prereq = <String, Set<String>>{};
-  for (final Edge edge in pack.edges) {
-    final String from = edge.from;
-    final String to = edge.to;
-    if (from.isEmpty || to.isEmpty) {
-      continue;
-    }
-    prereq.putIfAbsent(to, () => <String>{}).add(from);
-  }
-
+  // 域内 `⪯` 子树在 `Z2` 也要用（亮结，`VIEW-038`）⇒ 划分只有一份实现
+  // （`core/graph/subtrees.dart`）。两处各写一遍的话「暗斑数 ≠ 亮结数」不会有
+  // 任何东西变红，而它们本来就是同一个数的两个尺度。
   final int domainCount = domains.length;
   final List<DomainMark> marks = <DomainMark>[];
   final List<Offset> items = <Offset>[];
@@ -225,6 +219,10 @@ SpiralLayout layoutSpiral({
   for (int i = 0; i < domainCount; i++) {
     final String domainId = domains[i];
     final List<Item> inDomain = byDomain[domainId] ?? const <Item>[];
+    final List<PrereqSubtree> subtrees = subtreesInDomain(
+      items: inDomain,
+      edges: pack.edges,
+    );
     final double base = i / domainCount;
     final double step = 1 / domainCount;
 
@@ -235,7 +233,7 @@ SpiralLayout layoutSpiral({
         domainId: domainId,
         label: domainLabel(domainId),
         itemCount: inDomain.length,
-        systemCount: _rootsOf(inDomain, prereq).length,
+        systemCount: subtrees.length,
         points: <Offset>[
           pointAt(mid, startAngle),
           pointAt(mid, startAngle + math.pi),
@@ -271,14 +269,17 @@ SpiralLayout layoutSpiral({
     }
 
     // 恒星系暗斑：一个子树根一个。链状数据下每域 1 个，**不凑数**。
-    final List<Item> roots = _rootsOf(inDomain, prereq);
-    for (int k = 0; k < roots.length; k++) {
-      final Item root = roots[k];
-      final int index = inDomain.indexOf(root);
+    for (final PrereqSubtree subtree in subtrees) {
+      final int index = inDomain.indexWhere(
+        (Item item) => item.id == subtree.rootId,
+      );
+      if (index < 0) {
+        continue;
+      }
       final double within = inDomain.length == 1
           ? 0.5
           : 0.15 + 0.7 * index / (inDomain.length - 1);
-      final int arm = galaxyHash01('${root.id}:arm') < 0.5 ? 0 : 1;
+      final int arm = galaxyHash01('${subtree.rootId}:arm') < 0.5 ? 0 : 1;
       blobs.add(pointAt(base + within * step, startAngle + arm * math.pi));
     }
   }
@@ -296,13 +297,10 @@ SpiralLayout layoutSpiral({
 }
 
 /// 域内 `⪯` 子树的根：没有任何**同域**前置的项。顺序保持包内出现顺序。
-List<Item> _rootsOf(List<Item> items, Map<String, Set<String>> prereq) {
-  final Set<String> ids = <String>{for (final Item item in items) item.id};
-  return <Item>[
-    for (final Item item in items)
-      if (!(prereq[item.id] ?? const <String>{}).any(ids.contains)) item,
-  ];
-}
+///
+/// ⚠️ 实现在 `core/graph/subtrees.dart`：`Z2` 的亮结用的是同一份划分，
+/// 两处各写一遍迟早不一致（`VIEW-037` 的暗斑数与 `VIEW-038` 的亮结数
+/// 是同一个数的两个尺度）。
 
 /// 点 [point] 命中的域。`null` = 点空了（**项不在射程内**，`VIEW-037`）。
 ///
@@ -328,10 +326,8 @@ String? pickSpiralDomainAt({
 }
 
 /// 域的显示名：`domainId` 的末段。`python/lexical` → `lexical`。
-String domainLabel(String domainId) {
-  final int slash = domainId.lastIndexOf('/');
-  if (slash < 0 || slash == domainId.length - 1) {
-    return domainId;
-  }
-  return domainId.substring(slash + 1);
-}
+///
+/// 转调 `core/ids.dart` 的 `idTail` —— 详情页的 `domainLabel`
+/// （`core/view/detail.dart`）用的也是它。两处各写一遍 5 行，看起来无害，
+/// 但「末段为空」这类边界一处分叉就没人发现。
+String domainLabel(String domainId) => idTail(domainId);

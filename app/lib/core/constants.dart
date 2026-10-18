@@ -307,7 +307,7 @@ const double galaxyMinTapDiameter = 24;
 /// 同一盘转约 1.5 圈。勘误记在 `docs/reference/constants.md`。
 const double spiralPitchDeg = 15;
 
-/// 旋臂条数。真实旋涡星系多为两条（密度波 `m = 2` 模），也是 `VIEW-037` 的写法。
+/// `C-61` 旋臂条数。真实旋涡星系多为两条（密度波 `m = 2` 模），也是 `VIEW-037` 的写法。
 const int spiralArmCount = 2;
 
 /// `C-60` 核球半径占盘半径的比例。
@@ -319,3 +319,17 @@ const double galaxyBulgeRadiusRatio = 0.10;
 /// `Z1` 域点的**最小可点直径**（px）。域点本身只画 4 px，直接按图形判会
 /// 「看得见点不中」；`VIEW-037` 明写命中 24 px。
 const double domainMarkMinTapDiameter = 24;
+
+/// `C-62` `Z2` 分子云的**粒子数**。**固定值，不跟项数走**（`VIEW-038`）。
+///
+/// 跟项数走的话，它与盘半径（`C-53`）、点密度一起构成第三条「项数」通道，
+/// 而 `X-02` 只允许一通道一维度。取 240：1080p 下云的疏密看得出层次，
+/// 又不会让「一颗粒子一次 draw call」把帧预算吃掉（`C-32` 的成本由填充驱动，
+/// 240 个 1–3 px 的圆远低于一帧的填充上限）。
+const int nebulaParticleCount = 240;
+
+/// `C-63` `Z2` 分子云的**半径**占视口短边的比例。
+///
+/// 比 `Z1` 的盘（0.42，私有常量）略小：`Z2` 的云缘要放出口标记与亮结标注，
+/// 按盘那么大铺会顶到 ① 与 ④ 底下。
+const double nebulaRadiusRatio = 0.36;
