@@ -190,8 +190,11 @@ Future<void> _enterDomain(
   WidgetTester tester,
   LoadedPack pack, {
   Size? window,
+  String? domainId,
 }) async {
-  await tester.tapAt(_domainPoint(tester, pack, window: window));
+  await tester.tapAt(
+    _domainPoint(tester, pack, window: window, domainId: domainId),
+  );
   await tester.pump();
 }
 
@@ -204,6 +207,8 @@ Offset _nebulaItemPoint(
   LoadedPack pack, {
   int index = 0,
   Size? window,
+  String? domainId,
+  bool starOnly = false,
 }) {
   final Size size = window ?? tester.getSize(find.byType(UniverseScreen));
   final ViewportPlan plan = planViewport(
@@ -213,10 +218,21 @@ Offset _nebulaItemPoint(
   );
   final NebulaLayout layout = layoutNebula(
     pack: pack,
-    domainId: pack.space.domainIds.first,
+    domainId: domainId ?? pack.space.domainIds.first,
     viewport: Size(plan.surfaceWidth, plan.surfaceHeight),
   );
-  return layout.items[index].center * plan.scale;
+  // [starOnly] 时按**拾取几何**挑 —— `layout.items` 里也有亮结的根（它同时是
+  // 云里的一颗星），点中它会被 `pickNebulaKnotAt` 先截走 ⇒ 落 `Z3` 而不是 `Z4`。
+  final NebulaItem item = starOnly
+      ? layout.items.firstWhere(
+          (NebulaItem each) =>
+              pickNebulaKnotAt(layout: layout, point: each.center) == null,
+          orElse: () => throw StateError(
+            '这个域里每颗星都落在某个亮结的命中圈内 —— 换一个域或夹具',
+          ),
+        )
+      : layout.items[index];
+  return item.center * plan.scale;
 }
 
 /// `Z2` 里第一个亮结的**窗口坐标**（`VIEW-038`：亮结可点 ⇒ `Z3`）。
@@ -225,6 +241,8 @@ Offset _nebulaKnotPoint(
   LoadedPack pack, {
   int index = 0,
   Size? window,
+  String? domainId,
+  bool multiOnly = false,
 }) {
   final Size size = window ?? tester.getSize(find.byType(UniverseScreen));
   final ViewportPlan plan = planViewport(
@@ -234,10 +252,20 @@ Offset _nebulaKnotPoint(
   );
   final NebulaLayout layout = layoutNebula(
     pack: pack,
-    domainId: pack.space.domainIds.first,
+    domainId: domainId ?? pack.space.domainIds.first,
     viewport: Size(plan.surfaceWidth, plan.surfaceHeight),
   );
-  return layout.knots[index].center * plan.scale;
+  // [multiOnly]：单项子树由 `VIEW-038` 直接送 `Z4`，要验 `Z3` 就必须跳过它们
+  // （否则断言「进了 Z3」会红在一个跟本笔无关的分支上）。
+  final NebulaKnot knot = multiOnly
+      ? layout.knots.firstWhere(
+          (NebulaKnot each) => !each.isSingle,
+          orElse: () => throw StateError(
+            '这个域里没有多项子树 —— `Z3` 这条路径无从进入',
+          ),
+        )
+      : layout.knots[index];
+  return knot.center * plan.scale;
 }
 
 /// `Z2` 里一个「点不中任何东西」的窗口坐标 —— 既不在亮结的 24 px 命中圈里，
@@ -1117,6 +1145,106 @@ void main() {
         reason: '退回出发地 ⇒ 面包屑也跟着回到三段（域那一层）',
       );
       expect(find.byKey(detailBackKey), findsNothing, reason: '退无可退之后按钮再次消失');
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('从 Z3 退回 Z2 再点星 ⇒ 返回仍落在那个域（SPEC-VIEW-015 修订三）', (
+      WidgetTester tester,
+    ) async {
+      final LoadedPack pack = loadAlphaPack();
+      // 第 **2** 个域：丢了就会退回「第一个域」，而两段的画面都「像」正常 ——
+      // 只有内容不对，这正是修订三第 7 条要挡的那类静默错误。
+      final String domain = pack.space.domainIds[1];
+      await _pumpScreen(tester, pack: pack, scene: _alphaScene(pack));
+
+      await tester.tapAt(_domainPoint(tester, pack, domainId: domain));
+      await tester.pump();
+      expect(
+        _crumbCount(tester),
+        _crumbsFor(ZoomLevel.z2),
+        reason: '前提：已经进了这个域',
+      );
+
+      // 点亮结进 `Z3`，再从**面包屑第 3 段**退回 `Z2`。这一步把选中项清空、
+      // 域留着 —— 于是「进详情前的选中项」是 `null`，域从选中项**推不出来**。
+      await tester.tapAt(
+        _nebulaKnotPoint(tester, pack, domainId: domain, multiOnly: true),
+      );
+      await tester.pump();
+      expect(_crumbCount(tester), _crumbsFor(ZoomLevel.z3), reason: '前提：进了 Z3');
+      await tester.tap(find.byKey(hudCrumbKey(2)));
+      await tester.pump();
+      expect(
+        _crumbCount(tester),
+        _crumbsFor(ZoomLevel.z2),
+        reason: '前提：退到 Z2 且域还在',
+      );
+
+      await tester.tapAt(
+        _nebulaItemPoint(tester, pack, domainId: domain, starOnly: true),
+      );
+      await tester.pump();
+      expect(_crumbCount(tester), _crumbsFor(ZoomLevel.z4), reason: '前提：进了详情');
+
+      await tester.tap(find.byKey(detailBackKey));
+      await _pump(tester);
+
+      expect(
+        _crumbCount(tester),
+        _crumbsFor(ZoomLevel.z2),
+        reason: '域进了快照 ⇒ 返回仍是三段；按选中项回推时这里是 null，只剩两段',
+      );
+      expect(
+        _crumbHas(tester, domain),
+        isTrue,
+        reason: '第 3 段必须是**出发时那个域** —— 不是空白，也不是第一个域',
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('Z3 点行星进详情再返回：域跟着选中项回到 Z3（SPEC-VIEW-015 修订三）', (
+      WidgetTester tester,
+    ) async {
+      final LoadedPack pack = loadAlphaPack();
+      final String domain = pack.space.domainIds[1];
+      await _pumpScreen(tester, pack: pack, scene: _alphaScene(pack));
+
+      await tester.tapAt(_domainPoint(tester, pack, domainId: domain));
+      await tester.pump();
+
+      // 直接算亮结位置（同 `_nebulaKnotPoint`），因为下面还要它的 `rootId`
+      // 去重算恒星系 —— 少算一遍就少一处可能与拾取不一致的地方。
+      final Size size = tester.getSize(find.byType(UniverseScreen));
+      final ViewportPlan plan = planViewport(
+        size.width,
+        size.height,
+        devicePixelRatio: tester.view.devicePixelRatio,
+      );
+      final NebulaLayout nebula = layoutNebula(
+        pack: pack,
+        domainId: domain,
+        viewport: Size(plan.surfaceWidth, plan.surfaceHeight),
+      );
+      final NebulaKnot knot = nebula.knots.firstWhere(
+        (NebulaKnot each) => !each.isSingle,
+      );
+      await tester.tapAt(knot.center * plan.scale);
+      await tester.pump();
+
+      final StarSystemLayout layout = _starSystemOf(tester, pack, knot.rootId);
+      await tester.tapAt(layout.planets.first.center * _pointScaleOf(tester));
+      await tester.pump();
+      expect(_crumbCount(tester), _crumbsFor(ZoomLevel.z4));
+
+      await tester.tap(find.byKey(detailBackKey));
+      await _pump(tester);
+
+      expect(
+        _crumbCount(tester),
+        _crumbsFor(ZoomLevel.z3),
+        reason: '`Z3` 只画该域的链 ⇒ 返回后域必须还在（修订三第 9 条）',
+      );
+      expect(_crumbHas(tester, domain), isTrue);
       expect(tester.takeException(), isNull);
     });
 
