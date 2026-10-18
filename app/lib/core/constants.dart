@@ -354,7 +354,8 @@ const double spiralArmBlurSigma = 3;
 /// `STR` 轮次 `R8` 的未验项，别把两件事混着调。
 const double spiralArmAlpha = 0.30;
 
-/// `C-67` `Z1` 域点的**绘制半径**（px）。命中半径另有 `C-44` 的 24 px。
+/// `C-67` `Z1` 域点的**绘制半径**（px）。命中半径另有 12 px —— 即
+/// `domainMarkMinTapDiameter`（24）的一半。
 const double spiralDomainMarkRadius = 4;
 
 /// `C-68` `Z1` 项的**绘制半径**（px）。项是背景、不可点（`VIEW-037`）。
@@ -375,3 +376,40 @@ const double labelAvoidStepRatio = 1.55;
 /// 超限就接受重叠 —— 见 `label_layout.dart` 第 3 条口径。3 格在 `Z1` 的
 /// 122 px 盘上是 3 × 14 × 1.55 ≈ 65 px，再远标签就与自己的点失去联系了。
 const int labelAvoidMaxSteps = 3;
+
+/// `C-72` `Z3` 恒星的**半径**占视口短边一半的比例。
+///
+/// ⚠️ 这是本档最明显的一处尺度妥协：真实里水星轨道是太阳半径的 84 倍，按那
+/// 个比例画，恒星在屏上是一个亚像素点。`C-73` / `C-72` ≈ 5.3 倍是**为了看得见**
+/// 而放大的，不承载任何语义（`VIEW-039` 只要求「一颗恒星 + 共面轨道」）。
+const double stellarRadiusRatio = 0.045;
+
+/// `C-73` `Z3` 最内轨的**半长轴**占视口短边一半的比例。
+///
+/// 与 `C-72` 一起定下「恒星占多大、内轨离多远」。再往内缩，行星会贴到恒星光晕
+/// 上；再往外放，`C-74` 那圈就顶到 ① 与 ④ 底下了。
+const double stellarOrbitInnerRatio = 0.24;
+
+/// `C-74` `Z3` 最外轨的**半长轴**占视口短边一半的比例。
+///
+/// ⚠️ 层数多时轨道必然挤：`english` / `german` 每域 10 项 9 边 ⇒ 9 条轨道铺在
+/// `0.24…0.46` 这段上，1080×580 下相邻轨道间距约 8 px。**任何单调映射都躲不掉**
+/// —— 层数超出了这个尺度的可视容量，不是这一版没调好。
+const double stellarOrbitOuterRatio = 0.46;
+
+/// `C-75` `Z3` 轨道的**偏心率**上限。
+///
+/// `VIEW-039` 要求轨道是「共面**椭圆**」。真实行星 `e` 多数 < 0.1（水星 0.21
+/// 是例外），所以每条轨道取 `e ∈ [0, 0.18]` 由 `item.id` 哈希定 —— 长轴朝向
+/// 同样由哈希定。**不承载语义**，只是让九条轨道不是九个同心圆。
+const double stellarOrbitEccentricityMax = 0.18;
+
+/// `C-76` `Z3` 行星的**绘制半径**（px）。命中半径另有 12 px ——
+/// `domainMarkMinTapDiameter`（24）的一半，与 `Z1` 域点、`Z2` 亮结同一套。
+const double stellarPlanetRadius = 2.6;
+
+/// `C-77` `Z3` 残余云气的**粒子数**。
+///
+/// 固定值、不跟项数走（与 `C-62` 同一条理由 `X-02`）：跟项数走就多出一条
+/// 「项数」通道。28 颗是「恒星风还没吹散的淡雾」的量级，多了会盖住行星。
+const int stellarWispCount = 28;
