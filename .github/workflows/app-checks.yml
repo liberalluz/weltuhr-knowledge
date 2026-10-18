@@ -57,13 +57,14 @@ jobs:
       - name: 架构规则（core 不变量）
         run: dart run tool/lint/check.dart
 
-      # 定位引擎与加载器的 α 包用例读的是**真实产物**
-      # （`content/python/dist/pack.json`），而 `dist/` 不入库（`SPEC-PACK-018`）
-      # ⇒ 这里现场构建一遍。删掉这步的后果不是「少验一点」，而是 CI 红在
-      # 「找不到 α 包」—— 那是**该红**：没有真包就等于一条真数据都没验过。
+      # 定位引擎与加载器的用例读的是**真实产物**（`content/<空间>/dist/pack.json`），
+      # 而 `dist/` 不入库（`SPEC-PACK-018`）⇒ 这里现场构建一遍。
+      # **不指定空间**：哪个空间有源数据就构建哪个，与本地一致。只构建 python 的
+      # 后果是 CI 上「多根」退化成单根，那条 `english / german 各自装得出` 会红 ——
+      # 而「CI 只验了一个包」这件事本身也不会有人发现。
       - name: 构建内容包（测试输入）
         working-directory: ${{ github.workspace }}
-        run: python3 content/tools/build.py python
+        run: python3 content/tools/build.py
 
       - name: 单元测试
         run: flutter test --reporter compact

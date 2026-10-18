@@ -1,0 +1,506 @@
+[
+  {
+    "id": "e-cs-accusative-after-cs-nominative",
+    "from": "german/cs-nominative",
+    "to": "german/cs-accusative",
+    "type": "strong"
+  },
+  {
+    "id": "e-cs-dative-after-cs-accusative",
+    "from": "german/cs-accusative",
+    "to": "german/cs-dative",
+    "type": "strong"
+  },
+  {
+    "id": "e-cs-genitive-after-cs-dative",
+    "from": "german/cs-dative",
+    "to": "german/cs-genitive",
+    "type": "strong"
+  },
+  {
+    "id": "e-cs-case-preposition-after-cs-genitive",
+    "from": "german/cs-genitive",
+    "to": "german/cs-case-preposition",
+    "type": "strong"
+  },
+  {
+    "id": "e-cs-two-way-preposition-after-cs-case-preposition",
+    "from": "german/cs-case-preposition",
+    "to": "german/cs-two-way-preposition",
+    "type": "strong"
+  },
+  {
+    "id": "e-cs-case-verb-after-cs-two-way-preposition",
+    "from": "german/cs-two-way-preposition",
+    "to": "german/cs-case-verb",
+    "type": "strong"
+  },
+  {
+    "id": "e-cs-case-adjective-after-cs-case-verb",
+    "from": "german/cs-case-verb",
+    "to": "german/cs-case-adjective",
+    "type": "strong"
+  },
+  {
+    "id": "e-cs-apposition-after-cs-case-adjective",
+    "from": "german/cs-case-adjective",
+    "to": "german/cs-apposition",
+    "type": "strong"
+  },
+  {
+    "id": "e-cs-case-loss-after-cs-apposition",
+    "from": "german/cs-apposition",
+    "to": "german/cs-case-loss",
+    "type": "strong"
+  },
+  {
+    "id": "e-ng-gender-suffix-after-ng-three-genders",
+    "from": "german/ng-three-genders",
+    "to": "german/ng-gender-suffix",
+    "type": "strong"
+  },
+  {
+    "id": "e-ng-gender-semantic-after-ng-gender-suffix",
+    "from": "german/ng-gender-suffix",
+    "to": "german/ng-gender-semantic",
+    "type": "strong"
+  },
+  {
+    "id": "e-ng-compound-gender-after-ng-gender-semantic",
+    "from": "german/ng-gender-semantic",
+    "to": "german/ng-compound-gender",
+    "type": "strong"
+  },
+  {
+    "id": "e-ng-plural-umlaut-after-ng-compound-gender",
+    "from": "german/ng-compound-gender",
+    "to": "german/ng-plural-umlaut",
+    "type": "strong"
+  },
+  {
+    "id": "e-ng-plural-er-after-ng-plural-umlaut",
+    "from": "german/ng-plural-umlaut",
+    "to": "german/ng-plural-er",
+    "type": "strong"
+  },
+  {
+    "id": "e-ng-plural-en-after-ng-plural-er",
+    "from": "german/ng-plural-er",
+    "to": "german/ng-plural-en",
+    "type": "strong"
+  },
+  {
+    "id": "e-ng-plural-s-after-ng-plural-en",
+    "from": "german/ng-plural-en",
+    "to": "german/ng-plural-s",
+    "type": "strong"
+  },
+  {
+    "id": "e-ng-plural-invariant-after-ng-plural-s",
+    "from": "german/ng-plural-s",
+    "to": "german/ng-plural-invariant",
+    "type": "strong"
+  },
+  {
+    "id": "e-ng-n-declension-after-ng-plural-invariant",
+    "from": "german/ng-plural-invariant",
+    "to": "german/ng-n-declension",
+    "type": "strong"
+  },
+  {
+    "id": "e-art-indefinite-after-art-definite",
+    "from": "german/art-definite",
+    "to": "german/art-indefinite",
+    "type": "strong"
+  },
+  {
+    "id": "e-art-possessive-after-art-indefinite",
+    "from": "german/art-indefinite",
+    "to": "german/art-possessive",
+    "type": "strong"
+  },
+  {
+    "id": "e-art-demonstrative-after-art-possessive",
+    "from": "german/art-possessive",
+    "to": "german/art-demonstrative",
+    "type": "strong"
+  },
+  {
+    "id": "e-art-relative-after-art-demonstrative",
+    "from": "german/art-demonstrative",
+    "to": "german/art-relative",
+    "type": "strong"
+  },
+  {
+    "id": "e-art-interrogative-after-art-relative",
+    "from": "german/art-relative",
+    "to": "german/art-interrogative",
+    "type": "strong"
+  },
+  {
+    "id": "e-art-quantifier-after-art-interrogative",
+    "from": "german/art-interrogative",
+    "to": "german/art-quantifier",
+    "type": "strong"
+  },
+  {
+    "id": "e-art-use-after-art-quantifier",
+    "from": "german/art-quantifier",
+    "to": "german/art-use",
+    "type": "strong"
+  },
+  {
+    "id": "e-art-zero-after-art-use",
+    "from": "german/art-use",
+    "to": "german/art-zero",
+    "type": "strong"
+  },
+  {
+    "id": "e-art-proper-after-art-zero",
+    "from": "german/art-zero",
+    "to": "german/art-proper",
+    "type": "strong"
+  },
+  {
+    "id": "e-adj-mixed-after-adj-weak",
+    "from": "german/adj-weak",
+    "to": "german/adj-mixed",
+    "type": "strong"
+  },
+  {
+    "id": "e-adj-strong-after-adj-mixed",
+    "from": "german/adj-mixed",
+    "to": "german/adj-strong",
+    "type": "strong"
+  },
+  {
+    "id": "e-adj-choice-after-adj-strong",
+    "from": "german/adj-strong",
+    "to": "german/adj-choice",
+    "type": "strong"
+  },
+  {
+    "id": "e-adj-predicative-after-adj-choice",
+    "from": "german/adj-choice",
+    "to": "german/adj-predicative",
+    "type": "strong"
+  },
+  {
+    "id": "e-adj-comparative-after-adj-predicative",
+    "from": "german/adj-predicative",
+    "to": "german/adj-comparative",
+    "type": "strong"
+  },
+  {
+    "id": "e-adj-superlative-after-adj-comparative",
+    "from": "german/adj-comparative",
+    "to": "german/adj-superlative",
+    "type": "strong"
+  },
+  {
+    "id": "e-adj-irregular-after-adj-superlative",
+    "from": "german/adj-superlative",
+    "to": "german/adj-irregular",
+    "type": "strong"
+  },
+  {
+    "id": "e-adj-comparison-after-adj-irregular",
+    "from": "german/adj-irregular",
+    "to": "german/adj-comparison",
+    "type": "strong"
+  },
+  {
+    "id": "e-adj-participle-attribute-after-adj-comparison",
+    "from": "german/adj-comparison",
+    "to": "german/adj-participle-attribute",
+    "type": "strong"
+  },
+  {
+    "id": "e-vc-strong-after-vc-present",
+    "from": "german/vc-present",
+    "to": "german/vc-strong",
+    "type": "strong"
+  },
+  {
+    "id": "e-vc-modal-present-after-vc-strong",
+    "from": "german/vc-strong",
+    "to": "german/vc-modal-present",
+    "type": "strong"
+  },
+  {
+    "id": "e-vc-past-after-vc-modal-present",
+    "from": "german/vc-modal-present",
+    "to": "german/vc-past",
+    "type": "strong"
+  },
+  {
+    "id": "e-vc-perfect-haben-after-vc-past",
+    "from": "german/vc-past",
+    "to": "german/vc-perfect-haben",
+    "type": "strong"
+  },
+  {
+    "id": "e-vc-perfect-sein-after-vc-perfect-haben",
+    "from": "german/vc-perfect-haben",
+    "to": "german/vc-perfect-sein",
+    "type": "strong"
+  },
+  {
+    "id": "e-vc-plusquamperfect-after-vc-perfect-sein",
+    "from": "german/vc-perfect-sein",
+    "to": "german/vc-plusquamperfect",
+    "type": "strong"
+  },
+  {
+    "id": "e-vc-future-1-after-vc-plusquamperfect",
+    "from": "german/vc-plusquamperfect",
+    "to": "german/vc-future-1",
+    "type": "strong"
+  },
+  {
+    "id": "e-vc-future-2-after-vc-future-1",
+    "from": "german/vc-future-1",
+    "to": "german/vc-future-2",
+    "type": "strong"
+  },
+  {
+    "id": "e-vc-passive-after-vc-future-2",
+    "from": "german/vc-future-2",
+    "to": "german/vc-passive",
+    "type": "strong"
+  },
+  {
+    "id": "e-vf-dative-after-vf-transitive",
+    "from": "german/vf-transitive",
+    "to": "german/vf-dative",
+    "type": "strong"
+  },
+  {
+    "id": "e-vf-genitive-after-vf-dative",
+    "from": "german/vf-dative",
+    "to": "german/vf-genitive",
+    "type": "strong"
+  },
+  {
+    "id": "e-vf-prepositional-after-vf-genitive",
+    "from": "german/vf-genitive",
+    "to": "german/vf-prepositional",
+    "type": "strong"
+  },
+  {
+    "id": "e-vf-reflexive-after-vf-prepositional",
+    "from": "german/vf-prepositional",
+    "to": "german/vf-reflexive",
+    "type": "strong"
+  },
+  {
+    "id": "e-vf-separable-after-vf-reflexive",
+    "from": "german/vf-reflexive",
+    "to": "german/vf-separable",
+    "type": "strong"
+  },
+  {
+    "id": "e-vf-inseparable-after-vf-separable",
+    "from": "german/vf-separable",
+    "to": "german/vf-inseparable",
+    "type": "strong"
+  },
+  {
+    "id": "e-vf-modal-use-after-vf-inseparable",
+    "from": "german/vf-inseparable",
+    "to": "german/vf-modal-use",
+    "type": "strong"
+  },
+  {
+    "id": "e-vf-infinitive-zu-after-vf-modal-use",
+    "from": "german/vf-modal-use",
+    "to": "german/vf-infinitive-zu",
+    "type": "strong"
+  },
+  {
+    "id": "e-vf-imperative-after-vf-infinitive-zu",
+    "from": "german/vf-infinitive-zu",
+    "to": "german/vf-imperative",
+    "type": "strong"
+  },
+  {
+    "id": "e-wo-vorfeld-after-wo-verb-second",
+    "from": "german/wo-verb-second",
+    "to": "german/wo-vorfeld",
+    "type": "strong"
+  },
+  {
+    "id": "e-wo-satzklammer-after-wo-vorfeld",
+    "from": "german/wo-vorfeld",
+    "to": "german/wo-satzklammer",
+    "type": "strong"
+  },
+  {
+    "id": "e-wo-mittelfeld-after-wo-satzklammer",
+    "from": "german/wo-satzklammer",
+    "to": "german/wo-mittelfeld",
+    "type": "strong"
+  },
+  {
+    "id": "e-wo-negation-after-wo-mittelfeld",
+    "from": "german/wo-mittelfeld",
+    "to": "german/wo-negation",
+    "type": "strong"
+  },
+  {
+    "id": "e-wo-pronoun-order-after-wo-negation",
+    "from": "german/wo-negation",
+    "to": "german/wo-pronoun-order",
+    "type": "strong"
+  },
+  {
+    "id": "e-wo-question-after-wo-pronoun-order",
+    "from": "german/wo-pronoun-order",
+    "to": "german/wo-question",
+    "type": "strong"
+  },
+  {
+    "id": "e-wo-subordinate-after-wo-question",
+    "from": "german/wo-question",
+    "to": "german/wo-subordinate",
+    "type": "strong"
+  },
+  {
+    "id": "e-wo-emphasis-shift-after-wo-subordinate",
+    "from": "german/wo-subordinate",
+    "to": "german/wo-emphasis-shift",
+    "type": "strong"
+  },
+  {
+    "id": "e-wo-ausklammerung-after-wo-emphasis-shift",
+    "from": "german/wo-emphasis-shift",
+    "to": "german/wo-ausklammerung",
+    "type": "strong"
+  },
+  {
+    "id": "e-cc-relative-after-cc-dass",
+    "from": "german/cc-dass",
+    "to": "german/cc-relative",
+    "type": "strong"
+  },
+  {
+    "id": "e-cc-relative-special-after-cc-relative",
+    "from": "german/cc-relative",
+    "to": "german/cc-relative-special",
+    "type": "strong"
+  },
+  {
+    "id": "e-cc-time-after-cc-relative-special",
+    "from": "german/cc-relative-special",
+    "to": "german/cc-time",
+    "type": "strong"
+  },
+  {
+    "id": "e-cc-causal-after-cc-time",
+    "from": "german/cc-time",
+    "to": "german/cc-causal",
+    "type": "strong"
+  },
+  {
+    "id": "e-cc-indirect-question-after-cc-causal",
+    "from": "german/cc-causal",
+    "to": "german/cc-indirect-question",
+    "type": "strong"
+  },
+  {
+    "id": "e-cc-konjunktiv-2-after-cc-indirect-question",
+    "from": "german/cc-indirect-question",
+    "to": "german/cc-konjunktiv-2",
+    "type": "strong"
+  },
+  {
+    "id": "e-cc-konjunktiv-1-after-cc-konjunktiv-2",
+    "from": "german/cc-konjunktiv-2",
+    "to": "german/cc-konjunktiv-1",
+    "type": "strong"
+  },
+  {
+    "id": "e-cc-modal-particle-after-cc-konjunktiv-1",
+    "from": "german/cc-konjunktiv-1",
+    "to": "german/cc-modal-particle",
+    "type": "strong"
+  },
+  {
+    "id": "e-cc-nominalization-after-cc-modal-particle",
+    "from": "german/cc-modal-particle",
+    "to": "german/cc-nominalization",
+    "type": "strong"
+  },
+  {
+    "id": "e-art-definite-after-cs-nominative",
+    "from": "german/cs-nominative",
+    "to": "german/art-definite",
+    "type": "strong"
+  },
+  {
+    "id": "e-art-possessive-after-cs-genitive",
+    "from": "german/cs-genitive",
+    "to": "german/art-possessive",
+    "type": "strong"
+  },
+  {
+    "id": "e-art-indefinite-after-ng-three-genders",
+    "from": "german/ng-three-genders",
+    "to": "german/art-indefinite",
+    "type": "strong"
+  },
+  {
+    "id": "e-adj-strong-after-ng-plural-er",
+    "from": "german/ng-plural-er",
+    "to": "german/adj-strong",
+    "type": "weak"
+  },
+  {
+    "id": "e-adj-weak-after-art-definite",
+    "from": "german/art-definite",
+    "to": "german/adj-weak",
+    "type": "strong"
+  },
+  {
+    "id": "e-adj-mixed-after-art-indefinite",
+    "from": "german/art-indefinite",
+    "to": "german/adj-mixed",
+    "type": "strong"
+  },
+  {
+    "id": "e-wo-satzklammer-after-vc-perfect-haben",
+    "from": "german/vc-perfect-haben",
+    "to": "german/wo-satzklammer",
+    "type": "strong"
+  },
+  {
+    "id": "e-vf-transitive-after-vc-strong",
+    "from": "german/vc-strong",
+    "to": "german/vf-transitive",
+    "type": "strong"
+  },
+  {
+    "id": "e-wo-satzklammer-after-vf-separable",
+    "from": "german/vf-separable",
+    "to": "german/wo-satzklammer",
+    "type": "strong"
+  },
+  {
+    "id": "e-wo-subordinate-after-vf-infinitive-zu",
+    "from": "german/vf-infinitive-zu",
+    "to": "german/wo-subordinate",
+    "type": "weak"
+  },
+  {
+    "id": "e-cc-dass-after-wo-subordinate",
+    "from": "german/wo-subordinate",
+    "to": "german/cc-dass",
+    "type": "strong"
+  },
+  {
+    "id": "e-cc-konjunktiv-2-after-vc-future-2",
+    "from": "german/vc-future-2",
+    "to": "german/cc-konjunktiv-2",
+    "type": "weak"
+  }
+]

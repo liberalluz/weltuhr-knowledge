@@ -1,0 +1,506 @@
+[
+  {
+    "id": "e-wc-pronoun-after-wc-noun",
+    "from": "english/wc-noun",
+    "to": "english/wc-pronoun",
+    "type": "strong"
+  },
+  {
+    "id": "e-wc-verb-after-wc-pronoun",
+    "from": "english/wc-pronoun",
+    "to": "english/wc-verb",
+    "type": "strong"
+  },
+  {
+    "id": "e-wc-adjective-after-wc-verb",
+    "from": "english/wc-verb",
+    "to": "english/wc-adjective",
+    "type": "strong"
+  },
+  {
+    "id": "e-wc-adverb-after-wc-adjective",
+    "from": "english/wc-adjective",
+    "to": "english/wc-adverb",
+    "type": "strong"
+  },
+  {
+    "id": "e-wc-preposition-after-wc-adverb",
+    "from": "english/wc-adverb",
+    "to": "english/wc-preposition",
+    "type": "strong"
+  },
+  {
+    "id": "e-wc-conjunction-after-wc-preposition",
+    "from": "english/wc-preposition",
+    "to": "english/wc-conjunction",
+    "type": "strong"
+  },
+  {
+    "id": "e-wc-determiner-after-wc-conjunction",
+    "from": "english/wc-conjunction",
+    "to": "english/wc-determiner",
+    "type": "strong"
+  },
+  {
+    "id": "e-wc-suffix-after-wc-determiner",
+    "from": "english/wc-determiner",
+    "to": "english/wc-suffix",
+    "type": "strong"
+  },
+  {
+    "id": "e-wc-compound-after-wc-suffix",
+    "from": "english/wc-suffix",
+    "to": "english/wc-compound",
+    "type": "strong"
+  },
+  {
+    "id": "e-np-plural-after-np-countability",
+    "from": "english/np-countability",
+    "to": "english/np-plural",
+    "type": "strong"
+  },
+  {
+    "id": "e-np-article-definite-after-np-plural",
+    "from": "english/np-plural",
+    "to": "english/np-article-definite",
+    "type": "strong"
+  },
+  {
+    "id": "e-np-article-indefinite-after-np-article-definite",
+    "from": "english/np-article-definite",
+    "to": "english/np-article-indefinite",
+    "type": "strong"
+  },
+  {
+    "id": "e-np-zero-article-after-np-article-indefinite",
+    "from": "english/np-article-indefinite",
+    "to": "english/np-zero-article",
+    "type": "strong"
+  },
+  {
+    "id": "e-np-quantifier-after-np-zero-article",
+    "from": "english/np-zero-article",
+    "to": "english/np-quantifier",
+    "type": "strong"
+  },
+  {
+    "id": "e-np-possessive-after-np-quantifier",
+    "from": "english/np-quantifier",
+    "to": "english/np-possessive",
+    "type": "strong"
+  },
+  {
+    "id": "e-np-of-genitive-after-np-possessive",
+    "from": "english/np-possessive",
+    "to": "english/np-of-genitive",
+    "type": "strong"
+  },
+  {
+    "id": "e-np-agreement-after-np-of-genitive",
+    "from": "english/np-of-genitive",
+    "to": "english/np-agreement",
+    "type": "strong"
+  },
+  {
+    "id": "e-np-modifier-order-after-np-agreement",
+    "from": "english/np-agreement",
+    "to": "english/np-modifier-order",
+    "type": "strong"
+  },
+  {
+    "id": "e-tense-present-progressive-after-tense-simple-present",
+    "from": "english/tense-simple-present",
+    "to": "english/tense-present-progressive",
+    "type": "strong"
+  },
+  {
+    "id": "e-tense-simple-past-after-tense-present-progressive",
+    "from": "english/tense-present-progressive",
+    "to": "english/tense-simple-past",
+    "type": "strong"
+  },
+  {
+    "id": "e-tense-past-progressive-after-tense-simple-past",
+    "from": "english/tense-simple-past",
+    "to": "english/tense-past-progressive",
+    "type": "strong"
+  },
+  {
+    "id": "e-tense-present-perfect-after-tense-past-progressive",
+    "from": "english/tense-past-progressive",
+    "to": "english/tense-present-perfect",
+    "type": "strong"
+  },
+  {
+    "id": "e-tense-perfect-progressive-after-tense-present-perfect",
+    "from": "english/tense-present-perfect",
+    "to": "english/tense-perfect-progressive",
+    "type": "strong"
+  },
+  {
+    "id": "e-tense-past-perfect-after-tense-perfect-progressive",
+    "from": "english/tense-perfect-progressive",
+    "to": "english/tense-past-perfect",
+    "type": "strong"
+  },
+  {
+    "id": "e-tense-future-will-after-tense-past-perfect",
+    "from": "english/tense-past-perfect",
+    "to": "english/tense-future-will",
+    "type": "strong"
+  },
+  {
+    "id": "e-tense-future-going-to-after-tense-future-will",
+    "from": "english/tense-future-will",
+    "to": "english/tense-future-going-to",
+    "type": "strong"
+  },
+  {
+    "id": "e-tense-future-perfect-after-tense-future-going-to",
+    "from": "english/tense-future-going-to",
+    "to": "english/tense-future-perfect",
+    "type": "strong"
+  },
+  {
+    "id": "e-av-passive-use-after-av-passive-form",
+    "from": "english/av-passive-form",
+    "to": "english/av-passive-use",
+    "type": "strong"
+  },
+  {
+    "id": "e-av-get-passive-after-av-passive-use",
+    "from": "english/av-passive-use",
+    "to": "english/av-get-passive",
+    "type": "strong"
+  },
+  {
+    "id": "e-av-causative-after-av-get-passive",
+    "from": "english/av-get-passive",
+    "to": "english/av-causative",
+    "type": "strong"
+  },
+  {
+    "id": "e-av-modal-ability-after-av-causative",
+    "from": "english/av-causative",
+    "to": "english/av-modal-ability",
+    "type": "strong"
+  },
+  {
+    "id": "e-av-modal-obligation-after-av-modal-ability",
+    "from": "english/av-modal-ability",
+    "to": "english/av-modal-obligation",
+    "type": "strong"
+  },
+  {
+    "id": "e-av-modal-epistemic-after-av-modal-obligation",
+    "from": "english/av-modal-obligation",
+    "to": "english/av-modal-epistemic",
+    "type": "strong"
+  },
+  {
+    "id": "e-av-modal-past-after-av-modal-epistemic",
+    "from": "english/av-modal-epistemic",
+    "to": "english/av-modal-past",
+    "type": "strong"
+  },
+  {
+    "id": "e-av-subjunctive-after-av-modal-past",
+    "from": "english/av-modal-past",
+    "to": "english/av-subjunctive",
+    "type": "strong"
+  },
+  {
+    "id": "e-av-conditional-after-av-subjunctive",
+    "from": "english/av-subjunctive",
+    "to": "english/av-conditional",
+    "type": "strong"
+  },
+  {
+    "id": "e-nf-infinitive-function-after-nf-infinitive-form",
+    "from": "english/nf-infinitive-form",
+    "to": "english/nf-infinitive-function",
+    "type": "strong"
+  },
+  {
+    "id": "e-nf-bare-infinitive-after-nf-infinitive-function",
+    "from": "english/nf-infinitive-function",
+    "to": "english/nf-bare-infinitive",
+    "type": "strong"
+  },
+  {
+    "id": "e-nf-gerund-after-nf-bare-infinitive",
+    "from": "english/nf-bare-infinitive",
+    "to": "english/nf-gerund",
+    "type": "strong"
+  },
+  {
+    "id": "e-nf-gerund-vs-infinitive-after-nf-gerund",
+    "from": "english/nf-gerund",
+    "to": "english/nf-gerund-vs-infinitive",
+    "type": "strong"
+  },
+  {
+    "id": "e-nf-present-participle-after-nf-gerund-vs-infinitive",
+    "from": "english/nf-gerund-vs-infinitive",
+    "to": "english/nf-present-participle",
+    "type": "strong"
+  },
+  {
+    "id": "e-nf-past-participle-after-nf-present-participle",
+    "from": "english/nf-present-participle",
+    "to": "english/nf-past-participle",
+    "type": "strong"
+  },
+  {
+    "id": "e-nf-participle-clause-after-nf-past-participle",
+    "from": "english/nf-past-participle",
+    "to": "english/nf-participle-clause",
+    "type": "strong"
+  },
+  {
+    "id": "e-nf-absolute-after-nf-participle-clause",
+    "from": "english/nf-participle-clause",
+    "to": "english/nf-absolute",
+    "type": "strong"
+  },
+  {
+    "id": "e-nf-perfect-infinitive-after-nf-absolute",
+    "from": "english/nf-absolute",
+    "to": "english/nf-perfect-infinitive",
+    "type": "strong"
+  },
+  {
+    "id": "e-cl-relative-nondefining-after-cl-relative-defining",
+    "from": "english/cl-relative-defining",
+    "to": "english/cl-relative-nondefining",
+    "type": "strong"
+  },
+  {
+    "id": "e-cl-relative-pronoun-choice-after-cl-relative-nondefining",
+    "from": "english/cl-relative-nondefining",
+    "to": "english/cl-relative-pronoun-choice",
+    "type": "strong"
+  },
+  {
+    "id": "e-cl-noun-that-after-cl-relative-pronoun-choice",
+    "from": "english/cl-relative-pronoun-choice",
+    "to": "english/cl-noun-that",
+    "type": "strong"
+  },
+  {
+    "id": "e-cl-noun-wh-after-cl-noun-that",
+    "from": "english/cl-noun-that",
+    "to": "english/cl-noun-wh",
+    "type": "strong"
+  },
+  {
+    "id": "e-cl-comparative-after-cl-noun-wh",
+    "from": "english/cl-noun-wh",
+    "to": "english/cl-comparative",
+    "type": "strong"
+  },
+  {
+    "id": "e-cl-adverbial-time-after-cl-comparative",
+    "from": "english/cl-comparative",
+    "to": "english/cl-adverbial-time",
+    "type": "strong"
+  },
+  {
+    "id": "e-cl-adverbial-condition-after-cl-adverbial-time",
+    "from": "english/cl-adverbial-time",
+    "to": "english/cl-adverbial-condition",
+    "type": "strong"
+  },
+  {
+    "id": "e-cl-adverbial-concession-after-cl-adverbial-condition",
+    "from": "english/cl-adverbial-condition",
+    "to": "english/cl-adverbial-concession",
+    "type": "strong"
+  },
+  {
+    "id": "e-cl-adverbial-reason-after-cl-adverbial-concession",
+    "from": "english/cl-adverbial-concession",
+    "to": "english/cl-adverbial-reason",
+    "type": "strong"
+  },
+  {
+    "id": "e-wo-question-after-wo-basic-svo",
+    "from": "english/wo-basic-svo",
+    "to": "english/wo-question",
+    "type": "strong"
+  },
+  {
+    "id": "e-wo-there-be-after-wo-question",
+    "from": "english/wo-question",
+    "to": "english/wo-there-be",
+    "type": "strong"
+  },
+  {
+    "id": "e-wo-adverb-position-after-wo-there-be",
+    "from": "english/wo-there-be",
+    "to": "english/wo-adverb-position",
+    "type": "strong"
+  },
+  {
+    "id": "e-wo-negation-scope-after-wo-adverb-position",
+    "from": "english/wo-adverb-position",
+    "to": "english/wo-negation-scope",
+    "type": "strong"
+  },
+  {
+    "id": "e-wo-inversion-negative-after-wo-negation-scope",
+    "from": "english/wo-negation-scope",
+    "to": "english/wo-inversion-negative",
+    "type": "strong"
+  },
+  {
+    "id": "e-wo-inversion-conditional-after-wo-inversion-negative",
+    "from": "english/wo-inversion-negative",
+    "to": "english/wo-inversion-conditional",
+    "type": "strong"
+  },
+  {
+    "id": "e-wo-object-fronting-after-wo-inversion-conditional",
+    "from": "english/wo-inversion-conditional",
+    "to": "english/wo-object-fronting",
+    "type": "strong"
+  },
+  {
+    "id": "e-wo-cleft-it-after-wo-object-fronting",
+    "from": "english/wo-object-fronting",
+    "to": "english/wo-cleft-it",
+    "type": "strong"
+  },
+  {
+    "id": "e-wo-cleft-wh-after-wo-cleft-it",
+    "from": "english/wo-cleft-it",
+    "to": "english/wo-cleft-wh",
+    "type": "strong"
+  },
+  {
+    "id": "e-co-substitution-after-co-reference",
+    "from": "english/co-reference",
+    "to": "english/co-substitution",
+    "type": "strong"
+  },
+  {
+    "id": "e-co-ellipsis-after-co-substitution",
+    "from": "english/co-substitution",
+    "to": "english/co-ellipsis",
+    "type": "strong"
+  },
+  {
+    "id": "e-co-connective-additive-after-co-ellipsis",
+    "from": "english/co-ellipsis",
+    "to": "english/co-connective-additive",
+    "type": "strong"
+  },
+  {
+    "id": "e-co-connective-adversative-after-co-connective-additive",
+    "from": "english/co-connective-additive",
+    "to": "english/co-connective-adversative",
+    "type": "strong"
+  },
+  {
+    "id": "e-co-connective-causal-after-co-connective-adversative",
+    "from": "english/co-connective-adversative",
+    "to": "english/co-connective-causal",
+    "type": "strong"
+  },
+  {
+    "id": "e-co-connective-temporal-after-co-connective-causal",
+    "from": "english/co-connective-causal",
+    "to": "english/co-connective-temporal",
+    "type": "strong"
+  },
+  {
+    "id": "e-co-information-structure-after-co-connective-temporal",
+    "from": "english/co-connective-temporal",
+    "to": "english/co-information-structure",
+    "type": "strong"
+  },
+  {
+    "id": "e-co-paragraph-topic-after-co-information-structure",
+    "from": "english/co-information-structure",
+    "to": "english/co-paragraph-topic",
+    "type": "strong"
+  },
+  {
+    "id": "e-co-register-after-co-paragraph-topic",
+    "from": "english/co-paragraph-topic",
+    "to": "english/co-register",
+    "type": "strong"
+  },
+  {
+    "id": "e-np-article-definite-after-wc-determiner",
+    "from": "english/wc-determiner",
+    "to": "english/np-article-definite",
+    "type": "strong"
+  },
+  {
+    "id": "e-cl-adverbial-time-after-wc-conjunction",
+    "from": "english/wc-conjunction",
+    "to": "english/cl-adverbial-time",
+    "type": "weak"
+  },
+  {
+    "id": "e-tense-simple-present-after-np-agreement",
+    "from": "english/np-agreement",
+    "to": "english/tense-simple-present",
+    "type": "strong"
+  },
+  {
+    "id": "e-co-reference-after-np-possessive",
+    "from": "english/np-possessive",
+    "to": "english/co-reference",
+    "type": "weak"
+  },
+  {
+    "id": "e-av-passive-form-after-tense-simple-past",
+    "from": "english/tense-simple-past",
+    "to": "english/av-passive-form",
+    "type": "strong"
+  },
+  {
+    "id": "e-co-connective-temporal-after-tense-present-perfect",
+    "from": "english/tense-present-perfect",
+    "to": "english/co-connective-temporal",
+    "type": "weak"
+  },
+  {
+    "id": "e-nf-bare-infinitive-after-av-modal-ability",
+    "from": "english/av-modal-ability",
+    "to": "english/nf-bare-infinitive",
+    "type": "strong"
+  },
+  {
+    "id": "e-cl-adverbial-condition-after-av-subjunctive",
+    "from": "english/av-subjunctive",
+    "to": "english/cl-adverbial-condition",
+    "type": "weak"
+  },
+  {
+    "id": "e-wo-inversion-conditional-after-av-conditional",
+    "from": "english/av-conditional",
+    "to": "english/wo-inversion-conditional",
+    "type": "weak"
+  },
+  {
+    "id": "e-cl-adverbial-time-after-nf-perfect-infinitive",
+    "from": "english/nf-perfect-infinitive",
+    "to": "english/cl-adverbial-time",
+    "type": "weak"
+  },
+  {
+    "id": "e-co-reference-after-cl-relative-pronoun-choice",
+    "from": "english/cl-relative-pronoun-choice",
+    "to": "english/co-reference",
+    "type": "strong"
+  },
+  {
+    "id": "e-co-information-structure-after-wo-negation-scope",
+    "from": "english/wo-negation-scope",
+    "to": "english/co-information-structure",
+    "type": "weak"
+  }
+]

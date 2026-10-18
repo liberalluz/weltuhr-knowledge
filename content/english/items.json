@@ -1,0 +1,1682 @@
+[
+  {
+    "id": "english/wc-noun",
+    "title": "名词的类别：专有、普通、抽象、集合",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "词法形态"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "missing",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "english/word-class",
+    "inScope": true
+  },
+  {
+    "id": "english/wc-pronoun",
+    "title": "代词的九类分工",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "词法形态"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "english/word-class",
+    "inScope": true
+  },
+  {
+    "id": "english/wc-verb",
+    "title": "动词的类别：实义、助动、情态、系动",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "词法形态"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "english/word-class",
+    "inScope": true
+  },
+  {
+    "id": "english/wc-adjective",
+    "title": "形容词的定语与表语位置",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "词法形态"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "english/word-class",
+    "inScope": true
+  },
+  {
+    "id": "english/wc-adverb",
+    "title": "副词的四类与位置倾向",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "词法形态"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "english/word-class",
+    "inScope": true
+  },
+  {
+    "id": "english/wc-preposition",
+    "title": "介词与介词短语的构成",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "词法形态"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "english/word-class",
+    "inScope": true
+  },
+  {
+    "id": "english/wc-conjunction",
+    "title": "并列连词与从属连词的分野",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "词法形态"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "english/word-class",
+    "inScope": true
+  },
+  {
+    "id": "english/wc-determiner",
+    "title": "限定词的类别与共现限制",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "词法形态"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "english/word-class",
+    "inScope": true
+  },
+  {
+    "id": "english/wc-suffix",
+    "title": "派生后缀与词性转换",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "词法形态"
+    },
+    "layer": "persistent",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "present"
+    },
+    "sourceRefs": [],
+    "domainId": "english/word-class",
+    "inScope": true
+  },
+  {
+    "id": "english/wc-compound",
+    "title": "复合词与短语动词的构成",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "词法形态"
+    },
+    "layer": "ephemeral",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "missing",
+      "tacit": "present"
+    },
+    "sourceRefs": [],
+    "domainId": "english/word-class",
+    "inScope": true
+  },
+  {
+    "id": "english/np-countability",
+    "title": "可数与不可数",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "名词与限定"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "english/noun-phrase",
+    "inScope": true
+  },
+  {
+    "id": "english/np-plural",
+    "title": "复数的规则与不规则",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "名词与限定"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "missing",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "english/noun-phrase",
+    "inScope": true
+  },
+  {
+    "id": "english/np-article-definite",
+    "title": "定冠词的特指条件",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "名词与限定"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "english/noun-phrase",
+    "inScope": true
+  },
+  {
+    "id": "english/np-article-indefinite",
+    "title": "不定冠词与首次提及",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "名词与限定"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "english/noun-phrase",
+    "inScope": true
+  },
+  {
+    "id": "english/np-zero-article",
+    "title": "零冠词的场合",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "名词与限定"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "english/noun-phrase",
+    "inScope": true
+  },
+  {
+    "id": "english/np-quantifier",
+    "title": "量词与可数性的一致",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "名词与限定"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "english/noun-phrase",
+    "inScope": true
+  },
+  {
+    "id": "english/np-possessive",
+    "title": "名词属格与双重所有格",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "名词与限定"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "english/noun-phrase",
+    "inScope": true
+  },
+  {
+    "id": "english/np-of-genitive",
+    "title": "of 结构与名词属格的取舍",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "名词与限定"
+    },
+    "layer": "persistent",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "missing",
+      "tacit": "present"
+    },
+    "sourceRefs": [],
+    "domainId": "english/noun-phrase",
+    "inScope": true
+  },
+  {
+    "id": "english/np-agreement",
+    "title": "主谓一致",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "名词与限定"
+    },
+    "layer": "persistent",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "present"
+    },
+    "sourceRefs": [],
+    "domainId": "english/noun-phrase",
+    "inScope": true
+  },
+  {
+    "id": "english/np-modifier-order",
+    "title": "前置修饰语的顺序",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "名词与限定"
+    },
+    "layer": "view",
+    "type": "tacit",
+    "requirements": {
+      "boundary": "not_externalizable",
+      "justification": "present",
+      "proposition": "not_externalizable",
+      "relation": "present",
+      "how": "missing",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "english/noun-phrase",
+    "inScope": true
+  },
+  {
+    "id": "english/tense-simple-present",
+    "title": "一般现在时与习惯体",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "动词形态"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "english/tense",
+    "inScope": true
+  },
+  {
+    "id": "english/tense-present-progressive",
+    "title": "现在进行时与当下性",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "动词形态"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "english/tense",
+    "inScope": true
+  },
+  {
+    "id": "english/tense-simple-past",
+    "title": "一般过去时与确定过去",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "动词形态"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "english/tense",
+    "inScope": true
+  },
+  {
+    "id": "english/tense-past-progressive",
+    "title": "过去进行时与背景动作",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "动词形态"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "english/tense",
+    "inScope": true
+  },
+  {
+    "id": "english/tense-present-perfect",
+    "title": "现在完成时与现时关联",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "动词形态"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "english/tense",
+    "inScope": true
+  },
+  {
+    "id": "english/tense-perfect-progressive",
+    "title": "完成进行时的持续义",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "动词形态"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "english/tense",
+    "inScope": true
+  },
+  {
+    "id": "english/tense-past-perfect",
+    "title": "过去完成时与过去参照点",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "动词形态"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "english/tense",
+    "inScope": true
+  },
+  {
+    "id": "english/tense-future-will",
+    "title": "will 与预测、承诺",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "动词形态"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "missing",
+      "tacit": "present"
+    },
+    "sourceRefs": [],
+    "domainId": "english/tense",
+    "inScope": true
+  },
+  {
+    "id": "english/tense-future-going-to",
+    "title": "be going to 与既有迹象",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "动词形态"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "missing",
+      "tacit": "present"
+    },
+    "sourceRefs": [],
+    "domainId": "english/tense",
+    "inScope": true
+  },
+  {
+    "id": "english/tense-future-perfect",
+    "title": "将来完成与将来进行",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "动词形态"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "missing",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "english/tense",
+    "inScope": true
+  },
+  {
+    "id": "english/av-passive-form",
+    "title": "被动语态的构成",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "语态与情态"
+    },
+    "layer": "persistent",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "present"
+    },
+    "sourceRefs": [],
+    "domainId": "english/aspect-voice",
+    "inScope": true
+  },
+  {
+    "id": "english/av-passive-use",
+    "title": "被动语态的语篇动因",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "语态与情态"
+    },
+    "layer": "persistent",
+    "type": "skill",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "missing",
+      "tacit": "present"
+    },
+    "sourceRefs": [],
+    "domainId": "english/aspect-voice",
+    "inScope": true
+  },
+  {
+    "id": "english/av-get-passive",
+    "title": "get 被动与状态被动",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "语态与情态"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "english/aspect-voice",
+    "inScope": true
+  },
+  {
+    "id": "english/av-causative",
+    "title": "使役结构：have、get、make、let",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "语态与情态"
+    },
+    "layer": "persistent",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "present"
+    },
+    "sourceRefs": [],
+    "domainId": "english/aspect-voice",
+    "inScope": true
+  },
+  {
+    "id": "english/av-modal-ability",
+    "title": "can 与 could：能力与许可",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "语态与情态"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "english/aspect-voice",
+    "inScope": true
+  },
+  {
+    "id": "english/av-modal-obligation",
+    "title": "must、have to 与 should 的义务义",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "语态与情态"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "english/aspect-voice",
+    "inScope": true
+  },
+  {
+    "id": "english/av-modal-epistemic",
+    "title": "may、might 与 must 的推测义",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "语态与情态"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "missing",
+      "tacit": "present"
+    },
+    "sourceRefs": [],
+    "domainId": "english/aspect-voice",
+    "inScope": true
+  },
+  {
+    "id": "english/av-modal-past",
+    "title": "情态动词的过去形式与委婉",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "语态与情态"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "english/aspect-voice",
+    "inScope": true
+  },
+  {
+    "id": "english/av-subjunctive",
+    "title": "虚拟语气与反事实",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "语态与情态"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "english/aspect-voice",
+    "inScope": true
+  },
+  {
+    "id": "english/av-conditional",
+    "title": "条件句三型与混合条件",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "语态与情态"
+    },
+    "layer": "persistent",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "present"
+    },
+    "sourceRefs": [],
+    "domainId": "english/aspect-voice",
+    "inScope": true
+  },
+  {
+    "id": "english/nf-infinitive-form",
+    "title": "不定式的形式与否定",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "非谓语"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "english/nonfinite",
+    "inScope": true
+  },
+  {
+    "id": "english/nf-infinitive-function",
+    "title": "不定式作主语、宾语、定语、状语",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "非谓语"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "english/nonfinite",
+    "inScope": true
+  },
+  {
+    "id": "english/nf-bare-infinitive",
+    "title": "不带 to 的不定式",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "非谓语"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "english/nonfinite",
+    "inScope": true
+  },
+  {
+    "id": "english/nf-gerund",
+    "title": "动名词与名词性用法",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "非谓语"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "english/nonfinite",
+    "inScope": true
+  },
+  {
+    "id": "english/nf-gerund-vs-infinitive",
+    "title": "动名词与不定式作宾语的取舍",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "非谓语"
+    },
+    "layer": "persistent",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "present"
+    },
+    "sourceRefs": [],
+    "domainId": "english/nonfinite",
+    "inScope": true
+  },
+  {
+    "id": "english/nf-present-participle",
+    "title": "现在分词：主动与进行",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "非谓语"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "english/nonfinite",
+    "inScope": true
+  },
+  {
+    "id": "english/nf-past-participle",
+    "title": "过去分词：被动与完成",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "非谓语"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "english/nonfinite",
+    "inScope": true
+  },
+  {
+    "id": "english/nf-participle-clause",
+    "title": "分词短语作状语与悬垂分词",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "非谓语"
+    },
+    "layer": "persistent",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "present"
+    },
+    "sourceRefs": [],
+    "domainId": "english/nonfinite",
+    "inScope": true
+  },
+  {
+    "id": "english/nf-absolute",
+    "title": "独立主格",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "非谓语"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "missing",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "english/nonfinite",
+    "inScope": true
+  },
+  {
+    "id": "english/nf-perfect-infinitive",
+    "title": "完成式非谓语与时间先后",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "非谓语"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "english/nonfinite",
+    "inScope": true
+  },
+  {
+    "id": "english/cl-relative-defining",
+    "title": "限制性关系从句",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "从句"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "english/clause",
+    "inScope": true
+  },
+  {
+    "id": "english/cl-relative-nondefining",
+    "title": "非限制性关系从句",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "从句"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "english/clause",
+    "inScope": true
+  },
+  {
+    "id": "english/cl-relative-pronoun-choice",
+    "title": "关系代词的选择与省略",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "从句"
+    },
+    "layer": "persistent",
+    "type": "skill",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "present"
+    },
+    "sourceRefs": [],
+    "domainId": "english/clause",
+    "inScope": true
+  },
+  {
+    "id": "english/cl-noun-that",
+    "title": "that 引导的名词性从句",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "从句"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "english/clause",
+    "inScope": true
+  },
+  {
+    "id": "english/cl-noun-wh",
+    "title": "wh- 引导的名词性从句",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "从句"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "english/clause",
+    "inScope": true
+  },
+  {
+    "id": "english/cl-comparative",
+    "title": "比较从句与省略",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "从句"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "missing",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "english/clause",
+    "inScope": true
+  },
+  {
+    "id": "english/cl-adverbial-time",
+    "title": "时间状语从句与时态呼应",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "从句"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "english/clause",
+    "inScope": true
+  },
+  {
+    "id": "english/cl-adverbial-condition",
+    "title": "条件状语从句与真实条件",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "从句"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "english/clause",
+    "inScope": true
+  },
+  {
+    "id": "english/cl-adverbial-concession",
+    "title": "让步状语从句",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "从句"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "english/clause",
+    "inScope": true
+  },
+  {
+    "id": "english/cl-adverbial-reason",
+    "title": "原因、目的与结果状语从句",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "从句"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "english/clause",
+    "inScope": true
+  },
+  {
+    "id": "english/wo-basic-svo",
+    "title": "基本语序与成分位置",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "语序"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "english/word-order",
+    "inScope": true
+  },
+  {
+    "id": "english/wo-question",
+    "title": "疑问句的构成与操作词",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "语序"
+    },
+    "layer": "persistent",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "present"
+    },
+    "sourceRefs": [],
+    "domainId": "english/word-order",
+    "inScope": true
+  },
+  {
+    "id": "english/wo-there-be",
+    "title": "there be 存在句",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "语序"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "english/word-order",
+    "inScope": true
+  },
+  {
+    "id": "english/wo-adverb-position",
+    "title": "状语的位置与句义差别",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "语序"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "english/word-order",
+    "inScope": true
+  },
+  {
+    "id": "english/wo-negation-scope",
+    "title": "否定的辖域与部分否定",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "语序"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "missing",
+      "tacit": "present"
+    },
+    "sourceRefs": [],
+    "domainId": "english/word-order",
+    "inScope": true
+  },
+  {
+    "id": "english/wo-inversion-negative",
+    "title": "否定词前置的倒装",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "语序"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "english/word-order",
+    "inScope": true
+  },
+  {
+    "id": "english/wo-inversion-conditional",
+    "title": "虚拟条件句的倒装",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "语序"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "english/word-order",
+    "inScope": true
+  },
+  {
+    "id": "english/wo-object-fronting",
+    "title": "宾语前置与话题化",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "语序"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "missing",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "english/word-order",
+    "inScope": true
+  },
+  {
+    "id": "english/wo-cleft-it",
+    "title": "it 分裂句",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "语序"
+    },
+    "layer": "persistent",
+    "type": "skill",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "present"
+    },
+    "sourceRefs": [],
+    "domainId": "english/word-order",
+    "inScope": true
+  },
+  {
+    "id": "english/wo-cleft-wh",
+    "title": "wh- 分裂句",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "语序"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "missing",
+      "tacit": "present"
+    },
+    "sourceRefs": [],
+    "domainId": "english/word-order",
+    "inScope": true
+  },
+  {
+    "id": "english/co-reference",
+    "title": "指代链与回指",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "篇章"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "english/cohesion",
+    "inScope": true
+  },
+  {
+    "id": "english/co-substitution",
+    "title": "替代：one、do so 与 so",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "篇章"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "english/cohesion",
+    "inScope": true
+  },
+  {
+    "id": "english/co-ellipsis",
+    "title": "省略的衔接作用",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "篇章"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "missing",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "english/cohesion",
+    "inScope": true
+  },
+  {
+    "id": "english/co-connective-additive",
+    "title": "增补类连接词",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "篇章"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "english/cohesion",
+    "inScope": true
+  },
+  {
+    "id": "english/co-connective-adversative",
+    "title": "转折类连接词",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "篇章"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "english/cohesion",
+    "inScope": true
+  },
+  {
+    "id": "english/co-connective-causal",
+    "title": "因果类连接词",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "篇章"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "english/cohesion",
+    "inScope": true
+  },
+  {
+    "id": "english/co-connective-temporal",
+    "title": "时间顺序连接词",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "篇章"
+    },
+    "layer": "persistent",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "english/cohesion",
+    "inScope": true
+  },
+  {
+    "id": "english/co-information-structure",
+    "title": "已知信息与新信息的排布",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "篇章"
+    },
+    "layer": "view",
+    "type": "declarative",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "missing",
+      "tacit": "present"
+    },
+    "sourceRefs": [],
+    "domainId": "english/cohesion",
+    "inScope": true
+  },
+  {
+    "id": "english/co-paragraph-topic",
+    "title": "段落主题句与展开",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "篇章"
+    },
+    "layer": "persistent",
+    "type": "procedural",
+    "requirements": {
+      "boundary": "present",
+      "justification": "present",
+      "proposition": "present",
+      "relation": "present",
+      "how": "present",
+      "tacit": "present"
+    },
+    "sourceRefs": [],
+    "domainId": "english/cohesion",
+    "inScope": true
+  },
+  {
+    "id": "english/co-register",
+    "title": "语域与正式度的选择",
+    "sixAxis": {
+      "subject": "语言",
+      "ability": "篇章"
+    },
+    "layer": "ephemeral",
+    "type": "tacit",
+    "requirements": {
+      "boundary": "not_externalizable",
+      "justification": "present",
+      "proposition": "not_externalizable",
+      "relation": "present",
+      "how": "missing",
+      "tacit": "not_externalizable"
+    },
+    "sourceRefs": [],
+    "domainId": "english/cohesion",
+    "inScope": true
+  }
+]
