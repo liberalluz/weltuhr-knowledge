@@ -26,6 +26,22 @@
 ///   ⇒ `Z1`」直接冲突。**不留开关** —— 换根已有两个正式入口：点星系、点面包屑
 ///   第 1 段。
 ///
+/// ## `Z0` 画的是空间之间（`V-1b` · `VIEW-036`）
+///
+/// `Z1` 起画的是某个空间**内部**（项 + 边 + 域带，走 `FramePainter`）；`Z0` 画
+/// 的是**空间之间** —— 一个 `KnowledgeSpace` 一个星系，不出项、不出边。两者
+/// 不同源，于是 `_universeBody` 在 `Z0` 换一套几何（`galaxy_map.dart`）与一套
+/// 绘制（`galaxy_painter.dart`）。
+///
+/// 三个后果值得记住：
+///
+/// - **可点对象只有星系盘**，点它 ⇒ 换根并落 `Z1`（`_jumpToSpace`，与搜索命中
+///   同一条路）。点空白什么都不做。
+/// - **标注是 widget 不是画布文字**：`VIEW-036` 要求它屏幕空间、不随自转旋转、
+///   字号统一 —— 画进画布就会跟着盘的倾角一起变形。
+/// - **没有包就没有星系**：合成回落背后没有 `KnowledgeSpace`，给它编一个空间
+///   等于凭空造数据，所以那种情形退回项场景（诊断路径，不是形态）。
+///
 /// ## 切换为什么是交叉淡入
 ///
 /// `VIEW-010`：宇宙位置由 `r/θ/φ` 决定、树位置由 `⪯` 缩进决定，两者**不同构**。
@@ -107,6 +123,8 @@ import '../locate/locate_overlay.dart';
 import '../palette.dart';
 import 'filter_chips.dart';
 import 'frame_painter.dart';
+import 'galaxy_map.dart';
+import 'galaxy_painter.dart';
 import 'scene_pick.dart';
 import 'scene_source.dart';
 import 'tree_view.dart';
@@ -146,6 +164,17 @@ Key hudCrumbKey(int index) => Key('hud-crumb-$index');
 
 /// ⑥ 罗盘里某个轴按钮（点它展开 / 收起该轴的取值）。`VIEW-020`。
 Key compassAxisKey(String axisKey) => Key('compass-axis-$axisKey');
+
+/// `Z0` 里某个星系的标注（`VIEW-036`）。**一个空间一个** —— 测试靠它数
+/// 「屏幕上有几个星系」，也靠它确认标注是**屏幕空间里的文字**而不是画上去的
+/// 像素（`VIEW-036` 要求标注恒显、不随自转旋转）。
+Key galaxyLabelKey(String spaceId) => Key('z0-galaxy-$spaceId');
+
+/// `Z0` 的退化提示：盘半径触到 `C-53` 下限 ⇒ `VIEW-036` 判「退化为列表式」。
+///
+/// 本笔不实现列表形态，但**必须把这件事说出来** —— 不说的话，用户看到的是
+/// 「几个小得看不清的盘」，而不是「这一档画不出星系」。
+const Key hudZ0DegradedKey = Key('z0-degraded');
 
 /// ⑥ 罗盘展开后，某个轴取值的那一行（点它写 / 取消筛选）。
 Key compassValueKey(String axisKey, String value) =>
@@ -207,6 +236,15 @@ const double _crumbFontSize = 14;
 /// 项标题可能是整句（α 包里最长 40 余字）。不封顶的话四段面包屑会把 ③ 挤出
 /// 屏幕 —— 而 ③ 是「圈内/圈外 · 设置」，被挤掉时用户只会觉得少了个按钮。
 const double _crumbMaxWidth = 160;
+
+/// `Z0` 星系标注的宽度与行距（`VIEW-036`：盘下方居中、恒显）。
+const double _galaxyLabelWidth = 140;
+const double _galaxyLabelGap = 6;
+
+/// 标注两行的字号。**两行都是定值**：字号不得承载项数 —— 那会成为第二条
+/// 编码项数的通道，与盘半径打架（`VIEW-036` / `X-02`）。
+const double _galaxyNameFontSize = 12;
+const double _galaxyMetaFontSize = 10;
 
 class UniverseScreen extends StatefulWidget {
   const UniverseScreen({
@@ -749,6 +787,89 @@ class _UniverseScreenState extends State<UniverseScreen>
     _jumpToItem(_spaceId, id);
   }
 
+  /// `Z0` 点星系 ⇒ 换根 + 落到 `Z1`（`VIEW-036` / `VIEW-027` 修订）。
+  ///
+  /// 落点复用 [`_jumpToSpace`]：搜索「空间」类命中走的是同一条路。两处各写
+  /// 一遍的话，「点星系」与「搜空间」会落到不同档位 —— 而两条路对用户是
+  /// 同一个动作（「进这个空间」）。
+  ///
+  /// **点空白什么都不做**（同 [`_pickAt`]）：清掉选中会让详情抽屉毫无预警地
+  /// 消失，而点歪是常态。
+  void _pickGalaxyAt(Offset point, GalaxyLayout layout) {
+    final String? spaceId = pickGalaxyAt(layout: layout, point: point);
+    if (spaceId == null) {
+      return;
+    }
+    _jumpToSpace(spaceId);
+  }
+
+  /// `Z0` 的标注层（`VIEW-036`）。
+  ///
+  /// 做成 widget 而不是画进画布，是因为规格里有两条它才守得住：
+  /// **不随自转旋转**（画布里的文字会跟着盘的倾角变形）与**字号统一**。
+  ///
+  /// 坐标要从画布空间换到窗口空间：降采样时画布小于窗口，直接拿画布坐标摆
+  /// widget 会让标注整体偏左上一截 —— 而这种偏移在 1080p 以下看不出来。
+  List<Widget> _galaxyLayer(GalaxyLayout layout, Size surface, Size window) {
+    final double scale = surface.width <= 0 ? 1 : window.width / surface.width;
+    return <Widget>[
+      for (final GalaxyDisc disc in layout.discs)
+        Positioned(
+          left: disc.centerX * scale - _galaxyLabelWidth / 2,
+          // 盘是压扁的椭圆 ⇒ 从**半短轴**往下摆，不是从半径往下摆。
+          top:
+              (disc.centerY + disc.minorRadius) * scale + _galaxyLabelGap,
+          width: _galaxyLabelWidth,
+          child: Column(
+            key: galaxyLabelKey(disc.spaceId),
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Text(
+                disc.label,
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: paletteTextPrimary,
+                  fontSize: _galaxyNameFontSize,
+                ),
+              ),
+              Text(
+                // 副行给的是**规模**而不是进度（`VIEW-035`：HUD 不放事件计数），
+                // 所以它是「N 项 · M 域」，不是「已学 x 项」。
+                '${disc.itemCount} 项 · ${disc.domainCount} 域',
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: paletteTextSecondary,
+                  fontSize: _galaxyMetaFontSize,
+                ),
+              ),
+            ],
+          ),
+        ),
+      // 盘半径触底（`C-53`）⇒ `VIEW-036` 判「该档退化为列表式」。列表形态不在
+      // 本笔射程内，但**必须把这件事说出来**：不说的话，用户看到的是「几个小得
+      // 看不清的盘」，而不会想到「这一档画不出星系」。
+      if (layout.degenerate)
+        Positioned(
+          key: hudZ0DegradedKey,
+          left: 0,
+          right: 0,
+          top: 16,
+          child: Center(
+            child: _panel(
+              child: const Text(
+                '星系盘触到最小半径（C-53）—— 该档应改为列表',
+                style: TextStyle(color: paletteTextSecondary, fontSize: 11),
+              ),
+            ),
+          ),
+        ),
+    ];
+  }
+
   void _removeFilter(AxisFilterChip chip) {
     setState(() {
       _axisFilter = withoutAxisValue(_axisFilter, chip.axisKey, chip.value);
@@ -988,6 +1109,15 @@ class _UniverseScreenState extends State<UniverseScreen>
       );
       final Size surface = Size(plan.surfaceWidth, plan.surfaceHeight);
 
+      // `Z0` 画的是**空间之间**（一个空间一个星系，`VIEW-036`），`Z1` 起画的
+      // 是某个空间**内部**。两者不同源，所以这里先问一次布局：有星系就换几何，
+      // 一个包都没装出来时（`layout.isEmpty`）退回项场景 —— 那条是诊断路径，
+      // 界面上真正要看的是「为什么一个包都没有」。
+      final GalaxyLayout galaxies = _camera.zoom == ZoomLevel.z0
+          ? layoutGalaxies(roots: widget.roots, viewport: surface)
+          : GalaxyLayout.empty;
+      final bool galaxyMap = !galaxies.isEmpty;
+
       final Widget canvas = RepaintBoundary(
         // ⚠️ 尺寸必须由 `SizedBox` **强制**给，不能只写 `CustomPaint.size`：
         // `size` 只是 preferred，父级给的 tight 约束会把它推翻 —— 那样绘制按
@@ -996,13 +1126,18 @@ class _UniverseScreenState extends State<UniverseScreen>
           key: _canvasKey,
           size: surface,
           child: CustomPaint(
-            painter: FramePainter(
-              scene: _scene,
-              spin: _spin,
-              baseYaw: _camera.yawRadians,
-              visibleIds: visibleIds,
-              onRepaint: (_, _, _) {},
-            ),
+            painter: galaxyMap
+                // `Z0` 不接 `spin`：盘自转 `C-54` 与构型公转 `C-55` 归 `V-1i`，
+                // 这一笔只画形态。接了会让一片不动的画面每帧重绘，帧预算读数
+                // 会凭空多出一档成本。
+                ? GalaxyPainter(layout: galaxies)
+                : FramePainter(
+                    scene: _scene,
+                    spin: _spin,
+                    baseYaw: _camera.yawRadians,
+                    visibleIds: visibleIds,
+                    onRepaint: (_, _, _) {},
+                  ),
           ),
         ),
       );
@@ -1026,17 +1161,29 @@ class _UniverseScreenState extends State<UniverseScreen>
             if (box == null || !box.hasSize) {
               return;
             }
-            _pickAt(
-              box.globalToLocal(details.globalPosition),
-              surface,
-              visibleIds,
-            );
+            final Offset point = box.globalToLocal(details.globalPosition);
+            if (galaxyMap) {
+              _pickGalaxyAt(point, galaxies);
+            } else {
+              _pickAt(point, surface, visibleIds);
+            }
           },
           // `FittedBox` 只在真降了分辨率时才包一层：`scale == 1` 时它是纯开销，
           // 而宇宙每帧都在重绘。
-          child: plan.isDownscaled
-              ? FittedBox(fit: BoxFit.fill, child: canvas)
-              : canvas,
+          child: galaxyMap
+              ? Stack(
+                  children: <Widget>[
+                    Positioned.fill(
+                      child: plan.isDownscaled
+                          ? FittedBox(fit: BoxFit.fill, child: canvas)
+                          : canvas,
+                    ),
+                    ..._galaxyLayer(galaxies, surface, window),
+                  ],
+                )
+              : (plan.isDownscaled
+                    ? FittedBox(fit: BoxFit.fill, child: canvas)
+                    : canvas),
         ),
       );
     },

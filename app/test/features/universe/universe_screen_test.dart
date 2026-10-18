@@ -19,6 +19,7 @@ import 'package:project_knowledge/features/universe/filter_chips.dart';
 import 'package:project_knowledge/core/frame/projection.dart';
 import 'package:project_knowledge/core/frame/scene.dart';
 import 'package:project_knowledge/features/universe/frame_painter.dart';
+import 'package:project_knowledge/features/universe/galaxy_map.dart';
 import 'package:project_knowledge/features/universe/scene_pick.dart';
 import 'package:project_knowledge/features/universe/scene_source.dart';
 import 'package:project_knowledge/features/universe/tree_view.dart';
@@ -1591,11 +1592,15 @@ void main() {
       expect(find.byKey(detailBackKey), findsOneWidget, reason: '前提：点星进了详情');
 
       // 面包屑给了「不用返回按钮、直接退到上层」这条新路（`V-1a`）。
-      await tester.tap(find.byKey(hudCrumbKey(0)));
+      //
+      // 退到 **`Z1`（第 2 段）** 而不是 `Z0`：`Z0` 自 `V-1b` 起是宇宙层、不出项
+      // （`VIEW-036`），在那里点不出「同一颗星」—— 点到的是星系，落点变成换根。
+      // 这一条验的是 `returnTo` 残留，不是宇宙层的形态，所以退到还能点星的那一层。
+      await tester.tap(find.byKey(hudCrumbKey(1)));
       await _pump(tester);
       expect(find.byKey(hudDetailDrawerKey), findsNothing);
 
-      // 再点同一颗星进详情，然后按返回：必须回到 **Z0**（本轮进详情的出发地），
+      // 再点同一颗星进详情，然后按返回：必须回到 **`Z1`**（本轮进详情的出发地），
       // 不是「上一颗星的 `Z4`」。残留的 `returnTo` 会让后者发生，而它看起来完全
       // 正常 —— 抽屉还开着，只是内容换了一颗星。
       await tester.tapAt(star);
@@ -1607,10 +1612,155 @@ void main() {
       expect(
         find.byKey(hudDetailDrawerKey),
         findsNothing,
-        reason: 'VIEW-015：返回的是出发地（Z0），不是上一颗星的 Z4',
+        reason: 'VIEW-015：返回的是出发地（Z1），不是上一颗星的 Z4',
       );
+      expect(_crumbCount(tester), _crumbsFor(ZoomLevel.z1));
+      expect(tester.takeException(), isNull);
+    });
+  });
+
+  group('Z0 宇宙 = N 个星系（SPEC-VIEW-036 · V-1b）', () {
+    /// 与界面同源的一次布局：同一条 `layoutGalaxies`、同一个绘制表面。
+    ///
+    /// 不把期望坐标写死 —— 写死的话，改了 `C-52` 或哈希就要改测试，而测试改成
+    /// 什么样都算「通过」。这里比的是「界面点得中的那个位置，是不是布局算出来的
+    /// 那个位置」。
+    GalaxyLayout layoutOf(
+      WidgetTester tester,
+      LoadedPack pack,
+      LoadedPack other,
+    ) {
+      final Size window = tester.getSize(find.byType(UniverseScreen));
+      final ViewportPlan plan = planViewport(
+        window.width,
+        window.height,
+        devicePixelRatio: tester.view.devicePixelRatio,
+      );
+      return layoutGalaxies(
+        roots: <SceneResolution>[
+          SceneResolution(bundle: _alphaScene(pack), pack: pack),
+          SceneResolution(bundle: _alphaScene(other), pack: other),
+        ],
+        viewport: Size(plan.surfaceWidth, plan.surfaceHeight),
+      );
+    }
+
+    testWidgets('一个空间一个星系：标注在屏上，且这一档不出项（SPEC-VIEW-036）', (
+      WidgetTester tester,
+    ) async {
+      final LoadedPack pack = loadAlphaPack();
+      await _pumpScreen(
+        tester,
+        pack: pack,
+        scene: _alphaScene(pack),
+        others: <LoadedPack>[_z0Space()],
+        zoom: ZoomLevel.z0,
+      );
+
+      expect(find.byKey(galaxyLabelKey(pack.space.id)), findsOneWidget);
+      expect(find.byKey(galaxyLabelKey('go')), findsOneWidget);
+      // 标注副行给的是**规模**（`VIEW-035`：不放事件计数）。
+      expect(
+        find.text(
+          '${pack.items.length} 项 · ${pack.space.domainIds.length} 域',
+        ),
+        findsOneWidget,
+      );
+      // `Z0` 不出项 ⇒ 没有详情抽屉，面包屑只有第 1 段。
+      expect(find.byKey(hudDetailDrawerKey), findsNothing);
       expect(_crumbCount(tester), _crumbsFor(ZoomLevel.z0));
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('点星系 ⇒ 换根并落到 Z1（VIEW-036 / VIEW-027 修订）（SPEC-VIEW-036）', (
+      WidgetTester tester,
+    ) async {
+      final LoadedPack pack = loadAlphaPack();
+      final LoadedPack go = _z0Space();
+      await _pumpScreen(
+        tester,
+        pack: pack,
+        scene: _alphaScene(pack),
+        others: <LoadedPack>[go],
+        zoom: ZoomLevel.z0,
+      );
+
+      final GalaxyLayout layout = layoutOf(tester, pack, go);
+      final GalaxyDisc target = layout.discOf('go')!;
+      final Size window = tester.getSize(find.byType(UniverseScreen));
+      final ViewportPlan plan = planViewport(
+        window.width,
+        window.height,
+        devicePixelRatio: tester.view.devicePixelRatio,
+      );
+
+      // 画布坐标 → 窗口坐标：降采样时两者不等，直接用画布坐标会点偏。
+      await tester.tapAt(
+        Offset(target.centerX, target.centerY) * plan.scale,
+      );
+      await _pump(tester);
+
+      expect(
+        _crumbCount(tester),
+        _crumbsFor(ZoomLevel.z1),
+        reason: '落到单个空间应当是「进去了」⇒ Z1，不是回到 Z0',
+      );
+      expect(find.byKey(galaxyLabelKey('go')), findsNothing, reason: '已离开宇宙层');
+      expect(
+        find.textContaining('60 项'),
+        findsOneWidget,
+        reason: '诊断行跟着换根 —— 它是「现在画的是哪个空间」的唯一出处',
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('没有包就没有星系（不凭空造空间）（SPEC-VIEW-036）', (WidgetTester tester) async {
+      // 合成回落的根背后没有 `KnowledgeSpace`。
+      await _pumpScreen(tester, zoom: ZoomLevel.z0);
+
+      expect(find.byKey(galaxyLabelKey('python')), findsNothing);
+      expect(
+        find.byKey(hudZ0DegradedKey),
+        findsNothing,
+        reason: '空布局不构成退化 —— 退化说的是「盘小到画不出」',
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('盘半径触底时把退化说出来（C-53）', (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(800, 400);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+
+      final LoadedPack pack = loadAlphaPack();
+      await _pumpScreen(
+        tester,
+        pack: pack,
+        scene: _alphaScene(pack),
+        others: <LoadedPack>[_z0Space()],
+        zoom: ZoomLevel.z0,
+      );
+
+      expect(
+        find.byKey(hudZ0DegradedKey),
+        findsOneWidget,
+        reason: 'VIEW-036：k 触底是**可计算的判据**，且必须让人看到',
+      );
       expect(tester.takeException(), isNull);
     });
   });
 }
+
+/// `Z0` 用例里的第二个空间：**60 项**而不是 [_goPack] 的 1 项。
+///
+/// 项数比要留在真实量级（三个真实包是 150 / 80 / 80，比值 1.875）。拿 1 项的
+/// 空间去画星系，`C-53` 反解出的 `k` 下限（`40 / √1`）会直接把这一档判成退化
+/// —— 那不是要验的东西，是夹具挑错了形状。
+LoadedPack _z0Space() => fixturePack(
+  <FixtureItem>[
+    for (int i = 0; i < 60; i++)
+      FixtureItem('go-$i', 'Go 第 $i 项', domainId: 'go/d${i % 4}'),
+  ],
+  spaceId: 'go',
+  spaceName: 'Go 语言',
+);
