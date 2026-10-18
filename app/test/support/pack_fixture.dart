@@ -42,6 +42,8 @@ class FixtureItem {
 ///
 /// [itemType] 只给需要验「某个视觉通道**不看** `type`」的用（`VIEW-040` 第 1 条：
 /// `Z4` 的恒星外观不能按 `type` 分）。缺省 `declarative`，与其它用例无关。
+/// [subject] 同时写进清单与各项的 `subject` 轴 —— 跨根合并取值域的用例
+/// （`V-1f2`）需要两个**学科不同**的包，而这个轴在夹具里原本是写死的。
 LoadedPack fixturePack(
   List<FixtureItem> items, {
   String spaceId = 'python',
@@ -49,12 +51,13 @@ LoadedPack fixturePack(
   List<String>? domainIds,
   List<List<String>> edges = const <List<String>>[],
   String itemType = 'declarative',
+  String subject = '计算机科学',
 }) {
   final Map<String, Object?> manifest = <String, Object?>{
     'id': spaceId,
     'name': spaceName,
     'version': '0.1.0',
-    'sixAxis': <String, String>{'subject': '计算机科学'},
+    'sixAxis': <String, String>{'subject': subject},
     'accent': '#3776ab',
     'order': 10,
     'domainIds':
@@ -70,7 +73,7 @@ LoadedPack fixturePack(
           'id': item.id,
           'title': item.title,
           'sixAxis': <String, String>{
-            'subject': '计算机科学',
+            'subject': subject,
             'ability': item.ability,
           },
           'layer': 'persistent',

@@ -175,6 +175,37 @@ void main() {
       ]);
       expect(axisValuesOf(packWithBlank, 'ability'), <String>['控制流']);
     });
+
+    test('多根合并：每个根的取值都在，同值跨包累加计数（SPEC-VIEW-020 修订 5）', () {
+      // 形状照真实三包：α 是计算机科学，另外两个是语言。合并前罗盘只读当前
+      // 根 ⇒ 站在 α 上永远看不到「语言」，而盘上明明并着三个星系。
+      final LoadedPack python = fixturePack(<FixtureItem>[
+        for (int i = 0; i < 4; i++) FixtureItem('p$i', 'Py 第 $i 项'),
+      ]);
+      final LoadedPack german = fixturePack(<FixtureItem>[
+        for (int i = 0; i < 3; i++)
+          FixtureItem('d$i', 'De 第 $i 项', domainId: 'de/grammar'),
+      ], spaceId: 'german', spaceName: '德语', subject: '语言');
+      final LoadedPack english = fixturePack(<FixtureItem>[
+        for (int i = 0; i < 3; i++)
+          FixtureItem('e$i', 'En 第 $i 项', domainId: 'en/grammar'),
+      ], spaceId: 'english', spaceName: '英语', subject: '语言');
+
+      expect(
+        axisValuesOfAll(<LoadedPack>[python, german, english], 'subject'),
+        <String>['语言', '计算机科学'],
+        reason: '语言 3+3 = 6 次 > 计算机科学 4 次：序仍按合并后的计数排',
+      );
+      expect(
+        axisValuesOf(german, 'subject'),
+        <String>['语言'],
+        reason: '单包口径不变 —— 缺陷本体正是「只读当前根」',
+      );
+    });
+
+    test('空列表 ⇒ 空取值域，不抛（SPEC-VIEW-020 修订 5）', () {
+      expect(axisValuesOfAll(const <LoadedPack>[], 'subject'), isEmpty);
+    });
   });
 
   group('chip 列表', () {
