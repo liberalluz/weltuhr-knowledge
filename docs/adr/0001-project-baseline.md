@@ -56,6 +56,14 @@
 
 **版权主体取自然人**：Windows `LegalCopyright` 与 macOS `PRODUCT_COPYRIGHT` 写 `liberal`，与 `LICENSE` 一致。**不用反向域名**——反向域名是标识符，不是法律主体。
 
+> **更新（2026-10-18）**：**仓名已改为 `weltuhr-knowledge`**（GitHub 侧；本地目录仍 `project-knowledge`，与仓名解耦）。本条对**标识名**的判断不变 —— Dart 包 `project_knowledge`、bundle `com.weltuhr.projectKnowledge`、Windows `InternalName`、CMake `project()` 一律不动。
+>
+> 失效的只是把**仓名**并进「标识」这一步归类。仓名不进编译、不进签名，只出现在 remote URL 与外部链接里，属**协作层**，跟品牌走。原判据说「一换就牵动既有 commit 引用」，实测不成立 —— 改名不动任何 commit hash，PR / issue 编号原样保留，旧地址由 GitHub 301 兜住。
+>
+> 真正的截止期不是「现在还是以后」，而是**第一个把仓名写进产物的东西**（更新器下载地址、镜像、公网分发）。它一出现，改名就从「一条命令 + 六处 clone 命令行」变成「永久依赖重定向，或断掉老客户端的更新检查」。
+>
+> 顺带修正一处判断：`project-knowledge` 里 **`project-` 才是占位**（「还没起名，先叫项目」），`-knowledge` 是**域**、有信息量。所以换品牌时该换的是占位那一半，`weltuhr-knowledge` 正是「换占位、留域」。
+
 ## 影响
 
 - `LICENSE` = Apache-2.0 全文 + `NOTICE` 随首提入库。

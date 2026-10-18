@@ -22,7 +22,7 @@
 > 前提：Flutter 3.x + Dart 3.x · Serverpod 4.x（バージョンは `app/pubspec.yaml` / `server/pubspec.yaml` の固定値が基準）· PostgreSQL 16
 
 ```bash
-git clone git@github.com:liberalluz/project-knowledge.git && cd project-knowledge
+git clone git@github.com:liberalluz/weltuhr-knowledge.git && cd weltuhr-knowledge
 
 # クライアントの依存関係
 cd app && flutter pub get

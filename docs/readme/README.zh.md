@@ -20,7 +20,7 @@
 > 前置：Flutter 3.x + Dart 3.x · Serverpod 4.x（版本以 `app/pubspec.yaml` / `server/pubspec.yaml` 钉定值为准）· PostgreSQL 16
 
 ```bash
-git clone git@github.com:liberalluz/project-knowledge.git && cd project-knowledge
+git clone git@github.com:liberalluz/weltuhr-knowledge.git && cd weltuhr-knowledge
 
 # 客户端依赖
 cd app && flutter pub get
