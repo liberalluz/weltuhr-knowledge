@@ -22,7 +22,7 @@
 > Voraussetzungen: Flutter 3.x + Dart 3.x · Serverpod 4.x (Versionen sind in `app/pubspec.yaml` / `server/pubspec.yaml` festgeschrieben) · PostgreSQL 16
 
 ```bash
-git clone git@github.com:liberalluz/project-knowledge.git && cd project-knowledge
+git clone git@github.com:liberalluz/weltuhr-knowledge.git && cd weltuhr-knowledge
 
 # Client-Abhaengigkeiten
 cd app && flutter pub get
