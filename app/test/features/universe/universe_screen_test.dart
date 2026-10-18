@@ -2111,6 +2111,234 @@ void main() {
       expect(tester.takeException(), isNull);
     });
   });
+
+  group('标注避让（V-1d2）', () {
+    testWidgets('Z1 十个域的标注两两不相交 —— 真机那对 verb-* 就在里面（SPEC-VIEW-037）', (
+      WidgetTester tester,
+    ) async {
+      // α 包 10 个域落在两条臂上，`verb-conjugation`(513,232) 与
+      // `verb-frame`(571,225) 中心距 58 px 而标签宽 120 —— 终端截图里压了约
+      // 8 px。`V-1c` 的注释把这件事写成「接受重叠，归终端观感验收」：**十一个**
+      // 域挤在一起是取舍，**相邻两个**压在一起只是没做。
+      final LoadedPack pack = loadAlphaPack();
+      await _pumpScreen(tester, pack: pack, scene: _alphaScene(pack));
+
+      final List<String> ids = pack.space.domainIds;
+      final List<Rect> rects = <Rect>[
+        for (final String domainId in ids)
+          tester.getRect(find.byKey(domainLabelKey(domainId))),
+      ];
+      expect(rects, hasLength(ids.length));
+
+      for (int i = 0; i < rects.length; i++) {
+        for (int j = i + 1; j < rects.length; j++) {
+          expect(
+            rects[i].overlaps(rects[j]),
+            isFalse,
+            reason:
+                '${ids[i]} 与 ${ids[j]} 的标注压在一起：'
+                '${rects[i]} vs ${rects[j]}',
+          );
+        }
+      }
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('Z0 三个空间的标注不压在一起，且各离自己那个盘最近 —— 回归护栏（SPEC-VIEW-036）', (
+      WidgetTester tester,
+    ) async {
+      // ⚠️ **这条在旧实现上也是绿的** —— 如实说清，免得它被当成本笔缺陷的证据。
+      // 实测：把 `C-70` 归零（等效于 `V-1d` 的「一律正下方」）之后它照样通过，
+      // 说明在 α(150) + english(80) + german(80) 这个夹具下，正下方的副行既没
+      // 压到别的标注，也没有离别的盘更近。终端截图里 German 的副行确实卡在
+      // 与 Python 之间那条 36 px 的缝里，但**复现它需要的那组盘心间距没找到**
+      // （`galaxy_map` 的散布由项数反解，夹具改项数就同时改了间距）。
+      //
+      // 所以这条的定位是**护栏**而不是证据：将来谁改动了 `Z0` 的标注落点或盘的
+      // 散布，若把标签挤到别的盘上或别的标注上，它会红。真机那处缝归终端看图，
+      // 已记进 `STR` 轮次 `R8` 的未验项。
+      tester.view.physicalSize = const Size(1080, 580);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+
+      final LoadedPack pack = loadAlphaPack();
+      final LoadedPack english = fixturePack(
+        <FixtureItem>[
+          for (int i = 0; i < 80; i++)
+            FixtureItem('en-$i', 'English $i', domainId: 'english/d${i % 8}'),
+        ],
+        spaceId: 'english',
+        spaceName: 'English',
+      );
+      final LoadedPack german = fixturePack(
+        <FixtureItem>[
+          for (int i = 0; i < 80; i++)
+            FixtureItem('de-$i', 'Deutsch $i', domainId: 'german/d${i % 8}'),
+        ],
+        spaceId: 'german',
+        spaceName: 'Deutsch',
+      );
+      await _pumpScreen(
+        tester,
+        pack: pack,
+        scene: _alphaScene(pack),
+        others: <LoadedPack>[english, german],
+        zoom: ZoomLevel.z0,
+      );
+
+      const List<String> ids = <String>['python', 'english', 'german'];
+      final List<Rect> rects = <Rect>[
+        for (final String id in ids)
+          tester.getRect(find.byKey(galaxyLabelKey(id))),
+      ];
+      for (int i = 0; i < rects.length; i++) {
+        for (int j = i + 1; j < rects.length; j++) {
+          expect(
+            rects[i].overlaps(rects[j]),
+            isFalse,
+            reason: '${ids[i]} 与 ${ids[j]} 的标注压在一起：'
+                '${rects[i]} vs ${rects[j]}',
+          );
+        }
+      }
+
+      // 更要紧的一条：**标签得离自己那个盘最近**。真机截图里 German 的副行
+      // 掉进 German 与 Python 之间那条 36 px 的缝 —— 它没压住任何东西，两个盘
+      // 的标注也没互压，但读起来像是 Python 盘的说明。这才是那处观感问题。
+      final Size window = tester.getSize(find.byType(UniverseScreen));
+      final ViewportPlan plan = planViewport(
+        window.width,
+        window.height,
+        devicePixelRatio: tester.view.devicePixelRatio,
+      );
+      final GalaxyLayout layout = layoutGalaxies(
+        roots: <SceneResolution>[
+          SceneResolution(bundle: _alphaScene(pack), pack: pack),
+          SceneResolution(bundle: _alphaScene(english), pack: english),
+          SceneResolution(bundle: _alphaScene(german), pack: german),
+        ],
+        viewport: Size(plan.surfaceWidth, plan.surfaceHeight),
+      );
+      for (final String id in ids) {
+        final Rect r = tester.getRect(find.byKey(galaxyLabelKey(id)));
+        final GalaxyDisc own = layout.discOf(id)!;
+        final double ownDistance = (r.center - own.center * plan.scale).distance;
+        for (final GalaxyDisc other in layout.discs) {
+          if (other.spaceId == id) {
+            continue;
+          }
+          expect(
+            ownDistance,
+            lessThan((r.center - other.center * plan.scale).distance),
+            reason:
+                '「$id」的标注离「${other.spaceId}」更近 —— '
+                '读者会把它读成那个空间的说明',
+          );
+        }
+      }
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('Z2 的亮结与出口标注不互相压 —— V-1d 时它们各落各的（SPEC-VIEW-038）', (
+      WidgetTester tester,
+    ) async {
+      // `V-1d` 里亮结落正下方、出口按箭头方向外让 —— 两段谁也不看谁。放进同一次
+      // 避让之后，「同一朵云里抢地方」才有判据。
+      final LoadedPack pack = loadAlphaPack();
+      await _pumpScreen(tester, pack: pack, scene: _alphaScene(pack));
+      await _enterDomain(tester, pack);
+
+      final Size window = tester.getSize(find.byType(UniverseScreen));
+      final ViewportPlan plan = planViewport(
+        window.width,
+        window.height,
+        devicePixelRatio: tester.view.devicePixelRatio,
+      );
+      final Size surface = Size(plan.surfaceWidth, plan.surfaceHeight);
+      final String domainId = layoutSpiral(
+        pack: pack,
+        viewport: surface,
+      ).marks.first.domainId;
+      final NebulaLayout layout = layoutNebula(
+        pack: pack,
+        domainId: domainId,
+        viewport: surface,
+      );
+
+      final List<Rect> rects = <Rect>[
+        for (final NebulaKnot knot in layout.knots)
+          tester.getRect(find.byKey(nebulaKnotKey(knot.rootId))),
+        for (final NebulaExit exit in layout.exits)
+          tester.getRect(find.byKey(nebulaExitKey(exit.targetDomainId))),
+      ];
+      expect(rects.length, greaterThan(1), reason: '这条用例要有东西可压');
+
+      for (int i = 0; i < rects.length; i++) {
+        for (int j = i + 1; j < rects.length; j++) {
+          expect(
+            rects[i].overlaps(rects[j]),
+            isFalse,
+            reason: 'Z2 的标注 $i 与 $j 压在一起：${rects[i]} vs ${rects[j]}',
+          );
+        }
+      }
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('⑤「焦点星」占位不再显示文字，但槽还在（SPEC-VIEW-018）', (
+      WidgetTester tester,
+    ) async {
+      final LoadedPack pack = loadAlphaPack();
+      await _pumpScreen(tester, pack: pack, scene: _alphaScene(pack));
+
+      expect(
+        find.byKey(hudFocusStarKey),
+        findsOneWidget,
+        reason: '槽要留着 —— 「这里有个格子」得可断言',
+      );
+      expect(
+        find.text('焦点星'),
+        findsNothing,
+        reason:
+            '占位落在屏幕正中，而 Z1 的核球、Z2 的云心也在那里 —— '
+            '三个字压上去会被读成一个域名（终端截图已证）',
+      );
+      expect(tester.getSize(find.byKey(hudFocusStarKey)), Size.zero);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('标注不出视口 —— 平移而不是缩字（SPEC-VIEW-036）', (
+      WidgetTester tester,
+    ) async {
+      // 800×480 下盘半径只有 100.8，靠盘缘的域标注横向会顶出去。
+      tester.view.physicalSize = const Size(800, 480);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+
+      final LoadedPack pack = loadAlphaPack();
+      await _pumpScreen(tester, pack: pack, scene: _alphaScene(pack));
+
+      final Size window = tester.getSize(find.byType(UniverseScreen));
+      for (final String domainId in pack.space.domainIds) {
+        final Rect r = tester.getRect(find.byKey(domainLabelKey(domainId)));
+        expect(r.left, greaterThanOrEqualTo(-0.01), reason: '$domainId 出了左边');
+        expect(
+          r.right,
+          lessThanOrEqualTo(window.width + 0.01),
+          reason: '$domainId 出了右边',
+        );
+        expect(r.top, greaterThanOrEqualTo(-0.01), reason: '$domainId 出了上边');
+        expect(
+          r.bottom,
+          lessThanOrEqualTo(window.height + 0.01),
+          reason: '$domainId 出了下边',
+        );
+        // 内收只平移：宽度仍是 `_domainLabelWidth`，没被压窄。
+        expect(r.width, closeTo(120, 0.01), reason: '$domainId 被缩字了');
+      }
+      expect(tester.takeException(), isNull);
+    });
+  });
 }
 
 /// `Z0` 用例里的第二个空间：**60 项**而不是 [_goPack] 的 1 项。

@@ -153,6 +153,7 @@ import 'filter_chips.dart';
 import 'frame_painter.dart';
 import 'galaxy_map.dart';
 import 'galaxy_painter.dart';
+import 'label_layout.dart';
 import 'nebula_map.dart';
 import 'nebula_painter.dart';
 import 'scene_pick.dart';
@@ -314,6 +315,14 @@ const double _nebulaLabelFontSize = 10;
 
 /// 出口标签离云缘的距离（px）。往外让一格，免得压在粒子上。
 const double _nebulaExitLabelGap = 12;
+
+/// 标注包围盒的高度系数（`V-1d2`）。
+///
+/// 避让只需要**包围盒**，不需要像素级精确 —— `Text` 的实测高度要 `TextPainter`
+/// 量，而为一行 10 px 的字去量一次，会把这个纯函数变成需要渲染上下文的东西。
+/// 1.4 是 CJK 在 10–12 px 下的常见行高比，且**宁大勿小**：估小了标签会挨得比
+/// 实际更近，那正是本笔要解决的问题。
+const double _labelLineHeight = 1.4;
 
 class UniverseScreen extends StatefulWidget {
   const UniverseScreen({
@@ -933,15 +942,51 @@ class _UniverseScreenState extends State<UniverseScreen>
   ///
   /// 与 `Z1` 的域标注同一套理由：**屏幕空间、不随画面旋转、字号统一**。标签
   /// 不画进画布是因为画布里的文字会跟着降采样一起糊。
+  ///
+  /// `V-1d2` 起落点交给 `placeLabels()`：亮结与出口在**同一朵云里**抢地方，
+  /// 两段各写一遍就会互相压（此前亮结落正下方、出口按箭头方向外让，谁也不看
+  /// 谁）。放进同一次避让，冲突才能被看见。
   List<Widget> _nebulaLayer(NebulaLayout layout, Size surface, Size window) {
     final double scale = surface.width <= 0 ? 1 : window.width / surface.width;
+    final Size box = Size(
+      _nebulaLabelWidth,
+      _nebulaLabelFontSize * _labelLineHeight,
+    );
+    final List<LabelPlacement> placed = placeLabels(
+      center: layout.center * scale,
+      anchors: <LabelAnchor>[
+        for (final NebulaKnot knot in layout.knots)
+          LabelAnchor(
+            key: 'knot:${knot.rootId}',
+            anchor: knot.center * scale,
+            size: box,
+            payload: _KnotLabel(knot),
+          ),
+        for (final NebulaExit exit in layout.exits)
+          LabelAnchor(
+            key: 'exit:${exit.targetDomainId}',
+            // 出口先按箭头方向往外让一格 —— 它贴着云缘，压在粒子上会被糊住。
+            // 之后的同方位冲突仍由 `placeLabels` 处理。
+            anchor:
+                (exit.center + exit.direction * _nebulaExitLabelGap) * scale,
+            size: box,
+            payload: _ExitLabel(exit),
+          ),
+      ],
+      viewport: window,
+      gap: _nebulaLabelGap * scale,
+    );
     return <Widget>[
-      for (final NebulaKnot knot in layout.knots)
-        Positioned(
-          left: knot.center.dx * scale - _nebulaLabelWidth / 2,
-          top: knot.center.dy * scale + _nebulaLabelGap,
-          width: _nebulaLabelWidth,
-          child: Text(
+      for (final LabelPlacement p in placed) _nebulaLabelWidget(p),
+    ];
+  }
+
+  Widget _nebulaLabelWidget(LabelPlacement p) {
+    switch (p.payload) {
+      case _KnotLabel(:final NebulaKnot knot):
+        return _placeLabel(
+          p,
+          Text(
             knot.label,
             key: nebulaKnotKey(knot.rootId),
             textAlign: TextAlign.center,
@@ -952,19 +997,11 @@ class _UniverseScreenState extends State<UniverseScreen>
               fontSize: _nebulaLabelFontSize,
             ),
           ),
-        ),
-      for (final NebulaExit exit in layout.exits)
-        Positioned(
-          // 出口标签按箭头方向往外让一格 —— 压在云缘上会被粒子糊住。
-          left:
-              (exit.center.dx + exit.direction.dx * _nebulaExitLabelGap) *
-                  scale -
-              _nebulaLabelWidth / 2,
-          top:
-              (exit.center.dy + exit.direction.dy * _nebulaExitLabelGap) *
-                  scale,
-          width: _nebulaLabelWidth,
-          child: Text(
+        );
+      case _ExitLabel(:final NebulaExit exit):
+        return _placeLabel(
+          p,
+          Text(
             exit.label,
             key: nebulaExitKey(exit.targetDomainId),
             textAlign: TextAlign.center,
@@ -975,35 +1012,70 @@ class _UniverseScreenState extends State<UniverseScreen>
               fontSize: _nebulaLabelFontSize,
             ),
           ),
-        ),
-    ];
+        );
+      case _:
+        return const SizedBox.shrink();
+    }
   }
+
+  /// 把一段文字摆到 [placeLabels] 给出的矩形上。
+  ///
+  /// 三处标注层共用：落点由算法说，这里只负责「摆」—— 免得某处手抄一遍
+  /// `left: rect.left, top: rect.top` 时漏掉 `width`，那会让文字按自身宽度
+  /// 居中，与包围盒对不上。
+  Widget _placeLabel(LabelPlacement p, Widget child) => Positioned(
+    left: p.rect.left,
+    top: p.rect.top,
+    width: p.rect.width,
+    child: child,
+  );
 
   /// `Z1` 的域标注层（`VIEW-037`）。
   ///
   /// 与 `Z0` 的星系标注同一套理由：**屏幕空间、不随盘自转旋转、字号统一**。
   /// 只给第一条臂的落点写名字 —— 同一个域写两遍会让盘上出现成对的重复文字，
   /// 反而看不出「那两个点是一个域」。
+  ///
+  /// `V-1d2` 起落点交给 `placeLabels()`。真机截图里 `verb-conjugation`(513,232)
+  /// 与 `verb-frame`(571,225) 中心距 58 px、标签宽 120 ⇒ 压了约 8 px，而注释里
+  /// 原本写的是「接受重叠，归终端观感验收」—— 那句话在**十一个域**时是取舍，
+  /// 在**相邻两个**时只是没做。
   List<Widget> _domainLayer(SpiralLayout layout, Size surface, Size window) {
     final double scale = surface.width <= 0 ? 1 : window.width / surface.width;
+    final List<LabelPlacement> placed = placeLabels(
+      center: layout.center * scale,
+      anchors: <LabelAnchor>[
+        for (final DomainMark mark in layout.marks)
+          LabelAnchor(
+            key: 'domain:${mark.domainId}',
+            anchor: mark.primary * scale,
+            size: Size(
+              _domainLabelWidth,
+              _domainLabelFontSize * _labelLineHeight,
+            ),
+            payload: mark,
+          ),
+      ],
+      viewport: window,
+      gap: _domainLabelGap * scale,
+    );
     return <Widget>[
-      for (final DomainMark mark in layout.marks)
-        Positioned(
-          left: mark.primary.dx * scale - _domainLabelWidth / 2,
-          top: mark.primary.dy * scale + _domainLabelGap,
-          width: _domainLabelWidth,
-          child: Text(
-            mark.label,
-            key: domainLabelKey(mark.domainId),
-            textAlign: TextAlign.center,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              color: paletteTextSecondary,
-              fontSize: _domainLabelFontSize,
+      for (final LabelPlacement p in placed)
+        if (p.payload case final DomainMark mark)
+          _placeLabel(
+            p,
+            Text(
+              mark.label,
+              key: domainLabelKey(mark.domainId),
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: paletteTextSecondary,
+                fontSize: _domainLabelFontSize,
+              ),
             ),
           ),
-        ),
     ];
   }
 
@@ -1014,44 +1086,64 @@ class _UniverseScreenState extends State<UniverseScreen>
   ///
   /// 坐标要从画布空间换到窗口空间：降采样时画布小于窗口，直接拿画布坐标摆
   /// widget 会让标注整体偏左上一截 —— 而这种偏移在 1080p 以下看不出来。
+  ///
+  /// `V-1d2` 起落点交给 `placeLabels()`，锚点是**盘缘**而不是盘心：三个盘
+  /// 在 1080×580 下只隔 36 px，正下方的副行会正好掉进那条缝里（实测），
+  /// 而「谁的标签掉进缝里」取决于盘的大小，不是设计。
   List<Widget> _galaxyLayer(GalaxyLayout layout, Size surface, Size window) {
     final double scale = surface.width <= 0 ? 1 : window.width / surface.width;
-    return <Widget>[
-      for (final GalaxyDisc disc in layout.discs)
-        Positioned(
-          left: disc.centerX * scale - _galaxyLabelWidth / 2,
-          // 盘是压扁的椭圆 ⇒ 从**半短轴**往下摆，不是从半径往下摆。
-          top: (disc.centerY + disc.minorRadius) * scale + _galaxyLabelGap,
-          width: _galaxyLabelWidth,
-          child: Column(
-            key: galaxyLabelKey(disc.spaceId),
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              Text(
-                disc.label,
-                textAlign: TextAlign.center,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: paletteTextPrimary,
-                  fontSize: _galaxyNameFontSize,
-                ),
-              ),
-              Text(
-                // 副行给的是**规模**而不是进度（`VIEW-035`：HUD 不放事件计数），
-                // 所以它是「N 项 · M 域」，不是「已学 x 项」。
-                '${disc.itemCount} 项 · ${disc.domainCount} 域',
-                textAlign: TextAlign.center,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: paletteTextSecondary,
-                  fontSize: _galaxyMetaFontSize,
-                ),
-              ),
-            ],
+    final Offset groupCenter = _groupCenter(layout);
+    final List<LabelPlacement> placed = placeLabels(
+      center: groupCenter * scale,
+      anchors: <LabelAnchor>[
+        for (final GalaxyDisc disc in layout.discs)
+          LabelAnchor(
+            key: 'space:${disc.spaceId}',
+            anchor: _discRim(disc, groupCenter) * scale,
+            size: Size(
+              _galaxyLabelWidth,
+              (_galaxyNameFontSize + _galaxyMetaFontSize) * _labelLineHeight,
+            ),
+            payload: disc,
           ),
-        ),
+      ],
+      viewport: window,
+      gap: _galaxyLabelGap * scale,
+    );
+    return <Widget>[
+      for (final LabelPlacement p in placed)
+        if (p.payload case final GalaxyDisc disc)
+          _placeLabel(
+            p,
+            Column(
+              key: galaxyLabelKey(disc.spaceId),
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Text(
+                  disc.label,
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: paletteTextPrimary,
+                    fontSize: _galaxyNameFontSize,
+                  ),
+                ),
+                Text(
+                  // 副行给的是**规模**而不是进度（`VIEW-035`：HUD 不放事件计数），
+                  // 所以它是「N 项 · M 域」，不是「已学 x 项」。
+                  '${disc.itemCount} 项 · ${disc.domainCount} 域',
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: paletteTextSecondary,
+                    fontSize: _galaxyMetaFontSize,
+                  ),
+                ),
+              ],
+            ),
+          ),
       // 盘半径触底（`C-53`）⇒ `VIEW-036` 判「该档退化为列表式」。列表形态不在
       // 本笔射程内，但**必须把这件事说出来**：不说的话，用户看到的是「几个小得
       // 看不清的盘」，而不会想到「这一档画不出星系」。
@@ -1071,6 +1163,45 @@ class _UniverseScreenState extends State<UniverseScreen>
           ),
         ),
     ];
+  }
+
+  /// 星系群的**重心**（各盘心等权平均）。
+  ///
+  /// 用重心而不是视口中心：标注要朝群外散，朝群内挪就会撞到别的盘。只有一个盘
+  /// 时重心 = 盘心 ⇒ 方位退化，`placeLabels` 走「正下方、水平居中」，与 `V-1d`
+  /// 之前的落法**逐像素一致**（这是本笔唯一要求「不改变」的地方）。
+  Offset _groupCenter(GalaxyLayout layout) {
+    if (layout.discs.isEmpty) {
+      return Offset.zero;
+    }
+    double x = 0;
+    double y = 0;
+    for (final GalaxyDisc disc in layout.discs) {
+      x += disc.centerX;
+      y += disc.centerY;
+    }
+    return Offset(x / layout.discs.length, y / layout.discs.length);
+  }
+
+  /// 盘缘上、沿「重心 → 盘心」方位的那一点。
+  ///
+  /// 不能用「盘心 + 单位向量 × 半径」：盘是 `C-59` 压扁过的椭圆，沿半径取会让
+  /// 朝上下的标签落在盘面**里面**二十几个像素，朝左右的又离盘缘老远。按半长轴
+  /// 管 `x`、半短轴管 `y` 取参数点，才是「贴着椭圆边缘」。
+  Offset _discRim(GalaxyDisc disc, Offset groupCenter) {
+    final Offset v = Offset(
+      disc.centerX - groupCenter.dx,
+      disc.centerY - groupCenter.dy,
+    );
+    if (v.distance < 1) {
+      // 单盘（或盘心与重心重合）：没有方位可说，从半短轴往下摆。
+      return Offset(disc.centerX, disc.centerY + disc.minorRadius);
+    }
+    final Offset u = v / v.distance;
+    return Offset(
+      disc.centerX + u.dx * disc.radius,
+      disc.centerY + u.dy * disc.minorRadius,
+    );
   }
 
   void _removeFilter(AxisFilterChip chip) {
@@ -1235,7 +1366,8 @@ class _UniverseScreenState extends State<UniverseScreen>
               if (!tree)
                 Center(
                   child: IgnorePointer(
-                    child: _hiddenSlot(hudFocusStarKey, '焦点星'),
+                    // 无文字形态（`V-1d2`）—— 理由见 `_hiddenSlot`。
+                    child: _hiddenSlot(hudFocusStarKey),
                   ),
                 ),
               // ⑥ 六轴罗盘：`VIEW-011` 树里没有方位，保留即成假控件。
@@ -1838,14 +1970,44 @@ class _UniverseScreenState extends State<UniverseScreen>
   );
 
   /// 占位槽：本笔不实现内容，但**保留可见的落位**（否则七区块的规则无从测起）。
-  Widget _hiddenSlot(Key key, String label) => Container(
-    key: key,
-    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-    child: Text(
-      label,
-      style: const TextStyle(color: paletteTextSecondary, fontSize: 10),
-    ),
-  );
+  /// 一个「有槽但没有内容」的占位。
+  ///
+  /// `label` 为 `null` 时渲染成**零尺寸**（`V-1d2`）：⑤ 的位置正是屏幕正中，
+  /// 而 `Z1` 的核球、`Z2` 的云心也在那里 —— 「焦点星」三个字压在上面，读者会
+  /// 把它读成一个域名（终端截图里被当成「核球旁一处叠字」，查了半天才发现是
+  /// 这个占位）。占位不需要被看见，但**需要有个槽**：`key` 留着，`VIEW-018`
+  /// 的「这里有个格子」照样可断言。
+  Widget _hiddenSlot(Key key, [String? label]) {
+    if (label == null) {
+      return SizedBox.shrink(key: key);
+    }
+    return Container(
+      key: key,
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      child: Text(
+        label,
+        style: const TextStyle(color: paletteTextSecondary, fontSize: 10),
+      ),
+    );
+  }
+}
+
+/// `Z2` 标注层的载荷：亮结。
+///
+/// 用两个私有类而不是让调用方按 `key.startsWith('exit:')` 反解 —— 「前缀即类型」
+/// 是 `R-08` 要消掉的那类约定：写错前缀不会有任何东西变红，只会静默落到默认
+/// 分支上（而那一段恰好是 `const SizedBox.shrink()`，看起来一切正常）。
+class _KnotLabel {
+  const _KnotLabel(this.knot);
+
+  final NebulaKnot knot;
+}
+
+/// `Z2` 标注层的载荷：跨域出口。
+class _ExitLabel {
+  const _ExitLabel(this.exit);
+
+  final NebulaExit exit;
 }
 
 /// 面包屑的一段（`VIEW-018` 修订 2）。
