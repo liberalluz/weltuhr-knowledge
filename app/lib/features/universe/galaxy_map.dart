@@ -83,10 +83,7 @@ double _tiltCosOf(double degrees) => math.cos(degrees * math.pi / 180);
 
 /// 一次 `Z0` 布局的结果。
 class GalaxyLayout {
-  const GalaxyLayout({
-    required this.discs,
-    required this.degenerate,
-  });
+  const GalaxyLayout({required this.discs, required this.degenerate});
 
   /// 没有可画的根（一个包都没装出来）。界面据此保留诊断行、不画空盘子。
   static const GalaxyLayout empty = GalaxyLayout(
@@ -233,7 +230,7 @@ GalaxyLayout layoutGalaxies({
         centerX: x,
         centerY: y,
         radius: radius,
-        argb: _accentArgb(root.pack!.space.accent, depth),
+        argb: accentArgbOf(root.pack!.space.accent, fallbackIndex: depth),
         depth: depth,
         // 先占位，画完一轮再统一判遮挡 —— 遮挡要跟**全部**前序盘比。
         occluded: false,
@@ -330,7 +327,10 @@ double galaxyHash01(String key) => (galaxyHash(key) & 0xffffff) / 0x1000000;
 ///
 /// 用 `accent` 而不是写死一张表：每个空间自己的强调色是**真实数据**，换一个
 /// 包就换一套颜色；写死的表在第二个包上就会撞色。
-int _accentArgb(String accent, int fallbackIndex) {
+///
+/// `Z1` 的盘面（`spiral_map.dart`）共用这一个解析 —— 同一个空间在 `Z0` 与
+/// `Z1` 必须是同一个颜色，否则「进门」会看起来像换了个空间。
+int accentArgbOf(String accent, {int fallbackIndex = 0}) {
   final String hex = accent.startsWith('#') ? accent.substring(1) : accent;
   if (hex.length == 6) {
     final int? value = int.tryParse(hex, radix: 16);
