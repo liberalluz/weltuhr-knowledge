@@ -59,7 +59,9 @@
 /// （单项子树直接 `Z4`）、项 ⇒ `Z4`；重叠处算容器的（亮结画在上方）。跨域边
 /// 画成**朝外的箭头**而不是断线 —— 断线会被读成数据缺了。
 ///
-/// `Z3` / `Z4` 仍走项投影，等 `V-1e` 换成恒星系。
+/// `Z3` 画的是**一条 `⪯` 链**（一颗恒星 + 共面轨道，`VIEW-039`），恒星 = 选中项、
+/// 行星 = 它的同域后继。可点对象两个：行星 ⇒ `Z4`、恒星 ⇒ `Z4`（根项的特写）。
+/// `Z4` 仍走项投影 —— 单星特写（`VIEW-040`）另立一笔。
 ///
 /// 三个后果值得记住：
 ///
@@ -160,6 +162,8 @@ import 'scene_pick.dart';
 import 'scene_source.dart';
 import 'spiral_map.dart';
 import 'spiral_painter.dart';
+import 'star_map.dart';
+import 'star_painter.dart';
 import 'tree_view.dart';
 
 /// 七区块的 `Key` —— widget test 靠它断言「该出现的出现了、不该出现的没出现」。
@@ -225,6 +229,14 @@ Key nebulaKnotKey(String rootId) => Key('z2-knot-$rootId');
 /// ⚠️ 规格写的是「〈动词形态〉」，而包里没有域的动词形态（无 `Domain` 实体）
 /// ⇒ 退成末段域名。与 `VIEW-018` 的中文域名同一个 `PACK` 缺口。
 Key nebulaExitKey(String targetDomainId) => Key('z2-exit-$targetDomainId');
+
+/// `Z3` 里恒星的标注（`VIEW-039`）。一个恒星系一个 —— 测试靠它确认
+/// 「这一档画的是一颗恒星 + 共面轨道」而不是项投影。
+///
+/// ⚠️ **行星不标名**：`VIEW-040` 明写 `Z4` 不标行星名，`Z3` 与它同一条口径 ——
+/// 九颗行星围绕中心排，标名要么把标签甩到看不清的地方，要么九个标签互相压。
+/// 要认哪颗是哪项，点它进 `Z4` 看抽屉。
+Key starLabelKey(String rootId) => Key('z3-star-$rootId');
 
 /// ⑥ 罗盘展开后，某个轴取值的那一行（点它写 / 取消筛选）。
 Key compassValueKey(String axisKey, String value) =>
@@ -315,6 +327,14 @@ const double _nebulaLabelFontSize = 10;
 
 /// 出口标签离云缘的距离（px）。往外让一格，免得压在粒子上。
 const double _nebulaExitLabelGap = 12;
+
+/// `Z3` 恒星标注的尺寸（`VIEW-039`）。
+///
+/// 宽度取 150：恒星标的是**根项标题**（「装饰器的参数顺序」这类），比域名长、
+/// 与 `Z2` 的亮结同一量级。字号仍统一 —— 只有一颗星要标，不需要更小去挤。
+const double _starLabelWidth = 150;
+const double _starLabelGap = 8;
+const double _starLabelFontSize = 11;
 
 /// 标注包围盒的高度系数（`V-1d2`）。
 ///
@@ -938,6 +958,103 @@ class _UniverseScreenState extends State<UniverseScreen>
     });
   }
 
+  /// `Z3` 的拾取：**先判行星，再判恒星**（`VIEW-039`）。
+  ///
+  /// 与 `Z2` 的「后画的优先」同一条口径：绘制序是云气 → 轨道 → 恒星 → 行星，
+  /// 行星压在最上面 ⇒ 重叠处算行星的。内轨极近时会真重叠（`C-73 / C-72 ≈ 5.3`
+  /// 倍半径，行星命中圈 24 px 与恒星命中圈 24 px 在 1080×580 下确实相交），
+  /// 那时点中的应该是最上面那颗。
+  ///
+  /// 空处什么都不做，理由同 `_pickAt` / `_pickNebulaAt`：清掉选中会让详情抽屉
+  /// 毫无预警地消失，而点歪是常态。
+  void _pickStarAt(Offset point, StarSystemLayout layout) {
+    final StarPlanet? planet = pickStarPlanetAt(layout: layout, point: point);
+    if (planet != null) {
+      _jumpToItem(_spaceId, planet.id);
+      return;
+    }
+    if (hitsStarAt(layout: layout, point: point)) {
+      // 恒星就是根项 —— 点它进的是**它自己**的特写，不是整个恒星系。
+      _jumpToItem(_spaceId, layout.rootId);
+    }
+  }
+
+  /// 画布 + 一层标注。四档共用（`Z0` / `Z1` / `Z2` / `Z3`）。
+  ///
+  /// 两个必须保持的行为，都写在同一个地方才守得住：
+  /// - `FittedBox` 只在真降了分辨率时才包 —— `scale == 1` 时它是纯开销；
+  /// - 标注层包 `IgnorePointer` —— 标注是装饰，压在画布上会吃掉点击
+  ///   （`V-1d` 那处「⑤ 占位吃点击」就是这类缺陷，只是那时它是自己一层）。
+  Widget _withLayer(
+    Widget canvas,
+    ViewportPlan plan,
+    List<Widget> layer,
+  ) => Stack(
+    children: <Widget>[
+      Positioned.fill(
+        child: plan.isDownscaled
+            ? FittedBox(fit: BoxFit.fill, child: canvas)
+            : canvas,
+      ),
+      Positioned.fill(
+        child: IgnorePointer(child: Stack(children: layer)),
+      ),
+    ],
+  );
+
+  /// `Z3` 的标注层（`VIEW-039`）：**只标恒星**。
+  ///
+  /// 行星不标名 —— 九颗围绕中心排，标名要么把标签甩到看不清的地方、要么九个
+  /// 标签互相压。要认哪颗是哪项，点它进 `Z4` 看抽屉（`VIEW-040` 也不标行星名，
+  /// 同一条口径）。
+  ///
+  /// 锚点取**恒星下缘**而不是恒星圆心：圆心离内轨只有 `C-73 / C-72 ≈ 5.3` 倍
+  /// 半径，从圆心往下让 `gap` 会直接把标签压在恒星自己的光晕上。
+  List<Widget> _starLayer(
+    StarSystemLayout layout,
+    Size surface,
+    Size window,
+  ) {
+    final double scale = surface.width <= 0 ? 1 : window.width / surface.width;
+    final List<LabelPlacement> placed = placeLabels(
+      center: layout.starCenter * scale,
+      anchors: <LabelAnchor>[
+        LabelAnchor(
+          key: 'star:${layout.rootId}',
+          anchor: Offset(
+            layout.starCenter.dx * scale,
+            (layout.starCenter.dy + layout.starRadius) * scale,
+          ),
+          size: Size(
+            _starLabelWidth,
+            _starLabelFontSize * _labelLineHeight,
+          ),
+          payload: layout,
+        ),
+      ],
+      viewport: window,
+      gap: _starLabelGap * scale,
+    );
+    return <Widget>[
+      for (final LabelPlacement p in placed)
+        if (p.payload case final StarSystemLayout star)
+          _placeLabel(
+            p,
+            Text(
+              star.rootLabel,
+              key: starLabelKey(star.rootId),
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: paletteTextPrimary,
+                fontSize: _starLabelFontSize,
+              ),
+            ),
+          ),
+    ];
+  }
+
   /// `Z2` 的标注层（`VIEW-038`）：亮结标题 + 跨域出口。
   ///
   /// 与 `Z1` 的域标注同一套理由：**屏幕空间、不随画面旋转、字号统一**。标签
@@ -1477,7 +1594,7 @@ class _UniverseScreenState extends State<UniverseScreen>
       final bool spiralDisc = !spiral.isEmpty;
 
       // `Z2` 画的是**一个域**：一朵分子云 + 亮结 + 跨域出口（`VIEW-038`）。
-      // `Z3` / `Z4` 仍走项投影 —— 恒星系与单星交给 `V-1e`。
+      // `Z4` 仍走项投影 —— 单星特写（`VIEW-040`）不在 `B12` 的九笔里，另立一笔。
       final NebulaLayout nebula =
           _camera.zoom == ZoomLevel.z2 && _pack != null && _domainId != null
           ? layoutNebula(
@@ -1488,6 +1605,24 @@ class _UniverseScreenState extends State<UniverseScreen>
             )
           : NebulaLayout.empty;
       final bool nebulaCloud = !nebula.isEmpty;
+
+      // `Z3` 画的是**一条 `⪯` 链**：一颗恒星 + 共面轨道（`VIEW-039`）。
+      // 恒星 = `_selectedItemId` —— `V-1d` 的 `_jumpToKnot()` 落的正是亮结的
+      // 子树根，所以这里**不需要第二个「当前子树」状态**（两个状态说同一件事，
+      // 迟早有一处忘同步）。
+      //
+      // 从树 / 搜索直接跳 `Z3` 时 `_selectedItemId` 可能是中间项：它照样当恒星，
+      // 行星取它的后继 —— 「先学哪些」这条链从哪一项看都是同一条，只是视角换了。
+      final StarSystemLayout starSystem =
+          _camera.zoom == ZoomLevel.z3 && _pack != null && _selectedItemId != null
+          ? layoutStarSystem(
+              pack: _pack!,
+              rootId: _selectedItemId!,
+              viewport: surface,
+              visibleIds: visibleIds,
+            )
+          : StarSystemLayout.empty;
+      final bool starView = !starSystem.isEmpty;
 
       final Widget canvas = RepaintBoundary(
         // ⚠️ 尺寸必须由 `SizedBox` **强制**给，不能只写 `CustomPaint.size`：
@@ -1509,6 +1644,11 @@ class _UniverseScreenState extends State<UniverseScreen>
                 // 独立轨道，只随盘整体转）。
                 : nebulaCloud
                 ? NebulaPainter(layout: nebula)
+                // `Z3` 同样不接 `spin`：行星公转 `C-56` 归 `V-1i`。这是全项目
+                // **唯一**一条真正的公转（绕的是另一个天体），接上时要改的是
+                // 相位推进，不是重画几何 —— 相位方向已经排好了。
+                : starView
+                ? StarPainter(layout: starSystem)
                 : FramePainter(
                     scene: _scene,
                     spin: _spin,
@@ -1546,63 +1686,24 @@ class _UniverseScreenState extends State<UniverseScreen>
               _pickDomainAt(point, spiral);
             } else if (nebulaCloud) {
               _pickNebulaAt(point, nebula);
+            } else if (starView) {
+              _pickStarAt(point, starSystem);
             } else {
               _pickAt(point, surface, visibleIds);
             }
           },
           // `FittedBox` 只在真降了分辨率时才包一层：`scale == 1` 时它是纯开销，
-          // 而宇宙每帧都在重绘。
+          // 而宇宙每帧都在重绘。四档共用 [_withLayer] —— 逐档抄一份 `Stack`
+          // 的话，改「标注不接手势」时要记得改四处（`R-08`：形状挡得住改、
+          // 挡不住加）。
           child: galaxyMap
-              ? Stack(
-                  children: <Widget>[
-                    Positioned.fill(
-                      child: plan.isDownscaled
-                          ? FittedBox(fit: BoxFit.fill, child: canvas)
-                          : canvas,
-                    ),
-                    Positioned.fill(
-                      child: IgnorePointer(
-                        child: Stack(
-                          children: _galaxyLayer(galaxies, surface, window),
-                        ),
-                      ),
-                    ),
-                  ],
-                )
+              ? _withLayer(canvas, plan, _galaxyLayer(galaxies, surface, window))
               : spiralDisc
-              ? Stack(
-                  children: <Widget>[
-                    Positioned.fill(
-                      child: plan.isDownscaled
-                          ? FittedBox(fit: BoxFit.fill, child: canvas)
-                          : canvas,
-                    ),
-                    Positioned.fill(
-                      child: IgnorePointer(
-                        child: Stack(
-                          children: _domainLayer(spiral, surface, window),
-                        ),
-                      ),
-                    ),
-                  ],
-                )
+              ? _withLayer(canvas, plan, _domainLayer(spiral, surface, window))
               : nebulaCloud
-              ? Stack(
-                  children: <Widget>[
-                    Positioned.fill(
-                      child: plan.isDownscaled
-                          ? FittedBox(fit: BoxFit.fill, child: canvas)
-                          : canvas,
-                    ),
-                    Positioned.fill(
-                      child: IgnorePointer(
-                        child: Stack(
-                          children: _nebulaLayer(nebula, surface, window),
-                        ),
-                      ),
-                    ),
-                  ],
-                )
+              ? _withLayer(canvas, plan, _nebulaLayer(nebula, surface, window))
+              : starView
+              ? _withLayer(canvas, plan, _starLayer(starSystem, surface, window))
               : (plan.isDownscaled
                     ? FittedBox(fit: BoxFit.fill, child: canvas)
                     : canvas),
