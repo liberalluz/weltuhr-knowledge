@@ -177,6 +177,23 @@ const Key hudDetailDrawerKey = Key('hud-detail-drawer');
 const Key hudFocusStarKey = Key('hud-focus-star');
 const Key hudAxisCompassKey = Key('hud-axis-compass');
 
+/// 筛空提示（`SPEC-VIEW-020` 修订 5，`V-1f2`）。
+///
+/// 「筛完一项都不剩」与「渲染没有画出来」在屏幕上是**同一个画面**：一片空。
+/// 没有这一行字，用户读到的只会是「这个软件坏了」—— 而实际状态是「筛得太窄」。
+const Key hudNoMatchKey = Key('hud-no-match');
+
+/// 拾取诊断开关（`V-1f2`）。
+///
+/// 背景：「有时候单击事件全部失效」报过两次，而三种 DPI / 尺寸、三个真实包、
+/// 带筛选状态都没复现出来 —— 缺的不是分析，是**现场**。打开它，每次点击打一行
+/// 「那一刻这一档处于什么状态」，下次再发生时直接读日志，不用靠猜。
+///
+/// 用编译期开关（`flutter run --dart-define=VIEW_PICK_DEBUG=true`）而不是运行期
+/// 环境变量：桌面 release 包也要能开，而 Windows 上改环境变量再启动比多打一个
+/// 参数更麻烦。代价是 —— 要开就得带参数重跑一次。
+const bool kPickDebug = bool.fromEnvironment('VIEW_PICK_DEBUG');
+
 /// ⑦ 视距刻度条 —— **已作废**（`VIEW-018` 修订 1）。
 ///
 /// 常量留着只作**断言靶子**：要让「这里空着」可观测，得有个确定的“不在”可以
@@ -502,6 +519,16 @@ class _UniverseScreenState extends State<UniverseScreen>
   List<LoadedPack> _otherPacks() => <LoadedPack>[
     for (final SceneResolution root in widget.roots)
       if (root.pack != null && root.pack!.space.id != _spaceId) root.pack!,
+  ];
+
+  /// 全部根里能读到的包（合成回落的那一份没有包，跳过）。
+  ///
+  /// `Z0` 的罗盘按这一份合并取值域（`VIEW-020` 修订 5）—— 与 [_otherPacks]
+  /// 分开写而不是 `[_pack!, ..._otherPacks()]`：`_pack` 可能为 `null`，而那个
+  /// `!` 会在「只装了合成回落」时炸掉首帧。
+  List<LoadedPack> _allPacks() => <LoadedPack>[
+    for (final SceneResolution root in widget.roots)
+      if (root.pack != null) root.pack!,
   ];
 
   /// 详情此刻是否可见。`VIEW-013` 把详情定义成「`Z4` 的渲染形态」，树里则是
@@ -1410,6 +1437,17 @@ class _UniverseScreenState extends State<UniverseScreen>
     final Set<String>? visibleIds = _visibleIds();
     final bool filtered = visibleIds != null;
 
+    // 筛空：这一档一项都画不出来（`VIEW-020` 修订 5）。
+    //
+    // `Z0` 不算 —— 那一档画的是星系，筛选本来就不改变它（`layoutGalaxies`
+    // 不收 `visibleIds`）。在那儿说「当前空间没有匹配项」会把「这一档没有可筛
+    // 内容」说成「整个宇宙被筛空了」，两句都不是用户面前的事实。
+    final bool noMatch =
+        !tree &&
+        visibleIds != null &&
+        visibleIds.isEmpty &&
+        _camera.zoom != ZoomLevel.z0;
+
     // `⌘K` / `Ctrl+K` 挂在屏幕根上（`VIEW-026`）：搜索的价值是「手不离开键盘」，
     // 先找一个按钮就等于把那一步省下的时间又还回去了。
     return CallbackShortcuts(
@@ -1541,6 +1579,29 @@ class _UniverseScreenState extends State<UniverseScreen>
                     total: _pack?.items.length,
                     onRemove: _removeFilter,
                     onClear: _clearFilter,
+                  ),
+                ),
+              // 筛空的说明行（`VIEW-020` 修订 5）。压在画面底部居中，
+              // **包 `IgnorePointer`**：它是解释，不是遮罩 —— 域点、恒星的点击
+              // 照旧要穿过去（筛的是项，不是把容器也筛掉，见 `layoutSpiral`）。
+              if (noMatch)
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 28,
+                  child: IgnorePointer(
+                    child: Center(
+                      child: _panel(
+                        key: hudNoMatchKey,
+                        child: const Text(
+                          '当前空间没有匹配项 · 点 ② 的「清空」复原',
+                          style: TextStyle(
+                            color: paletteTextSecondary,
+                            fontSize: 11,
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
                 ),
               // 定位浮层盖在最上层：它打开时是模态的，底下的一切都只是参照。
@@ -1733,6 +1794,19 @@ class _UniverseScreenState extends State<UniverseScreen>
               return;
             }
             final Offset point = box.globalToLocal(details.globalPosition);
+            if (kPickDebug) {
+              // 一行说清「这一下有反应的可能性有多大」：`visible=0` 就是筛空、
+              // `surface` 与 `window` 不等说明降采样在生效、末位说明这一档实际
+              // 拿到的布局。**只打不判** —— 诊断开关不该带分支行为，否则
+              // 「打开后就好了」会成为第三种可能，而那种可能比缺陷更难查。
+              debugPrint(
+                '[view-pick] zoom=${_camera.zoom.name} mode=${_mode.name} '
+                'space=${_spaceId ?? "-"} point=$point surface=$surface '
+                'window=$window visible=${visibleIds?.length ?? "all"} '
+                'domain=${_domainId ?? "-"} selected=${_selectedItemId ?? "-"} '
+                'layout=${galaxyMap ? "galaxy" : spiralDisc ? "spiral" : nebulaCloud ? "nebula" : starView ? "star" : starCloseup ? "closeup" : "frame"}',
+              );
+            }
             if (galaxyMap) {
               _pickGalaxyAt(point, galaxies);
             } else if (spiralDisc) {
@@ -1963,7 +2037,15 @@ class _UniverseScreenState extends State<UniverseScreen>
   /// 不做「点 ⑥ 唤起 ② 再在 ② 上选」：`VIEW-020` 明确否掉了那条路 ——
   /// 六个轴各 5–8 个值，本来是一屏装得下的短选择，变成两处往返之后就没人用了。
   Widget _compass() {
-    final LoadedPack? pack = _pack;
+    // `Z0` 的取值域来自**全部根**：那一档画的就是并列的全部空间，只读当前根
+    // 等于在说「这个宇宙只有一种学科」—— 而盘上明明并着三个星系
+    // （`VIEW-020` 修订 5 记的就是这条）。
+    //
+    // 其余档位只画一个空间，取值域也只该是那一个空间的：在那儿列出别的根的值，
+    // 选中的那一下正好会把当前空间筛空。
+    final List<LoadedPack> packs = _camera.zoom == ZoomLevel.z0
+        ? _allPacks()
+        : <LoadedPack>[?_pack];
     final String? openAxis = _compassAxis;
     return ConstrainedBox(
       // 下限 + 上限，中间由内容撑开：空状态 236（六轴一行最窄），两个轴同时筛
@@ -1981,10 +2063,10 @@ class _UniverseScreenState extends State<UniverseScreen>
             Text(
               // 没有包就没有轴值可选。写清原因而不是给一排按不动的按钮 ——
               // 按不动的控件会被读成「功能坏了」。
-              pack == null ? '六轴罗盘 · 没有内容包' : '六轴罗盘',
+              packs.isEmpty ? '六轴罗盘 · 没有内容包' : '六轴罗盘',
               style: const TextStyle(color: paletteTextSecondary, fontSize: 10),
             ),
-            if (pack != null) ...<Widget>[
+            if (packs.isNotEmpty) ...<Widget>[
               const SizedBox(height: 4),
               Wrap(
                 spacing: 1,
@@ -1996,7 +2078,7 @@ class _UniverseScreenState extends State<UniverseScreen>
               ),
               if (openAxis != null) ...<Widget>[
                 const Divider(height: 14, color: paletteLine),
-                _compassValues(pack, openAxis),
+                _compassValues(packs, openAxis),
               ],
             ],
           ],
@@ -2033,10 +2115,13 @@ class _UniverseScreenState extends State<UniverseScreen>
     );
   }
 
-  /// 展开后的取值列表。取值域来自包（`axisValuesOf`），**不写死任何选项**：
+  /// 展开后的取值列表。取值域来自包（`axisValuesOfAll`），**不写死任何选项**：
   /// 换个包就是另一批值，预设选项在第二个包上立刻过时。
-  Widget _compassValues(LoadedPack pack, String axisKey) {
-    final List<String> values = axisValuesOf(pack, axisKey);
+  ///
+  /// [packs] 在 `Z0` 是全部根、其余档位是当前根那一份 —— 由 [_compass] 决定。
+  /// 这里不再判档位：同一件事判两遍，迟早两处不一致。
+  Widget _compassValues(List<LoadedPack> packs, String axisKey) {
+    final List<String> values = axisValuesOfAll(packs, axisKey);
     final List<String> selected = _axisFilter[axisKey] ?? const <String>[];
     return Column(
       mainAxisSize: MainAxisSize.min,

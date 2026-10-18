@@ -1107,6 +1107,144 @@ void main() {
     });
   });
 
+  group('⑥ 罗盘跨根取值域（SPEC-VIEW-020 修订 5 · V-1f2）', () {
+    /// 与 α 包**学科不同**的第二个根。
+    ///
+    /// 30 项 / 3 个域是刻意的：`Z0` 的星系盘与 `Z1` 的盘都按规模反解几何，
+    /// 1 项的空间会被判成退化（`_z0Space` 的注释记过这件事）。
+    LoadedPack languagePack() => fixturePack(
+      <FixtureItem>[
+        for (int i = 0; i < 30; i++)
+          FixtureItem('de-$i', 'De 第 $i 项', domainId: 'de/d${i % 3}'),
+      ],
+      spaceId: 'german',
+      spaceName: '德语',
+      subject: '语言',
+    );
+
+    /// `Z0` 上某个星系的**窗口坐标**。画布坐标 → 窗口坐标要乘 `plan.scale`。
+    Offset galaxyPoint(
+      WidgetTester tester,
+      LoadedPack here,
+      LoadedPack other,
+      String spaceId,
+    ) {
+      final Size window = tester.getSize(find.byType(UniverseScreen));
+      final ViewportPlan plan = planViewport(
+        window.width,
+        window.height,
+        devicePixelRatio: tester.view.devicePixelRatio,
+      );
+      final GalaxyLayout layout = layoutGalaxies(
+        roots: <SceneResolution>[
+          SceneResolution(bundle: _alphaScene(here), pack: here),
+          SceneResolution(bundle: _alphaScene(other), pack: other),
+        ],
+        viewport: Size(plan.surfaceWidth, plan.surfaceHeight),
+      );
+      final GalaxyDisc disc = layout.discOf(spaceId)!;
+      return Offset(disc.centerX, disc.centerY) * plan.scale;
+    }
+
+    testWidgets('Z0 罗盘的学科列出全部根的取值，不只看当前根（SPEC-VIEW-020）', (
+      WidgetTester tester,
+    ) async {
+      final LoadedPack python = loadAlphaPack();
+      final LoadedPack german = languagePack();
+      await _pumpScreen(
+        tester,
+        pack: python,
+        scene: _alphaScene(python),
+        others: <LoadedPack>[german],
+        zoom: ZoomLevel.z0,
+      );
+
+      final String pythonSubject = axisValuesOf(python, 'subject').first;
+      await tester.tap(find.byKey(compassAxisKey('subject')));
+      await _pump(tester);
+
+      expect(
+        find.byKey(compassValueKey('subject', pythonSubject)),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(compassValueKey('subject', '语言')),
+        findsOneWidget,
+        reason: '缺陷本体：站在 α 根上，另一个根的学科也必须能选',
+      );
+    });
+
+    testWidgets('选别的根的取值 ⇒ 切过去 Z1 照常，域点还能进 Z2（SPEC-VIEW-020）', (
+      WidgetTester tester,
+    ) async {
+      final LoadedPack python = loadAlphaPack();
+      final LoadedPack german = languagePack();
+      await _pumpScreen(
+        tester,
+        pack: python,
+        scene: _alphaScene(python),
+        others: <LoadedPack>[german],
+        zoom: ZoomLevel.z0,
+      );
+
+      await tester.tap(find.byKey(compassAxisKey('subject')));
+      await _pump(tester);
+      await tester.tap(find.byKey(compassValueKey('subject', '语言')));
+      await _pump(tester);
+
+      await tester.tapAt(galaxyPoint(tester, python, german, 'german'));
+      await _pump(tester);
+
+      expect(_crumbCount(tester), _crumbsFor(ZoomLevel.z1));
+      expect(
+        find.byKey(hudNoMatchKey),
+        findsNothing,
+        reason: '语言包的 30 项都声明了「语言」，筛完不该是空',
+      );
+      expect(find.byKey(domainLabelKey('de/d0')), findsOneWidget);
+
+      await _enterDomain(tester, german, domainId: 'de/d1');
+      expect(_crumbCount(tester), _crumbsFor(ZoomLevel.z2));
+    });
+
+    testWidgets('取值在本根无匹配 ⇒ 明示一行小字，且不吞域点的点击（SPEC-VIEW-020）', (
+      WidgetTester tester,
+    ) async {
+      final LoadedPack python = loadAlphaPack();
+      final LoadedPack german = languagePack();
+      await _pumpScreen(
+        tester,
+        pack: python,
+        scene: _alphaScene(python),
+        others: <LoadedPack>[german],
+        zoom: ZoomLevel.z0,
+      );
+
+      final String pythonSubject = axisValuesOf(python, 'subject').first;
+      await tester.tap(find.byKey(compassAxisKey('subject')));
+      await _pump(tester);
+      await tester.tap(find.byKey(compassValueKey('subject', pythonSubject)));
+      await _pump(tester);
+
+      // 换根：筛选跟着过去（`VIEW-028`：筛选是视野状态，不随根重置），
+      // 而德语包没有任何一项是「计算机科学」⇒ 这一档一项都画不出来。
+      await tester.tapAt(galaxyPoint(tester, python, german, 'german'));
+      await _pump(tester);
+      expect(_crumbCount(tester), _crumbsFor(ZoomLevel.z1));
+
+      expect(
+        find.byKey(hudNoMatchKey),
+        findsOneWidget,
+        reason: '筛空时画面与「渲染坏了」长得一样，必须有一行字说清楚',
+      );
+
+      // 提示是说明，不是遮罩：域点仍要能点进 `Z2`。
+      await _enterDomain(tester, german, domainId: 'de/d0');
+      expect(_crumbCount(tester), _crumbsFor(ZoomLevel.z2));
+      expect(find.byKey(hudNoMatchKey), findsOneWidget);
+    });
+  });
+
   group('导航记忆（SPEC-VIEW-015 / 016）', () {
     testWidgets('点星进详情后按返回：档位回到进之前，详情消失（SPEC-VIEW-015）', (
       WidgetTester tester,
