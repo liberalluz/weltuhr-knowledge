@@ -26,6 +26,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/rendering.dart';
 
+import '../../core/constants.dart';
 import 'spiral_map.dart';
 
 /// 背景项的底色（`VIEW-037`：`#3B4C5C` 级）。**不跟着 `accent` 走** ——
@@ -86,10 +87,16 @@ class CanvasSpiralTarget implements SpiralDrawTarget {
       ..style = ui.PaintingStyle.stroke
       // 臂是一条**带**而不是一条线：真实旋臂是密度波，有宽度、边缘发虚。
       // 这里用半透明粗线近似，比单像素线更像星云状的臂。
-      ..strokeWidth = 6
+      //
+      // 三个值都是 `C-64`–`C-66`。提号之前它们是裸字面量 —— `R2` 只查 `core/`，
+      // 所以谁也没被拦下，而「看着截图说臂再亮一点」时只能翻文件找那个 `0.30`。
+      ..strokeWidth = spiralArmStrokeWidth
       ..strokeCap = ui.StrokeCap.round
-      ..maskFilter = const ui.MaskFilter.blur(ui.BlurStyle.normal, 3)
-      ..color = ui.Color(argb).withValues(alpha: 0.30);
+      ..maskFilter = const ui.MaskFilter.blur(
+        ui.BlurStyle.normal,
+        spiralArmBlurSigma,
+      )
+      ..color = ui.Color(argb).withValues(alpha: spiralArmAlpha);
     _canvas.drawPath(path, _paint);
     _paint.maskFilter = null;
   }
@@ -167,14 +174,18 @@ void paintSpiral({
     argb: layout.accentArgb,
   );
   for (final Offset point in layout.items) {
-    target.itemDot(center: point, radius: 1.6);
+    target.itemDot(center: point, radius: spiralItemDotRadius);
   }
   for (final Offset point in layout.blobs) {
-    target.blob(center: point, radius: 3.2);
+    target.blob(center: point, radius: spiralBlobRadius);
   }
   for (final DomainMark mark in layout.marks) {
     for (final Offset point in mark.points) {
-      target.domainMark(center: point, radius: 4, argb: layout.accentArgb);
+      target.domainMark(
+        center: point,
+        radius: spiralDomainMarkRadius,
+        argb: layout.accentArgb,
+      );
     }
   }
 }

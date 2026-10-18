@@ -333,3 +333,45 @@ const int nebulaParticleCount = 240;
 /// 比 `Z1` 的盘（0.42，私有常量）略小：`Z2` 的云缘要放出口标记与亮结标注，
 /// 按盘那么大铺会顶到 ① 与 ④ 底下。
 const double nebulaRadiusRatio = 0.36;
+
+/// `C-64` `Z1` 旋臂的**描边宽度**（px）。
+///
+/// 臂是一条**带**而不是一条线：真实旋臂是密度波，有宽度、边缘发虚。6 px 配合
+/// `C-65` 的模糊，视觉宽度约 12 px。
+///
+/// ⚠️ 提号前它是 `spiral_painter.dart` 里的裸字面量 —— `R2` 只查 `core/`，所以
+/// 谁也没被拦下。这类「看起来是常数、其实写死在绘制里」的值是 `R-08` 的典型：
+/// 形状挡得住改、挡不住加。
+const double spiralArmStrokeWidth = 6;
+
+/// `C-65` `Z1` 旋臂的**模糊半径**（px）。臂缘发虚靠它，不靠渐变。
+const double spiralArmBlurSigma = 3;
+
+/// `C-66` `Z1` 旋臂的**不透明度**。
+///
+/// 0.30 是让它「像一层雾」而不是「一道划线」。⚠️ 这个值**没有经过终端观感
+/// 校准** —— 截图里臂偏淡，但偏淡也可能来自 `C-65` 的模糊摊薄。改值前先看
+/// `STR` 轮次 `R8` 的未验项，别把两件事混着调。
+const double spiralArmAlpha = 0.30;
+
+/// `C-67` `Z1` 域点的**绘制半径**（px）。命中半径另有 `C-44` 的 24 px。
+const double spiralDomainMarkRadius = 4;
+
+/// `C-68` `Z1` 项的**绘制半径**（px）。项是背景、不可点（`VIEW-037`）。
+const double spiralItemDotRadius = 1.6;
+
+/// `C-69` `Z1` 暗斑（`⪯` 子树）的**绘制半径**（px）。与 `C-67` 同量级 ——
+/// 暗斑是容器、域点是容器，读者不该靠大小区分它们。
+const double spiralBlobRadius = 3.2;
+
+/// `C-70` 标注避让的**外推步长比**（`V-1d2`）。
+///
+/// 第 `k` 次尝试沿方位多让 `k × 行高 × 1.55`。取 1.55 是因为它大于 1 但小于 2：
+/// 相邻两格之间留得出缝，又不会一格就飞出半屏。
+const double labelAvoidStepRatio = 1.55;
+
+/// `C-71` 标注避让的**外推上限**（格）。
+///
+/// 超限就接受重叠 —— 见 `label_layout.dart` 第 3 条口径。3 格在 `Z1` 的
+/// 122 px 盘上是 3 × 14 × 1.55 ≈ 65 px，再远标签就与自己的点失去联系了。
+const int labelAvoidMaxSteps = 3;
