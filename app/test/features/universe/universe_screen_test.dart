@@ -1316,5 +1316,96 @@ void main() {
       expect(find.text('闭包'), findsWidgets);
       expect(tester.takeException(), isNull);
     });
+
+    testWidgets('两个根 ⇒ ① 里给出一排换根 chips，当前根那枚停用（SPEC-VIEW-031）', (
+      WidgetTester tester,
+    ) async {
+      final LoadedPack pack = loadAlphaPack();
+      final LoadedPack go = _goPack();
+      await _pumpScreen(
+        tester,
+        pack: pack,
+        scene: _alphaScene(pack),
+        others: <LoadedPack>[go],
+      );
+
+      expect(
+        find.byKey(hudSpaceSwitchKey),
+        findsOneWidget,
+        reason: '两个根都在 `roots` 里 —— 不给入口的话界面上只看得到 order 最小的那个',
+      );
+      expect(find.byKey(spaceChipKey('python')), findsOneWidget);
+      expect(find.byKey(spaceChipKey('go')), findsOneWidget);
+      expect(
+        tester.widget<TextButton>(find.byKey(spaceChipKey('python'))).onPressed,
+        isNull,
+        reason: '当前根那枚按不动 —— 点它什么都不变的按钮比没有更糟',
+      );
+      expect(
+        tester.widget<TextButton>(find.byKey(spaceChipKey('go'))).onPressed,
+        isNotNull,
+        reason: '别的根可点',
+      );
+
+      // 只有一个根时整排不出现：一枚恒亮的 chip 只会被读成「坏了」。
+      await _pumpScreen(tester, pack: pack, scene: _alphaScene(pack));
+      expect(find.byKey(hudSpaceSwitchKey), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('树里不给换根 chips（SPEC-VIEW-031）', (WidgetTester tester) async {
+      final LoadedPack pack = loadAlphaPack();
+      await _pumpScreen(
+        tester,
+        pack: pack,
+        scene: _alphaScene(pack),
+        others: <LoadedPack>[_goPack()],
+        mode: ViewMode.tree,
+      );
+
+      expect(
+        find.byKey(hudSpaceSwitchKey),
+        findsNothing,
+        reason: '树里换根会把用户弹回宇宙 —— 那是「点了按钮、视图变了、东西没换」',
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('点另一个空间的 chip ⇒ 换根并回到 Z0（SPEC-VIEW-031 / 001）', (
+      WidgetTester tester,
+    ) async {
+      final LoadedPack pack = loadAlphaPack();
+      final LoadedPack go = _goPack();
+      await _pumpScreen(
+        tester,
+        pack: pack,
+        scene: _alphaScene(pack),
+        others: <LoadedPack>[go],
+        zoom: ZoomLevel.z1,
+      );
+
+      await tester.tap(find.byKey(spaceChipKey('go')));
+      await _pump(tester);
+
+      expect(
+        find.textContaining('· 1 项'),
+        findsOneWidget,
+        reason: '诊断行跟着换 —— 153 项变 1 项，是换根唯一看得见的证据',
+      );
+      expect(
+        find.descendant(
+          of: find.byKey(hudBreadcrumbKey),
+          matching: find.textContaining('Z0'),
+        ),
+        findsOneWidget,
+        reason: '空间是落点类（VIEW-001 末句）—— 落到它并推到 Z0，不留在 Z1',
+      );
+      expect(
+        tester.widget<TextButton>(find.byKey(spaceChipKey('go'))).onPressed,
+        isNull,
+        reason: '换过去之后它变成当前根',
+      );
+      expect(tester.takeException(), isNull);
+    });
   });
 }
