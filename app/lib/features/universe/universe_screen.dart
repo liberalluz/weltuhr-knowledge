@@ -4,7 +4,7 @@
 ///
 /// | # | 位置 | 宇宙 | 树 |
 /// |---|---|---|---|
-/// | ① | 顶部左 | 常显（面包屑 + **模式切换**） | 同左 |
+/// | ① | 顶部左 | 常显（面包屑 + **换根 chips** + 模式切换） | 面包屑 + 模式切换（**无**换根，见 `_spaceSwitch()`） |
 /// | ② | 顶部第二行 | 有筛选才出现 | 同左 |
 /// | ③ | 右上 | 常显 | 常显 |
 /// | ④ | 右侧 | **仅 `Z4`** | **常驻右栏**（`VIEW-012`） |
@@ -35,6 +35,11 @@
 /// 跳过去算「走过一步」—— 若当时在详情里，离开的那一项（**连同它的空间**）压进
 /// `trail`；若不在详情里，则记 `returnTo` 快照（快照带 `spaceId`）。两条都不重置：
 /// 用户是从 A 空间某处走到 B 空间某处，不是「刚打开详情」。
+///
+/// `VIEW-031` 给的两条路（作用域、跨空间落点）**都在浮层里**：不给屏幕上的
+/// 入口，「装了三个包」在界面上看不出区别 —— 用户只看得到 `order` 最小的那个根。
+/// 所以 `Z0` 右上面包屑旁多一排换根 chips（`_spaceSwitch()`），点它就是一次
+/// `_jumpToSpace`，与搜索落点走同一条路径。
 ///
 /// 面板上的空间名只有 `VIEW-033` 要求的前缀，没有额外的「已切换」提示 ——
 /// 换根之后面包屑与诊断行都会写新的空间，那比一句 toast 更早也更准。
@@ -102,6 +107,12 @@ const Key hudZoomScaleKey = Key('hud-zoom-scale');
 
 /// 模式切换的容器（在 ① 内，见文件头表格）。
 const Key hudModeSwitchKey = Key('hud-mode-switch');
+
+/// 换根 chips 的容器（在 ① 内）。只在宇宙模式出现 —— 见 `_spaceSwitch()`。
+const Key hudSpaceSwitchKey = Key('hud-space-switch');
+
+/// ① 里某个根（空间）的 chip。点它换根。
+Key spaceChipKey(String spaceId) => Key('space-chip-$spaceId');
 
 /// ⑥ 罗盘里某个轴按钮（点它展开 / 收起该轴的取值）。`VIEW-020`。
 Key compassAxisKey(String axisKey) => Key('compass-axis-$axisKey');
@@ -764,6 +775,9 @@ class _UniverseScreenState extends State<UniverseScreen>
                           ),
                         ],
                       ),
+                      // 换根挨着面包屑：「我在哪个空间」与「我在哪一层」是同一类
+                      // 问题，放进 ③ 设置或底部会变成用户找不到的功能。
+                      if (!tree) _spaceSwitch(),
                       // 模式切换挂在 ① 内：面包屑是「我在哪」，模式也是「我在哪」的
                       // 一部分；进 ⑦ 会污染「视距刻度」的单一职责，进 ③ 会把它变成
                       // 用户找不到的功能。
@@ -942,6 +956,70 @@ class _UniverseScreenState extends State<UniverseScreen>
 
   /// 宇宙 ⇄ 树。两个按钮而不是一个 toggle：**当前在哪**应该一眼看到，而不是
   /// 从「按钮上的字是什么」倒推。
+  /// ① 里的**换根**入口：`roots` 里每个有 `KnowledgeSpace` 的根一枚 chip。
+  ///
+  /// 为什么要有它：`VIEW-031` 只规定了「`Z0` 的作用域是全部空间」与「跨空间
+  /// 命中 ⇒ 换根」，两条都发生在**定位浮层**里。于是三个包装好了、`Z0` 也确实
+  /// 一次装了三个根，但用户在屏幕上只看得到 `order` 最小的那一个 —— 换根的唯一
+  /// 入口是先知道搜什么词。这不是「没有多根」，是**多根没有入口**。
+  ///
+  /// 只列真包：合成回落那条的「空间」是凭空造的（`bundle.synthetic` 的 id 是
+  /// `s0…s149`），列进来等于给用户一个点不动也看不懂的根。
+  ///
+  /// 树里不渲染（与 ⑤⑥ 同一条理由的反面）：树读的是当前根，换根之后该重画树，
+  /// 而 `_jumpToSpace` 会把用户推回宇宙 —— 那就成了「点了一个按钮，视图变了
+  /// 但东西没换」。树里换根归 `B4`（树要按 `⪯` 重组，换根等于换整棵树）。
+  Widget _spaceSwitch() {
+    final List<LoadedPack> packs = <LoadedPack>[
+      for (final SceneResolution root in widget.roots)
+        if (root.pack != null) root.pack!,
+    ];
+    // 一个根没有「切换」可言；一枚恒亮的 chip 只会被读成「坏了」。
+    if (packs.length < 2) {
+      return const SizedBox.shrink();
+    }
+    return Padding(
+      key: hudSpaceSwitchKey,
+      padding: const EdgeInsets.only(left: 12),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          for (final LoadedPack pack in packs)
+            Padding(
+              padding: const EdgeInsets.only(left: 4),
+              child: TextButton(
+                key: spaceChipKey(pack.space.id),
+                // 换根复用 `_jumpToSpace`，不另写一条路径：空间是落点类
+                // （`VIEW-001` 末句），落到它并推到 `Z0`。两条换根路径迟早
+                // 不一致，而不一致不会有任何东西变红（`R-08`）。
+                onPressed: pack.space.id == _spaceId
+                    ? null
+                    : () => _jumpToSpace(pack.space.id),
+                style: TextButton.styleFrom(
+                  backgroundColor: pack.space.id == _spaceId
+                      ? paletteSelected
+                      : null,
+                  foregroundColor: pack.space.id == _spaceId
+                      ? paletteTextPrimary
+                      : paletteTextSecondary,
+                  minimumSize: const Size(48, 28),
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                // 显示 `space.id` 而不是 `space.name`：三个名字是「Python 语法
+                // 分层 / 英语语法分层 / 德语语法分层」，横排要占满半屏；而 id
+                // 就是包目录名，用户核对得上的也正是它。
+                child: Text(
+                  pack.space.id,
+                  style: const TextStyle(fontSize: 11),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
   Widget _modeSwitch() => Padding(
     key: hudModeSwitchKey,
     padding: const EdgeInsets.only(left: 12),
