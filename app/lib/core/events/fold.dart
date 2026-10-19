@@ -113,17 +113,28 @@ String noteKey({required String? itemId, required String sectionKey}) =>
 /// 折叠：按 `hlc` 全序重放事件，得到派生状态。
 ///
 /// - [asOf] 给出时**只折到那一刻**（含），用于「回看某天」与增量重放；
-/// - [spaceId] 给出时只折该空间的事件。
+/// - [spaceId] 给出时只折该空间的事件；
+/// - [userId] 给出时只折该用户的事件。**同一设备切账号必须传它**，否则 A 的
+///   进度会算进 B（`SPEC-ACC-014`）。不传 = 全量折，只用于迁移与导出 ——
+///   那里要的是「这条事件存在过」，不是「谁的进度」。
 ///
 /// 幂等：同一 `id` 的事件出现多次只算一次（`event-types.md` §一）。
 /// **但「两台设备各学一遍同一项」是两个不同 `id`，都要重放** —— 你确实
 /// 复习了两次，`S` 就该变长。
-FoldedState fold(Iterable<Event> events, {Hlc? asOf, String? spaceId}) {
+FoldedState fold(
+  Iterable<Event> events, {
+  Hlc? asOf,
+  String? spaceId,
+  String? userId,
+}) {
   final List<Event> ordered = <Event>[];
   final Set<String> seenIds = <String>{};
 
   for (final Event event in events) {
     if (spaceId != null && event.spaceId != spaceId) {
+      continue;
+    }
+    if (userId != null && event.userId != userId) {
       continue;
     }
     if (asOf != null && event.hlc.compareTo(asOf) > 0) {
