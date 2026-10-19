@@ -16,10 +16,14 @@
 /// 通道，`X-02`）。所以本文件里没有「按掌握度调亮」这类钩子 —— 要加先改
 /// `channel-table.md`。
 ///
-/// ## 这一档也不转
+/// ## 相位不在这里
 ///
-/// 盘自转 `C-54` 与减速停转 `C-57` 归 `V-1i`。接 `spin` 会让一张不动的盘
-/// 每帧重绘，帧预算读数凭空多一档成本（`V-1b` 同一条理由）。
+/// `C-54` 自转由 `SpiralLayout.spun(radians)` 在屏幕层算好，painter 只画传进来
+/// 的那份布局 —— **本文件不持有相位、也没有 `spin` 参数**。这样拾取与标注读的
+/// 是同一份 `spun` 布局，「画在这、点在那」在结构上写不出来。
+///
+/// ⚠️ 别为了「少传一层」把相位加进 painter：那会让拾取要么自己再算一遍（两份
+/// 相位，迟早不同步），要么反过来读 painter 内部状态（绘制层变成相位的事实源）。
 library;
 
 import 'dart:ui' as ui;
@@ -109,9 +113,13 @@ class CanvasSpiralTarget implements SpiralDrawTarget {
   }) {
     _paint
       ..style = ui.PaintingStyle.fill
+      // 两端都是 `C-86` / `C-87`。外端必须**归到接近零** —— 它是核球与域点
+      // 光晕的交界处，收不干净时两层 alpha 会在同一圈里累加，看起来就是
+      // 「中心糊成一团」（终端反馈，`V-1i` 前半）。提号之前这两端是裸字面量，
+      // 于是「核球再收一点」只能翻文件找那个 `0.10`。
       ..shader = ui.Gradient.radial(center, radius, <ui.Color>[
-        ui.Color(argb).withValues(alpha: 0.95),
-        ui.Color(argb).withValues(alpha: 0.10),
+        ui.Color(argb).withValues(alpha: spiralBulgeCoreAlpha),
+        ui.Color(argb).withValues(alpha: spiralBulgeEdgeAlpha),
       ])
       ..color = const ui.Color(0xFFFFFFFF);
     _canvas.drawCircle(center, radius, _paint);
@@ -141,11 +149,18 @@ class CanvasSpiralTarget implements SpiralDrawTarget {
     required int argb,
   }) {
     // 光晕：外圈淡、内圈亮。它是「可点」的唯一视觉信号。
+    //
+    // 三个参数是 `C-88`–`C-90`。原来的 `0.55` 让最内层两个域点的光晕直接压在
+    // 核球上、累加成一片实心团 —— 减淡到 `0.35` 是把「叠成一片」拆回「一颗亮结
+    // 带一圈光」，可点性仍只靠这一圈表达，没有换通道（`X-02`）。
     _paint
       ..style = ui.PaintingStyle.fill
-      ..maskFilter = const ui.MaskFilter.blur(ui.BlurStyle.normal, 4)
-      ..color = ui.Color(argb).withValues(alpha: 0.55);
-    _canvas.drawCircle(center, radius * 2.2, _paint);
+      ..maskFilter = const ui.MaskFilter.blur(
+        ui.BlurStyle.normal,
+        spiralDomainHaloBlurSigma,
+      )
+      ..color = ui.Color(argb).withValues(alpha: spiralDomainHaloAlpha);
+    _canvas.drawCircle(center, radius * spiralDomainHaloScale, _paint);
 
     _paint
       ..maskFilter = null
