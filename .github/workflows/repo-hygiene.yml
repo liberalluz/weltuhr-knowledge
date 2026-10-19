@@ -43,10 +43,14 @@ jobs:
           for m in content/*/manifest.json; do
             [ -e "$m" ] || continue
             d="$(dirname "$m")/dist"
-            if git check-ignore -q "$d"; then
-              echo "ok   $d 已被 .gitignore 覆盖"
+            # ⚠️ 查询必须**带尾斜杠**。`content/*/dist/` 是目录规则，而 CI 是干净
+            # checkout、`dist/` 根本不存在；路径不存在时 git 无法 stat 出「这是目录」，
+            # 不带斜杠的查询会返回**未命中**。本地因为目录真实存在反而测不出来 ——
+            # 本文件第一次推送就是三处全 FAIL，红的正是这个。
+            if git check-ignore -q -- "$d/"; then
+              echo "ok   $d/ 已被 .gitignore 覆盖"
             else
-              echo "FAIL $d 未被 .gitignore 覆盖：构建产物会被提交进库"
+              echo "FAIL $d/ 未被 .gitignore 覆盖：构建产物会被提交进库"
               fail=1
             fi
           done
