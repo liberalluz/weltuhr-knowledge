@@ -32,8 +32,12 @@ import 'method_bundle.dart';
 import 'ordering.dart';
 import 'platform_candidates.dart';
 
-/// Planner 的三段。声明顺序即左栏排版顺序（`P-4` 定：体系 → 源 → 方法）。
-enum PlanSegment { scheme, source, method }
+/// Planner 的三段。**声明顺序即左栏排版顺序**（`SPEC-PLAN-014`：源 → 体系 →
+/// 方法，第四段「确认」不在枚举里 —— 它不承载候选）。
+///
+/// ⚠️ 这里一度写成「体系 → 源 → 方法」，并声称是 `P-4` 所定。那是错的：`P-4`
+/// 尚未开工，规格也一直写「源 → 体系 → 方法」。**顺序以规格为准**，实现跟着改。
+enum PlanSegment { source, scheme, method }
 
 /// 候选的公共读法 —— 卡片形态三段一致（`SPEC-PLAN-008`）。
 ///
