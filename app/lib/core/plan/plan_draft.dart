@@ -26,17 +26,22 @@ import 'scope.dart';
 /// 组装草稿。[target] 给了就沿用它的 `selector`，并把 `resolved` 按当前包
 /// **重算**一遍 —— 旧 `resolved` 可能来自更早的包版本，直接抄会把已下线的项
 /// 写进新计划。
+///
+/// [userSchemes] 必须与预览那次**传同一份**：两边各传各的，会出现「预览说 12
+/// 项、事件里存 4 项」—— 而那不是异常，是两份不同的解算结果。
 PlanDraft composePlanDraft({
   required LoadedPack pack,
   required String sourceId,
   required String schemeId,
   required MethodBundle bundle,
   PlanTarget? target,
+  List<Scheme> userSchemes = const <Scheme>[],
 }) {
   final PlanScope scope = resolvePlanScope(
     pack: pack,
     schemeId: schemeId,
     target: target,
+    userSchemes: userSchemes,
   );
 
   return PlanDraft(

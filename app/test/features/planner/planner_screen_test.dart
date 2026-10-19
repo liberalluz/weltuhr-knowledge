@@ -7,6 +7,7 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:project_knowledge/core/entities/plan.dart';
 import 'package:project_knowledge/core/pack/pack_parse.dart';
 import 'package:project_knowledge/core/plan/plan_events.dart';
 import 'package:project_knowledge/features/planner/planner_screen.dart';
@@ -41,10 +42,13 @@ LoadedPack _pack() => fixturePack(
 );
 
 /// 打开器的宿主：一个按钮 + 一件记录「路由回来了什么」的盒子。
+///
+/// [revising] 给了就是「重规划」那条路（`SPEC-PLAN-019`）。
 Future<void> _pumpOpener(
   WidgetTester tester,
-  void Function(PlanDraft? draft) onDone,
-) async {
+  void Function(PlanDraft? draft) onDone, {
+  Plan? revising,
+}) async {
   await tester.binding.setSurfaceSize(const Size(1200, 2600));
   addTearDown(() => tester.binding.setSurfaceSize(null));
   await tester.pumpWidget(
@@ -56,7 +60,11 @@ Future<void> _pumpOpener(
               key: const Key('opener'),
               onPressed: () async {
                 onDone(
-                  await PlannerScreen.open(context, pack: _pack()),
+                  await PlannerScreen.open(
+                    context,
+                    pack: _pack(),
+                    revising: revising,
+                  ),
                 );
               },
               child: const Text('打开规划'),
@@ -141,5 +149,61 @@ void main() {
       reason: '取消不能悄悄造出一份「三段都没选」的计划',
     );
     expect(find.byKey(const Key('opener')), findsOneWidget);
+  });
+
+  testWidgets('TC-PLAN-098 传 revising 就是重规划：三段与范围都预填，planId 与预填同源（SPEC-PLAN-019）', (
+    WidgetTester tester,
+  ) async {
+    const Plan revising = Plan(
+      id: 'evt-created-1',
+      spaceId: 'python',
+      spaceVersion: '0.1.0',
+      target: PlanTarget(
+        selector: <String, Object?>{'kind': 'item', 'itemId': 'i1'},
+        resolved: <String>['i1'],
+      ),
+      sourcePolicy: <String, Object?>{'primary': 'src-a'},
+      schemeId: 'sch-full',
+      methodProfileId: 'method-bundle-memory',
+      // 版本只在 `fold` 那边数事件条数，面板这一层连碰都不碰（`P-6` 改的口径）。
+      version: 3,
+    );
+    PlanDraft? received;
+    await _pumpOpener(tester, (PlanDraft? draft) => received = draft,
+        revising: revising);
+
+    await tester.tap(find.byKey(const Key('opener')));
+    await tester.pumpAndSettle();
+
+    String textOf(String key) =>
+        tester.widget<Text>(find.byKey(Key(key))).data!;
+
+    // 三段都按上次的取值预填 —— 不新开「重规划界面」，就地改。
+    expect(textOf('planner-confirm-source'), contains('src-a'));
+    expect(textOf('planner-confirm-scheme'), contains('sch-full'));
+    expect(textOf('planner-confirm-method'), contains('记忆优先'));
+    // 范围也不能丢：只回填三段而把 `target` 放大成整个空间，是悄悄扩大计划。
+    expect(textOf('preview-items'), '项数 1');
+    expect(textOf('preview-denominator'), '分母 2');
+    // `planId` 与预填同源（同一个 `Plan`），不会出现「id 传 A、值来自 B」。
+    expect(
+      tester.widget<PlannerScreen>(find.byType(PlannerScreen)).planId,
+      'evt-created-1',
+    );
+
+    await tester.tap(find.byKey(const Key('planner-confirm-button')));
+    await tester.pumpAndSettle();
+
+    expect(received, isNotNull);
+    expect(
+      received!.target.selector,
+      <String, Object?>{'kind': 'item', 'itemId': 'i1'},
+      reason: '重规划沿用上次的选择式，不是重新猜一个',
+    );
+    expect(
+      received!.target.resolved,
+      <String>['i1'],
+      reason: 'resolved 按当前包重算，但与 selector 圈定的仍是同一项',
+    );
   });
 }

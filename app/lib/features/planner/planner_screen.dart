@@ -17,6 +17,19 @@
 ///
 /// 与 [PlannerPanel.onCreate] 同一条理由：面板与这一层都不知道 `EventStore` /
 /// `HlcClock` / `userId`。它们只回答「用户选了什么」，写事件归更上面。
+///
+/// ## 重入复用（`SPEC-PLAN-019`）
+///
+/// 传 [revising] 就是「重规划」：三段按 [Plan] 里存的值预填，交出的仍是草稿，
+/// 而**调用方据 `revising.id` 决定落 `plan_revised`**。
+///
+/// 为什么不只收一个 `planId`：预填要的是**值**（上次选了哪条源、哪套序、哪套
+/// 方法），只有 id 取不到。而值从哪来必须唯一 —— 传整份 [Plan]，`planId` 就是
+/// 它的 `id`，不会出现「id 传 A、预填值来自 B」的分裂。
+///
+/// `Plan.version` **不在这里 +1**：`SPEC-PLAN-019` 原文写「`Plan.version + 1`」，
+/// 而 `P-6` 已把版本改成由 `fold` 数该 `planId` 名下的事件条数得出 —— 多写一处
+/// 就是第二份计数。面板这一层连版本号都不碰。
 library;
 
 import 'package:flutter/material.dart';
@@ -38,6 +51,7 @@ class PlannerScreen extends StatelessWidget {
   const PlannerScreen({
     required this.pack,
     this.target,
+    this.revising,
     this.initialSourceId,
     this.initialSchemeId,
     this.initialMethodId,
@@ -53,7 +67,13 @@ class PlannerScreen extends StatelessWidget {
   /// 后者回看时说不清「当初是不是故意全选」。
   final PlanTarget? target;
 
-  /// 重入时的预填（`SPEC-PLAN-019`）。
+  /// 要重规划的那一份（`SPEC-PLAN-019`）。给了就按它预填三段与 `target`。
+  final Plan? revising;
+
+  /// 重规划写 `plan_revised` 时指回的那份计划。**与预填同源**，见文件头。
+  String? get planId => revising?.id;
+
+  /// 重入时的预填（`SPEC-PLAN-019`）。显式给的优先于 [revising] 里的值。
   final String? initialSourceId;
   final String? initialSchemeId;
   final String? initialMethodId;
@@ -66,6 +86,7 @@ class PlannerScreen extends StatelessWidget {
     BuildContext context, {
     required LoadedPack pack,
     PlanTarget? target,
+    Plan? revising,
     String? initialSourceId,
     String? initialSchemeId,
     String? initialMethodId,
@@ -75,6 +96,7 @@ class PlannerScreen extends StatelessWidget {
         builder: (BuildContext context) => PlannerScreen(
           pack: pack,
           target: target,
+          revising: revising,
           initialSourceId: initialSourceId,
           initialSchemeId: initialSchemeId,
           initialMethodId: initialMethodId,
@@ -85,6 +107,11 @@ class PlannerScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 重规划时 `target` 与三段都回落到 `revising` —— 只回填三段而把范围丢掉，
+    // 等于「重规划把范围悄悄放大成整个空间」，那正是 `PLAN-015` 反复强调不许的。
+    final PlanTarget? effectiveTarget = target ?? revising?.target;
+    final Object? primarySource = revising?.sourcePolicy['primary'];
+
     return Scaffold(
       key: plannerScreenKey,
       appBar: AppBar(
@@ -100,10 +127,11 @@ class PlannerScreen extends StatelessWidget {
       ),
       body: PlannerPanel(
         pack: pack,
-        target: target,
-        initialSourceId: initialSourceId,
-        initialSchemeId: initialSchemeId,
-        initialMethodId: initialMethodId,
+        target: effectiveTarget,
+        initialSourceId:
+            initialSourceId ?? (primarySource is String ? primarySource : null),
+        initialSchemeId: initialSchemeId ?? revising?.schemeId,
+        initialMethodId: initialMethodId ?? revising?.methodProfileId,
         // 建完即走：`PLAN-017` 的「做完就进 Runner」由上层接（Runner 属 `B5`，
         // 未开工）。这一层只把草稿交出去，不假装跳进一个还不存在的页面。
         onCreate: (PlanDraft draft) => Navigator.of(context).pop(draft),
