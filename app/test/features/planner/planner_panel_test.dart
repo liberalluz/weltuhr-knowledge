@@ -242,7 +242,9 @@ void main() {
     await _pump(
       tester,
       target: const PlanTarget(
-        selector: <String, Object?>{'kind': 'items'},
+        // 选择式取**合法**的一种（`PLAN-016` 的四 kind 之一）：`P-6` 时
+        // 结构未定、这里曾写 `{'kind': 'items'}`，那是当时编的假 schema。
+        selector: <String, Object?>{'kind': 'item', 'itemId': 'i1'},
         // 旧 resolved 里混一个不存在的项：草稿必须按当前包重算，不能照抄。
         resolved: <String>['i1', 'i3', 'ghost'],
       ),
@@ -266,7 +268,7 @@ void main() {
     expect(captured!.sourcePolicy, <String, Object?>{'primary': 'src-a'});
     expect(
       captured!.target.selector,
-      <String, Object?>{'kind': 'items'},
+      <String, Object?>{'kind': 'item', 'itemId': 'i1'},
       reason: '选择式原样保留 —— 它记录的是用户当时怎么圈的',
     );
     expect(

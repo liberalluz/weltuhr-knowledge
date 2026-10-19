@@ -142,9 +142,12 @@ import 'package:flutter/services.dart';
 
 import '../../core/constants.dart';
 import '../../core/entities/content.dart';
+import '../../core/entities/plan.dart';
 import '../../core/enums.dart';
 import '../../core/locate/locator.dart';
 import '../../core/pack/pack_parse.dart';
+import '../../core/plan/plan_events.dart';
+import '../../core/plan/plan_target.dart';
 import '../../core/view/detail.dart';
 import '../../core/view/filter.dart';
 import '../../core/view/motion.dart';
@@ -155,6 +158,7 @@ import '../../core/view/zoom.dart';
 import '../detail/detail_panel.dart';
 import '../locate/locate_overlay.dart';
 import '../palette.dart';
+import '../planner/planner_screen.dart';
 import 'filter_chips.dart';
 import 'frame_painter.dart';
 import 'galaxy_map.dart';
@@ -176,6 +180,12 @@ import 'tree_view.dart';
 const Key hudBreadcrumbKey = Key('hud-breadcrumb');
 const Key hudFilterChipsKey = Key('hud-filter-chips');
 const Key hudScopeSettingsKey = Key('hud-scope-settings');
+
+/// ③ 区里的「开始学习」（`SPEC-PLAN-016` 第一入口，`B4` `P-7`）。
+///
+/// 单独给 key 而不是靠文案找：文案会变，而「这个入口在不在」是规格判据
+/// —— 切换档位时它必须消失，靠 `find.text` 找会让文案改动悄悄废掉那条断言。
+const Key hudStartLearningKey = Key('hud-start-learning');
 const Key hudDetailDrawerKey = Key('hud-detail-drawer');
 const Key hudFocusStarKey = Key('hud-focus-star');
 const Key hudAxisCompassKey = Key('hud-axis-compass');
@@ -372,6 +382,7 @@ class UniverseScreen extends StatefulWidget {
     required this.roots,
     this.initialZoom = ZoomLevel.z1,
     this.initialMode = ViewMode.universe,
+    this.onPlanCreated,
     super.key,
   }) : assert(roots.length > 0, '至少要有根 —— 空列表会让界面变成一块空白');
 
@@ -384,11 +395,13 @@ class UniverseScreen extends StatefulWidget {
     LoadedPack? pack,
     ZoomLevel initialZoom = ZoomLevel.z1,
     ViewMode initialMode = ViewMode.universe,
+    void Function(PlanDraft draft)? onPlanCreated,
     Key? key,
   }) : this(
          roots: <SceneResolution>[SceneResolution(bundle: scene, pack: pack)],
          initialZoom: initialZoom,
          initialMode: initialMode,
+         onPlanCreated: onPlanCreated,
          key: key,
        );
 
@@ -403,6 +416,16 @@ class UniverseScreen extends StatefulWidget {
 
   /// 进入时的模式。默认宇宙。
   final ViewMode initialMode;
+
+  /// Planner 交出草稿时往上抛（`SPEC-PLAN-016`）。
+  ///
+  /// **这一层不写事件**。写事件需要 `EventStore` + `HlcClock` + `userId`，
+  /// 而持久化不属 `B4`（`EventStore` 目前只有接口，全仓无实现）；把三者塞进
+  /// 宇宙屏会让「进不去视图就打不开 Planner」这类耦合在 `B5` 之后冒出来。
+  /// 抛到最上层，等存储层就位再接 —— 与 `PlannerPanel.onCreate` 同一条理由。
+  ///
+  /// `null` = 没有上层接收：入口照出，按下去交出草稿后什么也不发生。
+  final void Function(PlanDraft draft)? onPlanCreated;
 
   @override
   State<UniverseScreen> createState() => _UniverseScreenState();
@@ -933,6 +956,60 @@ class _UniverseScreenState extends State<UniverseScreen>
   // ── 快速定位（`SPEC-VIEW-024`–`033`） ───────────────────────────────────
 
   void _openLocate() => setState(() => _locating = true);
+
+  // ── 规划入口（`SPEC-PLAN-016`，本笔接第 1 与第 3 个） ──────────────────
+  //
+  // 第 2 个入口（进展视图「新建计划」）**不在这里**：进展视图目前全仓没有
+  // 实现（`ViewMode.progress` 在 `app/lib` 里零引用），它的规格是 `QUANT-011`、
+  // 属 `B6`。宿主不存在时给它接一个回调，只会得到一个永远不会被点的按钮。
+
+  /// Z1「开始学习」（`PLAN-016` 第一行）：带 `spaceId`，范围默认整个空间。
+  ///
+  /// 显式传 `PlanSelector.space()` 而不是 `target: null`：两者预览结果一样，
+  /// 但写进事件的 `selector` 不同 —— 空对象回看时说不清是「故意全选」还是
+  /// 「当时根本没有这个概念」（`plan_draft.dart` 文件头记的就是这条待办）。
+  Future<void> _openPlanner() async {
+    final LoadedPack? pack = _pack;
+    if (pack == null) {
+      return;
+    }
+    await _openPlannerFor(
+      pack,
+      resolvePlanTarget(pack: pack, selector: const PlanSelector.space()),
+    );
+  }
+
+  /// 定位结果「按此范围建计划」（`PLAN-016` 第三行）：**范围就是这次搜索**。
+  ///
+  /// 先关浮层再进 Planner：Planner 是一整页路由，浮层若留在底下，用户从
+  /// Planner 返回时会看到一个**已经搜完的浮层**盖着原来的画面 —— 那不是
+  /// 「回到原处」，是「回到一个中间态」。
+  Future<void> _planFromLocate(LocateResult result) async {
+    final LoadedPack? pack = _pack;
+    if (pack == null) {
+      return;
+    }
+    _closeLocate();
+    await _openPlannerFor(
+      pack,
+      resolvePlanTarget(
+        pack: pack,
+        selector: PlanSelector.query(result.query),
+      ),
+    );
+  }
+
+  Future<void> _openPlannerFor(LoadedPack pack, PlanTarget target) async {
+    final PlanDraft? draft = await PlannerScreen.open(
+      context,
+      pack: pack,
+      target: target,
+    );
+    if (draft == null) {
+      return;
+    }
+    widget.onPlanCreated?.call(draft);
+  }
 
   /// 关浮层，并把焦点收回屏幕根。
   ///
@@ -1749,9 +1826,44 @@ class _UniverseScreenState extends State<UniverseScreen>
                 top: 16,
                 child: _panel(
                   key: hudScopeSettingsKey,
-                  child: const Text(
-                    '圈内 · 设置',
-                    style: TextStyle(color: paletteTextSecondary, fontSize: 12),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: <Widget>[
+                      const Text(
+                        '圈内 · 设置',
+                        style: TextStyle(
+                          color: paletteTextSecondary,
+                          fontSize: 12,
+                        ),
+                      ),
+                      // 「开始学习」**只在 `Z1` 出现**（`SPEC-PLAN-016` 第一行）。
+                      //
+                      // 为什么不是「有空间就出现」：`Z0` 画的是并列的几个空间，
+                      // 那一档没有「当前空间」这个概念 —— 在那儿给按钮，用户得
+                      // 先猜它在给哪个空间做计划。`Z2` 起是某个域 / 某一项的内部，
+                      // 规划是**空间级**的动作（`PLAN-003`），局部的「开始学习」
+                      // 会让人以为它只学眼前这一团。
+                      if (!tree &&
+                          _camera.zoom == ZoomLevel.z1 &&
+                          _pack != null)
+                        TextButton(
+                          key: hudStartLearningKey,
+                          onPressed: _openPlanner,
+                          style: TextButton.styleFrom(
+                            minimumSize: const Size(0, 24),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 4,
+                            ),
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            foregroundColor: paletteAccent,
+                          ),
+                          child: const Text(
+                            '开始学习',
+                            style: TextStyle(fontSize: 12),
+                          ),
+                        ),
+                    ],
                   ),
                 ),
               ),
@@ -1839,6 +1951,8 @@ class _UniverseScreenState extends State<UniverseScreen>
     onPick: _applyHit,
     // 类 ②「措辞不同」的邻近候选：点了就是真落点，与命中同一条路径。
     onPickNear: _pickNear,
+    // 「按此范围建计划」（`PLAN-016` 第三入口）。
+    onPlanHere: _planFromLocate,
     onDismiss: _closeLocate,
   );
 
