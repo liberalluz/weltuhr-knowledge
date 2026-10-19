@@ -21,6 +21,7 @@ class FixtureItem {
     this.domainId = 'python/lexical',
     this.inScope = true,
     this.ability = '基础语法',
+    this.sourceRefs = const <String>[],
   });
 
   final String id;
@@ -32,6 +33,10 @@ class FixtureItem {
 
   /// 六轴里唯一给了值的那个 —— 让「命中轴取值」这类用例有东西可中。
   final String ability;
+
+  /// 指向 `excerpts[].id`。Planner 的覆盖矩阵（`Item.sourceRefs` ∩
+  /// `Scheme.nodes`）靠它，其余用例留空。
+  final List<String> sourceRefs;
 }
 
 /// 搭一个包。[domainIds] 缺省取各项用到的域（去重、保序）。
@@ -52,6 +57,8 @@ LoadedPack fixturePack(
   List<List<String>> edges = const <List<String>>[],
   String itemType = 'declarative',
   String subject = '计算机科学',
+  Map<String, List<String>> schemes = const <String, List<String>>{},
+  List<Map<String, Object?>> excerpts = const <Map<String, Object?>>[],
 }) {
   final Map<String, Object?> manifest = <String, Object?>{
     'id': spaceId,
@@ -86,7 +93,7 @@ LoadedPack fixturePack(
             'how': 'present',
             'tacit': 'not_externalizable',
           },
-          'sourceRefs': <String>[],
+          'sourceRefs': item.sourceRefs,
           'domainId': item.domainId,
           'inScope': item.inScope,
         },
@@ -100,9 +107,17 @@ LoadedPack fixturePack(
           'type': 'strong',
         },
     ],
-    'schemes': <Map<String, Object?>>[],
+    'schemes': <Map<String, Object?>>[
+      for (final MapEntry<String, List<String>> e in schemes.entries)
+        <String, Object?>{
+          'id': e.key,
+          'name': e.key,
+          'nodes': e.value,
+          'authorityLevel': 'L2',
+        },
+    ],
     'questions': <Map<String, Object?>>[],
-    'excerpts': <Map<String, Object?>>[],
+    'excerpts': excerpts,
   };
   return parsePack(
     manifestJson: jsonEncode(manifest),
