@@ -739,6 +739,107 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
+    testWidgets('域命中 ⇒ 落到 Z2，面包屑第 3 段写出那个域（SPEC-VIEW-027）', (
+      WidgetTester tester,
+    ) async {
+      final LoadedPack pack = loadAlphaPack();
+      await _pumpScreen(tester, pack: pack);
+      await openLocate(tester);
+      // 域只有 id 没有名字（包里没有 `Domain` 实体）⇒ 输入 id 才是「找这个域」。
+      await type(tester, 'python/func');
+
+      final LocateResult result = Locator.single(pack).locate('python/func');
+      expect(
+        result.usableHits.length,
+        1,
+        reason: '前提：唯一命中，回车才走得通',
+      );
+      final LocateHit hit = result.usableHits.first;
+      expect(hit.kind, LocateKind.domain, reason: '前提：命中的是域本身');
+
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await _pump(tester);
+
+      expect(find.byKey(locateOverlayKey), findsNothing);
+      expect(
+        _crumbCount(tester),
+        _crumbsFor(ZoomLevel.z2),
+        reason: '域落点是 Z2（VIEW-027 修订）—— 域不是一项，推到单星等于替用户挑了一颗',
+      );
+      expect(_crumbHas(tester, hit.label), isTrue, reason: '第 3 段是那个域');
+      expect(
+        find.byKey(hudDetailDrawerKey),
+        findsNothing,
+        reason:
+            '域落点会顺手选中该域最浅的一项，但 `Z2` 不显示抽屉（`showDetail` 只在 '
+            '`Z4` 与树里成立）—— 选中项在这一档没有可观测出口，能验的只是「不弹抽屉」',
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('树里搜到项 ⇒ 落点切回宇宙的 Z4（SPEC-VIEW-027）', (
+      WidgetTester tester,
+    ) async {
+      final LoadedPack pack = loadAlphaPack();
+      await _pumpScreen(tester, pack: pack, mode: ViewMode.tree);
+      expect(
+        find.textContaining('树 · ${pack.items.length} 项'),
+        findsOneWidget,
+        reason: '前提：确实在树里',
+      );
+
+      await openLocate(tester);
+      await type(tester, '装饰器');
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await _pump(tester);
+
+      expect(
+        find.textContaining('树 · '),
+        findsNothing,
+        reason: '落点类是「去看那一项」，而项只有宇宙的 Z4 看得见 ⇒ 视图要切回去',
+      );
+      expect(
+        _crumbCount(tester),
+        _crumbsFor(ZoomLevel.z4),
+        reason: '落点仍是 Z4 —— 从哪个视图发起不改变落点（VIEW-027）',
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('树里搜到轴值 ⇒ 留在树，只写筛选（SPEC-VIEW-028）', (
+      WidgetTester tester,
+    ) async {
+      final LoadedPack pack = loadAlphaPack();
+      await _pumpScreen(tester, pack: pack, mode: ViewMode.tree);
+
+      await openLocate(tester);
+      await type(tester, '计算机科学');
+      final LocateResult result = Locator.single(pack).locate('计算机科学');
+      final LocateHit axis = result.usableHits.firstWhere(
+        (LocateHit h) => h.kind == LocateKind.axis,
+        orElse: () => throw StateError('前提不成立：这句输入没有轴值命中'),
+      );
+
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await _pump(tester);
+
+      expect(
+        find.textContaining('树 · '),
+        findsOneWidget,
+        reason: '筛选类不换档位、也不切视图 —— 用户是在收窄正在看的这一份',
+      );
+      expect(find.byKey(hudFilterChipsKey), findsOneWidget, reason: '筛选写进去了');
+      expect(
+        find.descendant(
+          of: find.byKey(hudFilterChipsKey),
+          matching: find.textContaining(axis.target),
+        ),
+        findsOneWidget,
+        reason: '② 上是那条被选中的取值（chip 文案是「轴名：取值」，故用包含匹配）',
+      );
+      expect(tester.takeException(), isNull);
+    });
+
     testWidgets('关掉浮层后 ⌘K 还能再开 —— 焦点不随浮层一起消失（SPEC-VIEW-026）', (
       WidgetTester tester,
     ) async {
