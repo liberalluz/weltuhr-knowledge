@@ -11,12 +11,14 @@ Event _event({
   String deviceId = 'dev-a',
   String? itemId = 'py-a',
   String spaceId = 'python',
+  String userId = 'u-a',
   Map<String, Object?> payload = const <String, Object?>{},
 }) => Event(
   id: id,
   type: type,
   hlc: Hlc(physical: physical, counter: counter, deviceId: deviceId),
   spaceId: spaceId,
+  userId: userId,
   itemId: itemId,
   at: DateTime.fromMillisecondsSinceEpoch(physical, isUtc: true),
   payload: payload,
@@ -348,6 +350,61 @@ void main() {
         ),
       ]);
       expect(state.carries.single.ratio, closeTo(1 / 3, 1e-12));
+    });
+  });
+
+  group('数据归属（SPEC-ACC-014）', () {
+    test('同一设备两个账号的进度互不污染（SPEC-ACC-014）', () {
+      final List<Event> events = <Event>[
+        _event(id: 'a1', type: EventType.itemPassed, physical: 1000),
+        _event(
+          id: 'b1',
+          type: EventType.itemPassed,
+          physical: 2000,
+          itemId: 'py-b',
+          userId: 'u-b',
+        ),
+      ];
+      expect(fold(events, userId: 'u-a').passed, <String>{'py-a'});
+      expect(fold(events, userId: 'u-b').passed, <String>{'py-b'});
+    });
+
+    test('不传 userId 即全量折 —— 迁移与导出要的是「存在过」（SPEC-ACC-014）', () {
+      final List<Event> events = <Event>[
+        _event(id: 'a1', type: EventType.itemPassed, physical: 1000),
+        _event(
+          id: 'b1',
+          type: EventType.itemPassed,
+          physical: 2000,
+          itemId: 'py-b',
+          userId: 'u-b',
+        ),
+      ];
+      expect(fold(events).passed, <String>{'py-a', 'py-b'});
+    });
+
+    test('userId 与 spaceId 同时给出时两级都生效（SPEC-ACC-014）', () {
+      final List<Event> events = <Event>[
+        _event(id: 'a1', type: EventType.itemPassed, physical: 1000),
+        _event(
+          id: 'a2',
+          type: EventType.itemPassed,
+          physical: 2000,
+          itemId: 'en-a',
+          spaceId: 'english',
+        ),
+        _event(
+          id: 'b1',
+          type: EventType.itemPassed,
+          physical: 3000,
+          itemId: 'py-b',
+          userId: 'u-b',
+        ),
+      ];
+      expect(
+        fold(events, spaceId: 'python', userId: 'u-a').passed,
+        <String>{'py-a'},
+      );
     });
   });
 

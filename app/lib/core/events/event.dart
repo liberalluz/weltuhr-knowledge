@@ -3,6 +3,7 @@
 /// 铁律：所有可写状态由 `fold(events, asOf)` 得出；不得引入并行的可写状态表。
 library;
 
+import '../constants.dart';
 import '../json.dart';
 
 /// 事件类型全集。唯一权威处 = `docs/reference/event-types.md` §二。
@@ -119,6 +120,7 @@ class Event {
     required this.type,
     required this.hlc,
     required this.spaceId,
+    required this.userId,
     required this.at,
     this.itemId,
     this.payload = const <String, Object?>{},
@@ -129,6 +131,7 @@ class Event {
     type: eventTypeFromWire(requireString(json, 'type')),
     hlc: Hlc.fromJson(requireMap(json, 'hlc')),
     spaceId: requireString(json, 'spaceId'),
+    userId: requireString(json, 'userId'),
     itemId: optionalString(json, 'itemId'),
     at: DateTime.parse(requireString(json, 'at')),
     payload: requireMap(json, 'payload'),
@@ -141,6 +144,14 @@ class Event {
   final EventType type;
   final Hlc hlc;
   final String spaceId;
+
+  /// **数据归属**（`SPEC-ACC-013`）。与 [hlc] 分工不同：它定「这条属于谁」，
+  /// `hlc` 定「谁先谁后」。两者合并会让「A 的迟到事件排成 B 的更早事件」
+  /// 变成无法排查的错。
+  ///
+  /// `v0.1.0` 取本地默认值（[localDefaultUserId]），**非空、不写 `null`** ——
+  /// 空值会让 `fold` 的过滤维度多出第三个分支。
+  final String userId;
 
   /// 目标知识项；迁移类事件可为空或指向旧 id。
   final String? itemId;
@@ -155,6 +166,7 @@ class Event {
     'type': eventTypeWireName(type),
     'hlc': hlc.toJson(),
     'spaceId': spaceId,
+    'userId': userId,
     if (itemId != null) 'itemId': itemId,
     'at': at.toIso8601String(),
     'payload': payload,

@@ -6,6 +6,7 @@ Event _event() => Event(
   type: EventType.itemPassed,
   hlc: const Hlc(physical: 1760700000000, counter: 3, deviceId: 'dev-a'),
   spaceId: 'python',
+  userId: 'u-1',
   itemId: 'py-lambda',
   at: DateTime.utc(2026, 10, 17, 11, 30),
   payload: <String, Object?>{'gradedEventId': 'g-1'},
@@ -60,6 +61,7 @@ void main() {
         type: EventType.itemRetired,
         hlc: const Hlc(physical: 1, counter: 0, deviceId: 'd'),
         spaceId: 'python',
+        userId: 'u-1',
         at: DateTime.utc(2026, 10, 17),
       );
       final Event roundTrip = Event.fromJson(retired.toJson());

@@ -567,3 +567,11 @@ const double governorStopRadiusPx = 24;
 /// 60 px 是「还看得出在朝它去」的距离；再近才减速会来不及 —— 一个以
 /// `C-54` 转的盘，边缘线速度约 32 px/s，从 60 px 到 24 px 有约一秒的缓冲。
 const double governorSlowRadiusPx = 60;
+
+/// `C-93` `v0.1.0` 无账号体系时的**本地默认 `userId`**（`SPEC-ACC-013`）。
+///
+/// 取一个恒定值而非空串，是为了让 `fold` 的过滤维度只有两个分支：写 `null`
+/// 会让「这条属于谁」出现第三态，之后每处读取都得特判。
+/// `B10` 登录后由真实账号取代，**既有事件不批量改写** —— 认领靠新增
+/// `identity_adopted` 事件（`SPEC-ACC-014`）。
+const String localDefaultUserId = 'local';

@@ -412,7 +412,7 @@ class MethodProfile {
       'steps',
     ).map(MethodStep.fromJson).toList(growable: false),
     appliesTo: requireMap(json, 'appliesTo'),
-    origin: MethodOrigin.values.byName(requireString(json, 'origin')),
+    origin: CandidateOrigin.values.byName(requireString(json, 'origin')),
   );
 
   final String id;
@@ -421,7 +421,7 @@ class MethodProfile {
 
   /// **必填**：适用哪类项（`Item.type` / 六轴 / 三层）。
   final JsonMap appliesTo;
-  final MethodOrigin origin;
+  final CandidateOrigin origin;
 
   /// 校验 ②：至少有一个 `review` 步骤（防静默绕过遗忘曲线）。
   bool get hasReviewStep =>
