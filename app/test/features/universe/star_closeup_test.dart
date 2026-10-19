@@ -357,6 +357,102 @@ void main() {
     });
   });
 
+  group('Z4 行星公转（C-56 · V-1i 后半）', () {
+    /// 点 [point] 在 [orbit] 上的参数角（rad，`atan2` 口径）。
+    double phaseOf(StarOrbit orbit, Offset center, Offset point) {
+      final double dx = point.dx - center.dx;
+      final double dy = point.dy - center.dy;
+      final double cosR = math.cos(orbit.rotation);
+      final double sinR = math.sin(orbit.rotation);
+      final double u = dx * cosR + dy * sinR;
+      final double v = -dx * sinR + dy * cosR;
+      return math.atan2(v / orbit.semiMinor, u / orbit.semiMajor);
+    }
+
+    test('推近不改变角速度：同一颗行星在 Z3 与 Z4 转过同样的参数角（C-56）', () {
+      final LoadedPack pack = _fiveChainPack();
+      final StarSystemLayout system = layoutStarSystem(
+        pack: pack,
+        rootId: 'a',
+        viewport: _viewport,
+      );
+      final StarCloseupLayout closeup = layoutStarCloseup(
+        pack: pack,
+        itemId: 'a',
+        viewport: _viewport,
+      );
+      expect(
+        closeup.levelCount,
+        system.orbits.length,
+        reason: '`Z4` 只露 `C-81` 条，但算周期要用真实层数',
+      );
+
+      const double clock = 3.7;
+      final StarSystemLayout later3 = system.advanced(clock);
+      final StarCloseupLayout later4 = closeup.advanced(clock);
+
+      for (final StarOrbit orbit in closeup.orbits) {
+        final StarPlanet zoomed = closeup.planets.firstWhere(
+          (StarPlanet planet) => planet.level == orbit.level,
+        );
+        final StarOrbit wide = system.orbits[orbit.level - 1];
+        final StarPlanet source = system.planetOf(zoomed.id)!;
+
+        final double turned3 =
+            phaseOf(wide, system.starCenter, later3.planetOf(zoomed.id)!.center) -
+            phaseOf(wide, system.starCenter, source.center);
+        final double turned4 =
+            phaseOf(orbit, closeup.starCenter, later4.planetOf(zoomed.id)!.center) -
+            phaseOf(orbit, closeup.starCenter, zoomed.center);
+
+        expect(
+          turned4,
+          closeTo(turned3, 1e-9),
+          reason: '各按自己档的 `a` 算周期就会在这里分叉 —— 推近瞬间行星会变速',
+        );
+      }
+    });
+
+    test('推进后行星仍在本档的椭圆上（C-79 / C-80 的尺度没被带走）', () {
+      final StarCloseupLayout layout = layoutStarCloseup(
+        pack: _fiveChainPack(),
+        itemId: 'a',
+        viewport: _viewport,
+      );
+      final StarCloseupLayout later = layout.advanced(2.3);
+      for (final StarOrbit orbit in layout.orbits) {
+        final StarPlanet planet = later.planets.firstWhere(
+          (StarPlanet each) => each.level == orbit.level,
+        );
+        expect(
+          _ellipseResidual(orbit, layout.starCenter, planet.center),
+          closeTo(1, 1e-9),
+        );
+      }
+    });
+
+    test('相位为 0 时原样返回；孤星特写不炸（C-56）', () {
+      final StarCloseupLayout layout = layoutStarCloseup(
+        pack: _chainPack(),
+        itemId: 'a',
+        viewport: _viewport,
+      );
+      expect(identical(layout.advanced(0), layout), isTrue);
+
+      final StarCloseupLayout lone = layoutStarCloseup(
+        pack: _chainPack(),
+        itemId: 'c',
+        viewport: _viewport,
+      );
+      expect(lone.isEmpty, isFalse, reason: '孤星也是特写（VIEW-040）');
+      expect(
+        identical(lone.advanced(5), lone),
+        isTrue,
+        reason: '没有行星可走 ⇒ 原样返回，界面也不该为它启 ticker',
+      );
+    });
+  });
+
   group('Z4 的绘制指令（SPEC-VIEW-040）', () {
     test('绘制序：轨道 → 恒星 → 米粒 → 黑子 → 行星（无 SPEC：遮挡关系是判据）', () {
       final StarCloseupLayout layout = layoutStarCloseup(

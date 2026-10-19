@@ -77,18 +77,57 @@ class GalaxyDisc {
   double get minorRadius => radius * _tiltCosOf(galaxyDiscTiltDeg);
 
   Offset get center => Offset(centerX, centerY);
+
+  /// 只换遮挡标记的一份拷贝。`layoutGalaxies` 与 [GalaxyLayout.spun] 都要
+  /// 「算完一轮再回填遮挡」，两处各手抄一遍十个字段的话，日后加一个字段就有
+  /// 一处会漏（`R-08` 同族：漏了也画得出来，只是那条通道静默失效）。
+  GalaxyDisc withOccluded(bool value) => occluded == value
+      ? this
+      : GalaxyDisc(
+          spaceId: spaceId,
+          label: label,
+          itemCount: itemCount,
+          domainCount: domainCount,
+          centerX: centerX,
+          centerY: centerY,
+          radius: radius,
+          argb: argb,
+          depth: depth,
+          occluded: value,
+        );
+
+  /// 搬到新落点的一份拷贝。半径、色、深度都不变 —— 公转不动盘本身。
+  GalaxyDisc withCenter(Offset at) => at.dx == centerX && at.dy == centerY
+      ? this
+      : GalaxyDisc(
+          spaceId: spaceId,
+          label: label,
+          itemCount: itemCount,
+          domainCount: domainCount,
+          centerX: at.dx,
+          centerY: at.dy,
+          radius: radius,
+          argb: argb,
+          depth: depth,
+          occluded: occluded,
+        );
 }
 
 double _tiltCosOf(double degrees) => math.cos(degrees * math.pi / 180);
 
 /// 一次 `Z0` 布局的结果。
 class GalaxyLayout {
-  const GalaxyLayout({required this.discs, required this.degenerate});
+  const GalaxyLayout({
+    required this.discs,
+    required this.degenerate,
+    required this.orbitCenter,
+  });
 
   /// 没有可画的根（一个包都没装出来）。界面据此保留诊断行、不画空盘子。
   static const GalaxyLayout empty = GalaxyLayout(
     discs: <GalaxyDisc>[],
     degenerate: false,
+    orbitCenter: Offset.zero,
   );
 
   /// 绘制序：近 → 远。
@@ -100,7 +139,59 @@ class GalaxyLayout {
   /// 反解出 `k` 的下限，视口给出的 `k` 低于它就说明这个包数下画不出星系。
   final bool degenerate;
 
+  /// 构型公转（`C-55`）绕的那个点 —— 就是视口中心。
+  ///
+  /// 存下来而不是让 [spun] 自己再算一遍 `viewport / 2`：那一来得把视口也带进
+  /// 布局，而布局的每个消费者（绘制 / 拾取 / 标注）都不需要视口 —— 它们只
+  /// 需要「盘在哪」。
+  final Offset orbitCenter;
+
   bool get isEmpty => discs.isEmpty;
+
+  /// 构型公转 [radians]（`C-55`）之后的一份布局。
+  ///
+  /// **绕 [orbitCenter] 整体转**，不是各盘自转 —— 主星系（`depth == 0`）固定
+  /// 在视口中心，矮星系绕着它走。这正是 `C-54` 在 `Z0` 不可观测的那件事：
+  /// 盘本身只有一枚椭圆，转它看不出任何区别（`constants.md` 的 `C-54` 注）。
+  ///
+  /// ⚠️ **y 要先按 `C-59` 拉回正圆再转、转完压回去**：倾斜盘投影成椭圆，
+  /// 直接按屏幕坐标转会让矮星系在竖直方向上「跑得比横向快」—— 公转轨道变成
+  /// 一个侧躺的 8 字，而不是同一条椭圆。
+  ///
+  /// ⚠️ **遮挡标记不重判**：这是绕 [orbitCenter] 的刚体旋转，盘与盘的相对位置
+  /// 一点没变 ⇒ 谁挡谁逐字相同。重判一遍会得到同样的结果，只是每帧多花 `n²`
+  /// 次比较（`R13` 第 7 条同一条理由：空转的成本是满的，收益是零）。
+  ///
+  /// 依赖的前提写在这里：**整组一起转**。若日后改成「各盘按自己的周期公转」，
+  /// 前提就不成立，那时必须回来补一次重判 —— 而画面上不会有任何东西变红，只有
+  /// 描边会指向错的那个盘。
+  GalaxyLayout spun(double radians) {
+    if (radians == 0 || !radians.isFinite || discs.length < 2) {
+      return this;
+    }
+    final double c = math.cos(radians);
+    final double s = math.sin(radians);
+    final double tiltCos = _tiltCosOf(galaxyDiscTiltDeg);
+
+    Offset orbit(Offset point) {
+      final double dx = point.dx - orbitCenter.dx;
+      final double dy = (point.dy - orbitCenter.dy) / tiltCos;
+      return Offset(
+        orbitCenter.dx + dx * c - dy * s,
+        orbitCenter.dy + (dx * s + dy * c) * tiltCos,
+      );
+    }
+
+    return GalaxyLayout(
+      discs: <GalaxyDisc>[
+        for (final GalaxyDisc disc in discs)
+          // 主星系钉在构型中心：公转的是「别的小星系绕它」。
+          disc.depth == 0 ? disc : disc.withCenter(orbit(disc.center)),
+      ],
+      degenerate: degenerate,
+      orbitCenter: orbitCenter,
+    );
+  }
 
   GalaxyDisc? discOf(String spaceId) {
     for (final GalaxyDisc disc in discs) {
@@ -246,22 +337,10 @@ GalaxyLayout layoutGalaxies({
   return GalaxyLayout(
     discs: <GalaxyDisc>[
       for (int i = 0; i < discs.length; i++)
-        occluded[i]
-            ? GalaxyDisc(
-                spaceId: discs[i].spaceId,
-                label: discs[i].label,
-                itemCount: discs[i].itemCount,
-                domainCount: discs[i].domainCount,
-                centerX: discs[i].centerX,
-                centerY: discs[i].centerY,
-                radius: discs[i].radius,
-                argb: discs[i].argb,
-                depth: discs[i].depth,
-                occluded: true,
-              )
-            : discs[i],
+        discs[i].withOccluded(occluded[i]),
     ],
     degenerate: degenerate,
+    orbitCenter: Offset(cx, cy),
   );
 }
 
@@ -300,6 +379,31 @@ String? pickGalaxyAt({required GalaxyLayout layout, required Offset point}) {
     }
   }
   return null;
+}
+
+/// 指针离**最近一个星系盘边缘**多远（px）—— `C-57` 减速停转的判据输入。
+///
+/// 盘内返回负值：`governorFactor` 只会拿它和两个正阈值比，负数一律读作「贴住了」
+/// ⇒ 停转。这不是取巧 —— 盘本身就是可点对象，指针压在盘上时它必须停。
+///
+/// 用「归一化半径减一，再乘短半轴」而不是精确的椭圆点距：精确解要解四次方程，
+/// 而这里只需要一个**单调、过零位置正确**的量。短半轴那一乘是为了让压扁后的盘
+/// 上下方向不会被读成「比左右更近」。
+double distanceToNearestGalaxy(GalaxyLayout layout, Offset point) {
+  const double floor = galaxyMinTapDiameter / 2;
+  double best = double.infinity;
+  for (final GalaxyDisc disc in layout.discs) {
+    final double rx = math.max(disc.radius, floor);
+    final double ry = math.max(disc.minorRadius, floor);
+    final double nx = (point.dx - disc.centerX) / rx;
+    final double ny = (point.dy - disc.centerY) / ry;
+    final double distance = (math.sqrt(nx * nx + ny * ny) - 1) *
+        math.min(rx, ry);
+    if (distance < best) {
+      best = distance;
+    }
+  }
+  return best;
 }
 
 /// 空间的显示名：`space.id` 首字母大写（`VIEW-036` 的标注口径）。

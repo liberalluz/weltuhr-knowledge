@@ -51,9 +51,16 @@ import 'dart:ui' show Offset, Size;
 import '../../core/constants.dart';
 import '../../core/entities/content.dart';
 import '../../core/pack/pack_parse.dart';
+import '../../core/view/motion.dart' show spunRadians;
 import 'galaxy_map.dart' show accentArgbOf, galaxyHash01;
 import 'star_map.dart'
-    show StarOrbit, StarPlanet, StarSystemLayout, layoutStarSystem;
+    show
+        StarOrbit,
+        StarPlanet,
+        StarSystemLayout,
+        layoutStarSystem,
+        pointOnOrbit,
+        starOrbitPeriodSeconds;
 
 /// 恒星表面的一颗斑点（米粒或黑子）。两种只差颜色与分布区间，形状是同一个。
 class StarSpeck {
@@ -72,6 +79,7 @@ class StarCloseupLayout {
     required this.itemId,
     required this.itemLabel,
     required this.domainId,
+    required this.levelCount,
     required this.orbits,
     required this.planets,
     required this.granules,
@@ -88,6 +96,7 @@ class StarCloseupLayout {
     itemId: '',
     itemLabel: '',
     domainId: '',
+    levelCount: 0,
     orbits: <StarOrbit>[],
     planets: <StarPlanet>[],
     granules: <StarSpeck>[],
@@ -103,6 +112,13 @@ class StarCloseupLayout {
   final String itemLabel;
   final String domainId;
 
+  /// `Z3` 的**真实层数**（不是本档露出来的条数）。
+  ///
+  /// 只用于算开普勒周期（[starOrbitPeriodSeconds]）：分母若取本档的
+  /// `C-81`，同一颗行星在 `Z3` 与 `Z4` 里会得到两个周期 —— 推近的一瞬间
+  /// 它会突然变速，而两档看的是同一颗。
+  final int levelCount;
+
   /// 露出来的轨道（`≤ C-81` 条），按层号升序。
   final List<StarOrbit> orbits;
 
@@ -116,6 +132,70 @@ class StarCloseupLayout {
   final List<StarSpeck> spots;
 
   bool get isEmpty => itemId.isEmpty;
+
+  /// 按 id 取一颗行星。与 `StarSystemLayout.planetOf` 同名同义 —— 两档看的是
+  /// 同一颗行星，取法不该有两套。
+  StarPlanet? planetOf(String id) {
+    for (final StarPlanet planet in planets) {
+      if (planet.id == id) {
+        return planet;
+      }
+    }
+    return null;
+  }
+
+  /// 行星公转 [clockSeconds] 秒之后的一份布局（`C-56`）。
+  ///
+  /// 与 `StarSystemLayout.advanced` 同一套：只搬行星落点，不动恒星、轨道、纹理。
+  /// ⚠️ 这里**必须自己算一遍**而不是把 `Z3` 的布局整套搬过来 —— 本档的椭圆是
+  /// `C-79` / `C-80` 的尺度，`Z3` 的落点搬进来行星会跑出画面。参数角共用，
+  /// 半长轴各用各的，这正是 [pointOnOrbit] 只吃 `orbit` 不吃 `a` 的原因。
+  StarCloseupLayout advanced(double clockSeconds) {
+    if (planets.isEmpty ||
+        orbits.isEmpty ||
+        clockSeconds == 0 ||
+        !clockSeconds.isFinite) {
+      return this;
+    }
+    final Map<int, StarOrbit> byLevel = <int, StarOrbit>{
+      for (final StarOrbit orbit in orbits) orbit.level: orbit,
+    };
+    final List<StarPlanet> moved = <StarPlanet>[];
+    for (final StarPlanet planet in planets) {
+      final StarOrbit? orbit = byLevel[planet.level];
+      if (orbit == null) {
+        moved.add(planet);
+        continue;
+      }
+      final double angle =
+          planet.phase +
+          spunRadians(
+            clockSeconds,
+            starOrbitPeriodSeconds(planet.level, levelCount),
+          );
+      moved.add(
+        StarPlanet(
+          id: planet.id,
+          level: planet.level,
+          center: pointOnOrbit(orbit, angle, starCenter),
+          phase: planet.phase,
+        ),
+      );
+    }
+    return StarCloseupLayout(
+      starCenter: starCenter,
+      starRadius: starRadius,
+      accentArgb: accentArgb,
+      itemId: itemId,
+      itemLabel: itemLabel,
+      domainId: domainId,
+      levelCount: levelCount,
+      orbits: orbits,
+      planets: moved,
+      granules: granules,
+      spots: spots,
+    );
+  }
 }
 
 /// 按包、恒星项与视口算出一次 `Z4` 特写。
@@ -189,21 +269,11 @@ StarCloseupLayout layoutStarCloseup({
       if (orbit == null) {
         continue;
       }
-      final double cosR = math.cos(orbit.rotation);
-      final double sinR = math.sin(orbit.rotation);
-      final Offset local = Offset(
-        orbit.semiMajor * math.cos(each.phase),
-        orbit.semiMinor * math.sin(each.phase),
-      );
-      final Offset rotated = Offset(
-        local.dx * cosR - local.dy * sinR,
-        local.dx * sinR + local.dy * cosR,
-      );
       planets.add(
         StarPlanet(
           id: each.id,
           level: each.level,
-          center: center + rotated,
+          center: pointOnOrbit(orbit, each.phase, center),
           phase: each.phase,
         ),
       );
@@ -265,6 +335,8 @@ StarCloseupLayout layoutStarCloseup({
     itemId: itemId,
     itemLabel: item.title,
     domainId: item.domainId,
+    // 真实层数取 `Z3` 那一份的轨道条数 —— 本档的 `orbits` 只到 `C-81`。
+    levelCount: system.orbits.length,
     orbits: orbits,
     planets: planets,
     granules: granules,

@@ -1933,16 +1933,38 @@ class _UniverseScreenState extends State<UniverseScreen>
           : StarCloseupLayout.empty;
       final bool starCloseup = !closeup.isEmpty;
 
-      // 只有 `Z1` 接相位（本笔：`C-54`）。其余四档这一刻是静止的，时钟跟着停 ——
-      // 否则每帧照走一遍 build 与绘制调度，而画面一动不动（`R13` 第 7 条）。
-      // 判据用**真正画出来的那一档**（`spiralDisc`），不是 `_camera.zoom`：
-      // 盘没装出来时画的是降级视图，那时候钟也没用。
-      _syncMotion(spiralDisc);
+      // 五档都接相位：`Z0` 构型公转（`C-55`）、`Z1` 自转（`C-54`）、`Z2` 自转
+      // （`C-54`）、`Z3` / `Z4` 行星公转（`C-56`）。退回项投影与树不接 ——
+      // 那时候钟空转只是每帧白走一遍 build 与绘制调度（`R13` 第 7 条）。
+      //
+      // 判据用**真正画出来的那一档**，不是 `_camera.zoom`：某一档的几何没装出来
+      // 时画的是降级视图，那时候相位也没有消费者。
+      //
+      // ⚠️ 两条「有档但没东西可转」要单独排掉，否则 ticker 白跑而画面上完全正常：
+      // - `Z0` 只有一个盘（单空间包就是这种）—— 没有「构型」可公转；
+      // - `Z3` / `Z4` 的行星被筛光 —— 轨道仍画着，但没有行星要走。
+      final bool galaxyOrbits = galaxyMap && galaxies.discs.length > 1;
+      final bool planetOrbits = starView
+          ? starSystem.planets.isNotEmpty
+          : starCloseup && closeup.planets.isNotEmpty;
+      _syncMotion(galaxyOrbits || spiralDisc || nebulaCloud || planetOrbits);
 
       // 逐帧只重算「旋转」。布局的构建在上面已经做过一次 —— 那里有
       // `subtreesInDomain` 与 `buildSceneNodes`，是一整遍拓扑；这里只把算好的点
-      // 绕盘心转一个角度。两者差一个量级，混在逐帧路径里就是每帧重算拓扑。
-      Widget canvasOf(SpiralLayout disc) => RepaintBoundary(
+      // 绕中心转一个角度。两者差一个量级，混在逐帧路径里就是每帧重算拓扑。
+      //
+      // ⚠️ 五档传一个**记录**而不是五个位置参数：五档里有四档在同一帧只看一个，
+      // 位置参数会让调用点变成「猜第几个是哪个」，而挪错位置编译照样过。
+      Widget canvasOf((
+        {
+          GalaxyLayout galaxy,
+          SpiralLayout spiral,
+          NebulaLayout nebula,
+          StarSystemLayout star,
+          StarCloseupLayout closeup,
+        }
+      )
+      now) => RepaintBoundary(
         // ⚠️ 尺寸必须由 `SizedBox` **强制**给，不能只写 `CustomPaint.size`：
         // `size` 只是 preferred，父级给的 tight 约束会把它推翻 —— 那样绘制按
         // 窗口尺寸画、拾取按画布尺寸算，两边错开。
@@ -1950,27 +1972,28 @@ class _UniverseScreenState extends State<UniverseScreen>
           size: surface,
           child: CustomPaint(
             painter: galaxyMap
-                // `Z0` 的盘自转 `C-54` 在投影里**不可观测**：盘只是一枚椭圆、
-                // 没有内部图案，倾斜盘绕自身轴转的投影轮廓每个角度都一样。
-                // 那一档只接 `C-55` 构型公转，归 `V-1i` 后半。
-                ? GalaxyPainter(layout: galaxies)
+                // `Z0` 接 `C-55` 构型公转：矮星系绕视口中心走，主星系不动。
+                // ⚠️ `C-54` 在这一档**不可观测**（盘只是一枚椭圆、没有内部图案，
+                // 倾斜盘绕自身轴转的投影轮廓每个角度都一样）—— 不是没做，是做了
+                // 看不见（`constants.md` 的 `C-54` 注）。
+                ? GalaxyPainter(layout: now.galaxy)
                 // `Z1` 的盘按 `C-54` 整盘刚性旋转（`VIEW-037`）。相位由外面的
                 // 时钟给，painter 自己不接 `spin` —— 布局里已经把相位算进了坐标，
                 // 于是「画在哪」与「点在哪」只有一个来源。
                 : spiralDisc
-                ? SpiralPainter(layout: disc)
-                // `Z2` 的云整体自转 `C-54` 归 `V-1i` 后半（`VIEW-038`：亮结无
-                // 独立轨道，只随盘整体转）。
+                ? SpiralPainter(layout: now.spiral)
+                // `Z2` 接 `C-54` 整盘自转：与 `Z1` 同一个 ω，亮结无独立轨道、只随
+                // 盘整体转（`VIEW-038`）。
                 : nebulaCloud
-                ? NebulaPainter(layout: nebula)
-                // `Z3` 的行星公转 `C-56` 归 `V-1i` 后半 —— 它是全项目**唯一**
-                // 一条真正的公转（绕的是另一个天体），要改的是相位推进。
+                ? NebulaPainter(layout: now.nebula)
+                // `Z3` 接 `C-56` 开普勒公转 —— 全项目**唯一**一条真正的公转
+                // （绕的是另一个天体）。
                 : starView
-                ? StarPainter(layout: starSystem)
-                // `Z4` 不接相位：`VIEW-040` 明写恒星自转在这一档不可见，
-                // 行星公转 `C-56` 归 `V-1i` 后半。
+                ? StarPainter(layout: now.star)
+                // `Z4` 的行星沿用同一套 `C-56` 周期：推近不改变「它跑多快」。
+                // 恒星自转仍不接 —— `VIEW-040` 明写这一档看不见自转。
                 : starCloseup
-                ? StarCloseupPainter(layout: closeup)
+                ? StarCloseupPainter(layout: now.closeup)
                 : FramePainter(
                     scene: _scene,
                     spin: _spin,
@@ -2010,20 +2033,53 @@ class _UniverseScreenState extends State<UniverseScreen>
           child: AnimatedBuilder(
             animation: _motionClockValue,
             builder: (BuildContext context, Widget? child) {
-              final double discAngle = spunRadians(
-                _motionClock,
-                spinPeriodSeconds,
-              );
+              final double clock = _motionClock;
+              // `Z1` 与 `Z2` 共用 `C-54` 的同一个 ω：同一块盘在不同视角下角速度
+              // 必须相同，否则「进门 / 出门」时世界会突然变快变慢。
+              final double discAngle = spunRadians(clock, spinPeriodSeconds);
               final SpiralLayout disc = spiralDisc
                   ? spiral.spun(discAngle)
                   : spiral;
+              // `Z0` 只有 `C-55` 构型公转 —— 那一档的盘是一枚没有内部图案的
+              // 椭圆，自转在投影里不可观测（`constants.md` 的 `C-54` 注）。
+              final GalaxyLayout galaxyNow = galaxyMap
+                  ? galaxies.spun(spunRadians(clock, z0OrbitPeriodSeconds))
+                  : galaxies;
+              final NebulaLayout nebulaNow = nebulaCloud
+                  ? nebula.spun(discAngle)
+                  : nebula;
+              // `Z3` / `Z4` 接 `C-56` 开普勒公转。两档周期同源（层号口径），
+              // 所以推近的一瞬间行星不会变速。
+              final StarSystemLayout starNow = starView
+                  ? starSystem.advanced(clock)
+                  : starSystem;
+              final StarCloseupLayout closeupNow = starCloseup
+                  ? closeup.advanced(clock)
+                  : closeup;
+
               // 停转判据要用**这一刻画出来**的布局：物体转走了，距离就跟着变。
               // 在 build 里赋值是这里唯一的写法 —— ticker 拿不到布局，而让
               // ticker 自己去重算布局等于每帧重算拓扑。
-              _nearestPickable = spiralDisc
+              //
+              // ⚠️ `Z4` 留 `null` 不是漏写：那一档的可点对象是「—」（`VIEW-001`，
+              // 详情抽屉就是它的形态），没有「离可点对象多近」这回事 ⇒ 按
+              // `_governorAt` 的「不知道就常速」走。
+              _nearestPickable = galaxyMap
+                  ? (Offset point) => distanceToNearestGalaxy(galaxyNow, point)
+                  : spiralDisc
                   ? (Offset point) => distanceToNearestDomainMark(disc, point)
+                  : nebulaCloud
+                  ? (Offset point) => distanceToNearestNebulaMark(nebulaNow, point)
+                  : starView
+                  ? (Offset point) => distanceToNearestStarBody(starNow, point)
                   : null;
-              final Widget canvas = canvasOf(disc);
+              final Widget canvas = canvasOf((
+                galaxy: galaxyNow,
+                spiral: disc,
+                nebula: nebulaNow,
+                star: starNow,
+                closeup: closeupNow,
+              ));
               return GestureDetector(
                 // `opaque`：空白处也要接住点击，否则点在星与星的缝里会穿透到底下。
                 behavior: HitTestBehavior.opaque,
@@ -2052,15 +2108,16 @@ class _UniverseScreenState extends State<UniverseScreen>
                     );
                   }
                   if (galaxyMap) {
-                    _pickGalaxyAt(point, galaxies);
+                    // 五档一律用**这一刻**的布局判命中：物体在转，按没转过的坐标
+                    // 判命中等于「画在这、点在那」（`R-08` 同族：不会有任何东西
+                    // 变红，只是越转越点不中）。
+                    _pickGalaxyAt(point, galaxyNow);
                   } else if (spiralDisc) {
-                    // 用**这一刻**的盘：物体在转，按没转过的坐标判命中等于
-                    // 「画在这、点在那」（`R-08` 同族：不会有任何东西变红）。
                     _pickDomainAt(point, disc);
                   } else if (nebulaCloud) {
-                    _pickNebulaAt(point, nebula);
+                    _pickNebulaAt(point, nebulaNow);
                   } else if (starView) {
-                    _pickStarAt(point, starSystem);
+                    _pickStarAt(point, starNow);
                   } else if (starCloseup) {
                     // `Z4` 的可点对象是「—」（`VIEW-001`）：**详情抽屉就是它的形态**。
                     // 这一档画布上没有「点了去哪」这回事 —— 想换一项要经抽屉里点前置
@@ -2077,13 +2134,13 @@ class _UniverseScreenState extends State<UniverseScreen>
                 // 的话，改「标注不接手势」时要记得改四处（`R-08`：形状挡得住改、
                 // 挡不住加）。
                 child: galaxyMap
-                    ? _withLayer(canvas, plan, _galaxyLayer(galaxies, surface, window))
+                    ? _withLayer(canvas, plan, _galaxyLayer(galaxyNow, surface, window))
                     : spiralDisc
                     ? _withLayer(canvas, plan, _domainLayer(disc, surface, window))
                     : nebulaCloud
-                    ? _withLayer(canvas, plan, _nebulaLayer(nebula, surface, window))
+                    ? _withLayer(canvas, plan, _nebulaLayer(nebulaNow, surface, window))
                     : starView
-                    ? _withLayer(canvas, plan, _starLayer(starSystem, surface, window))
+                    ? _withLayer(canvas, plan, _starLayer(starNow, surface, window))
                     : (plan.isDownscaled
                           ? FittedBox(fit: BoxFit.fill, child: canvas)
                           : canvas),
