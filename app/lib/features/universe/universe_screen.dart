@@ -135,7 +135,9 @@
 ///
 library;
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 
 import '../../core/constants.dart';
@@ -145,6 +147,7 @@ import '../../core/locate/locator.dart';
 import '../../core/pack/pack_parse.dart';
 import '../../core/view/detail.dart';
 import '../../core/view/filter.dart';
+import '../../core/view/motion.dart';
 import '../../core/view/navigation.dart';
 import '../../core/view/tree.dart';
 import '../../core/view/viewport.dart';
@@ -283,7 +286,7 @@ const double _compassMaxWidth = 288;
 const double _compassValuesMaxHeight = 220;
 
 /// 自转一圈的时长。慢到能看清，又不至于让人以为界面卡住。
-const Duration _spinPeriod = Duration(seconds: 24);
+const Duration _spinPeriod = Duration(seconds: spinPeriodSeconds);
 
 const double _cameraPitch = 0.42;
 
@@ -406,8 +409,47 @@ class UniverseScreen extends StatefulWidget {
 }
 
 class _UniverseScreenState extends State<UniverseScreen>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin, WidgetsBindingObserver {
   late final AnimationController _spin;
+
+  /// 运动时钟的驱动。与 [_spin] 并存而不是取代它：`_spin` 是 0→1 的**循环**
+  /// 语义，`FramePainter` 与 `universe_spike_screen` 共用那一套接口；而五档要的
+  /// 是**不回卷**的秒数 —— `C-56` 的 `T_i = C-56·(a_i/a_inner)^1.5` 不整除
+  /// `C-55` 的 72 s，控制器归零那一帧会把行星跳位（见 `core/view/motion.dart`
+  /// 文件头）。
+  late final Ticker _motion;
+
+  /// 累计运动秒数（单调递增）。相位是它的函数，不是它的状态。
+  double _motionClock = 0;
+
+  /// 上一帧的 `elapsed`。`Ticker` 重启后从零重计，所以差值为负那一帧要丢掉
+  /// （[advanceClock] 里有守卫）。
+  ///
+  /// ⚠️ 可空而不是拿 `Duration.zero` 当哨兵：重启后的第一帧 `elapsed` **正好
+  /// 是 0**，用零当哨兵会让第二帧也被当成「第一帧」，于是恢复之后仍然一步不
+  /// 动 —— 这条是「指针移开 ⇒ 恢复」用例抓出来的。
+  Duration? _motionLastTick;
+
+  /// 时钟的可监听值 —— 逐帧重建只订阅这一个。单独放一个 `ValueNotifier`
+  /// 而不是 `setState`：后者会把 HUD 一起重建，而 HUD 与相位无关。
+  final ValueNotifier<double> _motionClockValue = ValueNotifier<double>(0);
+
+  /// 指针在**画布坐标**里的位置。`null` = 不知道（还没进窗口 / 已移出 / 失焦）。
+  ///
+  /// 存画布坐标而不是窗口坐标：降采样时两者不等（`C-33`），量错坐标系会让
+  /// 减速发生在离目标老远的地方，而画面上只表现为「转得有点怪」。
+  Offset? _pointer;
+
+  /// 当前档位「离最近可点对象多远」。**在 build 里按这一刻的布局刷新** ——
+  /// 只有 build 知道此刻画的是哪一档、布局转到了哪个相位。
+  double Function(Offset point)? _nearestPickable;
+
+  /// 系统「减弱动画」开关（`MediaQuery.disableAnimations`）。
+  ///
+  /// 开着就整个冻住：这一类用户要的正是「别动」，而 `C-57` 的停转只解决
+  /// 「动的时候点不中」。顺带它也是测试里唯一的确定性开关 —— 断言位置之前
+  /// 得先让画面站住。
+  bool _reduceMotion = false;
   late CameraState _camera;
   late ViewMode _mode;
 
@@ -467,6 +509,8 @@ class _UniverseScreenState extends State<UniverseScreen>
   void initState() {
     super.initState();
     _spin = AnimationController(vsync: this, duration: _spinPeriod)..repeat();
+    _motion = createTicker(_onMotionTick);
+    WidgetsBinding.instance.addObserver(this);
     _camera = CameraState(
       zoom: widget.initialZoom,
       yawRadians: 0,
@@ -480,11 +524,104 @@ class _UniverseScreenState extends State<UniverseScreen>
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // 「减弱动画」在 `MediaQuery` 里，只能在依赖阶段读（`initState` 里读不到）。
+    _reduceMotion = MediaQuery.disableAnimationsOf(context);
+    if (_reduceMotion) {
+      _stopMotion();
+    } else {
+      _startMotion();
+    }
+  }
+
+  /// 应用失焦 / 进后台 ⇒ **当作指针已经离开**（`C-57` 的三条恢复路径之二、三）。
+  ///
+  /// 少这一条就是**永久停转**：指针停在域点上不动、窗口被切走再切回来，
+  /// `onExit` 不会补发，于是画面从此一动不动 —— 而画面上一切正常。
+  ///
+  /// ⚠️ 严格说「失焦」与「进后台」在这里合并成了同一个处理：桌面 Flutter 里
+  /// 两者都表现为 `AppLifecycleState.inactive` 及以下。写清楚而不是假装实现了
+  /// 两个钩子。
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      return;
+    }
+    _pointer = null;
+    _startMotion();
+  }
+
+  /// 每帧推进时钟。
+  void _onMotionTick(Duration elapsed) {
+    final Duration? last = _motionLastTick;
+    _motionLastTick = elapsed;
+    final double dt = last == null
+        ? 0
+        : (elapsed - last).inMicroseconds / 1e6;
+    final double factor = _governorAt();
+    final double next = advanceClock(_motionClock, dt, factor);
+    if (next != _motionClock) {
+      _motionClock = next;
+      _motionClockValue.value = next;
+    }
+    if (factor <= 0) {
+      // 停转就**停掉 ticker**：空转每帧仍要走一遍 build 与绘制调度，而画面
+      // 一动不动 —— 那不是省电，是白烧。重启由指针移动 / 窗口恢复触发。
+      _stopMotion();
+    }
+  }
+
+  /// 这一刻的速率系数（`C-57`）。0 = 停转，1 = 常速。
+  double _governorAt() {
+    if (_reduceMotion) {
+      return 0;
+    }
+    final Offset? pointer = _pointer;
+    final double Function(Offset)? nearest = _nearestPickable;
+    if (pointer == null || nearest == null) {
+      // 不知道指针在哪 ⇒ 常速。「不知道」不该被读成「停住」。
+      return 1;
+    }
+    final double distance = nearest(pointer);
+    if (!distance.isFinite) {
+      return 1;
+    }
+    return governorFactor(
+      distance: distance,
+      stopRadius: governorStopRadiusPx,
+      slowRadius: governorSlowRadiusPx,
+    );
+  }
+
+  void _startMotion() {
+    if (_reduceMotion || _motion.isTicking) {
+      return;
+    }
+    _motionLastTick = null;
+    _motion.start();
+  }
+
+  void _stopMotion() {
+    if (!_motion.isTicking) {
+      return;
+    }
+    _motion.stop();
+    // 重启后 `elapsed` 从零重计 —— 清掉上一轮的基准，否则差值会是负数。
+    _motionLastTick = null;
+  }
+
+  @override
   void dispose() {
     // 先 stop 再 dispose：`repeat()` 的 ticker 还活着时直接 dispose 会撞断言。
     _spin
       ..stop()
       ..dispose();
+    _motion
+      ..stop()
+      ..dispose();
+    WidgetsBinding.instance.removeObserver(this);
+    _motionClockValue.dispose();
     _rootFocus.dispose();
     super.dispose();
   }
@@ -1649,6 +1786,22 @@ class _UniverseScreenState extends State<UniverseScreen>
     return pack.itemOf(id)?.domainId;
   }
 
+  /// 记下指针位置（**画布坐标**），并在停转状态下把它唤醒（`C-57`）。
+  ///
+  /// 指针位置只在鼠标动的时候更新：`onHover` 不会因为「画面在动」而重复触发，
+  /// 于是「贴着目标停住」与「物体继续转走」这两件事不会互相拉扯 —— 停住的
+  /// 那一刻距离已经算过，物体也停了，没人会把它推开。
+  void _trackPointer(Offset globalPosition) {
+    final RenderBox? box =
+        _canvasKey.currentContext?.findRenderObject() as RenderBox?;
+    if (box == null || !box.hasSize) {
+      return;
+    }
+    _pointer = box.globalToLocal(globalPosition);
+    // 指针一动就恢复转：停转只在「贴着目标、且没动」时成立。
+    _startMotion();
+  }
+
   Widget _universeBody(Set<String>? visibleIds) => LayoutBuilder(
     builder: (BuildContext context, BoxConstraints constraints) {
       // 视口尺寸要**与 painter 拿到的一致**。用 `constraints` 而不是
@@ -1734,7 +1887,10 @@ class _UniverseScreenState extends State<UniverseScreen>
           : StarCloseupLayout.empty;
       final bool starCloseup = !closeup.isEmpty;
 
-      final Widget canvas = RepaintBoundary(
+      // 逐帧只重算「旋转」。布局的构建在上面已经做过一次 —— 那里有
+      // `subtreesInDomain` 与 `buildSceneNodes`，是一整遍拓扑；这里只把算好的点
+      // 绕盘心转一个角度。两者差一个量级，混在逐帧路径里就是每帧重算拓扑。
+      Widget canvasOf(SpiralLayout disc) => RepaintBoundary(
         // ⚠️ 尺寸必须由 `SizedBox` **强制**给，不能只写 `CustomPaint.size`：
         // `size` 只是 preferred，父级给的 tight 约束会把它推翻 —— 那样绘制按
         // 窗口尺寸画、拾取按画布尺寸算，两边错开。
@@ -1743,24 +1899,25 @@ class _UniverseScreenState extends State<UniverseScreen>
           size: surface,
           child: CustomPaint(
             painter: galaxyMap
-                // `Z0` 不接 `spin`：盘自转 `C-54` 与构型公转 `C-55` 归 `V-1i`，
-                // 这一笔只画形态。接了会让一片不动的画面每帧重绘，帧预算读数
-                // 会凭空多出一档成本。
+                // `Z0` 的盘自转 `C-54` 在投影里**不可观测**：盘只是一枚椭圆、
+                // 没有内部图案，倾斜盘绕自身轴转的投影轮廓每个角度都一样。
+                // 那一档只接 `C-55` 构型公转，归 `V-1i` 后半。
                 ? GalaxyPainter(layout: galaxies)
-                // `Z1` 同理：盘自转 `C-54` 与减速停转 `C-57` 归 `V-1i`。
+                // `Z1` 的盘按 `C-54` 整盘刚性旋转（`VIEW-037`）。相位由外面的
+                // 时钟给，painter 自己不接 `spin` —— 布局里已经把相位算进了坐标，
+                // 于是「画在哪」与「点在哪」只有一个来源。
                 : spiralDisc
-                ? SpiralPainter(layout: spiral)
-                // `Z2` 也一样 —— 云的整体自转归 `V-1i`（`VIEW-038`：亮结无
+                ? SpiralPainter(layout: disc)
+                // `Z2` 的云整体自转 `C-54` 归 `V-1i` 后半（`VIEW-038`：亮结无
                 // 独立轨道，只随盘整体转）。
                 : nebulaCloud
                 ? NebulaPainter(layout: nebula)
-                // `Z3` 同样不接 `spin`：行星公转 `C-56` 归 `V-1i`。这是全项目
-                // **唯一**一条真正的公转（绕的是另一个天体），接上时要改的是
-                // 相位推进，不是重画几何 —— 相位方向已经排好了。
+                // `Z3` 的行星公转 `C-56` 归 `V-1i` 后半 —— 它是全项目**唯一**
+                // 一条真正的公转（绕的是另一个天体），要改的是相位推进。
                 : starView
                 ? StarPainter(layout: starSystem)
-                // `Z4` 不接 `spin`：`VIEW-040` 明写恒星自转在这一档不可见，
-                // 行星公转 `C-56` 归 `V-1i`。
+                // `Z4` 不接相位：`VIEW-040` 明写恒星自转在这一档不可见，
+                // 行星公转 `C-56` 归 `V-1i` 后半。
                 : starCloseup
                 ? StarCloseupPainter(layout: closeup)
                 : FramePainter(
@@ -1781,66 +1938,102 @@ class _UniverseScreenState extends State<UniverseScreen>
       // 给它一个 tight 的窗口尺寸，`BoxFit.fill` 才会把它铺满。
       return SizedBox.fromSize(
         size: window,
-        child: GestureDetector(
-          // `opaque`：空白处也要接住点击，否则点在星与星的缝里会穿透到底下。
-          behavior: HitTestBehavior.opaque,
-          // ⚠️ **不能用 `details.localPosition`**。它相对的是「手势命中的那个
-          // RenderBox」，而 `FittedBox` 下不保证落在画布盒上。把全局坐标显式
-          // 映到画布盒，不依赖命中路径怎么走。
-          onTapUp: (TapUpDetails details) {
-            final RenderBox? box =
-                _canvasKey.currentContext?.findRenderObject() as RenderBox?;
-            if (box == null || !box.hasSize) {
-              return;
-            }
-            final Offset point = box.globalToLocal(details.globalPosition);
-            if (kPickDebug) {
-              // 一行说清「这一下有反应的可能性有多大」：`visible=0` 就是筛空、
-              // `surface` 与 `window` 不等说明降采样在生效、末位说明这一档实际
-              // 拿到的布局。**只打不判** —— 诊断开关不该带分支行为，否则
-              // 「打开后就好了」会成为第三种可能，而那种可能比缺陷更难查。
-              debugPrint(
-                '[view-pick] zoom=${_camera.zoom.name} mode=${_mode.name} '
-                'space=${_spaceId ?? "-"} point=$point surface=$surface '
-                'window=$window visible=${visibleIds?.length ?? "all"} '
-                'domain=${_domainId ?? "-"} selected=${_selectedItemId ?? "-"} '
-                'layout=${galaxyMap ? "galaxy" : spiralDisc ? "spiral" : nebulaCloud ? "nebula" : starView ? "star" : starCloseup ? "closeup" : "frame"}',
-              );
-            }
-            if (galaxyMap) {
-              _pickGalaxyAt(point, galaxies);
-            } else if (spiralDisc) {
-              _pickDomainAt(point, spiral);
-            } else if (nebulaCloud) {
-              _pickNebulaAt(point, nebula);
-            } else if (starView) {
-              _pickStarAt(point, starSystem);
-            } else if (starCloseup) {
-              // `Z4` 的可点对象是「—」（`VIEW-001`）：**详情抽屉就是它的形态**。
-              // 这一档画布上没有「点了去哪」这回事 —— 想换一项要经抽屉里点前置
-              // 项（`VIEW-016`，走 `trail`），或在面包屑上退一档。
-              //
-              // 不这么做的话，点画面回到 `pickSceneNode` 会按项投影的坐标判命中，
-              // 而那一套坐标这一档根本没画 —— 点哪儿都是随机命中率。
-            } else {
-              _pickAt(point, surface, visibleIds);
-            }
+        child: MouseRegion(
+          // `C-57` 的输入。只在鼠标移动时来事件 —— 停转之后指针不动就没有
+          // 事件，而那时也正不需要重算距离。
+          onHover: (PointerHoverEvent event) => _trackPointer(event.position),
+          // 指针离开窗口 ⇒ 当作「不知道在哪」⇒ 恢复常速。漏了这一条就是
+          // **永久停转**（`constants.md` 的 `C-57` 注：三处恢复必须都实现，
+          // 且不会有任何断言会变红）。
+          onExit: (PointerExitEvent event) {
+            _pointer = null;
+            _startMotion();
           },
-          // `FittedBox` 只在真降了分辨率时才包一层：`scale == 1` 时它是纯开销，
-          // 而宇宙每帧都在重绘。四档共用 [_withLayer] —— 逐档抄一份 `Stack`
-          // 的话，改「标注不接手势」时要记得改四处（`R-08`：形状挡得住改、
-          // 挡不住加）。
-          child: galaxyMap
-              ? _withLayer(canvas, plan, _galaxyLayer(galaxies, surface, window))
-              : spiralDisc
-              ? _withLayer(canvas, plan, _domainLayer(spiral, surface, window))
-              : nebulaCloud
-              ? _withLayer(canvas, plan, _nebulaLayer(nebula, surface, window))
-              : starView
-              ? _withLayer(canvas, plan, _starLayer(starSystem, surface, window))
-              : (plan.isDownscaled
-                    ? FittedBox(fit: BoxFit.fill, child: canvas)
-                    : canvas),
+          // 逐帧重建**只包画布与标注**：HUD（面包屑 / 罗盘 / 详情）与相位无关，
+          // 跟着重建一遍是白花钱 —— 而详情抽屉一打开就是几十个 widget。
+          child: AnimatedBuilder(
+            animation: _motionClockValue,
+            builder: (BuildContext context, Widget? child) {
+              final double discAngle = spunRadians(
+                _motionClock,
+                spinPeriodSeconds,
+              );
+              final SpiralLayout disc = spiralDisc
+                  ? spiral.spun(discAngle)
+                  : spiral;
+              // 停转判据要用**这一刻画出来**的布局：物体转走了，距离就跟着变。
+              // 在 build 里赋值是这里唯一的写法 —— ticker 拿不到布局，而让
+              // ticker 自己去重算布局等于每帧重算拓扑。
+              _nearestPickable = spiralDisc
+                  ? (Offset point) => distanceToNearestDomainMark(disc, point)
+                  : null;
+              final Widget canvas = canvasOf(disc);
+              return GestureDetector(
+                // `opaque`：空白处也要接住点击，否则点在星与星的缝里会穿透到底下。
+                behavior: HitTestBehavior.opaque,
+                // ⚠️ **不能用 `details.localPosition`**。它相对的是「手势命中的那个
+                // RenderBox」，而 `FittedBox` 下不保证落在画布盒上。把全局坐标显式
+                // 映到画布盒，不依赖命中路径怎么走。
+                onTapUp: (TapUpDetails details) {
+                  final RenderBox? box =
+                      _canvasKey.currentContext?.findRenderObject() as RenderBox?;
+                  if (box == null || !box.hasSize) {
+                    return;
+                  }
+                  final Offset point = box.globalToLocal(details.globalPosition);
+                  if (kPickDebug) {
+                    // 一行说清「这一下有反应的可能性有多大」：`visible=0` 就是筛空、
+                    // `surface` 与 `window` 不等说明降采样在生效、末位说明这一档实际
+                    // 拿到的布局。**只打不判** —— 诊断开关不该带分支行为，否则
+                    // 「打开后就好了」会成为第三种可能，而那种可能比缺陷更难查。
+                    debugPrint(
+                      '[view-pick] zoom=${_camera.zoom.name} mode=${_mode.name} '
+                      'space=${_spaceId ?? "-"} point=$point surface=$surface '
+                      'window=$window visible=${visibleIds?.length ?? "all"} '
+                      'domain=${_domainId ?? "-"} selected=${_selectedItemId ?? "-"} '
+                      'clock=${_motionClock.toStringAsFixed(2)} '
+                      'layout=${galaxyMap ? "galaxy" : spiralDisc ? "spiral" : nebulaCloud ? "nebula" : starView ? "star" : starCloseup ? "closeup" : "frame"}',
+                    );
+                  }
+                  if (galaxyMap) {
+                    _pickGalaxyAt(point, galaxies);
+                  } else if (spiralDisc) {
+                    // 用**这一刻**的盘：物体在转，按没转过的坐标判命中等于
+                    // 「画在这、点在那」（`R-08` 同族：不会有任何东西变红）。
+                    _pickDomainAt(point, disc);
+                  } else if (nebulaCloud) {
+                    _pickNebulaAt(point, nebula);
+                  } else if (starView) {
+                    _pickStarAt(point, starSystem);
+                  } else if (starCloseup) {
+                    // `Z4` 的可点对象是「—」（`VIEW-001`）：**详情抽屉就是它的形态**。
+                    // 这一档画布上没有「点了去哪」这回事 —— 想换一项要经抽屉里点前置
+                    // 项（`VIEW-016`，走 `trail`），或在面包屑上退一档。
+                    //
+                    // 不这么做的话，点画面回到 `pickSceneNode` 会按项投影的坐标判命中，
+                    // 而那一套坐标这一档根本没画 —— 点哪儿都是随机命中率。
+                  } else {
+                    _pickAt(point, surface, visibleIds);
+                  }
+                },
+                // `FittedBox` 只在真降了分辨率时才包一层：`scale == 1` 时它是纯开销，
+                // 而宇宙每帧都在重绘。四档共用 [_withLayer] —— 逐档抄一份 `Stack`
+                // 的话，改「标注不接手势」时要记得改四处（`R-08`：形状挡得住改、
+                // 挡不住加）。
+                child: galaxyMap
+                    ? _withLayer(canvas, plan, _galaxyLayer(galaxies, surface, window))
+                    : spiralDisc
+                    ? _withLayer(canvas, plan, _domainLayer(disc, surface, window))
+                    : nebulaCloud
+                    ? _withLayer(canvas, plan, _nebulaLayer(nebula, surface, window))
+                    : starView
+                    ? _withLayer(canvas, plan, _starLayer(starSystem, surface, window))
+                    : (plan.isDownscaled
+                          ? FittedBox(fit: BoxFit.fill, child: canvas)
+                          : canvas),
+              );
+            },
+          ),
         ),
       );
     },

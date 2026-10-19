@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -53,9 +54,21 @@ Future<void> _pumpScreen(
   ViewMode mode = ViewMode.universe,
   List<LoadedPack> others = const <LoadedPack>[],
   ZoomLevel zoom = ZoomLevel.z1,
+  bool motion = false,
 }) async {
   await tester.pumpWidget(
     MaterialApp(
+      // 运动默认**关**（`C-54` 起是逐帧走的）。理由：这一整份文件里大量用例
+      // 在断言「某个算出来的位置点得中」，而盘一转，那些位置就随时间漂走
+      // —— 24 s 一圈、盘缘线速度约 32 px/s，攒几百毫秒就偏出 24 px 命中圈。
+      // 只有运动那一组显式打开。
+      //
+      // ⚠️ 这不是为测试造的后门：`disableAnimations` 是系统的「减弱动画」，
+      // 产品里同样读它（见 `_UniverseScreenState._reduceMotion`）。
+      builder: (BuildContext context, Widget? child) => MediaQuery(
+        data: MediaQuery.of(context).copyWith(disableAnimations: !motion),
+        child: child!,
+      ),
       home: UniverseScreen(
         roots: <SceneResolution>[
           SceneResolution(bundle: scene ?? buildSyntheticScene(), pack: pack),
@@ -2913,6 +2926,193 @@ void main() {
         findsWidgets,
         reason: '选中项仍是那颗行星 —— 点画布既不该换项，也不该关抽屉',
       );
+      expect(tester.takeException(), isNull);
+    });
+  });
+  group('运动时钟与减速停转（C-54 / C-57 · V-1i）', () {
+    /// 这一刻画面上那张盘 —— 相位已经算进坐标里，所以它同时是「画在哪」与
+    /// 「点在哪」的唯一来源。
+    SpiralLayout spiralOf(WidgetTester tester) {
+      final Finder finder = find.byWidgetPredicate(
+        (Widget widget) =>
+            widget is CustomPaint && widget.painter is SpiralPainter,
+      );
+      return (tester.widget<CustomPaint>(finder).painter! as SpiralPainter)
+          .layout;
+    }
+
+    /// 两个向量的夹角（弧度）。
+    double angleBetween(Offset a, Offset b) => math.acos(
+      ((a.dx * b.dx + a.dy * b.dy) / (a.distance * b.distance)).clamp(-1.0, 1.0),
+    );
+
+    /// 画布坐标 → 窗口坐标的比例（降采样时两者不等，`C-33`）。
+    double surfaceScale(WidgetTester tester) {
+      final Size window = tester.getSize(find.byType(UniverseScreen));
+      final ViewportPlan plan = planViewport(
+        window.width,
+        window.height,
+        devicePixelRatio: tester.view.devicePixelRatio,
+      );
+      return plan.scale;
+    }
+
+    /// 推进 [duration]，**先空推一帧**。
+    ///
+    /// ticker 停掉再启动时，`elapsed` 从零重计 —— 第一帧拿不到「停了多久」，
+    /// 而停转期间的时间**本就不该补进时钟**（否则恢复时画面会往前蹿）。
+    /// 所以那一帧的 `dt` 是 0，测试要再推一帧才看得到位移。
+    Future<void> advance(WidgetTester tester, Duration duration) async {
+      await tester.pump();
+      await tester.pump(duration);
+    }
+
+    /// 放一只鼠标到窗口坐标 [windowPoint] 上。
+    ///
+    /// ⚠️ 一个用例**只建一只**：`addPointer` 对同一个设备只有一次，第二次会撞
+    /// `MouseTracker` 的断言（「added 只能跟在 removed 后面」）。后续移动改用
+    /// 返回的 `moveTo`。
+    Future<TestGesture> mouseOn(WidgetTester tester, Offset windowPoint) async {
+      final TestGesture mouse = await tester.createGesture(
+        kind: PointerDeviceKind.mouse,
+      );
+      await mouse.addPointer(location: windowPoint);
+      await mouse.moveTo(windowPoint);
+      addTearDown(mouse.removePointer);
+      return mouse;
+    }
+
+    testWidgets('盘按 C-54 转：六秒正好转过四分之一圈（C-54）', (WidgetTester tester) async {
+      final LoadedPack pack = loadAlphaPack();
+      await _pumpScreen(
+        tester,
+        pack: pack,
+        scene: _alphaScene(pack),
+        motion: true,
+      );
+
+      final SpiralLayout before = spiralOf(tester);
+      await tester.pump(const Duration(seconds: 6));
+      final SpiralLayout after = spiralOf(tester);
+
+      // 比的是**同一个域点**的两个向量，不是绝对坐标 —— 绝对坐标里混着
+      // 「第一帧的相位」，而那与「转得多快」是两件事。
+      final double turned = angleBetween(
+        before.marks.first.points.first - before.center,
+        after.marks.first.points.first - after.center,
+      );
+      expect(turned, closeTo(math.pi / 2, 1e-3), reason: '6 / 24 = 四分之一圈');
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('指针贴住域点 ⇒ 停转：之后两秒画面一动不动（C-57）', (
+      WidgetTester tester,
+    ) async {
+      final LoadedPack pack = loadAlphaPack();
+      await _pumpScreen(
+        tester,
+        pack: pack,
+        scene: _alphaScene(pack),
+        motion: true,
+      );
+
+      final double scale = surfaceScale(tester);
+      // ⚠️ 落点**偏开 12 px**，不压正中心：压中心时距离约为 0，就算停转阈值
+      // 整个失效（只剩「距离 = 0 才停」）这条用例也照样过 —— 实测过。
+      // 12 px 在 24 px 停转圈内、又远到能区分「有没有减速」。
+      final Offset target =
+          spiralOf(tester).marks.first.points.first * scale + const Offset(0, 12);
+      await mouseOn(tester, target);
+      await tester.pump(const Duration(milliseconds: 16));
+
+      final SpiralLayout stopped = spiralOf(tester);
+      await tester.pump(const Duration(seconds: 2));
+      final SpiralLayout later = spiralOf(tester);
+
+      expect(
+        later.marks.first.points.first,
+        stopped.marks.first.points.first,
+        reason: '`C-57`：离最近可点对象 < 24 px ⇒ 速率为 0',
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('指针移开 ⇒ 恢复常速（C-57）', (WidgetTester tester) async {
+      final LoadedPack pack = loadAlphaPack();
+      await _pumpScreen(
+        tester,
+        pack: pack,
+        scene: _alphaScene(pack),
+        motion: true,
+      );
+
+      final double scale = surfaceScale(tester);
+      // 底部中央是 ⑦ 留白，不会压到 HUD，且离盘心远过 `C-57` 的 60 px。
+      final Size window = tester.getSize(find.byType(UniverseScreen));
+      final TestGesture mouse = await mouseOn(
+        tester,
+        spiralOf(tester).marks.first.points.first * scale + const Offset(0, 12),
+      );
+      await tester.pump(const Duration(milliseconds: 16));
+      final SpiralLayout stopped = spiralOf(tester);
+
+      await mouse.moveTo(Offset(window.width / 2, window.height - 8));
+      await advance(tester, const Duration(seconds: 2));
+      final SpiralLayout moved = spiralOf(tester);
+
+      expect(
+        moved.marks.first.points.first,
+        isNot(stopped.marks.first.points.first),
+        reason: '指针离开减速区就该恢复 —— 否则是永久停转',
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('窗口失焦（inactive）⇒ 当作指针已离开，恢复转（C-57）', (
+      WidgetTester tester,
+    ) async {
+      final LoadedPack pack = loadAlphaPack();
+      await _pumpScreen(
+        tester,
+        pack: pack,
+        scene: _alphaScene(pack),
+        motion: true,
+      );
+      addTearDown(() {
+        tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      });
+
+      final double scale = surfaceScale(tester);
+      await mouseOn(tester, spiralOf(tester).marks.first.points.first * scale);
+      await tester.pump(const Duration(milliseconds: 16));
+      final SpiralLayout stopped = spiralOf(tester);
+
+      // 「失焦」与「进后台」在桌面 Flutter 里都落到 `inactive` 及以下，所以
+      // 一个 handler 覆盖两条恢复路径 —— 写清楚，不假装实现了两个钩子。
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+      await advance(tester, const Duration(seconds: 2));
+      final SpiralLayout moved = spiralOf(tester);
+
+      expect(
+        moved.marks.first.points.first,
+        isNot(stopped.marks.first.points.first),
+        reason: '少这一条就是永久停转：切走再切回来，onExit 不会补发',
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('系统「减弱动画」开着 ⇒ 画面完全不动（C-57）', (
+      WidgetTester tester,
+    ) async {
+      final LoadedPack pack = loadAlphaPack();
+      // `motion: false` 走的就是 `disableAnimations: true`。
+      await _pumpScreen(tester, pack: pack, scene: _alphaScene(pack));
+
+      final SpiralLayout before = spiralOf(tester);
+      await tester.pump(const Duration(seconds: 5));
+      final SpiralLayout after = spiralOf(tester);
+
+      expect(after.marks.first.points.first, before.marks.first.points.first);
       expect(tester.takeException(), isNull);
     });
   });
