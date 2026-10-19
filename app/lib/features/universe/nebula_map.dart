@@ -205,6 +205,75 @@ class NebulaLayout {
     }
     return null;
   }
+
+  /// 整盘自转 [radians]（`C-54`）之后的一份布局。
+  ///
+  /// **刚体**：云粒子、项、亮结、域内边、出口全部绕 [center] 转同一个角。亮结
+  /// 因此不用单独算 —— 它的位置是成员质心，成员转了它自然跟着转。
+  ///
+  /// ⚠️ 亮结没有独立轨道（`VIEW-038`）：它跟的是「这一簇星」，自己不走。所以这里
+  /// 只允许整体旋转，不给 `NebulaKnot` 任何自己的角速度。
+  ///
+  /// ⚠️ 出口的 [NebulaExit.direction] 也要转 —— 那是箭头的朝向，只转位置不转
+  /// 朝向上的话，箭头会指着自己来的方向。
+  NebulaLayout spun(double radians) {
+    if (radians == 0 || !radians.isFinite) {
+      return this;
+    }
+    final double c = math.cos(radians);
+    final double s = math.sin(radians);
+    Offset rotate(Offset point) {
+      final double dx = point.dx - center.dx;
+      final double dy = point.dy - center.dy;
+      return Offset(center.dx + dx * c - dy * s, center.dy + dx * s + dy * c);
+    }
+
+    Offset turn(Offset vector) =>
+        Offset(vector.dx * c - vector.dy * s, vector.dx * s + vector.dy * c);
+
+    return NebulaLayout(
+      center: center,
+      cloudRadius: cloudRadius,
+      accentArgb: accentArgb,
+      domainId: domainId,
+      domainItemCount: domainItemCount,
+      wisps: <NebulaWisp>[
+        for (final NebulaWisp wisp in wisps)
+          NebulaWisp(
+            center: rotate(wisp.center),
+            radius: wisp.radius,
+            argb: wisp.argb,
+          ),
+      ],
+      items: <NebulaItem>[
+        for (final NebulaItem item in items)
+          NebulaItem(id: item.id, center: rotate(item.center)),
+      ],
+      knots: <NebulaKnot>[
+        for (final NebulaKnot knot in knots)
+          NebulaKnot(
+            rootId: knot.rootId,
+            label: knot.label,
+            memberIds: knot.memberIds,
+            center: rotate(knot.center),
+          ),
+      ],
+      threads: <NebulaThread>[
+        for (final NebulaThread thread in threads)
+          NebulaThread(from: rotate(thread.from), to: rotate(thread.to)),
+      ],
+      exits: <NebulaExit>[
+        for (final NebulaExit exit in exits)
+          NebulaExit(
+            targetDomainId: exit.targetDomainId,
+            label: exit.label,
+            center: rotate(exit.center),
+            direction: turn(exit.direction),
+            edgeCount: exit.edgeCount,
+          ),
+      ],
+    );
+  }
 }
 
 /// 按包、域与视口算出一朵云。
@@ -467,6 +536,27 @@ NebulaKnot? pickNebulaKnotAt({
     if (distance <= bestDistance) {
       bestDistance = distance;
       best = knot;
+    }
+  }
+  return best;
+}
+
+/// 指针离**最近一个可点对象**多远（px）—— `C-57` 减速停转的判据输入。
+///
+/// 可点的是亮结（⇒ `Z3` / `Z4`）与项（⇒ `Z4`），两者取近的。出口**不算**：
+/// 它画在云缘的虚线圆上，指针扫过整圈都会撞见一个，减速区间会变成常驻。
+double distanceToNearestNebulaMark(NebulaLayout layout, Offset point) {
+  double best = double.infinity;
+  for (final NebulaKnot knot in layout.knots) {
+    final double distance = (knot.center - point).distance;
+    if (distance < best) {
+      best = distance;
+    }
+  }
+  for (final NebulaItem item in layout.items) {
+    final double distance = (item.center - point).distance;
+    if (distance < best) {
+      best = distance;
     }
   }
   return best;

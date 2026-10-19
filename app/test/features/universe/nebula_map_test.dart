@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'dart:ui' show Offset, Size;
 
 import 'package:flutter_test/flutter_test.dart';
@@ -354,6 +355,146 @@ void main() {
         pickNebulaItemAt(layout: layout, point: knot.center),
         isNotNull,
         reason: '项本身也命中；界面按「先亮结」的顺序分派',
+      );
+    });
+  });
+
+  group('Z2 整盘自转（C-54 · V-1i 后半）', () {
+    /// 绕云心转 `radians` 的期望位置 —— 与 `spun` 无关的独立算式。
+    Offset expected(Offset point, Offset center, double radians) {
+      final double c = math.cos(radians);
+      final double s = math.sin(radians);
+      final double dx = point.dx - center.dx;
+      final double dy = point.dy - center.dy;
+      return Offset(center.dx + dx * c - dy * s, center.dy + dx * s + dy * c);
+    }
+
+    test('项、亮结、云粒子绕云心刚性转同一个角（C-54）', () {
+      final NebulaLayout base = layoutNebula(
+        pack: _twoDomainPack(),
+        domainId: 'python/lexical',
+        viewport: _viewport,
+      );
+      const double quarter = math.pi / 2;
+      final NebulaLayout turned = base.spun(quarter);
+
+      expect(turned.items.length, base.items.length);
+      for (int i = 0; i < base.items.length; i++) {
+        expect(turned.items[i].id, base.items[i].id, reason: '顺序不能变');
+        final Offset want = expected(base.items[i].center, base.center, quarter);
+        expect(
+          (turned.items[i].center - want).distance,
+          lessThan(1e-9),
+          reason: '项是按 `θ` + `φ` 落的位置，转的是同一个刚体',
+        );
+      }
+      for (int i = 0; i < base.wisps.length; i++) {
+        final Offset want = expected(base.wisps[i].center, base.center, quarter);
+        expect((turned.wisps[i].center - want).distance, lessThan(1e-9));
+        expect(
+          turned.wisps[i].radius,
+          base.wisps[i].radius,
+          reason: '转的是位置，不是大小',
+        );
+      }
+    });
+
+    test('亮结没有自己的角速度 —— 它跟的是成员质心（SPEC-VIEW-038）', () {
+      final NebulaLayout base = layoutNebula(
+        pack: _chainPack(),
+        domainId: 'python/lexical',
+        viewport: _viewport,
+      );
+      expect(base.knots.length, 1, reason: '前置条件：三项一条链 ⇒ 一棵子树');
+      final NebulaKnot before = base.knots.single;
+      final NebulaKnot after = base.spun(math.pi / 3).knots.single;
+
+      // 亮结 = 成员位置的质心。成员转了，质心必然跟着转到同一处。
+      Offset centroid(NebulaLayout layout) {
+        double sx = 0;
+        double sy = 0;
+        int seen = 0;
+        for (final String id in before.memberIds) {
+          for (final NebulaItem item in layout.items) {
+            if (item.id != id) {
+              continue;
+            }
+            sx += item.center.dx;
+            sy += item.center.dy;
+            seen += 1;
+          }
+        }
+        return Offset(sx / seen, sy / seen);
+      }
+
+      final Offset moved = centroid(base.spun(math.pi / 3));
+      expect((after.center - moved).distance, lessThan(1e-9));
+      expect(
+        (after.center - before.center).distance,
+        greaterThan(1e-6),
+        reason: '它确实动了 —— 只是动的来源是成员，不是自己',
+      );
+    });
+
+    test('出口的箭头朝向跟着转 —— 只转位置会让箭头指回来路（SPEC-VIEW-038）', () {
+      final NebulaLayout base = layoutNebula(
+        pack: _twoDomainPack(),
+        domainId: 'python/lexical',
+        viewport: _viewport,
+      );
+      expect(base.exits, isNotEmpty, reason: '前置条件：`c → x` 是一条跨域边');
+      const double quarter = math.pi / 2;
+      final NebulaLayout turned = base.spun(quarter);
+
+      for (int i = 0; i < base.exits.length; i++) {
+        final NebulaExit before = base.exits[i];
+        final NebulaExit after = turned.exits[i];
+        expect((after.center - expected(before.center, base.center, quarter)).distance, lessThan(1e-9));
+        // 向量只转向量，不减云心。
+        expect(after.direction.dx, closeTo(-before.direction.dy, 1e-9));
+        expect(after.direction.dy, closeTo(before.direction.dx, 1e-9));
+        expect(after.targetDomainId, before.targetDomainId);
+      }
+    });
+
+    test('走满一圈回到原位；相位为 0 时原样返回（C-54）', () {
+      final NebulaLayout base = layoutNebula(
+        pack: _twoDomainPack(),
+        domainId: 'python/lexical',
+        viewport: _viewport,
+      );
+      expect(identical(base.spun(0), base), isTrue);
+
+      final NebulaLayout round = base.spun(2 * math.pi);
+      for (int i = 0; i < base.items.length; i++) {
+        expect(
+          (round.items[i].center - base.items[i].center).distance,
+          lessThan(1e-9),
+        );
+      }
+    });
+
+    test('停转判据取亮结与项里近的那个，出口不算（C-57）', () {
+      final NebulaLayout layout = layoutNebula(
+        pack: _twoDomainPack(),
+        domainId: 'python/lexical',
+        viewport: _viewport,
+      );
+      expect(
+        distanceToNearestNebulaMark(layout, layout.knots.first.center),
+        lessThan(governorStopRadiusPx),
+        reason: '亮结是可点对象：停在它上面',
+      );
+
+      final NebulaItem item = layout.items.first;
+      expect(distanceToNearestNebulaMark(layout, item.center), closeTo(0, 1e-9));
+
+      // 出口在云缘上，扫过整圈都会撞见 —— 算进去会让减速区间常驻。
+      final NebulaExit exit = layout.exits.first;
+      expect(
+        distanceToNearestNebulaMark(layout, exit.center),
+        greaterThan(governorStopRadiusPx),
+        reason: '出口不是可点对象',
       );
     });
   });

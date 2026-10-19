@@ -50,6 +50,7 @@ import 'dart:ui' show Offset, Size;
 import '../../core/constants.dart';
 import '../../core/entities/content.dart';
 import '../../core/pack/pack_parse.dart';
+import '../../core/view/motion.dart' show spunRadians;
 import 'galaxy_map.dart' show accentArgbOf, galaxyHash01;
 
 /// 相位抖动的幅度（占该层均分角的比例）。
@@ -78,6 +79,49 @@ class StarOrbit {
   final double rotation;
 
   final double eccentricity;
+}
+
+/// 椭圆参数角 [phase] 上的那一点（画布坐标）。
+///
+/// 三处要用同一个算式：`layoutStarSystem` 的静态落点、`StarSystemLayout.advanced`
+/// 的逐帧推进、`layoutStarCloseup` 的换尺度重算。各写一遍的话，日后调偏心率或
+/// 长轴朝向的换算，漏一处就是「推近之后行星跑偏」—— 画面上看着像新画的，不会有
+/// 任何断言变红（`R-08` 同族）。
+///
+/// 参数角不是极角：`a·cos t` 与 `b·sin t` 是椭圆的参数式，`t` 只有在正圆时才
+/// 等于方位角。这里保留参数角口径，是因为相位均分（`Z3`）与开普勒推进（`C-56`）
+/// 都以它为自变量。
+Offset pointOnOrbit(StarOrbit orbit, double phase, Offset center) {
+  final double cosR = math.cos(orbit.rotation);
+  final double sinR = math.sin(orbit.rotation);
+  final Offset local = Offset(
+    orbit.semiMajor * math.cos(phase),
+    orbit.semiMinor * math.sin(phase),
+  );
+  return Offset(
+    center.dx + local.dx * cosR - local.dy * sinR,
+    center.dy + local.dx * sinR + local.dy * cosR,
+  );
+}
+
+/// 第 [level] 层行星的公转周期（秒）—— `C-56` 开普勒 `T ∝ a^1.5`。
+///
+/// [levelCount] 是**真实层数**（`Z3` 的轨道条数），不是当前档画出来的条数：
+/// `Z4` 只露 `C-81` 条，用它的条数当分母会让同一颗行星在两档里周期不同 ——
+/// 推近的一瞬间行星会突然变速，而两档看的是同一颗。
+///
+/// 半长轴之比按 `C-73` / `C-74` 与层号推：`Z3` 的轨道半径是层号等分，所以
+/// `a_level / a_inner = 1 + (C-74/C-73 - 1)·(level-1)/(n-1)`。这样周期只依赖
+/// 常量与层号，两档必然一致 —— 不必把 `Z3` 的 `semiMajor` 带进 `Z4`。
+double starOrbitPeriodSeconds(int level, int levelCount) {
+  if (levelCount <= 1 || level <= 1) {
+    return innerOrbitPeriodSeconds.toDouble();
+  }
+  final double innerA = math.min(stellarOrbitInnerRatio, stellarOrbitOuterRatio);
+  final double outerA = math.max(stellarOrbitInnerRatio, stellarOrbitOuterRatio);
+  final double t = (level - 1) / (levelCount - 1);
+  final double ratio = (innerA + (outerA - innerA) * t) / innerA;
+  return (innerOrbitPeriodSeconds * math.pow(ratio, 1.5)).toDouble();
 }
 
 /// 一颗行星 = `⪯` 上的一个后继项。**可点** ⇒ `Z4`。
@@ -185,6 +229,65 @@ class StarSystemLayout {
       }
     }
     return null;
+  }
+
+  /// 行星公转 [clockSeconds] 秒之后的一份布局（`C-56` 开普勒）。
+  ///
+  /// 只动**行星落点**：轨道、恒星、云气、层号一概不动 —— 于是这一份可以每帧调。
+  /// 反过来，若每帧重跑 [layoutStarSystem] 就是每帧重算一遍 BFS 拓扑，那是
+  /// 一整遍图遍历（`GalaxyLayout.spun` / `SpiralLayout.spun` 出于同一理由只搬点）。
+  ///
+  /// ⚠️ 推进加在**参数角**上，不是把椭圆整体转一个角：椭圆有偏心率与长轴朝向，
+  /// 转椭圆会把轨道形状一起转走，行星于是「换了一条轨道」。
+  ///
+  /// ⚠️ 周期按 [starOrbitPeriodSeconds] 的层号口径，不用本布局的 `semiMajor`：
+  /// `Z4` 的 `C-79` / `C-80` 与 `Z3` 的 `C-73` / `C-74` 不是同一个比例。
+  StarSystemLayout advanced(double clockSeconds) {
+    if (planets.isEmpty ||
+        orbits.isEmpty ||
+        clockSeconds == 0 ||
+        !clockSeconds.isFinite) {
+      return this;
+    }
+    final Map<int, StarOrbit> byLevel = <int, StarOrbit>{
+      for (final StarOrbit orbit in orbits) orbit.level: orbit,
+    };
+    final int levelCount = orbits.length;
+    final List<StarPlanet> moved = <StarPlanet>[];
+    for (final StarPlanet planet in planets) {
+      final StarOrbit? orbit = byLevel[planet.level];
+      if (orbit == null) {
+        moved.add(planet);
+        continue;
+      }
+      final double angle =
+          planet.phase +
+          spunRadians(
+            clockSeconds,
+            starOrbitPeriodSeconds(planet.level, levelCount),
+          );
+      moved.add(
+        StarPlanet(
+          id: planet.id,
+          level: planet.level,
+          center: pointOnOrbit(orbit, angle, starCenter),
+          // 保留静态相位：这一份可能被再一次 `advanced`，累加基准必须是它。
+          phase: planet.phase,
+        ),
+      );
+    }
+    return StarSystemLayout(
+      starCenter: starCenter,
+      starRadius: starRadius,
+      accentArgb: accentArgb,
+      rootId: rootId,
+      rootLabel: rootLabel,
+      domainId: domainId,
+      memberCount: memberCount,
+      orbits: orbits,
+      planets: moved,
+      wisps: wisps,
+    );
   }
 }
 
@@ -300,8 +403,6 @@ StarSystemLayout layoutStarSystem({
       continue;
     }
     final StarOrbit orbit = orbits[level - 1];
-    final double cosR = math.cos(orbit.rotation);
-    final double sinR = math.sin(orbit.rotation);
     for (int i = 0; i < members.length; i++) {
       final String id = members[i];
       // 均分 + 一点手抖。抖动的幅度按「该层均分角的 6%」算，所以永远小于
@@ -312,16 +413,6 @@ StarSystemLayout layoutStarSystem({
           _phaseJitterRatio /
           members.length;
       final double t = (base + jitter) * fullTurnRadians;
-      // 椭圆参数角 → 共面坐标 → 按长轴朝向旋转。倾角为 0，所以不需要投影：
-      // 屏幕上看到的就是黄道面上的真实形状。
-      final Offset local = Offset(
-        orbit.semiMajor * math.cos(t),
-        orbit.semiMinor * math.sin(t),
-      );
-      final Offset rotated = Offset(
-        local.dx * cosR - local.dy * sinR,
-        local.dx * sinR + local.dy * cosR,
-      );
       if (visibleIds != null && !visibleIds.contains(id)) {
         continue;
       }
@@ -329,7 +420,10 @@ StarSystemLayout layoutStarSystem({
         StarPlanet(
           id: id,
           level: level,
-          center: center + rotated,
+          // 倾角为 0（共面），所以这里是黄道面上的真实形状，不需要投影。
+          center: pointOnOrbit(orbit, t, center),
+          // `phase` 存的是**静态**参数角，时钟不进来：推进由 [advanced] 现算。
+          // 存成「当前角」的话，同一份布局在两次取用之间会自相矛盾。
           phase: t,
         ),
       );
@@ -397,4 +491,22 @@ bool hitsStarAt({
 }) {
   final double hit = math.max(layout.starRadius, domainMarkMinTapDiameter / 2);
   return (layout.starCenter - point).distance <= hit;
+}
+
+/// 指针离**最近一颗天体中心**多远（px）—— `C-57` 减速停转的判据输入。
+///
+/// 恒星也算：它是可点对象（⇒ `Z4`，`VIEW-039`）。用**中心距**而不是「到天体
+/// 边缘」不是偷懒 —— 这一档的天体是圆点，绘制半径只有几 px，中心距与边缘距
+/// 在 24 px 的停转阈值上差不到一成；而前者不需要为每个天体再取一次半径。
+///
+/// 轨道不算可点对象：行星在轨道上跑，指针贴在轨道线上时该看到它跑过去。
+double distanceToNearestStarBody(StarSystemLayout layout, Offset point) {
+  double best = (layout.starCenter - point).distance;
+  for (final StarPlanet planet in layout.planets) {
+    final double distance = (planet.center - point).distance;
+    if (distance < best) {
+      best = distance;
+    }
+  }
+  return best;
 }

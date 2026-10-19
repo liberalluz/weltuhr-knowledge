@@ -473,4 +473,151 @@ void main() {
       );
     });
   });
+
+  group('行星公转（C-56 · V-1i 后半）', () {
+    /// 点 [point] 在轨道上的**参数角**（rad，`atan2` 口径，落在 `-π…π`）。
+    ///
+    /// 与 [_ellipseResidual] 同一段反旋转，只是把「在不在椭圆上」换成「在椭圆上
+    /// 的哪一点」。用它而不是直接比坐标：坐标里混着长轴朝向与半轴长度，两处各差
+    /// 一点会让「转了多少」算不准。
+    double phaseOf(StarOrbit orbit, Offset center, Offset point) {
+      final double dx = point.dx - center.dx;
+      final double dy = point.dy - center.dy;
+      final double cosR = math.cos(orbit.rotation);
+      final double sinR = math.sin(orbit.rotation);
+      final double u = dx * cosR + dy * sinR;
+      final double v = -dx * sinR + dy * cosR;
+      return math.atan2(v / orbit.semiMinor, u / orbit.semiMajor);
+    }
+
+    /// 两个角的差，折进 `0…2π` —— `atan2` 在 ±π 处翻号，直接相减会得到 `-2π`。
+    double turnedBy(double from, double to) {
+      final double d = (to - from) % (2 * math.pi);
+      return d < 0 ? d + 2 * math.pi : d;
+    }
+
+    test('最内层用 C-56，外层按开普勒 a^1.5 变慢（C-56）', () {
+      expect(
+        starOrbitPeriodSeconds(1, 1),
+        innerOrbitPeriodSeconds.toDouble(),
+        reason: '只有一层时它就是最内层',
+      );
+      expect(starOrbitPeriodSeconds(1, 3), innerOrbitPeriodSeconds.toDouble());
+
+      // `Z3` 的轨道半径按层号等分，所以 n 层时 a_2 / a_1 = C-74 / C-73。
+      const double ratio = stellarOrbitOuterRatio / stellarOrbitInnerRatio;
+      expect(
+        starOrbitPeriodSeconds(2, 2),
+        closeTo(
+          (innerOrbitPeriodSeconds * math.pow(ratio, 1.5)).toDouble(),
+          1e-9,
+        ),
+      );
+      expect(
+        starOrbitPeriodSeconds(2, 2),
+        greaterThan(innerOrbitPeriodSeconds.toDouble()),
+        reason: '「越外越慢」是真实特征，同周期一眼看得出是假的',
+      );
+    });
+
+    test('周期只由层号定 —— 层数变了周期跟着变，与当前档的轨道半径无关（C-56）', () {
+      // 四层时第二层的 a 比值是 `1 + (C74/C73 - 1)/3`，与两层时的 `C74/C73`
+      // 不同。这条守的是「`Z4` 的 `C-79` / `C-80` 不参与算周期」：若某处偷用了
+      // 当前布局的 `semiMajor`，两层与四层就会得到同一批周期。
+      expect(
+        starOrbitPeriodSeconds(2, 4),
+        lessThan(starOrbitPeriodSeconds(2, 2)),
+        reason: '层数多 ⇒ 第二层相对更靠内 ⇒ 走得更快',
+      );
+    });
+
+    test('相位推进：四分之一周期转 90° 参数角，一个周期回到原位（C-56）', () {
+      final StarSystemLayout layout = layoutStarSystem(
+        pack: _forkPack(),
+        rootId: 'a',
+        viewport: _viewport,
+      );
+      final StarOrbit inner = layout.orbits.first;
+      final StarPlanet before = layout.planets.firstWhere(
+        (StarPlanet planet) => planet.level == 1,
+      );
+      final double t1 = starOrbitPeriodSeconds(1, layout.orbits.length);
+
+      final StarPlanet quarter = layout
+          .advanced(t1 / 4)
+          .planetOf(before.id)!;
+      expect(
+        turnedBy(
+          phaseOf(inner, layout.starCenter, before.center),
+          phaseOf(inner, layout.starCenter, quarter.center),
+        ),
+        closeTo(math.pi / 2, 1e-6),
+        reason: 'T/4 ⇒ 参数角 +π/2',
+      );
+      expect(
+        quarter.phase,
+        before.phase,
+        reason: '`phase` 是静态参数角，时间不进这一格 —— 否则同一份布局自相矛盾',
+      );
+
+      final StarPlanet full = layout.advanced(t1).planetOf(before.id)!;
+      expect(
+        (full.center - before.center).distance,
+        lessThan(1e-6),
+        reason: '走满一个周期回到同一点',
+      );
+    });
+
+    test('两层各按自己的周期走：外轨走 1/4 圈时内轨已走大半圈（C-56）', () {
+      final StarSystemLayout layout = layoutStarSystem(
+        pack: _forkPack(),
+        rootId: 'a',
+        viewport: _viewport,
+      );
+      expect(layout.orbits.length, 2, reason: '前置条件：这个包正好两层');
+
+      final StarOrbit outer = layout.orbits[1];
+      final StarPlanet d0 = layout.planetOf('d')!;
+      final double t2 = starOrbitPeriodSeconds(2, layout.orbits.length);
+      final StarPlanet d1 = layout.advanced(t2 / 4).planetOf('d')!;
+
+      expect(
+        turnedBy(
+          phaseOf(outer, layout.starCenter, d0.center),
+          phaseOf(outer, layout.starCenter, d1.center),
+        ),
+        closeTo(math.pi / 2, 1e-6),
+      );
+      // 同一段时间里内层走了 `t2 / t1` 个周期 —— 比 1/4 圈多。
+      expect(
+        t2 / starOrbitPeriodSeconds(1, 2),
+        greaterThan(1),
+        reason: '外轨一个周期比内轨长，所以同一段时间内轨走得更远',
+      );
+    });
+
+    test('时钟为 0 时原样返回；筛选不影响相位（C-56）', () {
+      final StarSystemLayout layout = layoutStarSystem(
+        pack: _forkPack(),
+        rootId: 'a',
+        viewport: _viewport,
+      );
+      expect(identical(layout.advanced(0), layout), isTrue);
+      expect(identical(layout.advanced(double.nan), layout), isTrue);
+
+      // 筛掉一颗行星，其余几颗的位置不能动（`layoutStarSystem` 的口径：
+      // 轨道数与相位按全量算）。
+      final StarSystemLayout screened = layoutStarSystem(
+        pack: _forkPack(),
+        rootId: 'a',
+        viewport: _viewport,
+        visibleIds: <String>{'a', 'b'},
+      );
+      expect(
+        screened.planetOf('b')!.center,
+        layout.planetOf('b')!.center,
+        reason: '筛掉一颗不该让另一颗换个位置',
+      );
+    });
+  });
 }
