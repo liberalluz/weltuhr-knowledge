@@ -280,7 +280,13 @@ List<SourceCandidate> _sources(
       covered: covered,
       total: nodes.length,
     );
-    if (narrowed && !coverage.isUsable) {
+    // 自建源不吃这一条（`B4-R`）。覆盖数 = `Item.sourceRefs` 里命中它自己的
+    // 项数，而客户端**写不了** `sourceRefs` ⇒ 自建源恒 0；`narrowed` 时直接
+    // `continue` 会让「刚建的那个源」从列表里消失，用户以为没建成（走查实拍）。
+    //
+    // 平台 / 空间包源的旧选择失效**仍然筛掉** —— 那才是 `PLAN-014` 的「需重选」。
+    // 两件事共用一条筛除，是这条规则此前唯一的错处。
+    if (narrowed && !coverage.isUsable && entry.origin != CandidateOrigin.user) {
       continue;
     }
     out.add(

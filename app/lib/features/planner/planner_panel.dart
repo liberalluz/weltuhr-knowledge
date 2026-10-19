@@ -53,6 +53,14 @@ const Map<PlanSegment, String> segmentTitles = <PlanSegment, String>{
 
 const String confirmTitle = '④ 确认';
 
+/// 横排 / 堆叠的断点（`B4-R`）。
+///
+/// 低于它就改上下堆叠：原先 `Row(Expanded(3), Divider, Expanded(2))` 没有下限，
+/// 窗口一窄两栏各分到几十像素，文字**逐字竖排**且卡片挂 `RIGHT OVERFLOWED BY
+/// 52 PIXELS`（走查实拍）。堆叠后每栏都是全宽，不需要再给两栏各设最小宽度 ——
+/// 那只是把溢出换成裁切。
+const double _stackBreakpoint = 720;
+
 /// 出处标签的显示名（`SPEC-PLAN-006` 三处出处）。三段共用一份，避免各写各的。
 const Map<CandidateOrigin, String> originLabels = <CandidateOrigin, String>{
   CandidateOrigin.platform: '平台内置',
@@ -166,8 +174,16 @@ class PlannerPanelState extends State<PlannerPanel> {
   /// 上一次选过、这次不在候选里的段。只在用户改动之后出现。
   final Set<PlanSegment> _needsReselect = <PlanSegment>{};
 
-  /// 被清掉的旧值，用于「需重选」那句说明（`已选的 X 在…下覆盖 0`）。
+  /// 被清掉的旧值，用于「需重选」那句说明（`X 在…下覆盖 0，已取消选择`）。
   final Map<PlanSegment, String> _droppedNames = <PlanSegment, String>{};
+
+  /// 刚加入的自建内容的一条说明（`B4-R`）。`null` = 不显示。
+  ///
+  /// 自建源在已选体系下覆盖恒 0（客户端写不了 `Item.sourceRefs`）。原先建完
+  /// **立刻选中**，随即被筛掉再清空 —— 用户看到的是「对话框关了、列表里什么
+  /// 都没多出来、顶上多一句提到没见过的名字」。现在它留在列表里标「覆盖 0」，
+  /// 用这句话说清「已加入，但当前用不上」。
+  String? _userNotice;
 
   /// 用户自建的三段内容（`SPEC-PLAN-007`）。**只活在这个 `State` 里**，见文件头。
   final List<SourceRef> _userSources = <SourceRef>[];
@@ -229,6 +245,7 @@ class PlannerPanelState extends State<PlannerPanel> {
       }
       _needsReselect.clear();
       _droppedNames.clear();
+      _userNotice = null;
       _reload();
       _dropChecks();
     });
@@ -312,28 +329,66 @@ class PlannerPanelState extends State<PlannerPanel> {
           ..._userProfiles,
         ]);
 
-    return Row(
+    // 横排只在够宽时用（`B4-R`）：窄窗口下左右两栏会各分到几十像素，文字逐字
+    // 竖排并溢出。堆叠后每栏都是全宽，判据只有总宽一个。
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        final Widget left = _leftColumn(preview, noHint);
+        final Widget right = _preview(preview);
+        if (constraints.maxWidth < _stackBreakpoint) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              Expanded(flex: 3, child: left),
+              const Divider(height: 1),
+              Expanded(flex: 2, child: right),
+            ],
+          );
+        }
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            Expanded(flex: 3, child: left),
+            const VerticalDivider(width: 1),
+            Expanded(flex: 2, child: right),
+          ],
+        );
+      },
+    );
+  }
+
+  // ─────────────────────────── 左栏 ───────────────────────────
+
+  /// 左栏：三段清单可滚，**④ 确认固定在底部**（`B4-R`）。
+  ///
+  /// 为什么确认段不能跟着滚：它是建计划的唯一出口。原先排在 `ListView` 末尾，
+  /// 候选 4+2+3 条就要滚一屏多才看得到（走查实拍「滚到顶看不到 ④ 确认和
+  /// 建计划」）。一个页面的唯一出口不该靠用户去发现 —— 候选再多它也得在。
+  ///
+  /// 反过来说，阻断原因（「三段选齐才能建计划」）跟着一起常驻，用户不用滚回去
+  /// 找「为什么按钮是灰的」。
+  Widget _leftColumn(PlannerPreview preview, bool noHint) {
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
         Expanded(
-          flex: 3,
           child: ListView(
             key: const Key('planner-left'),
             padding: const EdgeInsets.all(12),
             children: <Widget>[
               for (final PlanSegment segment in PlanSegment.values)
                 _segment(segment, noHint),
-              _confirm(preview),
             ],
           ),
         ),
-        const VerticalDivider(width: 1),
-        Expanded(flex: 2, child: _preview(preview)),
+        const Divider(height: 1),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
+          child: _confirm(preview),
+        ),
       ],
     );
   }
-
-  // ─────────────────────────── 左栏 ───────────────────────────
 
   Widget _segment(PlanSegment segment, bool noHint) {
     final List<PlanCandidate> list = _candidates.of(segment);
@@ -357,12 +412,26 @@ class PlannerPanelState extends State<PlannerPanel> {
             Padding(
               padding: const EdgeInsets.only(top: 4),
               child: Text(
-                '需重选：已选的「${_droppedNames[segment]}」在当前另一端下覆盖 0',
+                // 措辞（`B4-R`）：那一项**已经被清空了**，原文案说「已选的 X」
+                // 会让人去找一张已经不在选中态的卡片。先给名字（用户要认的是
+                // 它），再说原因与结果。另一端按段取名：被清的是源，另一端
+                // 就是体系 —— 换成「当前另一端」等于让用户自己翻译。
+                '「${_droppedNames[segment]}」在当前'
+                '${segment == PlanSegment.source ? '体系' : '源'}下覆盖 0，已取消选择',
                 key: Key('planner-reselect-${segment.name}'),
                 style: TextStyle(
                   fontSize: 12,
                   color: Theme.of(context).colorScheme.error,
                 ),
+              ),
+            ),
+          if (segment == PlanSegment.source && _userNotice != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Text(
+                _userNotice!,
+                key: const Key('planner-user-notice'),
+                style: const TextStyle(fontSize: 12),
               ),
             ),
           const SizedBox(height: 6),
@@ -381,13 +450,16 @@ class PlannerPanelState extends State<PlannerPanel> {
               style: const TextStyle(fontSize: 11),
             ),
           // `SPEC-PLAN-007`：**不是独立页面**，就是列表尾部这一个动作。
+          //
+          // 文字不带加号（`B4-R`）：图标已经是 `Icons.add`，两处各写一个就成了
+          // 「＋ + 自建」（走查实拍）。
           Padding(
             padding: const EdgeInsets.only(top: 6),
             child: TextButton.icon(
               key: Key('planner-create-${segment.name}'),
               onPressed: () => _createUser(segment),
               icon: const Icon(Icons.add, size: 16),
-              label: const Text('+ 自建'),
+              label: const Text('自建'),
             ),
           ),
         ],
@@ -408,7 +480,25 @@ class PlannerPanelState extends State<PlannerPanel> {
           return;
         }
         _userSources.add(source);
-        _select(PlanSegment.source, source.id);
+        // 先重算一次候选，才判得出这个自建源在当前体系下覆盖几项。
+        _reload();
+        final bool usable = _candidates.sources.any(
+          (SourceCandidate c) => c.id == source.id && c.coverage.isUsable,
+        );
+        // 判据是「**已选体系**且覆盖 0」，不是「覆盖 0」：没选体系时它本来
+        // 就能用（不收窄就不筛），建完立刻选中是对的。
+        if (_schemeId == null || usable) {
+          // 建完**立刻选中**，这是 `SPEC-PLAN-007` 里「建和选不该拆成两处」。
+          _select(PlanSegment.source, source.id);
+        } else {
+          // 已选体系下自建源覆盖恒 0（客户端写不了 `Item.sourceRefs`）。
+          // **不选中**：选了立刻会被判「需重选」再清掉，用户看到的是
+          // 「建了、然后消失」。留在列表里标「覆盖 0」并给一句话，
+          // 比反复清空诚实（`B4-R` 走查实拍）。
+          setState(() {
+            _userNotice = '已加入候选；当前体系下覆盖 0，换一套体系后才能选';
+          });
+        }
       case PlanSegment.scheme:
         final Scheme? scheme = await showUserSchemeDialog(
           context,
@@ -439,52 +529,73 @@ class PlannerPanelState extends State<PlannerPanel> {
   }
 
   Widget _card(PlanSegment segment, PlanCandidate candidate, bool selected) {
-    return InkWell(
-      key: Key('planner-${segment.name}-${candidate.id}'),
-      onTap: () => _select(segment, selected ? null : candidate.id),
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 4),
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-        decoration: BoxDecoration(
-          border: Border.all(
-            color: selected
-                ? Theme.of(context).colorScheme.primary
-                : Theme.of(context).dividerColor,
-            width: selected ? 2 : 1,
+    // 自建源可能覆盖 0 却仍留在列表里（`B4-R`）。它不该被点 —— 选了立刻会被
+    // 判「需重选」再清掉，等于让用户白点一次、还多读一句红字。
+    final bool blocked =
+        candidate is SourceCandidate && !candidate.coverage.isUsable;
+    return Opacity(
+      opacity: blocked ? 0.5 : 1,
+      child: InkWell(
+        key: Key('planner-${segment.name}-${candidate.id}'),
+        onTap: blocked
+            ? null
+            : () => _select(segment, selected ? null : candidate.id),
+        child: Container(
+          margin: const EdgeInsets.only(bottom: 4),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+          decoration: BoxDecoration(
+            border: Border.all(
+              color: selected
+                  ? Theme.of(context).colorScheme.primary
+                  : Theme.of(context).dividerColor,
+              width: selected ? 2 : 1,
+            ),
+            borderRadius: BorderRadius.circular(6),
           ),
-          borderRadius: BorderRadius.circular(6),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Row(
-              children: <Widget>[
-                Expanded(
-                  child: Text(
-                    candidate.name,
-                    style: const TextStyle(fontSize: 13),
-                    overflow: TextOverflow.ellipsis,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Row(
+                children: <Widget>[
+                  Expanded(
+                    child: Text(
+                      candidate.name,
+                      style: const TextStyle(fontSize: 13),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
-                ),
-                Text(
-                  '· ${originLabel(candidate.origin)}',
-                  style: const TextStyle(fontSize: 11),
-                ),
-              ],
-            ),
-            const SizedBox(height: 2),
-            // `SPEC-PLAN-008` 的「适用范围」—— 五元素里此前一直缺这一项。
-            Text(
-              '适用 ${_scope(segment, candidate)}',
-              key: Key('planner-scope-${segment.name}-${candidate.id}'),
-              style: const TextStyle(fontSize: 11),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              '${_readout(segment, candidate)} · ${_version(segment, candidate)}',
-              style: const TextStyle(fontSize: 11),
-            ),
-          ],
+                  // 出处用 `Flexible`：极窄时它先让位，否则这一行会溢出
+                  // （走查实拍每张卡片挂 `RIGHT OVERFLOWED BY 52 PIXELS`）。
+                  Flexible(
+                    child: Text(
+                      '· ${originLabel(candidate.origin)}',
+                      style: const TextStyle(fontSize: 11),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 2),
+              // `SPEC-PLAN-008` 的「适用范围」—— 五元素里此前一直缺这一项。
+              Text(
+                '适用 ${_scope(segment, candidate)}',
+                key: Key('planner-scope-${segment.name}-${candidate.id}'),
+                style: const TextStyle(fontSize: 11),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 2),
+              Text(
+                '${_readout(segment, candidate)} · ${_version(segment, candidate)}'
+                '${blocked ? ' · 不可选' : ''}',
+                style: const TextStyle(fontSize: 11),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -659,6 +770,8 @@ class PlannerPanelState extends State<PlannerPanel> {
                 '按默认方法估算（尚未选 ③）',
                 key: Key('preview-default'),
                 style: TextStyle(fontSize: 11),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
         ],

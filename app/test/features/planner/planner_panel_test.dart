@@ -60,10 +60,13 @@ Future<void> _pump(
   String? scheme,
   PlanTarget? target,
   void Function(PlanDraft draft)? onCreate,
+  Size size = const Size(1200, 2600),
 }) async {
   // 四段竖排在 800×600 下面要滚动，滚动会让 `find` 与坐标断言都失真 ——
   // 直接把视口撑高，验的是**顺序**而不是「能不能滚」。
-  await tester.binding.setSurfaceSize(const Size(1200, 2600));
+  //
+  // 要验布局本身（`B4-R` 的 sticky 与堆叠断点）就得传小视口，所以尺寸可覆盖。
+  await tester.binding.setSurfaceSize(size);
   addTearDown(() => tester.binding.setSurfaceSize(null));
   await tester.pumpWidget(
     MaterialApp(
@@ -489,39 +492,149 @@ void main() {
     );
   });
 
-  testWidgets('TC-PLAN-097 已选体系下自建的源覆盖 0 ⇒ 标「需重选」并说出名字，不静默保留（SPEC-PLAN-007）', (
+  testWidgets(
+    'TC-PLAN-097 已选体系下自建的源覆盖 0 ⇒ 留在候选里标「不可选」，不凭空消失（SPEC-PLAN-007）',
+    (WidgetTester tester) async {
+      await _pump(tester);
+
+      // 先选一套体系：此后源候选按「覆盖 > 0」收窄 —— 包内的源正常筛掉，
+      // **自建的源例外**（`B4-R`）：它的覆盖恒 0（客户端写不了
+      // `Item.sourceRefs`），筛掉就等于「建了看不见」。
+      await tester.tap(find.byKey(const Key('planner-scheme-sch-full')));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const Key('planner-create-source')));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byKey(userSourceNameKey), '内规');
+      await tester.tap(find.byKey(userDialogAddKey));
+      await tester.pumpAndSettle();
+
+      // 建的东西必须留在列表里：看不见它等于没建成（走查实拍）。
+      expect(
+        find.byKey(const Key('planner-source-user:src:内规')),
+        findsOneWidget,
+        reason: '建的动作要有回执',
+      );
+      expect(
+        find.byKey(const Key('planner-user-notice')),
+        findsOneWidget,
+      );
+      expect(
+        tester.widget<Text>(find.byKey(const Key('planner-user-notice'))).data,
+        contains('覆盖 0'),
+      );
+      // 覆盖 0 ⇒ 不可选，并且**不该**有「已取消选择」—— 它从没被选中过。
+      expect(find.textContaining('不可选'), findsWidgets);
+      expect(find.byKey(const Key('planner-reselect-source')), findsNothing);
+
+      // 点它没有反应：确认按钮仍是灰的。
+      await tester.tap(find.byKey(const Key('planner-source-user:src:内规')));
+      await tester.pumpAndSettle();
+      expect(
+        tester.widget<FilledButton>(
+          find.byKey(const Key('planner-confirm-button')),
+        ).onPressed,
+        isNull,
+      );
+    },
+  );
+
+  testWidgets('TC-PLAN-099 ④ 确认固定在左栏底部：候选滚到顶它仍在视口内（SPEC-PLAN-014）', (
+    WidgetTester tester,
+  ) async {
+    // 800×420 仍走横排（断点 720），但高度不足以放下三段 ⇒ 列表必须滚。
+    await _pump(tester, size: const Size(800, 420));
+    final Finder button = find.byKey(const Key('planner-confirm-button'));
+
+    // 滚到顶：旧实现下按钮在列表末尾，坐标会掉到视口外。
+    await tester.drag(
+      find.byKey(const Key('planner-left')),
+      const Offset(0, 2000),
+    );
+    await tester.pumpAndSettle();
+    final Rect top = tester.getRect(button);
+    expect(top.top, greaterThanOrEqualTo(0));
+    expect(
+      top.bottom,
+      lessThanOrEqualTo(420),
+      reason: '唯一出口不该靠用户滚到底才看得见',
+    );
+
+    // 滚到底也一样 —— 它不参与滚动。
+    await tester.drag(
+      find.byKey(const Key('planner-left')),
+      const Offset(0, -2000),
+    );
+    await tester.pumpAndSettle();
+    final Rect bottom = tester.getRect(button);
+    expect(bottom.bottom, lessThanOrEqualTo(420));
+  });
+
+  testWidgets('TC-PLAN-100 窄于断点改上下堆叠，不出溢出条（SPEC-PLAN-017）', (
+    WidgetTester tester,
+  ) async {
+    // 窄到 520：横排会让两栏各分到几十像素，文字逐字竖排并溢出（走查实拍
+    // 每张卡片挂 `RIGHT OVERFLOWED BY 52 PIXELS`）。
+    await _pump(tester, size: const Size(520, 900));
+    expect(
+      tester.takeException(),
+      isNull,
+      reason: '溢出在测试里会以 FlutterError 抛出来',
+    );
+
+    final Rect left = tester.getRect(find.byKey(const Key('planner-left')));
+    final Rect preview = tester.getRect(find.byKey(const Key('planner-preview')));
+    expect(
+      preview.top,
+      greaterThanOrEqualTo(left.bottom),
+      reason: '堆叠后预览在清单下方，不是并排',
+    );
+  });
+
+  testWidgets('TC-PLAN-101 三段「自建」按钮只有一个加号（SPEC-PLAN-007）', (
     WidgetTester tester,
   ) async {
     await _pump(tester);
+    // 不引 `PlanSegment`：它住在 `core/plan/candidates.dart`，为三个字符串再
+    // 拉一条 import 不划算。
+    for (final String segment in <String>['source', 'scheme', 'method']) {
+      final Finder button = find.byKey(Key('planner-create-$segment'));
+      expect(
+        find.descendant(of: button, matching: find.text('自建')),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(of: button, matching: find.text('+ 自建')),
+        findsNothing,
+        reason: '图标已是 `Icons.add`，文字再带加号就成了「＋ + 自建」',
+      );
+      expect(
+        find.descendant(of: button, matching: find.byIcon(Icons.add)),
+        findsOneWidget,
+      );
+    }
+  });
 
-    // 先选一套体系：此后源候选按「覆盖 > 0」收窄。
-    await tester.tap(find.byKey(const Key('planner-scheme-sch-full')));
-    await tester.pumpAndSettle();
+  testWidgets('TC-PLAN-102 「已取消选择」既说名字也说另一端，不再说「已选的」（SPEC-PLAN-014）', (
+    WidgetTester tester,
+  ) async {
+    // 走**重入**这条路（`SPEC-PLAN-019`）：两个预填值互不相容 —— src-b 只覆盖
+    // i3 i4，sch-part 只含 i1 i2。手动选是走不到这里的：选源会收窄体系、选体系
+    // 会收窄源，两段永远兼容（`B4` `P-2` 的双向收窄）。自建源那条路在 `B4-R`
+    // 之后也不再触发（它改成「保留 + 不可选」）。所以「已取消选择」这句话现在
+    // 只服务重入预填。
+    await _pump(tester, source: 'src-b', scheme: 'sch-part');
 
-    await tester.tap(find.byKey(const Key('planner-create-source')));
-    await tester.pumpAndSettle();
-    await tester.enterText(find.byKey(userSourceNameKey), '内规');
-    await tester.tap(find.byKey(userDialogAddKey));
-    await tester.pumpAndSettle();
-
-    // 自建的源没有任何项引用它（绑定关系住在 `Item.sourceRefs`、属内容侧），
-    // 所以在已选体系下必然被筛掉。**这与别的候选同一口径，不做特例**。
-    expect(find.byKey(const Key('planner-source-user:src:内规')), findsNothing);
-    expect(
+    final Text line = tester.widget<Text>(
       find.byKey(const Key('planner-reselect-source')),
-      findsOneWidget,
-      reason: '静默丢掉用户刚建的东西是最糟的一种',
     );
+    expect(line.data, contains('src-b'), reason: '要说名字，不能甩内部 id');
+    expect(line.data, contains('当前体系'), reason: '另一端要指明，别写「另一端」');
+    expect(line.data, contains('已取消选择'));
     expect(
-      tester.widget<Text>(find.byKey(const Key('planner-reselect-source'))).data,
-      contains('内规'),
-      reason: '要说名字，不能把内部 id 甩给用户',
-    );
-    expect(
-      tester.widget<FilledButton>(
-        find.byKey(const Key('planner-confirm-button')),
-      ).onPressed,
-      isNull,
+      line.data,
+      isNot(contains('已选的')),
+      reason: '那一项已经清空了，说「已选的」会让人去找一张不在选中态的卡片',
     );
   });
 }
