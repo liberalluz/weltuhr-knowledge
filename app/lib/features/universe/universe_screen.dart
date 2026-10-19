@@ -693,9 +693,18 @@ class _UniverseScreenState extends State<UniverseScreen>
   ];
 
   /// 详情此刻是否可见。`VIEW-013` 把详情定义成「`Z4` 的渲染形态」，树里则是
-  /// 右栏常驻 —— 两处都算「在详情里」，因为用户看到的是同样那四段。
-  bool get _detailVisible =>
-      _mode == ViewMode.tree || _camera.zoom == ZoomLevel.z4;
+  /// 右栏 —— 两处都算「在详情里」，因为用户看到的是同样那四段。
+  ///
+  /// ⚠️ 树里有**一条附加条件**：必须真的选中了一项（`VIEW-006` 修订第 4 条）。
+  /// 树里还能选中「空间」与「域」，那两种不是「选中一项」—— 抽屉照开的话，
+  /// 右栏会出现一个内容为空的框，而它看起来和「这一项没有详情」一模一样。
+  ///
+  /// ⚠️ 两个分支**互斥**，不能写成 `(tree && 选中) || zoom == z4`：进树时
+  /// `_camera.zoom` 还留着进树前的档位，从 `Z4` 切进树就会因为那半个条件把抽屉
+  /// 开出来 —— 而树里根本没有选中项。
+  bool get _detailVisible => _mode == ViewMode.tree
+      ? _selectedItemId != null
+      : _camera.zoom == ZoomLevel.z4;
 
   /// 有没有可退的地方。`false` 时返回按钮**不渲染** —— 按下去什么也不会变的
   /// 按钮比没有更糟（同 `VIEW-031` 那一行放宽入口）。
@@ -881,15 +890,32 @@ class _UniverseScreenState extends State<UniverseScreen>
     });
   }
 
-  /// 选中项决定回宇宙时落哪一档。没有选中 ⇒ 留在当前档。
+  /// 选中项决定回宇宙时落哪一档（`VIEW-009` 修订：**落点在哪一层，就落哪一档**）。
+  ///
+  /// | 树里选中的 | 落点 | 档位 |
+  /// |---|---|---|
+  /// | 项（无论有没有子树） | 那一颗星 | `Z4` |
+  /// | 域 | 那一朵云 | `Z2` |
+  /// | 空间（只是换了根） | 那个星系 | `Z1` |
+  ///
+  /// ⚠️ **不再按 `φ` 定档**。`φ` 是**项内**的深度，而前三档是**容器**层级：
+  /// `φ=1` 的项可能在任何域里，`Z2` 却只会打开某一个域。旧写法对「有子树的项」
+  /// 还会落 `Z3`，等于把用户选中的那一项换成「它所在的整条链」—— 他按的是
+  /// 「看这一项」，不是「看这条链」。要让 `C-37`（`zoomForPhi`）回到判据里，
+  /// 先得回答「容器层级怎么从项内深度推出来」，而这个问题没有答案。
+  ///
+  /// 合成回落（没有包）时无从判层级 ⇒ 留在当前档。
   ZoomLevel _zoomForSelection() {
-    final LoadedPack? pack = _pack;
-    final String? id = _selectedItemId;
-    if (pack == null || id == null) {
+    if (_pack == null) {
       return _camera.zoom;
     }
-    final bool hasChildren = pack.edges.any((Edge edge) => edge.from == id);
-    return zoomForPhi(phiLevelsOf(pack)[id] ?? 0, hasChildren: hasChildren);
+    if (_selectedItemId != null) {
+      return ZoomLevel.z4;
+    }
+    if (_domainId != null) {
+      return ZoomLevel.z2;
+    }
+    return ZoomLevel.z1;
   }
 
   /// 详情内换一项（关系行点击，`VIEW-014`）。**`trail` 的唯一写入点**。
@@ -1616,7 +1642,9 @@ class _UniverseScreenState extends State<UniverseScreen>
   Widget build(BuildContext context) {
     final ItemDetail? detail = _detail();
     final bool tree = _mode == ViewMode.tree;
-    final bool showDetail = tree || _camera.zoom == ZoomLevel.z4;
+    // 与 `_detailVisible` 同一条判据，**不另写一份**：两处分叉的那天，抽屉会
+    // 在树里开着、`trail` 却认为不在详情，返回按钮的去向立刻错一层。
+    final bool showDetail = _detailVisible;
     final Set<String>? visibleIds = _visibleIds();
     final bool filtered = visibleIds != null;
 
@@ -2160,18 +2188,75 @@ class _UniverseScreenState extends State<UniverseScreen>
     return Padding(
       padding: EdgeInsets.only(
         // 右栏是浮层（`hudDetailDrawerKey`），树要给它让位，否则末端的 φ 标签被盖住。
-        right: _drawerReserve,
+        // 抽屉按「有没有选中项」出现（`VIEW-006` 修订第 4 条）⇒ 让位也跟着走，
+        // 否则没选中时右边空出一条 340 px 的带子，树白窄一半。
+        right: _detailVisible ? _drawerReserve : 0,
         // ① 常显 ⇒ 树永远从它下面开始；② 出现时再让一行。两个数都从常量来：
         // ① 的高度若在两处各写一个数，改一处忘一处不会有任何东西变红（`R-08`）。
         top: _hudTopHeight + (filtered ? _filterRowHeight : 0),
       ),
       child: TreeView(
-        pack: _pack,
+        // 树的第一层是「所有空间」（`VIEW-006` 修订）⇒ 传全部根，不只当前根。
+        packs: _allPacks(),
+        spaceId: _spaceId,
         selectedItemId: _selectedItemId,
+        selectedDomainId: _domainId,
         visibleIds: _visibleIds(),
-        onSelect: _select,
+        onSelectItem: _selectFromTree,
+        onSelectDomain: _selectDomainFromTree,
+        onSwitchRoot: _switchRootInTree,
       ),
     );
+  }
+
+  /// 树里点空间名 = **换根**，且**留在树里**（`VIEW-006` 修订第 2 条）。
+  ///
+  /// 与宇宙里点星系（`_jumpToSpace`）的差别只有一处：那个会切回宇宙，这个不切。
+  /// 换根要清选中项与域 —— 旧空间的 id 在新空间里取不出内容，留着就是两条
+  /// 互相矛盾的真相（`_crumbs` 照渲染，`_detail()` 返回 `null`）。
+  ///
+  /// 档位**不在这里改**：用户还在树里，改 `_camera.zoom` 只会在切回宇宙那一刻
+  /// 才被看到，而那一刻会由 `_zoomForSelection` 重新定档。
+  void _switchRootInTree(String spaceId) {
+    if (_rootOf(spaceId) == null) {
+      return;
+    }
+    _navigate(() {
+      _spaceId = spaceId;
+      _selectedItemId = null;
+      _domainId = null;
+    });
+  }
+
+  /// 树里点域名 = 选中该域：面包屑落到第 3 段，**不开抽屉**（`VIEW-006` 修订
+  /// 第 3 / 4 条）。
+  ///
+  /// 域属于别的空间时先换根 —— 树里能展开别处的空间，点它的域却不换根，面包屑
+  /// 第 2 段会写着 A 空间、第 3 段写着 B 空间的域。
+  void _selectDomainFromTree(String spaceId, String domainId) {
+    _navigate(() {
+      _spaceId = spaceId;
+      _domainId = domainId;
+      // 选中项必须清：`VIEW-012` 的抽屉以「选中了一项」为开关，留着旧项就是
+      // 「选了域，抽屉里却是上一个域的那一项」。
+      _selectedItemId = null;
+    });
+  }
+
+  /// 树里点项名 = 选中该项（详情右栏）。跨空间时先换根。
+  ///
+  /// 不复用 `_select`：那个假定项在当前根里（`_pack?.itemOf`）—— 树里点的是
+  /// 别处的项时，`_pack` 还是旧的那一份，域会取成 `null`。
+  void _selectFromTree(String spaceId, String itemId) {
+    final LoadedPack? pack = _rootOf(spaceId)?.pack;
+    if (pack == null || pack.itemOf(itemId) == null) {
+      return;
+    }
+    _navigate(() {
+      _spaceId = spaceId;
+      _selectedItemId = itemId;
+      _domainId = pack.itemOf(itemId)!.domainId;
+    });
   }
 
   // ── ① 面包屑与图标（`VIEW-018` 修订 2） ─────────────────────────────────
@@ -2235,7 +2320,7 @@ class _UniverseScreenState extends State<UniverseScreen>
     if (!tree && _camera.zoom == ZoomLevel.z0) {
       return crumbs;
     }
-    crumbs.add(_Crumb(_spaceLabel(pack.space.id), level: ZoomLevel.z1));
+    crumbs.add(_Crumb(spaceLabelOf(pack.space.id), level: ZoomLevel.z1));
     if (_domainId == null || (!tree && _camera.zoom == ZoomLevel.z1)) {
       return crumbs;
     }
@@ -2289,14 +2374,6 @@ class _UniverseScreenState extends State<UniverseScreen>
       child: label,
     );
   }
-
-  /// 空间的显示名：`space.id` 首字母大写（`VIEW-036` 的标注口径）。
-  ///
-  /// 不用 `space.name`：三个包的 `name` 是「Python 语法分层 / 英语语法分层 /
-  /// 德语语法分层」，四段面包屑里再塞这种长度就要换行；而 id 就是包目录名，
-  /// 用户核对得上的也正是它。
-  String _spaceLabel(String id) =>
-      id.isEmpty ? id : id[0].toUpperCase() + id.substring(1);
 
   /// 模式图标（`VIEW-018` 修订 2）：14 px 图形、44 px 命中盒。
   ///
