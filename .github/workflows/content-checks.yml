@@ -2,11 +2,25 @@ name: content-checks
 
 # 内容管线的门禁。fixtures 是整个 job 的主体：负例红，说明某条判据被改宽了。
 # 真实空间落地后，最后一步会自动接管构建（dist/ 不入库，产物只在 CI 里验）。
+#
+# 同样不写 workflow 级 `paths`，理由见 `app-checks.yml` 头部 —— 一句话：`paths`
+# 未命中时 check 不产生结论，设成 required 就永远 pending。触发面由
+# `tool/ci/affected.py` 在 job 内判断。
+#
+# 「产物不入库」原本在本 job 末尾，**已拆到 `repo-hygiene.yml`**：
+# 那一条的输入是全仓 `git` 状态而非 `content/`，挂在这里就得跟着本 job 的改动面
+# 走 —— 只改 `app/` 的 PR 会漏掉它。而它只需要 `git`，整段约 5 秒，本身也不值得
+# 为它设任何过滤。
 
 on:
   push:
     branches: [main]
   pull_request:
+
+# 同一分支连续推送时只保留最新一次，避免排队等旧提交。
+concurrency:
+  group: content-checks-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   content-checks:
@@ -18,49 +32,39 @@ jobs:
       PYTHONDONTWRITEBYTECODE: "1"
     steps:
       - uses: actions/checkout@v4
+        with:
+          # 同 `app-checks`：算 `base...HEAD` 要 merge-base，默认 depth 1 拿不到。
+          fetch-depth: 0
+
+      # 判断在装 python 之前：`ubuntu-latest` 自带的 python3 足够跑判据（纯标准库），
+      # 被跳过的 PR 就只花 checkout 与约 1 秒。
+      # `--root .`：本 job 没有 `defaults.working-directory`，cwd 是仓库根，
+      # 不传就会按默认的 `..` 去找上一级目录。
+      - name: 判改动面
+        id: scope
+        run: python3 app/tool/ci/affected.py --scope content --root . --base "$BASE" >> "$GITHUB_OUTPUT"
+        env:
+          BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
 
       - uses: actions/setup-python@v5
+        if: steps.scope.outputs.run == 'true'
         with:
           python-version: "3.13"
 
       # 无第三方依赖，不装任何包
       - name: fixtures 回归
+        if: steps.scope.outputs.run == 'true'
         run: python content/tools/verify.py --suite
 
       - name: 确定性检查
+        if: steps.scope.outputs.run == 'true'
         run: python content/tools/build.py --root content/tools/fixtures/valid-min --check
 
       - name: 构建全部空间
+        if: steps.scope.outputs.run == 'true'
         run: |
           if ls content/*/manifest.json >/dev/null 2>&1; then
             python content/tools/build.py
           else
             echo "尚无真实空间（content/*/manifest.json），跳过"
           fi
-
-      # 判据只针对产物路径。原写法「全仓不得有未跟踪文件」有两处失真：
-      #   过宽 —— 任何与产物无关的临时文件都会让它红，错误信息还指向 dist/；
-      #   过窄 —— ^?? 只匹配未跟踪文件，dist/ 若已被提交进库，status 显示的是 M
-      #           （甚至无变化时不显示），它反而漏掉自己最该抓的情况。
-      # ⚠️ 不用 pathspec 通配：实测 `git status -- 'content/*/dist'` 拿不到未跟踪目录
-      #    （全量 status 有 `?? .../dist/`，加通配后返回空，`:(glob)` 同样无效），
-      #    会静默放行。故取全量输出再文本过滤。
-      # 判据工具按 .gitignore 纪律 ③：以 `git add -A --dry-run` 为准（新增与修改都会列出，
-      # 被忽略的不列），再用 ls-files 补「已提交进库但未改动」这一路。
-      - name: 产物不入库
-        run: |
-          fail=0
-          pending=$(git add -A --dry-run | grep -E '(^|/)dist/' || true)
-          if [ -n "$pending" ]; then
-            echo "构建产物会被提交进库（未被 .gitignore 覆盖）："
-            echo "$pending"
-            fail=1
-          fi
-          tracked=$(git ls-files | grep -E '(^|/)dist/' || true)
-          if [ -n "$tracked" ]; then
-            echo "构建产物已在索引中，应移除并补 .gitignore："
-            echo "$tracked"
-            fail=1
-          fi
-          if [ "$fail" -ne 0 ]; then exit 1; fi
-          echo "产物未入库：dist/ 均被 .gitignore 覆盖"
