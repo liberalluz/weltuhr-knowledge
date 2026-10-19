@@ -3115,6 +3115,96 @@ void main() {
       expect(after.marks.first.points.first, before.marks.first.points.first);
       expect(tester.takeException(), isNull);
     });
+
+    testWidgets('Z0 点星系：ticker 在跑、按住跨好几帧也要进 Z1（SPEC-VIEW-036）', (
+      WidgetTester tester,
+    ) async {
+      // 真机上「点一下」是按住 60–150 ms，其间 `C-54` 的 ticker 已经推了
+      // 好几帧，`AnimatedBuilder` 也重建了同样多次。`tester.tapAt` 是瞬时的
+      // （down 与 up 落在同一帧），复现不出这个交错 —— 所以这里显式按住
+      // 80 ms、跨 5 帧再抬。
+      //
+      // ⚠️ 这条用例的来历：`V-1i` 前半之后 `Z0` 报过「点不动」。本文件其余
+      // `Z0` 点击用例全部走 `motion: false`，ticker 不跑、也从不重建手势层，
+      // 于是它们全绿，缺陷只在真机显形。这条把「跨帧重建」这一维补上。
+      final LoadedPack pack = loadAlphaPack();
+      final LoadedPack go = _z0Space();
+      await _pumpScreen(
+        tester,
+        pack: pack,
+        scene: _alphaScene(pack),
+        others: <LoadedPack>[go],
+        zoom: ZoomLevel.z0,
+        motion: true,
+      );
+
+      final Size window = tester.getSize(find.byType(UniverseScreen));
+      final ViewportPlan plan = planViewport(
+        window.width,
+        window.height,
+        devicePixelRatio: tester.view.devicePixelRatio,
+      );
+      final GalaxyLayout layout = layoutGalaxies(
+        roots: <SceneResolution>[
+          SceneResolution(bundle: _alphaScene(pack), pack: pack),
+          SceneResolution(bundle: _alphaScene(go), pack: go),
+        ],
+        viewport: Size(plan.surfaceWidth, plan.surfaceHeight),
+      );
+      final GalaxyDisc target = layout.discOf('go')!;
+
+      final TestGesture gesture = await tester.startGesture(
+        target.center * plan.scale,
+      );
+      for (int i = 0; i < 5; i++) {
+        await tester.pump(const Duration(milliseconds: 16));
+      }
+      await gesture.up();
+      await _pump(tester);
+
+      expect(
+        _crumbCount(tester),
+        _crumbsFor(ZoomLevel.z1),
+        reason: '按住期间手势层被重建，tap 不该因此丢掉',
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('4K 窗口：指针贴住域点也停得住 —— 指针坐标要按画布换算（C-33 / C-57）', (
+      WidgetTester tester,
+    ) async {
+      // `4K` 时画布比窗口小 `plan.scale` 倍。指针位置若直接当画布坐标用，
+      // 算出的距离会被放大 `scale` 倍 —— 明明贴着域点也判成「离得远」，
+      // 于是画面**不停**。这与「`Z0` 点不动」同一类：不报错、画面看着正常。
+      tester.view.physicalSize = const Size(3840, 2160);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+
+      final LoadedPack pack = loadAlphaPack();
+      await _pumpScreen(
+        tester,
+        pack: pack,
+        scene: _alphaScene(pack),
+        motion: true,
+      );
+
+      final double scale = surfaceScale(tester);
+      expect(scale, greaterThan(1), reason: '4K 下必须真的降采样，否则这条验不到换算');
+
+      final Offset target = spiralOf(tester).marks.first.points.first;
+      await mouseOn(tester, target * scale);
+      await tester.pump(const Duration(milliseconds: 16));
+      final SpiralLayout stopped = spiralOf(tester);
+      await advance(tester, const Duration(seconds: 2));
+      final SpiralLayout after = spiralOf(tester);
+
+      expect(
+        after.marks.first.points.first,
+        stopped.marks.first.points.first,
+        reason: '指针贴着域点，盘就该停住 —— 距离算错才是「停不下来」',
+      );
+      expect(tester.takeException(), isNull);
+    });
   });
 }
 
