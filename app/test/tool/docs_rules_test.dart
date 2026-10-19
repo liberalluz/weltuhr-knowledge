@@ -1,4 +1,4 @@
-/// `tool/docs` 四条规则的回归。
+/// `tool/docs` 五条规则的回归。
 ///
 /// 为什么检查器要自测：规则自己改错了会**静默失效** —— 工具跑绿、人以为文档
 /// 自洽、实际什么都没查。本笔就撞过两次：`D1` 在转义反引号处截断名字（5 条假红）、
@@ -27,7 +27,7 @@ Map<String, String> _docs() => <String, String>{
 | `v0.1.0` | 1 | `STR`（x） |
 ''',
       stdFile: '''
-> **版号**：`v0.1.0` · **状态**：§三 用例表 **2 条**
+> **版号**：`v0.1.0` · **状态**：§三 用例表 **2 条** · `flutter test` **2**
 
 | 版号 | 日期 | 修订摘要 |
 |---|---|---|
@@ -66,7 +66,7 @@ Map<String, String> _docs() => <String, String>{
 
 | 版号 | 日期 | 修订摘要 |
 |---|---|---|
-| `v0.1.0` | 2026-10-17 | 首建 |
+| `v0.1.0` | 2026-10-17 | 首建。`flutter test` **2 passed** |
 ''',
     };
 
@@ -220,6 +220,61 @@ void main() {
       final List<DocIssue> d4 =
           issues.where((DocIssue i) => i.ruleId == 'D4').toList();
       expect(d4.map((DocIssue i) => i.message).join('\n'), contains('按域表 `FND` 写有用例 2 条'));
+    });
+  });
+
+  group('D5 头部读数', () {
+    test('TC-DOC-012 头部 flutter test 读数落后于 STR 最新轮次就报（无 SPEC：检查器规则）', () {
+      final List<DocIssue> issues = _run(
+        _patch(_docs(), stdFile, '`flutter test` **2**', '`flutter test` **1**'),
+      );
+      final List<DocIssue> d5 =
+          issues.where((DocIssue i) => i.ruleId == 'D5').toList();
+      expect(d5, hasLength(1));
+      expect(d5.single.message, contains('头部写 `flutter test` 1 条'));
+      expect(d5.single.message, contains('实跑 2 条'));
+    });
+
+    test('TC-DOC-013 权威轮次取语义最大版号，不取最后一行（无 SPEC：检查器规则）', () {
+      // 新轮次排在**前面**、旧轮次排在**后面**，且两者读数不同（4 / 2）。
+      // 头部写 2 —— 若实现是「取最后一行」，会拿到 2 而误判为一致（零红）；
+      // 只有「取语义最大」才会拿到 `v0.3.0` 的 4 并报出来。
+      final List<DocIssue> issues = _run(
+        _patch(
+          _docs(),
+          strFile,
+          '| `v0.1.0` | 2026-10-17 | 首建。`flutter test` **2 passed** |',
+          '| `v0.3.0` | 2026-10-19 | 又一轮。`flutter test` **4 passed** |\n'
+              '| `v0.1.0` | 2026-10-17 | 首建。`flutter test` **2 passed** |',
+        ),
+      );
+      final List<DocIssue> d5 =
+          issues.where((DocIssue i) => i.ruleId == 'D5').toList();
+      expect(d5, hasLength(1), reason: '取最后一行会得 2，与头部一致 ⇒ 零红，就验不出这条');
+      expect(d5.single.message, contains('v0.3.0'));
+      expect(d5.single.message, contains('实跑 4 条'));
+    });
+
+    test('TC-DOC-014 最新轮次没登记读数只警告，不阻断（无 SPEC：检查器规则）', () {
+      final List<DocIssue> issues = _run(
+        _patch(_docs(), strFile, '首建。`flutter test` **2 passed**', '首建。'),
+      );
+      final List<DocIssue> d5 =
+          issues.where((DocIssue i) => i.ruleId == 'D5').toList();
+      expect(d5, hasLength(1));
+      expect(d5.single.isWarning, isTrue, reason: '读数缺失是信息损失，不是两个数打架');
+      expect(d5.single.message, contains('无从核对'));
+    });
+
+    test('TC-DOC-015 头部没写读数只警告，不去猜（无 SPEC：检查器规则）', () {
+      final List<DocIssue> issues = _run(
+        _patch(_docs(), stdFile, ' · `flutter test` **2**', ''),
+      );
+      final List<DocIssue> d5 =
+          issues.where((DocIssue i) => i.ruleId == 'D5').toList();
+      expect(d5, hasLength(1));
+      expect(d5.single.isWarning, isTrue);
+      expect(d5.single.message, contains('唯一登记处'));
     });
   });
 }

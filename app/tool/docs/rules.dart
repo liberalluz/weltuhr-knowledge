@@ -1,4 +1,4 @@
-/// 交付物一致性检查的四条规则（`D1`–`D4`）。
+/// 交付物一致性检查的五条规则（`D1`–`D5`）。
 ///
 /// 为什么单独一支、不进 `tool/lint`：`lint` 管的是**代码**的架构不变量（`R1`–`R5`），
 /// 判据是「这一行代码违反了哪条约束」；这里管的是**四份交付物之间的口径**，判据是
@@ -88,6 +88,13 @@ final RegExp _caseRowRe = RegExp(r'^\|\s*(?:~~)?`TC-[A-Z]+-\d+`');
 final RegExp _ticketRe = RegExp(r'`(TC-[A-Z]+-\d+)`');
 final RegExp _specRe = RegExp(r'([A-Z]{3,6})-\d{3}');
 
+/// `STD` 头部状态行里的 `flutter test` 读数。
+final RegExp _stdTestCountRe = RegExp(r'`flutter test`\s*\*\*(\d+)\*\*');
+
+/// `STR` 轮次读数。两种写法都收：`` `flutter test` **572 passed** `` 与
+/// `（**572 passed** · analyze 0）` —— 后者是 `STR` 历史行的实际形态。
+final RegExp _passedRe = RegExp(r'\*\*(\d+)\s+passed\*\*');
+
 /// 跑全部规则。
 List<DocIssue> checkAll(DocContext ctx) {
   return <DocIssue>[
@@ -95,6 +102,7 @@ List<DocIssue> checkAll(DocContext ctx) {
     ...checkD2Versions(ctx),
     ...checkD3CaseCounts(ctx),
     ...checkD4SpecCoverage(ctx),
+    ...checkD5TestCount(ctx),
   ];
 }
 
@@ -787,6 +795,155 @@ List<DocIssue> checkD4SpecCoverage(DocContext c) {
         ),
       );
     }
+  }
+
+  return out;
+}
+
+// ---------------------------------------------------------------------------
+// D5 · STD 头部读数
+// ---------------------------------------------------------------------------
+
+/// `D5`：`STD` 头部声明的 `flutter test` 读数必须等于**最新一轮实跑**。
+///
+/// 为什么不归 `D3`：`D3` 对的是「用例表有多少行」，那个数**在文档内部可复算**；
+/// `flutter test` 是**执行读数**，四份文档里唯一提供它的是 `STR` 的轮次记录。
+/// 两个口径本来就不同（608 行用例 ≠ 572 条 Dart 测试），不能互相校验，只能各找
+/// 各的权威源 —— 硬拉在一起只会让两条规则一起说谎。
+///
+/// 这条规则是补前四条漏掉的那一类：**头部读数不跟正文**。实测连续两版漏改
+/// （`v0.44.0` 的 561、`v0.45.0` 的 572 都没写进去，头部一直停在 `v0.43.0` 的
+/// 548），而 `D1`–`D4` 一条都不管头部。修的时候刻意**删掉**头部另一处重复的
+/// 读数（`SPEC` 覆盖数只在 §4.1 写一份）：能不复制就不需要对账。
+///
+/// 权威源取 `STR` 修订历史里**语义最大版号**那一行，不取最后一行 —— 与 `D2`
+/// 同一个理由：`STR` 的历史当下是乱序的（`v0.18.0` 排在 `v0.2.0` 之后），依赖
+/// 位置就得先修表，而修表是另一件事。
+List<DocIssue> checkD5TestCount(DocContext c) {
+  final List<DocIssue> out = <DocIssue>[];
+  final String? stdText = c.docs[stdFile];
+  if (stdText == null) {
+    return const <DocIssue>[
+      DocIssue(ruleId: 'D5', file: stdFile, line: 0, message: '文件不存在'),
+    ];
+  }
+
+  final List<String> stdLines = stdText.split('\n');
+  int headLine = 0;
+  String? claimed;
+  for (int i = 0; i < stdLines.length; i++) {
+    if (_headVersionRe.firstMatch(stdLines[i]) == null) {
+      continue;
+    }
+    headLine = i + 1;
+    claimed = _stdTestCountRe.firstMatch(stdLines[i])?.group(1);
+    break;
+  }
+  if (headLine == 0) {
+    return const <DocIssue>[
+      DocIssue(
+        ruleId: 'D5',
+        file: stdFile,
+        line: 0,
+        message: '找不到头部版号行，无从核对 `flutter test` 读数',
+      ),
+    ];
+  }
+  if (claimed == null) {
+    out.add(
+      DocIssue(
+        ruleId: 'D5',
+        file: stdFile,
+        line: headLine,
+        message: '头部未声明 `flutter test` 读数 —— 这是「本版实跑多少条」的唯一登记处，'
+            '删掉就再也对不上 `STR`',
+        isWarning: true,
+      ),
+    );
+    return out;
+  }
+
+  final String? strText = c.docs[strFile];
+  if (strText == null) {
+    return <DocIssue>[
+      ...out,
+      const DocIssue(ruleId: 'D5', file: strFile, line: 0, message: '文件不存在'),
+    ];
+  }
+  final List<String> strLines = strText.split('\n');
+  final int start = _findTableStart(
+    strLines,
+    (String l) => _splitRow(l).isNotEmpty && _splitRow(l).first == '版号',
+  );
+  if (start < 0) {
+    return <DocIssue>[
+      ...out,
+      const DocIssue(
+        ruleId: 'D5',
+        file: strFile,
+        line: 0,
+        message: '找不到修订历史表，无从取值',
+      ),
+    ];
+  }
+
+  String? maxVer;
+  int maxLine = 0;
+  String? maxRow;
+  for (int i = start + 1; i < strLines.length; i++) {
+    if (!strLines[i].trim().startsWith('|')) {
+      break;
+    }
+    final List<String> cells = _splitRow(strLines[i]);
+    if (cells.isEmpty) {
+      continue;
+    }
+    final String v = cells.first.replaceAll('`', '');
+    if (_versionRe.firstMatch(v) == null) {
+      continue;
+    }
+    if (maxVer == null || _compareVersion(v, maxVer) > 0) {
+      maxVer = v;
+      maxLine = i + 1;
+      maxRow = strLines[i];
+    }
+  }
+  if (maxVer == null) {
+    return <DocIssue>[
+      ...out,
+      DocIssue(
+        ruleId: 'D5',
+        file: strFile,
+        line: start + 1,
+        message: '修订历史表里没有任何版号行',
+      ),
+    ];
+  }
+
+  final String? actual = _passedRe.firstMatch(maxRow!)?.group(1);
+  if (actual == null) {
+    out.add(
+      DocIssue(
+        ruleId: 'D5',
+        file: strFile,
+        line: maxLine,
+        message: '`STR` 最新轮次（$maxVer）未登记 `… passed` 读数，'
+            '`D5` 无从核对 —— 补一行「`flutter test` **N passed**」即可',
+        isWarning: true,
+      ),
+    );
+    return out;
+  }
+  if (actual != claimed) {
+    out.add(
+      DocIssue(
+        ruleId: 'D5',
+        file: stdFile,
+        line: headLine,
+        message: '头部写 `flutter test` $claimed 条，而 `STR` 最新轮次 $maxVer '
+            '（$strFile:$maxLine）实跑 $actual 条',
+      ),
+    );
   }
 
   return out;
