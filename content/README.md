@@ -35,7 +35,23 @@ content/
 
 > `content/python/` 是**第一个真实空间**（α 参考包：150 项 · 170 条边 · 10 域），`B2` 起作为定位引擎与投影帧预算的输入。`tools/fixtures/` 下的示例源数据仍在，用 `python content/tools/build.py --root content/tools/fixtures/valid-min` 可单独验证管线本身。
 >
-> `content/english/` 与 `content/german/` 是 `B3` 收尾后新增的两个空间（各 80 项 · 84 条边 · 8 域 · 24 题），**除内容外未改一行核心代码** —— 它们是「零核心代码接入新空间」这条铁律的实证面，也让多根视图与跨空间换根第一次能在终端上验到（此前只有 python 一个根，凑不出第二个）。两包的 `excerpts` 为**空数组**：源摘录须逐条可核验并带许可标记，不代写 —— 登记为缺口，摘录落地后逐条回填。
+> `content/english/` 与 `content/german/` 是 `B3` 收尾后新增的两个空间（各 80 项 · 84 条边 · 8 域 · 24 题），**除内容外未改一行核心代码** —— 它们是「零核心代码接入新空间」这条铁律的实证面，也让多根视图与跨空间换根第一次能在终端上验到（此前只有 python 一个根，凑不出第二个）。两包的 `excerpts` 一度为**空数组**（源摘录须逐条可核验并带许可标记，不代写），`B4-R` 已**逐条回填**：每包 3 条源、`sourceRefs` 按域回填，覆盖见下。
+>
+> **两包的源与覆盖（`B4-R` 回填，2026-10-19）**：`excerpts` 每条 `segments` 都是**逐字短引**，`locator` 给章节名 + 可定位 URL，`license` 按源标（`proprietary-excerpt` / `CC-BY-SA-4.0`）——「可核验」指**回到该 URL 能读到原句**，不是转述。
+>
+> | 空间 | 源 | 等级 | 覆盖（全量体系 / 首周体系） |
+> |---|---|---|---|
+> | english | `english-cambridge-grammar`（Cambridge Dictionary · British Grammar） | `L1`（官方语法参考） | 50 / 15 |
+> | english | `english-elt-grammar`（Grammar for English Language Teachers） | `L2`（学术出版） | 10 / 3 |
+> | english | `english-wikipedia-grammar`（Wikipedia · English grammar） | `L2` | 30 / 9 |
+> | german | `german-duden-grammatik`（Duden – Die Grammatik） | `L1`（权威辞书） | 40 / 12 |
+> | german | `german-dw-grammatik`（Deutsche Welle · Deutsch lernen） | `L2`（开放课程） | 30 / 9 |
+> | german | `german-wikipedia-grammar`（Wikipedia · German grammar） | `L2` | 20 / 6 |
+>
+> ⚠️ **三个判据记在这里，避免下次回填重犯**：
+> ① **每条源都必须有覆盖**。覆盖 = `Item.sourceRefs` ∩ 体系节点 —— 覆盖 0 的源在已选体系时会被 `_sources()` 筛掉（`PLAN-014` 的双向收窄），写进包也选不到。
+> ② **`sourceRefs` 是必填键**，客户端 `Item.fromJson` 省略即抛、`bundleFromPack` 再静默丢掉整个空间 —— 空数组 ≠ 免写。
+> ③ **百科源标 `L2` 属实现补的裁定**：`knowledge-system-learning-methodology.md` §4 的 L4 是「社区聚合与索引」，把协作百科归进去会造成「源本身不可作结论来源」的自相矛盾，故按「开放课程/参考资料」记 `L2`。此条**待评审**。
 
 ## 相关文档
 
