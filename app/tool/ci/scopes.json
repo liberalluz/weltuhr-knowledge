@@ -4,6 +4,7 @@
     "app": [
       "app/",
       "content/",
+      "docs/deliverables/",
       ".github/workflows/app-checks.yml"
     ],
     "content": [

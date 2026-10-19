@@ -15,6 +15,9 @@
   `content/<空间>/dist/pack.json` 喂读包测试（`dist/` 不入库，`SPEC-PACK-018`）。
   不含的话，「内容端改结构、客户端读包逻辑坏了」这类 PR 会全绿。
 - `content` 含 `app/tool/ci/` —— 判据自身改动要触发一次回归，否则判据改坏了没人知道。
+- `app` 含 `docs/deliverables/` —— `tool/docs/check.dart` 对的就是那四份交付物的
+  版号与读数。不含的话，一笔「只改 `docs/`」的 PR 会跳过口径对账 —— 而那正是
+  四份文档每版都在改、也是最该被机器看住的地方。
 - 两条都含各自的 workflow 文件。
 
 为什么不写 workflow 级 `paths:`（这是本文件存在的理由）：
@@ -145,7 +148,9 @@ def self_test(scopes):
         ("app", ["content/python/manifest.json"], True, "内容数据变了要重跑读包测试"),
         ("app", ["content/tools/build.py"], True, "内容构建脚本"),
         ("app", ["app/tool/ci/affected.py"], True, "判据自身在 app/ 下"),
-        ("app", ["docs/deliverables/04-test/STD-软件测试说明.md"], False, "文档不触发"),
+        ("app", ["docs/deliverables/04-test/STD-软件测试说明.md"], True,
+         "交付物口径由 tool/docs 对账，改了就重跑"),
+        ("app", ["docs/guides/git-conventions.md"], False, "指南不参与任何检查"),
         ("app", [".github/workflows/app-checks.yml"], True, "自身 workflow"),
         (
             "app",
