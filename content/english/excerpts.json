@@ -1,1 +1,94 @@
-[]
+[
+  {
+    "id": "english-cambridge-grammar",
+    "name": "Cambridge Dictionary · British Grammar",
+    "authorityLevel": "L1",
+    "version": "online-2026",
+    "segments": [
+      {
+        "text": "A/an and the are articles. They are a type of determiner and they go before a noun.",
+        "locator": "British Grammar · A/an and the · dictionary.cambridge.org/grammar/british-grammar/a-an-and-the",
+        "license": "proprietary-excerpt"
+      },
+      {
+        "text": "Tenses refer to different forms of a verb or verb phrase. We use different tenses to talk or write about different times.",
+        "locator": "British Grammar · Tenses and time · dictionary.cambridge.org/grammar/british-grammar/tenses-and-time",
+        "license": "proprietary-excerpt"
+      },
+      {
+        "text": "In a declarative clause, we expect the order to be subject – verb – object (SVO).",
+        "locator": "British Grammar · Word order and focus · dictionary.cambridge.org/grammar/british-grammar/word-order-and-focus_2",
+        "license": "proprietary-excerpt"
+      },
+      {
+        "text": "Active voice is the typical word order. That is when we put the subject (the doer) first, followed by the new information (which is the focus).",
+        "locator": "British Grammar · Word order: structures · dictionary.cambridge.org/grammar/british-grammar/word-order-structures",
+        "license": "proprietary-excerpt"
+      },
+      {
+        "text": "The infinitive of a verb has two forms: the to-infinitive and the infinitive without to.",
+        "locator": "British Grammar · Infinitives with and without to · dictionary.cambridge.org/grammar/british-grammar/infinitives-with-and-without-to",
+        "license": "proprietary-excerpt"
+      }
+    ],
+    "appliesTo": {
+      "spaceId": "english",
+      "sixAxis": {
+        "stack": "英语"
+      }
+    }
+  },
+  {
+    "id": "english-elt-grammar",
+    "name": "Grammar for English Language Teachers（Cambridge University Press）",
+    "authorityLevel": "L2",
+    "version": "2e",
+    "segments": [
+      {
+        "text": "Every time we use a noun we have to decide whether or not to use an article, and if we decide that an article is necessary, we then have to decide which one.",
+        "locator": "Ch.2 Articles · Summary · cambridge.org/core/books/grammar-for-english-language-teachers/articles/46602560504BC46DD02D7D2CB51A7125",
+        "license": "proprietary-excerpt"
+      },
+      {
+        "text": "Like quantifiers, articles belong to the wider class of 'determiner', words or phrases that come at the beginning of a noun phrase and signal whether the information is new or familiar, or which tell us something about quantity.",
+        "locator": "Ch.2 Articles · Summary（同上）",
+        "license": "proprietary-excerpt"
+      }
+    ],
+    "appliesTo": {
+      "spaceId": "english",
+      "sixAxis": {
+        "stack": "英语"
+      }
+    }
+  },
+  {
+    "id": "english-wikipedia-grammar",
+    "name": "Wikipedia · English grammar",
+    "authorityLevel": "L2",
+    "version": "2026-10",
+    "segments": [
+      {
+        "text": "English grammar is the set of structural rules of the English language. This includes the structure of words, phrases, clauses, sentences, and whole texts.",
+        "locator": "Lead · en.wikipedia.org/wiki/English_grammar",
+        "license": "CC-BY-SA-4.0"
+      },
+      {
+        "text": "Linguists generally accept nine English word classes: nouns, verbs, adjectives, adverbs, pronouns, prepositions, conjunctions, determiners, and exclamations.",
+        "locator": "§ Word classes and phrases · en.wikipedia.org/wiki/English_grammar",
+        "license": "CC-BY-SA-4.0"
+      },
+      {
+        "text": "For other pronouns, and all nouns, adjectives, and articles, grammatical function is indicated only by word order, by prepositions, and by the \"Saxon genitive or English possessive\" (-'s).",
+        "locator": "§ Overview · en.wikipedia.org/wiki/English_grammar",
+        "license": "CC-BY-SA-4.0"
+      }
+    ],
+    "appliesTo": {
+      "spaceId": "english",
+      "sixAxis": {
+        "stack": "英语"
+      }
+    }
+  }
+]

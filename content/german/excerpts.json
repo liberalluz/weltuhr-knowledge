@@ -1,1 +1,94 @@
-[]
+[
+  {
+    "id": "german-duden-grammatik",
+    "name": "Duden – Die Grammatik（Sprachwissen）",
+    "authorityLevel": "L1",
+    "version": "2022",
+    "segments": [
+      {
+        "text": "Als „Deklination“ bezeichnet man die Beugung bzw. Flexion von Substantiven, Adjektiven, Artikeln und Pronomen.",
+        "locator": "Deklination · duden.de/deklination",
+        "license": "proprietary-excerpt"
+      },
+      {
+        "text": "Das Besondere an Substantiven ist, dass sie als einzige Wortart das Genus in sich tragen.",
+        "locator": "Deklination · Genus · duden.de/deklination",
+        "license": "proprietary-excerpt"
+      },
+      {
+        "text": "Das Besondere an Adjektiven ist, dass sie entweder stark, schwach oder gemischt dekliniert werden.",
+        "locator": "Deklination · Adjektive · duden.de/deklination",
+        "license": "proprietary-excerpt"
+      }
+    ],
+    "appliesTo": {
+      "spaceId": "german",
+      "sixAxis": {
+        "stack": "德语"
+      }
+    }
+  },
+  {
+    "id": "german-dw-grammatik",
+    "name": "Deutsche Welle · Deutsch lernen – Grammatik（A Word order）",
+    "authorityLevel": "L2",
+    "version": "dwn-3",
+    "segments": [
+      {
+        "text": "Two main clauses can be joined by a coordinating conjunction, such as und, aber or sondern.",
+        "locator": "A Word order · I · dw.com/downloads/30058088/dwn-3-a3.pdf",
+        "license": "proprietary-excerpt"
+      },
+      {
+        "text": "Subordinate clauses cannot stand on their own. They always require a main clause to which they refer (implicitly or explicitly).",
+        "locator": "A Word order · II · dw.com/downloads/30058088/dwn-3-a3.pdf",
+        "license": "proprietary-excerpt"
+      },
+      {
+        "text": "Note: in the subordinate clause the conjugated verb always goes to the end of the clause.",
+        "locator": "A Word order · II · dw.com/downloads/30058088/dwn-3-a3.pdf",
+        "license": "proprietary-excerpt"
+      }
+    ],
+    "appliesTo": {
+      "spaceId": "german",
+      "sixAxis": {
+        "stack": "德语"
+      }
+    }
+  },
+  {
+    "id": "german-wikipedia-grammar",
+    "name": "Wikipedia · German grammar",
+    "authorityLevel": "L2",
+    "version": "2026-10",
+    "segments": [
+      {
+        "text": "The grammar of the German language is quite similar to that of the other Germanic languages.",
+        "locator": "Lead · en.wikipedia.org/wiki/German_grammar",
+        "license": "CC-BY-SA-4.0"
+      },
+      {
+        "text": "German grammar differs from that of English in that it has, among other things, cases and gender in nouns and a strict verb-second word order in main clauses.",
+        "locator": "Lead · en.wikipedia.org/wiki/German_grammar",
+        "license": "CC-BY-SA-4.0"
+      },
+      {
+        "text": "There are three genders and four cases, and verbs are conjugated for person and number.",
+        "locator": "Lead · en.wikipedia.org/wiki/German_grammar",
+        "license": "CC-BY-SA-4.0"
+      },
+      {
+        "text": "German sentence structure is similar to other Germanic languages in its use of V2 word order.",
+        "locator": "§ Sentence structure · en.wikipedia.org/wiki/German_grammar",
+        "license": "CC-BY-SA-4.0"
+      }
+    ],
+    "appliesTo": {
+      "spaceId": "german",
+      "sixAxis": {
+        "stack": "德语"
+      }
+    }
+  }
+]
