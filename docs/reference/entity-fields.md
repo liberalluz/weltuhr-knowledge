@@ -169,7 +169,7 @@
 | `id` | string | = 该计划 `plan_created` 事件的 `id`。**不在 payload 里另写一份**（`event-types.md` §二 B） |
 | `spaceId` | string | **键**。一空间可并存多份 Plan |
 | `spaceVersion` | string | 建计划时的包版本 |
-| `target` | object | `{ selector, resolved[] }`。**粒度随视距**：Z1 ≈150 项 / Z3 ≈12 项 / Z4 = 1 项。`count` 是 `resolved.length` 的派生值，**不序列化** |
+| `target` | object | `{ selector, resolved[] }`。**粒度随视距**：Z1 ≈150 项 / Z3 ≈12 项 / Z4 = 1 项。`count` 是 `resolved.length` 的派生值，**不序列化**。`selector` 是判别式联合，`kind` 四取一（`SPEC-PLAN-022`）：`{kind:'space'}` / `{kind:'domain', domainId}` / `{kind:'item', itemId}` / `{kind:'query', query}`。`resolved` 是**当时的快照**，`selector` 才是可重算的那份 |
 | `sourcePolicy` | object | 主源 + 按类型 + 例外，引用 `SourceRef.id` |
 | `schemeId` | string | — |
 | `methodProfileId` | string | — |

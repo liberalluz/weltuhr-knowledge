@@ -32,6 +32,7 @@ void main() {
     List<LoadedPack> otherSpaces = const <LoadedPack>[],
     String? scopeSpaceId,
     VoidCallback? onDismiss,
+    void Function(LocateResult result)? onPlanHere,
   }) async {
     await tester.pumpWidget(
       MaterialApp(
@@ -47,6 +48,7 @@ void main() {
               onPick: onPick,
               onPickNear: onPickNear ?? (String _) {},
               onDismiss: onDismiss ?? () {},
+              onPlanHere: onPlanHere,
             ),
           ),
         ),
@@ -422,5 +424,72 @@ void main() {
       reason: '要说清是哪一项在圈外 —— 只写「圈外」用户不知道它到底存不存在',
     );
     expect(find.text('申请纳入'), findsOneWidget);
+  });
+
+  testWidgets('TC-PLAN-076 有落点类命中 ⇒ 底部「按此范围建计划」（SPEC-PLAN-016）', (
+    WidgetTester tester,
+  ) async {
+    LocateResult? handed;
+    final LoadedPack fixed = fixturePack(const <FixtureItem>[
+      FixtureItem('python/async', '协程'),
+    ]);
+    await pump(
+      tester,
+      onPick: (_, _) {},
+      packOverride: fixed,
+      onPlanHere: (LocateResult result) => handed = result,
+    );
+    await type(tester, '协程');
+
+    expect(find.byKey(locatePlanHereKey), findsOneWidget);
+    await tester.tap(find.byKey(locatePlanHereKey));
+    expect(
+      handed?.query,
+      '协程',
+      reason: '交出去的是整次定位结果 —— 范围由查询词唯一确定，与点了哪一行无关',
+    );
+  });
+
+  testWidgets('TC-PLAN-077 只命中筛选类 ⇒ 不给「按此范围建计划」（SPEC-PLAN-016）', (
+    WidgetTester tester,
+  ) async {
+    final LoadedPack fixed = fixturePack(const <FixtureItem>[
+      FixtureItem('python/async', '协程', ability: '基础语法'),
+    ]);
+    await pump(
+      tester,
+      onPick: (_, _) {},
+      packOverride: fixed,
+      onPlanHere: (LocateResult _) {},
+    );
+    await type(tester, '基础语法');
+
+    expect(
+      find.byKey(locateResultsKey),
+      findsOneWidget,
+      reason: '轴命中照旧列出来（它是筛选入口），只是不能拿来圈范围',
+    );
+    expect(
+      find.byKey(locatePlanHereKey),
+      findsNothing,
+      reason: '轴值不是范围，按它圈不出任何项 —— 那会是一份 0 项的计划',
+    );
+  });
+
+  testWidgets('TC-PLAN-078 没有上层接收 ⇒ 不渲染这个入口（SPEC-PLAN-016）', (
+    WidgetTester tester,
+  ) async {
+    final LoadedPack fixed = fixturePack(const <FixtureItem>[
+      FixtureItem('python/async', '协程'),
+    ]);
+    await pump(tester, onPick: (_, _) {}, packOverride: fixed);
+    await type(tester, '协程');
+
+    expect(find.byKey(locateResultsKey), findsOneWidget);
+    expect(
+      find.byKey(locatePlanHereKey),
+      findsNothing,
+      reason: '按下没反应的按钮比没有这个按钮更糟',
+    );
   });
 }

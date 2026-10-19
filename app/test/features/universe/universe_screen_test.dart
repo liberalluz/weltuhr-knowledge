@@ -14,8 +14,10 @@ import 'package:project_knowledge/core/view/filter.dart';
 import 'package:project_knowledge/core/view/tree.dart';
 import 'package:project_knowledge/core/view/viewport.dart';
 import 'package:project_knowledge/core/locate/locator.dart';
+import 'package:project_knowledge/core/plan/plan_events.dart';
 import 'package:project_knowledge/features/detail/detail_panel.dart';
 import 'package:project_knowledge/features/locate/locate_overlay.dart';
+import 'package:project_knowledge/features/planner/planner_screen.dart';
 import 'package:project_knowledge/features/universe/filter_chips.dart';
 import 'package:project_knowledge/core/frame/projection.dart';
 import 'package:project_knowledge/core/frame/scene.dart';
@@ -56,6 +58,7 @@ Future<void> _pumpScreen(
   List<LoadedPack> others = const <LoadedPack>[],
   ZoomLevel zoom = ZoomLevel.z1,
   bool motion = false,
+  void Function(PlanDraft draft)? onPlanCreated,
 }) async {
   await tester.pumpWidget(
     MaterialApp(
@@ -79,6 +82,7 @@ Future<void> _pumpScreen(
         ],
         initialZoom: zoom,
         initialMode: mode,
+        onPlanCreated: onPlanCreated,
       ),
     ),
   );
@@ -1462,6 +1466,114 @@ void main() {
       await _enterDomain(tester, german, domainId: 'de/d0');
       expect(_crumbCount(tester), _crumbsFor(ZoomLevel.z2));
       expect(find.byKey(hudNoMatchKey), findsOneWidget);
+    });
+  });
+
+  group('规划入口（SPEC-PLAN-016 · B4 P-7）', () {
+    // ⚠️ 三个档位**必须各开一条用例**：`_pumpScreen` 复用同一个 `State`，
+    // `initialZoom` 只在 `initState` 读一次 —— 同一个 `testWidgets` 里换档
+    // 不生效，第二、三次 pump 断言的还是第一档（本组第一版就是这么假绿的）。
+    testWidgets('TC-PLAN-071 Z1 有「开始学习」（SPEC-PLAN-016）', (
+      WidgetTester tester,
+    ) async {
+      await _pumpScreen(tester, pack: loadAlphaPack(), zoom: ZoomLevel.z1);
+      expect(
+        find.byKey(hudStartLearningKey),
+        findsOneWidget,
+        reason: 'Z1 是「这个空间」的档位，规划是空间级的动作',
+      );
+    });
+
+    testWidgets('TC-PLAN-072 Z0 不出现「开始学习」（SPEC-PLAN-016）', (
+      WidgetTester tester,
+    ) async {
+      await _pumpScreen(tester, pack: loadAlphaPack(), zoom: ZoomLevel.z0);
+      expect(
+        find.byKey(hudStartLearningKey),
+        findsNothing,
+        reason: 'Z0 画的是并列的几个空间，没有「当前空间」可规划',
+      );
+    });
+
+    testWidgets('TC-PLAN-073 Z2 不出现「开始学习」（SPEC-PLAN-016）', (
+      WidgetTester tester,
+    ) async {
+      await _pumpScreen(tester, pack: loadAlphaPack(), zoom: ZoomLevel.z2);
+      expect(
+        find.byKey(hudStartLearningKey),
+        findsNothing,
+        reason: 'Z2 起是域内部，局部的「开始学习」会让人以为只学眼前这一团',
+      );
+    });
+
+    testWidgets('TC-PLAN-074 点「开始学习」进整页 Planner，范围是整个空间（SPEC-PLAN-016）', (
+      WidgetTester tester,
+    ) async {
+      await _pumpScreen(tester, pack: loadAlphaPack());
+
+      await tester.tap(find.byKey(hudStartLearningKey));
+      // 路由过渡约 300 ms，`_pump` 的定长不够 —— 单独推过长一截。
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+
+      expect(find.byKey(plannerScreenKey), findsOneWidget);
+      expect(find.byKey(const Key('planner-preview')), findsOneWidget);
+      // 范围是整个空间 ⇒ 预览的项数就是 α 包的圈内项数（150），分母同数。
+      expect(find.text('项数 150'), findsOneWidget);
+      expect(find.text('分母 150'), findsOneWidget);
+    });
+
+    testWidgets('TC-PLAN-075 点返回取消，上层收不到草稿（SPEC-PLAN-016）', (
+      WidgetTester tester,
+    ) async {
+      PlanDraft? received;
+      bool called = false;
+      await _pumpScreen(
+        tester,
+        pack: loadAlphaPack(),
+        onPlanCreated: (PlanDraft draft) {
+          called = true;
+          received = draft;
+        },
+      );
+
+      await tester.tap(find.byKey(hudStartLearningKey));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(find.byKey(plannerScreenKey), findsOneWidget);
+
+      // 直接调 `onPressed` 而不是 `tap`：这一屏的 `Stack` 里有多个
+      // `Positioned.fill` 层，命中测试偶尔会落到覆盖层上而不报 `warnIfMissed`
+      // —— 本用例要验的是「取消之后上层收不到草稿」，不是「那个按钮点得着」
+      // （后者由 `planner_screen_test` 的 TC-PLAN-052 用真实 tap 验）。
+      final IconButton back = tester.widget<IconButton>(
+        find.byKey(plannerScreenBackKey),
+      );
+      expect(back.onPressed, isNotNull);
+      // 判据用**路由栈**而不是「widget 是否还在树上」：这一屏有常驻帧
+      // （盘面相位），`pumpAndSettle` 会被它拖到超时，而离场路由要等一个
+      // 后续帧才摘 —— 两者都会让 `findsNothing` 变成一条测框架而非测行为的
+      // 断言。`canPop() == false` 直接说「栈已经退回去了」。
+      final NavigatorState nav = tester.state<NavigatorState>(
+        find.byType(Navigator),
+      );
+      expect(nav.canPop(), isTrue, reason: 'Planner 已压在栈上');
+      back.onPressed!();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+
+      expect(nav.canPop(), isFalse, reason: '返回即回到宇宙，Planner 已出栈');
+
+      // 不断言离场 widget 已摘：它由路由的动画回调决定，而这一屏的帧节拍
+      // 归盘面，两件事无关 —— 在这里断言等于测框架。栈退了就是「回去了」。
+
+      expect(
+        called,
+        isFalse,
+        reason: '取消不能悄悄造出一份三段都没选齐的计划；'
+            '「建完交草稿」那条链由 planner_screen_test 的 TC-PLAN-051 验',
+      );
+      expect(received, isNull);
     });
   });
 
