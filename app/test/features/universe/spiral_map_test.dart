@@ -215,6 +215,103 @@ void main() {
       );
     });
   });
+
+  group('盘自转（C-54 · V-1i）', () {
+    test('相位为 0 时与没转逐值相等 —— 不能靠浮点误差「差不多」（C-54）', () {
+      final SpiralLayout zero = layout.spun(0);
+      expect(identical(zero, layout), isTrue, reason: '0 相位应原样返回');
+      for (int i = 0; i < layout.marks.length; i++) {
+        expect(
+          zero.marks[i].points.first,
+          layout.marks[i].points.first,
+          reason: '第 $i 个域的落点',
+        );
+      }
+      expect(zero.items, layout.items);
+      expect(zero.blobs, layout.blobs);
+      expect(zero.arms.first, layout.arms.first);
+    });
+
+    test('转满一圈回到原位（C-54）', () {
+      final SpiralLayout full = layout.spun(math.pi * 2);
+      for (final DomainMark mark in layout.marks) {
+        final Offset before = mark.points.first;
+        final Offset after = full.markOf(mark.domainId)!.points.first;
+        expect((after - before).distance, lessThan(1e-9));
+      }
+    });
+
+    test('刚性旋转：每点到盘心的距离一点不变（C-54）', () {
+      // 差速会让内圈的项越转越靠近中心 —— 那不是自转，是收缩。
+      final SpiralLayout spun = layout.spun(0.7);
+      expect(spun.center, layout.center);
+      expect(spun.discRadius, layout.discRadius);
+      expect(spun.bulgeRadius, layout.bulgeRadius);
+      for (int i = 0; i < layout.items.length; i++) {
+        expect(
+          (spun.items[i] - layout.center).distance,
+          closeTo((layout.items[i] - layout.center).distance, 1e-9),
+        );
+      }
+      for (final DomainMark mark in layout.marks) {
+        final DomainMark moved = spun.markOf(mark.domainId)!;
+        for (int k = 0; k < mark.points.length; k++) {
+          expect(
+            (moved.points[k] - layout.center).distance,
+            closeTo((mark.points[k] - layout.center).distance, 1e-9),
+          );
+        }
+      }
+    });
+
+    test('转过 π/2 后，向量正好转 90°（C-54）', () {
+      final SpiralLayout spun = layout.spun(math.pi / 2);
+      final Offset before = layout.marks.first.points.first - layout.center;
+      final Offset after = spun.marks.first.points.first - layout.center;
+      // 屏幕坐标里 +π/2 是 (dx, dy) → (-dy, dx)。
+      expect(after.dx, closeTo(-before.dy, 1e-9));
+      expect(after.dy, closeTo(before.dx, 1e-9));
+    });
+
+    test('拾取跟着画面转：点新位置命中，点旧位置不命中（C-54）', () {
+      // 这一条是「画在这、点在那」的护栏。旋转之后仍按未旋转的坐标判命中，
+      // 表现只是「有时候点不中」，不会有任何东西变红。
+      final SpiralLayout spun = layout.spun(math.pi / 2);
+      final String domainId = layout.marks.first.domainId;
+      final Offset now = spun.markOf(domainId)!.points.first;
+      final Offset then = layout.markOf(domainId)!.points.first;
+      expect((now - then).distance, greaterThan(24), reason: '两次落点得分开才有判别力');
+      expect(pickSpiralDomainAt(layout: spun, point: now), domainId);
+      expect(pickSpiralDomainAt(layout: spun, point: then), isNull);
+    });
+
+    test('停转判据量的是到域点本身的距离（C-57）', () {
+      final Offset now = layout.marks.first.points.first;
+      expect(distanceToNearestDomainMark(layout, now), closeTo(0, 1e-9));
+      // 盘外 200 px：一定在 `C-57` 的常速区。
+      //
+      // ⚠️ 不拿「转半圈后的原位置」当探针：每个域在两条臂上各有一个落点，
+      // 两者正好关于盘心对称 —— 转 π 之后原位置**又落回**同一个域的另一个
+      // 落点。拿它验「距离变大」是错的，而错法看起来很像实现有问题。
+      final Offset far = layout.center + Offset(layout.discRadius + 200, 0);
+      expect(
+        distanceToNearestDomainMark(layout, far),
+        greaterThan(governorSlowRadiusPx),
+      );
+      // 转 π/2 之后，同一个落点确实离开了原位（画面转了，距离读数就得跟着变）。
+      expect(
+        distanceToNearestDomainMark(layout.spun(math.pi / 2), now),
+        greaterThan(0.5),
+      );
+    });
+
+    test('没有域点时可点距离是无穷 —— 空盘不该「贴着某个不存在的东西」（C-57）', () {
+      expect(
+        distanceToNearestDomainMark(SpiralLayout.empty, const Offset(10, 10)),
+        double.infinity,
+      );
+    });
+  });
 }
 
 /// 折线相对 [center] 一共转过多少弧度（逐段累加，不受模 2π 影响）。
