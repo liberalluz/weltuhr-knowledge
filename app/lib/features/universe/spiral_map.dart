@@ -138,6 +138,73 @@ class SpiralLayout {
     }
     return null;
   }
+
+  /// 整盘绕盘心**刚性**旋转 [radians]（`C-54` 盘自转）。
+  ///
+  /// 刚性而不是差速：旋臂是密度波，转的是**图案**不是物质 —— 真实星系里
+  /// 物质确实内快外慢，但图案速度是单一的。按差速画，旋臂会随时间越卷越紧，
+  /// 几十秒之后这个盘就不是「旋涡星系」而是一团紧线。
+  ///
+  /// 只旋转坐标，不重算任何拓扑（域划分、子树、项的落点分位全部沿用）——
+  /// 逐帧重算那些是每帧一遍 `subtreesInDomain`，而它们与相位无关。
+  ///
+  /// `radians == 0` 时原样返回（同一个对象）：相位为 0 的那一帧与「没有运动」
+  /// 必须逐值相等，否则 `t=0` 会与旧画面差一个浮点误差。
+  SpiralLayout spun(double radians) {
+    if (radians == 0 || !radians.isFinite) {
+      return this;
+    }
+    final double c = math.cos(radians);
+    final double s = math.sin(radians);
+    Offset rotate(Offset point) {
+      final double dx = point.dx - center.dx;
+      final double dy = point.dy - center.dy;
+      return Offset(center.dx + dx * c - dy * s, center.dy + dx * s + dy * c);
+    }
+
+    return SpiralLayout(
+      center: center,
+      bulgeRadius: bulgeRadius,
+      discRadius: discRadius,
+      accentArgb: accentArgb,
+      arms: <SpiralArm>[
+        for (final SpiralArm arm in arms)
+          <Offset>[for (final Offset point in arm) rotate(point)],
+      ],
+      marks: <DomainMark>[
+        for (final DomainMark mark in marks)
+          DomainMark(
+            domainId: mark.domainId,
+            label: mark.label,
+            itemCount: mark.itemCount,
+            systemCount: mark.systemCount,
+            points: <Offset>[
+              for (final Offset point in mark.points) rotate(point),
+            ],
+          ),
+      ],
+      items: <Offset>[for (final Offset point in items) rotate(point)],
+      blobs: <Offset>[for (final Offset point in blobs) rotate(point)],
+    );
+  }
+}
+
+/// 指针离**最近一个域点**多远（px）—— `C-57` 减速停转的判据输入。
+///
+/// 量的是到域点**本身**的距离，不是到它 24 px 命中圈的距离：命中圈是给
+/// 「点得中」的余量，而停转要的是「还差多远」，混为一谈会让停转发生在
+/// 圈外多 12 px 的地方 —— 那时指针还够不着，等于白停。
+double distanceToNearestDomainMark(SpiralLayout layout, Offset point) {
+  double best = double.infinity;
+  for (final DomainMark mark in layout.marks) {
+    for (final Offset candidate in mark.points) {
+      final double distance = (candidate - point).distance;
+      if (distance < best) {
+        best = distance;
+      }
+    }
+  }
+  return best;
 }
 
 /// 按包与视口算出 `Z1` 的盘面。
