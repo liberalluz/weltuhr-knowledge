@@ -502,9 +502,6 @@ class _UniverseScreenState extends State<UniverseScreen>
   /// 屏幕根的焦点节点。`⌘K` / `Ctrl+K` 靠它接键（见 `_closeLocate`）。
   final FocusNode _rootFocus = FocusNode(debugLabel: 'universe-root');
 
-  /// 画布盒。拾取要用 `globalToLocal` 把指针位置映到它上面（见 `_universeBody`）。
-  final GlobalKey _canvasKey = GlobalKey(debugLabel: 'universe-canvas');
-
   @override
   void initState() {
     super.initState();
@@ -528,6 +525,9 @@ class _UniverseScreenState extends State<UniverseScreen>
     super.didChangeDependencies();
     // 「减弱动画」在 `MediaQuery` 里，只能在依赖阶段读（`initState` 里读不到）。
     _reduceMotion = MediaQuery.disableAnimationsOf(context);
+    // 依赖变了 ⇒「这一档要不要时钟」重新判一次，否则 `_syncMotion` 会拿上一次
+    // 的判断直接返回，减弱动画的开关就成了只在第一帧生效。
+    _motionWanted = null;
     if (_reduceMotion) {
       _stopMotion();
     } else {
@@ -609,6 +609,30 @@ class _UniverseScreenState extends State<UniverseScreen>
     _motion.stop();
     // 重启后 `elapsed` 从零重计 —— 清掉上一轮的基准，否则差值会是负数。
     _motionLastTick = null;
+  }
+
+  /// 上一次同步过的「这一档要不要时钟」。`null` = 还没同步过。
+  bool? _motionWanted;
+
+  /// 按「当前档是否接相位」启停时钟。
+  ///
+  /// `V-1i` 前半只让 `Z1` 转，其余四档的 `C-55` / `C-56` 归后一半。让它们也跑
+  /// ticker 的话，每帧仍要重建一次画布树、走一遍绘制调度 —— 画面一动不动的
+  /// 成本却是满的（`R13` 第 7 条「停转即 `stop()`」是同一条理由）。
+  ///
+  /// ⚠️ **必须记住上一次的值**：build 每次都会调这里，而 `_onMotionTick` 在
+  /// 指针贴住目标时正是靠 `_stopMotion()` 停下来的 —— 若无条件 `_startMotion()`，
+  /// 停转会在下一次 build 被立刻推翻，表现是「停不下来」。
+  void _syncMotion(bool needsClock) {
+    if (_motionWanted == needsClock) {
+      return;
+    }
+    _motionWanted = needsClock;
+    if (!needsClock) {
+      _stopMotion();
+      return;
+    }
+    _startMotion();
   }
 
   @override
@@ -966,6 +990,10 @@ class _UniverseScreenState extends State<UniverseScreen>
   /// 同效，可观测差异只在那个「猜档」上，而它本身没有独立出口。
   void _jumpToSpace(String spaceId) {
     if (_rootOf(spaceId) == null) {
+      if (kPickDebug) {
+        // 命中了却跳不动只有这一个原因 —— 打出来，省掉「是不是没点中」的猜。
+        debugPrint('[view-pick] galaxy jump=$spaceId rejected: no such root');
+      }
       return;
     }
     _navigate(() {
@@ -975,6 +1003,13 @@ class _UniverseScreenState extends State<UniverseScreen>
       _mode = ViewMode.universe;
       _camera = _camera.withZoom(ZoomLevel.z1, selectedItemId: null);
     });
+    if (kPickDebug) {
+      // 换根**之后**的档位。与 `galaxy hit=` 配对读：若这里已是 `z1` 而画面
+      // 仍停在星系群，问题就不在拾取与导航，而在「新 child 有没有真的换上去」。
+      debugPrint(
+        '[view-pick] galaxy jumped space=$_spaceId zoom=${_camera.zoom.name}',
+      );
+    }
   }
 
   /// 域是落点类（`VIEW-028`），但宇宙里没有「选中一个域」这个状态 ——
@@ -1090,6 +1125,17 @@ class _UniverseScreenState extends State<UniverseScreen>
   /// 消失，而点歪是常态。
   void _pickGalaxyAt(Offset point, GalaxyLayout layout) {
     final String? spaceId = pickGalaxyAt(layout: layout, point: point);
+    if (kPickDebug) {
+      // 这一行回答三件事：**点在哪、盘在哪、判中了谁**。缺了它，「点不动」
+      // 只能靠猜是哪一层 —— 而「手势没到」与「判据没中」的修法完全不同。
+      debugPrint(
+        '[view-pick] galaxy hit=$spaceId point=$point '
+        'discs=${layout.discs.map((GalaxyDisc d) => "${d.spaceId}@"
+            "${d.centerX.toStringAsFixed(1)},${d.centerY.toStringAsFixed(1)} "
+            "r=${d.radius.toStringAsFixed(1)}/"
+            "${d.minorRadius.toStringAsFixed(1)}").join(" | ")}',
+      );
+    }
     if (spaceId == null) {
       return;
     }
@@ -1791,13 +1837,13 @@ class _UniverseScreenState extends State<UniverseScreen>
   /// 指针位置只在鼠标动的时候更新：`onHover` 不会因为「画面在动」而重复触发，
   /// 于是「贴着目标停住」与「物体继续转走」这两件事不会互相拉扯 —— 停住的
   /// 那一刻距离已经算过，物体也停了，没人会把它推开。
-  void _trackPointer(Offset globalPosition) {
-    final RenderBox? box =
-        _canvasKey.currentContext?.findRenderObject() as RenderBox?;
-    if (box == null || !box.hasSize) {
-      return;
-    }
-    _pointer = box.globalToLocal(globalPosition);
+  /// 记下指针在**画布坐标**上的位置（`C-57` 的输入）。
+  ///
+  /// 坐标由调用处换算好，**不走 `GlobalKey`**：画布挂在逐帧重建的
+  /// `AnimatedBuilder` 里，「取不到 `currentContext` 就 `return`」的写法会让
+  /// 这一次移动/点击**无声消失**（`R-08` 同族：不报错、不变红、也没有日志）。
+  void _trackPointer(Offset canvasPoint) {
+    _pointer = canvasPoint;
     // 指针一动就恢复转：停转只在「贴着目标、且没动」时成立。
     _startMotion();
   }
@@ -1887,6 +1933,12 @@ class _UniverseScreenState extends State<UniverseScreen>
           : StarCloseupLayout.empty;
       final bool starCloseup = !closeup.isEmpty;
 
+      // 只有 `Z1` 接相位（本笔：`C-54`）。其余四档这一刻是静止的，时钟跟着停 ——
+      // 否则每帧照走一遍 build 与绘制调度，而画面一动不动（`R13` 第 7 条）。
+      // 判据用**真正画出来的那一档**（`spiralDisc`），不是 `_camera.zoom`：
+      // 盘没装出来时画的是降级视图，那时候钟也没用。
+      _syncMotion(spiralDisc);
+
       // 逐帧只重算「旋转」。布局的构建在上面已经做过一次 —— 那里有
       // `subtreesInDomain` 与 `buildSceneNodes`，是一整遍拓扑；这里只把算好的点
       // 绕盘心转一个角度。两者差一个量级，混在逐帧路径里就是每帧重算拓扑。
@@ -1895,7 +1947,6 @@ class _UniverseScreenState extends State<UniverseScreen>
         // `size` 只是 preferred，父级给的 tight 约束会把它推翻 —— 那样绘制按
         // 窗口尺寸画、拾取按画布尺寸算，两边错开。
         child: SizedBox.fromSize(
-          key: _canvasKey,
           size: surface,
           child: CustomPaint(
             painter: galaxyMap
@@ -1941,7 +1992,12 @@ class _UniverseScreenState extends State<UniverseScreen>
         child: MouseRegion(
           // `C-57` 的输入。只在鼠标移动时来事件 —— 停转之后指针不动就没有
           // 事件，而那时也正不需要重算距离。
-          onHover: (PointerHoverEvent event) => _trackPointer(event.position),
+          //
+          // 坐标：`localPosition` 相对 `MouseRegion`（= 窗口盒），画布铺满它；
+          // 降采样时画布比窗口小 `C-33` 的倍数 —— 除回去才是画布坐标。
+          // **不查 `GlobalKey` 的 box**：那条路取不到时会静默 `return`。
+          onHover: (PointerHoverEvent event) =>
+              _trackPointer(event.localPosition / plan.scale),
           // 指针离开窗口 ⇒ 当作「不知道在哪」⇒ 恢复常速。漏了这一条就是
           // **永久停转**（`constants.md` 的 `C-57` 注：三处恢复必须都实现，
           // 且不会有任何断言会变红）。
@@ -1971,16 +2027,16 @@ class _UniverseScreenState extends State<UniverseScreen>
               return GestureDetector(
                 // `opaque`：空白处也要接住点击，否则点在星与星的缝里会穿透到底下。
                 behavior: HitTestBehavior.opaque,
-                // ⚠️ **不能用 `details.localPosition`**。它相对的是「手势命中的那个
-                // RenderBox」，而 `FittedBox` 下不保证落在画布盒上。把全局坐标显式
-                // 映到画布盒，不依赖命中路径怎么走。
+                // 坐标：`localPosition` 相对**这个** `GestureDetector`（它被外层
+                // `SizedBox(window)` 撑满、`opaque` 保证空白处也命中它自己），
+                // 而画布降采样时比窗口小 `plan.scale` 倍 —— 除回去就是画布坐标。
+                //
+                // ⚠️ 早先用 `GlobalKey` 取画布盒再 `globalToLocal`，理由是「`FittedBox`
+                // 下 `localPosition` 不保证落在画布盒上」。但 `FittedBox` 缩的是**绘制**，
+                // 手势命中的仍是这层填满窗口的盒；而那条路取不到 box 时只能 `return`
+                // —— 点击就这么无声消失（`R-08` 同族：不报错、不变红、没有日志）。
                 onTapUp: (TapUpDetails details) {
-                  final RenderBox? box =
-                      _canvasKey.currentContext?.findRenderObject() as RenderBox?;
-                  if (box == null || !box.hasSize) {
-                    return;
-                  }
-                  final Offset point = box.globalToLocal(details.globalPosition);
+                  final Offset point = details.localPosition / plan.scale;
                   if (kPickDebug) {
                     // 一行说清「这一下有反应的可能性有多大」：`visible=0` 就是筛空、
                     // `surface` 与 `window` 不等说明降采样在生效、末位说明这一档实际
@@ -2039,21 +2095,27 @@ class _UniverseScreenState extends State<UniverseScreen>
     },
   );
 
-  Widget _treeBody(bool filtered) => Padding(
-    padding: EdgeInsets.only(
-      // 右栏是浮层（`hudDetailDrawerKey`），树要给它让位，否则末端的 φ 标签被盖住。
-      right: _drawerReserve,
-      // ① 常显 ⇒ 树永远从它下面开始；② 出现时再让一行。两个数都从常量来：
-      // ① 的高度若在两处各写一个数，改一处忘一处不会有任何东西变红（`R-08`）。
-      top: _hudTopHeight + (filtered ? _filterRowHeight : 0),
-    ),
-    child: TreeView(
-      pack: _pack,
-      selectedItemId: _selectedItemId,
-      visibleIds: _visibleIds(),
-      onSelect: _select,
-    ),
-  );
+  Widget _treeBody(bool filtered) {
+    // 树不接任何相位 ⇒ 时钟停掉。`_syncMotion` 只在 `_universeBody` 里按档位调，
+    // 切到树时没人调它 —— 不停的话树视图每帧仍走一遍 `_motion` 的 tick，
+    // 而画面上没有任何东西在动（`R13` 第 7 条同一条理由）。
+    _syncMotion(false);
+    return Padding(
+      padding: EdgeInsets.only(
+        // 右栏是浮层（`hudDetailDrawerKey`），树要给它让位，否则末端的 φ 标签被盖住。
+        right: _drawerReserve,
+        // ① 常显 ⇒ 树永远从它下面开始；② 出现时再让一行。两个数都从常量来：
+        // ① 的高度若在两处各写一个数，改一处忘一处不会有任何东西变红（`R-08`）。
+        top: _hudTopHeight + (filtered ? _filterRowHeight : 0),
+      ),
+      child: TreeView(
+        pack: _pack,
+        selectedItemId: _selectedItemId,
+        visibleIds: _visibleIds(),
+        onSelect: _select,
+      ),
+    );
+  }
 
   // ── ① 面包屑与图标（`VIEW-018` 修订 2） ─────────────────────────────────
 
