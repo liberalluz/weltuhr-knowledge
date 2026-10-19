@@ -31,6 +31,7 @@ import '../pack/pack_parse.dart';
 import 'method_bundle.dart';
 import 'ordering.dart';
 import 'platform_candidates.dart';
+import 'scope.dart';
 
 /// Planner 的三段。**声明顺序即左栏排版顺序**（`SPEC-PLAN-014`：源 → 体系 →
 /// 方法，第四段「确认」不在枚举里 —— 它不承载候选）。
@@ -196,7 +197,7 @@ CandidateSet loadCandidates(
   List<Scheme> userSchemes = const <Scheme>[],
   List<MethodBundle> userMethodBundles = const <MethodBundle>[],
 }) {
-  final List<String> nodes = _referenceNodes(pack, schemeId);
+  final List<String> nodes = _referenceNodes(pack, schemeId, userSchemes);
   final List<Item> refItems = <Item>[
     for (final String id in nodes)
       if (pack.itemOf(id) != null) pack.itemOf(id)!,
@@ -226,13 +227,25 @@ CandidateSet loadCandidates(
 ///
 /// 体系 id 不存在 ⇒ 抛 [ArgumentError]：那不是「没有候选」，是调用方拿错了 id，
 /// 静默返回空列表会让人以为这套体系一条源都不覆盖。
-List<String> _referenceNodes(LoadedPack pack, String? schemeId) {
+///
+/// 查找走 [schemeNodesOf]（自建优先），**不直接问 `pack`** —— 自建体系不在包里，
+/// 直接问包会在「刚建完、刚被选中」那一刻抛错，而那恰好是用户最不该看到报错的
+/// 时刻。
+List<String> _referenceNodes(
+  LoadedPack pack,
+  String? schemeId,
+  List<Scheme> userSchemes,
+) {
   if (schemeId == null) {
     return <String>[for (final Item item in pack.items) item.id];
   }
-  final List<String>? nodes = pack.schemeNodes(schemeId);
+  final List<String>? nodes = schemeNodesOf(
+    pack: pack,
+    schemeId: schemeId,
+    userSchemes: userSchemes,
+  );
   if (nodes == null) {
-    throw ArgumentError('不存在的体系 id：`$schemeId`（`pack.schemes` 里没有）');
+    throw ArgumentError('不存在的体系 id：`$schemeId`（包与自建里都没有）');
   }
   return nodes;
 }

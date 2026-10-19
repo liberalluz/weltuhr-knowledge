@@ -32,6 +32,7 @@ library;
 
 import 'package:flutter/material.dart';
 
+import '../../core/constants.dart';
 import '../../core/enums.dart';
 import '../../core/view/detail.dart';
 import '../palette.dart';
@@ -81,19 +82,9 @@ const Map<RequirementState, String> _requirementStateLabels =
       RequirementState.notExternalizable: '不可外化',
     };
 
-/// 层级与类型的显示名。
-const Map<Layer, String> _layerLabels = <Layer, String>{
-  Layer.persistent: '持久',
-  Layer.view: '视图',
-  Layer.ephemeral: '瞬时',
-};
-
-const Map<ItemType, String> _typeLabels = <ItemType, String>{
-  ItemType.declarative: '陈述',
-  ItemType.procedural: '流程',
-  ItemType.skill: '技能',
-  ItemType.tacit: '默会',
-};
+/// 层级与类型的显示名已上收到 `core/constants.dart`（`P-8`：候选卡的「适用
+/// 范围」是第二处要用的地方，两份副本会分叉），这里直接用 `layerLabels` /
+/// `itemTypeLabels`。
 
 class DetailPanel extends StatelessWidget {
   const DetailPanel({
@@ -170,8 +161,8 @@ class DetailPanel extends StatelessWidget {
   Widget _header(ItemDetail detail) {
     final List<String> facts = <String>[
       detail.domainLabel,
-      _layerLabels[detail.layer] ?? detail.layer.name,
-      _typeLabels[detail.type] ?? detail.type.name,
+      layerLabels[detail.layer] ?? detail.layer.name,
+      itemTypeLabels[detail.type] ?? detail.type.name,
     ];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

@@ -194,6 +194,26 @@ const Map<String, String> sixAxisLabels = <String, String>{
   'stack': '技术栈',
 };
 
+/// `ItemType` 的中文名（`entity-fields` §2）。
+///
+/// 与 [sixAxisLabels] 同一条理由进常量表：取值是代码的标识、中文名是同一件事的
+/// 另一种写法，两处各存一份的话，改一个类型的名字要记得翻两个文件。
+/// 原本只在 `features/detail/detail_panel.dart` 里有一份私有副本，`B4` `P-8` 的
+/// 候选卡「适用范围」是第二处要用的地方 —— 两份就会分叉，故上收到此处。
+const Map<ItemType, String> itemTypeLabels = <ItemType, String>{
+  ItemType.declarative: '陈述',
+  ItemType.procedural: '流程',
+  ItemType.skill: '技能',
+  ItemType.tacit: '默会',
+};
+
+/// `Layer` 的中文名（`entity-fields` §2）。进常量表的理由同 [itemTypeLabels]。
+const Map<Layer, String> layerLabels = <Layer, String>{
+  Layer.persistent: '持久',
+  Layer.view: '视图',
+  Layer.ephemeral: '瞬时',
+};
+
 /// `C-34` 虚实通道判据：六要件里「不可外化」格 **≥ 3** 即判「虚」（默会类）。
 ///
 /// 阈值由 α 包分布决定，不是调手感（`ADR-0003` §决策 2）：不可外化只有

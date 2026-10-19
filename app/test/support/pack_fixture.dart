@@ -22,6 +22,7 @@ class FixtureItem {
     this.inScope = true,
     this.ability = '基础语法',
     this.sourceRefs = const <String>[],
+    this.type,
   });
 
   final String id;
@@ -37,6 +38,12 @@ class FixtureItem {
   /// 指向 `excerpts[].id`。Planner 的覆盖矩阵（`Item.sourceRefs` ∩
   /// `Scheme.nodes`）靠它，其余用例留空。
   final List<String> sourceRefs;
+
+  /// 项级 `type`。**缺省 `null` = 用 [fixturePack] 的全局 `itemType`**。
+  ///
+  /// `B4` `P-8` 起需要「一个包里混多种类型」：自建方法一份只覆盖一个类型，
+  /// 要验「未覆盖类型被拦住」就必须造出一个既有陈述题又有流程题的包。
+  final String? type;
 }
 
 /// 搭一个包。[domainIds] 缺省取各项用到的域（去重、保序）。
@@ -84,7 +91,7 @@ LoadedPack fixturePack(
             'ability': item.ability,
           },
           'layer': 'persistent',
-          'type': itemType,
+          'type': item.type ?? itemType,
           'requirements': <String, Object?>{
             'boundary': 'present',
             'justification': 'present',
