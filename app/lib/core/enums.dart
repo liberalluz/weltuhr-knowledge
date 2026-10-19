@@ -122,8 +122,13 @@ enum SubmissionStatus { draft, pending, localOverlay, publicOverlay, rejected }
 /// 提交裁定（`SPEC-GOV-001`）。
 enum SubmissionVerdict { approved, rejected, mergedAsAlias, demotedOutOfScope }
 
-/// 方法出处：合并优先级 `user > pack > platform`。
-enum MethodOrigin { platform, pack, user }
+/// 候选出处：合并优先级 `user > pack > platform`（`SPEC-PLAN-006`）。
+///
+/// **三段共用** —— 源 / 体系 / 方法各有这三处出处（`SPEC-PLAN-006` 的「三线对称」），
+/// 值域相同。原名为 `MethodOrigin`：名字把共用的东西说成了方法专用，`B4` `P-2`
+/// 要给源与体系的候选挂同一个标签时才暴露。改名不改值，也不改
+/// `MethodProfile.origin` 的字段名。
+enum CandidateOrigin { platform, pack, user }
 
 /// 视图模式：底部导航是视距刻度，不是功能标签栏（`N-11`）。
 enum ViewMode { universe, tree, detail, locateResult, progress, practice }
