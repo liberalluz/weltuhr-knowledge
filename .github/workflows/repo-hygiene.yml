@@ -1,0 +1,73 @@
+name: repo-hygiene
+
+# 全仓级、**不判改动面**的判据。目前一条：构建产物不得入库。
+#
+# 为什么不并进 `content-checks`：那支的改动面是 `content/`，只改 `app/` 的 PR
+# 不触发它，而「有没有把 `dist/` 提交进去」跟改哪个目录无关 —— 挂着走就会漏。
+# 也不设 `paths`：它只要 `git`，整段约 5 秒，是这里最便宜的判据。
+# 便宜的判据不该被贵的 job 拖着，也不该为它引入跳过逻辑。
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: repo-hygiene-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  repo-hygiene:
+    name: repo-hygiene
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # 判据只针对产物路径。原写法「全仓不得有未跟踪文件」有两处失真：
+      #   过宽 —— 任何与产物无关的临时文件都会让它红，错误信息还指向 dist/；
+      #   过窄 —— ^?? 只匹配未跟踪文件，dist/ 若已被提交进库，status 显示的是 M
+      #           （甚至无变化时不显示），它反而漏掉自己最该抓的情况。
+      # 判据工具按 .gitignore 纪律 ③：以 `git add -A --dry-run` 为准（新增与修改都会
+      # 列出，被忽略的不列），再用 ls-files 补「已提交进库但未改动」这一路。
+      # ⚠️ 不用 pathspec 通配：实测 `git status -- 'content/*/dist'` 拿不到未跟踪目录
+      #    （全量 status 有 `?? .../dist/`，加通配后返回空，`:(glob)` 同样无效），
+      #    会静默放行。故取全量输出再文本过滤。
+      #
+      # 本 job **不构建**，所以原来在 `content-checks` 里「构建完再看 dry-run」
+      # 那一半在这里恒为空 —— 用 `check-ignore` 换成等价的静态判据（路径不必存在）。
+      # 不做这一步，拆出来就是功能退化。
+      - name: 产物不入库
+        run: |
+          fail=0
+
+          for m in content/*/manifest.json; do
+            [ -e "$m" ] || continue
+            d="$(dirname "$m")/dist"
+            # ⚠️ 查询必须**带尾斜杠**。`content/*/dist/` 是目录规则，而 CI 是干净
+            # checkout、`dist/` 根本不存在；路径不存在时 git 无法 stat 出「这是目录」，
+            # 不带斜杠的查询会返回**未命中**。本地因为目录真实存在反而测不出来 ——
+            # 本文件第一次推送就是三处全 FAIL，红的正是这个。
+            if git check-ignore -q -- "$d/"; then
+              echo "ok   $d/ 已被 .gitignore 覆盖"
+            else
+              echo "FAIL $d/ 未被 .gitignore 覆盖：构建产物会被提交进库"
+              fail=1
+            fi
+          done
+
+          tracked=$(git ls-files | grep -E '(^|/)dist/' || true)
+          if [ -n "$tracked" ]; then
+            echo "FAIL 构建产物已在索引中，应移除并补 .gitignore："
+            echo "$tracked"
+            fail=1
+          fi
+
+          pending=$(git add -A --dry-run | grep -E '(^|/)dist/' || true)
+          if [ -n "$pending" ]; then
+            echo "FAIL 构建产物会被提交进库（未被 .gitignore 覆盖）："
+            echo "$pending"
+            fail=1
+          fi
+
+          if [ "$fail" -ne 0 ]; then exit 1; fi
+          echo "产物未入库：dist/ 均被 .gitignore 覆盖"

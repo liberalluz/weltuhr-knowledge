@@ -1,0 +1,16 @@
+{
+  "_note": "CI 改动面判据。一条 scope = 一个 workflow 的执行面；inputs 是它的**完整输入闭包**（以 / 结尾按目录前缀匹配，其余按精确路径）。判据只由依赖关系决定，不随开发阶段调整 —— 新增顶层输入源时改这里，workflow 自动跟随。",
+  "scopes": {
+    "app": [
+      "app/",
+      "content/",
+      "docs/deliverables/",
+      ".github/workflows/app-checks.yml"
+    ],
+    "content": [
+      "content/",
+      "app/tool/ci/",
+      ".github/workflows/content-checks.yml"
+    ]
+  }
+}
