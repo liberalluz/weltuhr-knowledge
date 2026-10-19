@@ -21,6 +21,7 @@ import 'package:project_knowledge/core/frame/projection.dart';
 import 'package:project_knowledge/core/frame/scene.dart';
 import 'package:project_knowledge/features/universe/frame_painter.dart';
 import 'package:project_knowledge/features/universe/galaxy_map.dart';
+import 'package:project_knowledge/features/universe/galaxy_painter.dart';
 import 'package:project_knowledge/features/universe/nebula_map.dart';
 import 'package:project_knowledge/features/universe/nebula_painter.dart';
 import 'package:project_knowledge/features/universe/scene_pick.dart';
@@ -2946,6 +2947,73 @@ void main() {
       ((a.dx * b.dx + a.dy * b.dy) / (a.distance * b.distance)).clamp(-1.0, 1.0),
     );
 
+    /// 从画布上取这一刻的某种布局。**各档都读 painter 手里那一份** ——
+    /// 它与拾取用的是同一个对象，所以「画在哪」与「点在哪」不可能分叉。
+    ///
+    /// 四个 helper 各写一遍而不是抽一个泛型版本：泛型版只能靠 `dynamic` 取
+    /// `.layout`，那等于把这几个断言换成运行时才发现的错误。
+    GalaxyLayout galaxyOf(WidgetTester tester) {
+      final Finder finder = find.byWidgetPredicate(
+        (Widget widget) =>
+            widget is CustomPaint && widget.painter is GalaxyPainter,
+      );
+      return (tester.widget<CustomPaint>(finder).painter! as GalaxyPainter)
+          .layout;
+    }
+
+    NebulaLayout nebulaOf(WidgetTester tester) {
+      final Finder finder = find.byWidgetPredicate(
+        (Widget widget) =>
+            widget is CustomPaint && widget.painter is NebulaPainter,
+      );
+      return (tester.widget<CustomPaint>(finder).painter! as NebulaPainter)
+          .layout;
+    }
+
+    StarSystemLayout starOf(WidgetTester tester) {
+      final Finder finder = find.byWidgetPredicate(
+        (Widget widget) => widget is CustomPaint && widget.painter is StarPainter,
+      );
+      return (tester.widget<CustomPaint>(finder).painter! as StarPainter).layout;
+    }
+
+    StarCloseupLayout closeupOf(WidgetTester tester) {
+      final Finder finder = find.byWidgetPredicate(
+        (Widget widget) =>
+            widget is CustomPaint && widget.painter is StarCloseupPainter,
+      );
+      return (tester.widget<CustomPaint>(finder).painter!
+              as StarCloseupPainter)
+          .layout;
+    }
+
+    /// 点 [point]（相对 [center]）的**方位角**，`atan2` 口径。
+    ///
+    /// [upright] 时先把 y 按 `C-59` 拉回正圆：`Z0` 的构型落在倾斜盘面上，
+    /// 直接在屏幕坐标里量角会得到「竖直方向跑得更快」。
+    double bearingOf(Offset point, Offset center, {bool upright = false}) {
+      final double dy = point.dy - center.dy;
+      return math.atan2(
+        upright ? dy / math.cos(galaxyDiscTiltDeg * math.pi / 180) : dy,
+        point.dx - center.dx,
+      );
+    }
+
+    /// 相对偏移，**正圆口径**（y 按 `C-59` 拉回去）。
+    ///
+    /// 「转了多少角」在压扁的坐标系里量也能对上（两者一起被压），所以光有角度
+    /// 不够 —— 反证实测过。距离才分得开「在椭圆上转」与「按屏幕坐标转」。
+    Offset uprightOffset(Offset point, Offset center) => Offset(
+      point.dx - center.dx,
+      (point.dy - center.dy) / math.cos(galaxyDiscTiltDeg * math.pi / 180),
+    );
+
+    /// 两个方位角之差，折进 `0…2π`（`atan2` 在 ±π 处翻号）。
+    double sweepOf(double from, double to) {
+      final double d = (to - from) % (2 * math.pi);
+      return d < 0 ? d + 2 * math.pi : d;
+    }
+
     /// 画布坐标 → 窗口坐标的比例（降采样时两者不等，`C-33`）。
     double surfaceScale(WidgetTester tester) {
       final Size window = tester.getSize(find.byType(UniverseScreen));
@@ -3202,6 +3270,262 @@ void main() {
         after.marks.first.points.first,
         stopped.marks.first.points.first,
         reason: '指针贴着域点，盘就该停住 —— 距离算错才是「停不下来」',
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('Z0 构型公转：矮星系绕中心走，主星系不动（C-55）', (
+      WidgetTester tester,
+    ) async {
+      final LoadedPack alpha = loadAlphaPack();
+      await _pumpScreen(
+        tester,
+        pack: alpha,
+        scene: _alphaScene(alpha),
+        zoom: ZoomLevel.z0,
+        others: <LoadedPack>[_z0Space()],
+        motion: true,
+      );
+
+      final GalaxyLayout before = galaxyOf(tester);
+      expect(before.discs.length, 2, reason: '前置条件：要两个空间才有「构型」');
+
+      await advance(tester, const Duration(seconds: 6));
+      final GalaxyLayout after = galaxyOf(tester);
+
+      expect(
+        after.discs.first.center,
+        before.discs.first.center,
+        reason: '主星系钉在构型中心 —— 公转的是「别的小星系绕它」',
+      );
+      // ⚠️ 断言的是「等于 `C-52` 的构型半径」，不是「前后相等」：反证实测过，
+      // 按屏幕坐标转时**前后都错、差值却仍相等**，比较前后根本挑不出来。
+      final Size window = tester.getSize(find.byType(UniverseScreen));
+      final ViewportPlan plan = planViewport(
+        window.width,
+        window.height,
+        devicePixelRatio: tester.view.devicePixelRatio,
+      );
+      expect(
+        uprightOffset(after.discs[1].center, after.orbitCenter).distance,
+        closeTo(
+          z0OrbitRadiusRatio * math.min(plan.surfaceWidth, plan.surfaceHeight),
+          1e-6,
+        ),
+        reason: '矮星系始终落在 `C-52` 的圈上 —— 公转只是一路绕着它走',
+      );
+      expect(
+        sweepOf(
+          bearingOf(before.discs[1].center, before.orbitCenter, upright: true),
+          bearingOf(after.discs[1].center, after.orbitCenter, upright: true),
+        ),
+        closeTo(2 * math.pi * 6 / z0OrbitPeriodSeconds, 1e-3),
+        reason: '6 / 72 = 1/12 圈，而且是在正圆口径里量的',
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('Z2 云整盘自转：项绕云心转，离云心的距离不变（C-54）', (
+      WidgetTester tester,
+    ) async {
+      final LoadedPack pack = loadAlphaPack();
+      await _pumpScreen(
+        tester,
+        pack: pack,
+        scene: _alphaScene(pack),
+        motion: true,
+      );
+      await _enterDomain(tester, pack);
+      await tester.pump();
+
+      final NebulaLayout before = nebulaOf(tester);
+      expect(before.items, isNotEmpty, reason: '前置条件：这个域里有项');
+      // 取**离云心最远**的那一项：它转角量得准，也不会退化成「就在云心没方向」。
+      final NebulaItem far = before.items.reduce(
+        (NebulaItem a, NebulaItem b) =>
+            (a.center - before.center).distance >=
+                (b.center - before.center).distance
+            ? a
+            : b,
+      );
+
+      await advance(tester, const Duration(seconds: 6));
+      final NebulaLayout after = nebulaOf(tester);
+      final NebulaItem moved = after.items.firstWhere(
+        (NebulaItem each) => each.id == far.id,
+      );
+
+      expect(
+        (moved.center - after.center).distance,
+        closeTo((far.center - before.center).distance, 1e-6),
+        reason: '刚性旋转：离云心的距离不变',
+      );
+      expect(
+        sweepOf(
+          bearingOf(far.center, before.center),
+          bearingOf(moved.center, after.center),
+        ),
+        closeTo(2 * math.pi * 6 / spinPeriodSeconds, 1e-3),
+        reason: '与 Z1 同一个 ω —— `C-54` 是同一块盘',
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('Z3 行星公转：按此刻的位置点得中（C-56）', (
+      WidgetTester tester,
+    ) async {
+      final LoadedPack pack = loadAlphaPack();
+      await _pumpScreen(
+        tester,
+        pack: pack,
+        scene: _alphaScene(pack),
+        motion: true,
+      );
+      final String rootId = await _enterStarSystem(tester, pack);
+      final StarSystemLayout frozen = _starSystemOf(tester, pack, rootId);
+
+      expect(
+        find.byWidgetPredicate(
+          (Widget widget) =>
+              widget is CustomPaint && widget.painter is StarPainter,
+        ),
+        findsOneWidget,
+        reason: '前置条件：已经站在 Z3',
+      );
+
+      // ⚠️ 先证明它在**继续动**：拿「当前」与「`t = 0`」比是不够的 —— 反证实测过，
+      // 时钟停在某个非零值上时那个差值照样很大，用例还是绿的。要比的是
+      // **这一次推进前后**的位移。
+      //
+      // ⚠️ 推 **3 秒（135°）而不是 2 秒（90°）**：同层行星是均分的，4 等分时转
+      // 90° 会精确落回**另一颗**的位置 —— 反证实测过，那样「用冻结坐标点」也能
+      // 点中，只是点中的是别人。
+      final StarSystemLayout before = starOf(tester);
+      await advance(tester, const Duration(seconds: 3));
+      final StarSystemLayout now = starOf(tester);
+      expect(now.planets, isNotEmpty, reason: '前置条件：这个亮结有后继');
+
+      // 取**最左**那颗：右侧 380 px 是详情抽屉，点进那里验的就不是拾取了。
+      final StarPlanet target = now.planets.reduce(
+        (StarPlanet a, StarPlanet b) => a.center.dx <= b.center.dx ? a : b,
+      );
+      expect(
+        (target.center - before.planetOf(target.id)!.center).distance,
+        greaterThan(4),
+        reason: '时钟没走起来的话，下面点的还是两秒前那个位置',
+      );
+      // 它确实离开了 `t = 0` 的那一处 —— 于是「用冻结坐标点」会点空。
+      expect(
+        (target.center - frozen.planetOf(target.id)!.center).distance,
+        greaterThan(4),
+      );
+      expect(
+        pickStarPlanetAt(layout: now, point: target.center)?.id,
+        target.id,
+        reason: '先确认这一档的拾取函数认得此刻的位置',
+      );
+
+      await tester.tapAt(target.center * surfaceScale(tester));
+      await tester.pump();
+
+      expect(
+        find.byWidgetPredicate(
+          (Widget widget) =>
+              widget is CustomPaint && widget.painter is StarCloseupPainter,
+        ),
+        findsOneWidget,
+        reason: '画在这、点在这 —— 用没转过的坐标判命中就会点空',
+      );
+      expect(
+        closeupOf(tester).itemId,
+        target.id,
+        reason: '进的是它自己，不是「刚好转到了同一位置的另一颗」',
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('Z3 指针贴住行星 ⇒ 停转（C-57）', (WidgetTester tester) async {
+      final LoadedPack pack = loadAlphaPack();
+      await _pumpScreen(
+        tester,
+        pack: pack,
+        scene: _alphaScene(pack),
+        motion: true,
+      );
+      await _enterStarSystem(tester, pack);
+
+      final StarSystemLayout start = starOf(tester);
+      expect(start.planets, isNotEmpty);
+      // ⚠️ 先确认「没贴住时它在动」：否则「贴住后两秒不动」也可能是
+      // 「本来就不动」—— 后面那半句才是这一条要验的东西。
+      await advance(tester, const Duration(seconds: 1));
+      expect(
+        (starOf(tester).planetOf(start.planets.first.id)!.center -
+                start.planets.first.center)
+            .distance,
+        greaterThan(1),
+        reason: '不贴住的时候它必须在走',
+      );
+
+      final StarSystemLayout before = starOf(tester);
+      final StarPlanet target = before.planets.reduce(
+        (StarPlanet a, StarPlanet b) => a.center.dx <= b.center.dx ? a : b,
+      );
+
+      await mouseOn(tester, target.center * surfaceScale(tester));
+      await tester.pump(const Duration(milliseconds: 16));
+      final StarSystemLayout stopped = starOf(tester);
+
+      await advance(tester, const Duration(seconds: 2));
+      final StarSystemLayout after = starOf(tester);
+
+      for (final StarPlanet planet in stopped.planets) {
+        expect(
+          after.planetOf(planet.id)!.center,
+          planet.center,
+          reason: '`C-57`：离最近可点对象 < 24 px ⇒ 速率为 0',
+        );
+      }
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('Z4 没有可点对象 ⇒ 指针压住行星也照转（VIEW-001 / C-57）', (
+      WidgetTester tester,
+    ) async {
+      final LoadedPack pack = loadAlphaPack();
+      await _pumpScreen(
+        tester,
+        pack: pack,
+        scene: _alphaScene(pack),
+        motion: true,
+      );
+      await _enterStarSystem(tester, pack);
+
+      final double scale = surfaceScale(tester);
+      final StarSystemLayout system = starOf(tester);
+      await tester.tapAt(system.planets.first.center * scale);
+      await tester.pump();
+      await tester.pump();
+
+      final StarCloseupLayout before = closeupOf(tester);
+      expect(before.isEmpty, isFalse, reason: '前置条件：已经站在 Z4');
+      if (before.planets.isEmpty) {
+        // 孤星特写 —— 没有行星可走，这一条没得验（`VIEW-040`：孤星也画）。
+        return;
+      }
+      final StarPlanet target = before.planets.first;
+
+      await mouseOn(tester, target.center * scale);
+      await tester.pump(const Duration(milliseconds: 16));
+      final StarPlanet stopped = closeupOf(tester).planetOf(target.id)!;
+
+      await advance(tester, const Duration(seconds: 2));
+      final StarPlanet moved = closeupOf(tester).planetOf(target.id)!;
+
+      expect(
+        moved.center,
+        isNot(stopped.center),
+        reason: '这一档的可点对象是「—」（详情抽屉就是它的形态）⇒ 没有停转判据',
       );
       expect(tester.takeException(), isNull);
     });

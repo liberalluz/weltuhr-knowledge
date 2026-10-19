@@ -5,6 +5,7 @@
 /// 那些在 `universe_screen_test.dart` 里。
 library;
 
+import 'dart:math' as math;
 import 'dart:ui';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -287,6 +288,158 @@ void main() {
           reason: '看得见点不中是这一档最坏的失效形态',
         );
       }
+    });
+  });
+
+  group('Z0 构型公转（C-55 · V-1i 后半）', () {
+    /// 盘心相对构型中心的偏移，**按正圆口径**（把 `C-59` 的压扁拉回去）。
+    ///
+    /// 公转发生在倾斜盘面上：直接在屏幕坐标里量角度会得到「竖直方向跑得更快」，
+    /// 而那正是这一层要挡的错。所有几何断言都走这个坐标。
+    Offset upright(GalaxyDisc disc, Offset center) {
+      final double tiltCos = math.cos(galaxyDiscTiltDeg * math.pi / 180);
+      return Offset(
+        disc.centerX - center.dx,
+        (disc.centerY - center.dy) / tiltCos,
+      );
+    }
+
+    test('主星系钉在构型中心，矮星系绕它走且轨道半径不变（C-55）', () {
+      final GalaxyLayout base = layoutGalaxies(
+        roots: _threeSpaces(),
+        viewport: _viewport,
+      );
+      final GalaxyLayout turned = base.spun(math.pi / 3);
+
+      expect(turned.discs.length, base.discs.length);
+      expect(
+        upright(turned.discs.first, base.orbitCenter),
+        upright(base.discs.first, base.orbitCenter),
+        reason: '主星系在构型中心：公转的是「别的小星系绕它」',
+      );
+      for (int i = 1; i < base.discs.length; i++) {
+        expect(
+          upright(turned.discs[i], base.orbitCenter).distance,
+          closeTo(upright(base.discs[i], base.orbitCenter).distance, 1e-9),
+          reason: '公转不改变它离构型中心多远',
+        );
+      }
+    });
+
+    test('转 90° = 正圆口径里把偏移方向转 90°（C-55）', () {
+      final GalaxyLayout base = layoutGalaxies(
+        roots: _threeSpaces(),
+        viewport: _viewport,
+      );
+      final GalaxyLayout turned = base.spun(math.pi / 2);
+      for (int i = 1; i < base.discs.length; i++) {
+        final Offset before = upright(base.discs[i], base.orbitCenter);
+        final Offset after = upright(turned.discs[i], base.orbitCenter);
+        expect(after.dx, closeTo(-before.dy, 1e-9));
+        expect(after.dy, closeTo(before.dx, 1e-9));
+      }
+    });
+
+    test('两次半程 = 一次全程；走满一圈回到原位（C-55）', () {
+      final GalaxyLayout base = layoutGalaxies(
+        roots: _threeSpaces(),
+        viewport: _viewport,
+      );
+      final GalaxyLayout bySteps = base
+          .spun(math.pi / 4)
+          .spun(math.pi / 4);
+      final GalaxyLayout byOnce = base.spun(math.pi / 2);
+      for (int i = 0; i < base.discs.length; i++) {
+        expect(
+          bySteps.discs[i].centerX,
+          closeTo(byOnce.discs[i].centerX, 1e-9),
+        );
+        expect(
+          bySteps.discs[i].centerY,
+          closeTo(byOnce.discs[i].centerY, 1e-9),
+        );
+      }
+
+      final GalaxyLayout round = base.spun(2 * math.pi);
+      for (int i = 0; i < base.discs.length; i++) {
+        expect(round.discs[i].centerX, closeTo(base.discs[i].centerX, 1e-9));
+        expect(round.discs[i].centerY, closeTo(base.discs[i].centerY, 1e-9));
+      }
+    });
+
+    test('相位为 0 / 非有限，或只有一个盘时原样返回（C-55）', () {
+      final GalaxyLayout base = layoutGalaxies(
+        roots: _threeSpaces(),
+        viewport: _viewport,
+      );
+      expect(identical(base.spun(0), base), isTrue);
+      expect(identical(base.spun(double.nan), base), isTrue);
+
+      // 单个空间没有「构型」可公转 —— 返回原对象，界面据此也不启 ticker。
+      final GalaxyLayout single = layoutGalaxies(
+        roots: <SceneResolution>[_root(_pack('python', 150, domains: 10))],
+        viewport: _viewport,
+      );
+      expect(identical(single.spun(math.pi / 3), single), isTrue);
+    });
+
+    test('刚体旋转：谁挡谁逐字不变 —— 这就是 spun 不重判遮挡的前提（SPEC-VIEW-036）', () {
+      // 五个等大的空间挤在一圈上：最容易撞出遮挡的构型。
+      final List<SceneResolution> roots = <SceneResolution>[
+        _root(_pack('python', 150, domains: 10)),
+        for (final String id in <String>[
+          'english',
+          'german',
+          'french',
+          'italian',
+          'latin',
+        ])
+          _root(_pack(id, 150, domains: 6)),
+      ];
+      final GalaxyLayout base = layoutGalaxies(
+        roots: roots,
+        viewport: _viewport,
+      );
+      for (int step = 1; step <= 8; step++) {
+        final GalaxyLayout turned = base.spun(step * math.pi / 4);
+        for (int i = 0; i < base.discs.length; i++) {
+          expect(
+            turned.discs[i].occluded,
+            base.discs[i].occluded,
+            reason: '整组一起转 ⇒ 相对位置不变 ⇒ 遮挡关系不变。'
+                '这条哪天红了，说明 spun 已不是刚体，那就必须回去补重判',
+          );
+        }
+      }
+    });
+
+    test('停转判据：盘内为负、盘缘过零、盘外为正（C-57）', () {
+      final GalaxyLayout layout = layoutGalaxies(
+        roots: <SceneResolution>[_root(_pack('python', 150, domains: 10))],
+        viewport: _viewport,
+      );
+      final GalaxyDisc disc = layout.discs.single;
+
+      expect(
+        distanceToNearestGalaxy(layout, disc.center),
+        lessThan(0),
+        reason: '指针压在盘上时必须停 —— 盘本身就可点',
+      );
+      expect(
+        distanceToNearestGalaxy(
+          layout,
+          disc.center + Offset(disc.radius, 0),
+        ).abs(),
+        lessThan(1e-6),
+        reason: '长轴端点正是过零点',
+      );
+      expect(
+        distanceToNearestGalaxy(
+          layout,
+          disc.center + Offset(disc.radius * 3, 0),
+        ),
+        greaterThan(0),
+      );
     });
   });
 }
