@@ -7,15 +7,44 @@ import 'package:project_knowledge/core/view/tree.dart';
 import '../../support/alpha_pack.dart';
 import '../../support/pack_fixture.dart';
 
+/// 只装一个包的树，空间与域都展开 —— 大多数用例要的是「看得见全部层级」。
+List<TreeRow> _build(
+  LoadedPack pack, {
+  bool expandSpace = true,
+  bool expandDomains = true,
+  Set<String>? visibleIds,
+}) => buildTree(
+  <LoadedPack>[pack],
+  spaceId: pack.space.id,
+  expandedSpaces: <String>{if (expandSpace) pack.space.id},
+  expandedDomains: expandDomains
+      ? pack.space.domainIds.toSet()
+      : const <String>{},
+  visibleIds: visibleIds,
+);
+
 void main() {
   group('树行模型（VIEW-006 / 007 / 008）', () {
-    test('第一层是域，顺序与 manifest.domainIds 一致（SPEC-VIEW-006）', () {
+    test('四层：知识 → 空间 → 域 → 项，顺序与 manifest.domainIds 一致（SPEC-VIEW-006）', () {
       final LoadedPack pack = loadAlphaPack();
-      final List<TreeRow> rows = buildTree(
-        pack,
-        expandedDomains: const <String>{},
-        expandToPhi: 0,
+      final List<TreeRow> rows = _build(pack);
+
+      expect(rows.first.kind, TreeRowKind.root, reason: '第 1 行永远是 `知识`');
+      expect(rows.first.depth, 0);
+      expect(rows.first.label, '知识');
+      expect(
+        rows.first.expandable,
+        isFalse,
+        reason: '`知识` 恒展开 ⇒ 没有折叠箭头（`VIEW-006` 修订第 3 条）',
       );
+
+      final List<TreeRow> spaces = rows
+          .where((TreeRow r) => r.kind == TreeRowKind.space)
+          .toList();
+      expect(spaces.length, 1);
+      expect(spaces.single.id, pack.space.id);
+      expect(spaces.single.depth, 1);
+      expect(spaces.single.label, spaceLabelOf(pack.space.id), reason: '与面包屑同一口径');
 
       final List<TreeRow> domains = rows
           .where((TreeRow r) => r.kind == TreeRowKind.domain)
@@ -26,7 +55,51 @@ void main() {
         pack.space.domainIds,
         reason: '域的先后由清单定，不由项数或标题定',
       );
-      expect(rows.length, domains.length, reason: '未展开的域只出一行');
+      for (final TreeRow domain in domains) {
+        expect(domain.depth, 2);
+      }
+      for (final TreeRow item in rows.where(
+        (TreeRow r) =>
+            r.kind == TreeRowKind.item ||
+            r.kind == TreeRowKind.outsideNeighbor ||
+            r.kind == TreeRowKind.blackHole,
+      )) {
+        expect(item.depth, 3, reason: '项 / 黑洞 / 圈外邻项都在第 4 层');
+      }
+    });
+
+    test('只有当前空间展开 —— 别的空间只出一行（SPEC-VIEW-006 修订）', () {
+      final LoadedPack a = fixturePack(const <FixtureItem>[
+        FixtureItem('python/a', '甲'),
+      ]);
+      final LoadedPack b = fixturePack(
+        const <FixtureItem>[FixtureItem('go/b', '乙', domainId: 'go/base')],
+        spaceId: 'go',
+        spaceName: 'Go 语法分层',
+      );
+
+      final List<TreeRow> rows = buildTree(
+        <LoadedPack>[a, b],
+        spaceId: 'python',
+        expandedSpaces: const <String>{'python'},
+        expandedDomains: const <String>{'python/lexical'},
+      );
+
+      expect(
+        rows.where((TreeRow r) => r.kind == TreeRowKind.space).length,
+        2,
+        reason: '`知识` = 所有空间，两个包就两行',
+      );
+      expect(
+        rows.where((TreeRow r) => r.kind == TreeRowKind.domain).length,
+        1,
+        reason: '`go` 收着 ⇒ 它的域一行都不出',
+      );
+      expect(
+        rows.where((TreeRow r) => r.spaceId == 'go').length,
+        1,
+        reason: '`go` 只剩空间行自己',
+      );
     });
 
     test('深链空间首屏只展开到 φ=2（SPEC-VIEW-008）', () {
@@ -39,11 +112,7 @@ void main() {
       expect(maxPhi, 63);
       expect(initialExpandPhi(maxPhi), 2, reason: 'α 包 maxφ=63 属深链');
 
-      final List<TreeRow> rows = buildTree(
-        pack,
-        expandedDomains: pack.space.domainIds.toSet(),
-        expandToPhi: initialExpandPhi(maxPhi),
-      );
+      final List<TreeRow> rows = _build(pack);
       final List<TreeRow> items = rows
           .where((TreeRow r) => r.kind == TreeRowKind.item)
           .toList();
@@ -54,46 +123,49 @@ void main() {
     });
 
     test('域内按 φ 升序、同层按标题（无 SPEC：域内排序属设计裁定）', () {
-      final LoadedPack pack = loadAlphaPack();
+      // 用夹具而不拿 α 包：α 包 maxφ=63，首屏只展到 φ=2，深层的顺序看不见。
+      // 夹具 maxφ 小 ⇒ 一次展开到底，整条链都在。
+      final LoadedPack pack = fixturePack(
+        const <FixtureItem>[
+          FixtureItem('python/lexical/c', '丙'),
+          FixtureItem('python/lexical/a', '甲'),
+          FixtureItem('python/lexical/b', '乙'),
+          FixtureItem('python/lexical/d', '丁'),
+        ],
+        edges: const <List<String>>[
+          <String>['python/lexical/a', 'python/lexical/b'],
+          <String>['python/lexical/b', 'python/lexical/c'],
+        ],
+      );
       final Map<String, int> levels = kahnLevels(
         nodeIds: pack.items.map((Item i) => i.id),
         edges: pack.edges,
       );
-      final List<TreeRow> rows = buildTree(
-        pack,
-        expandedDomains: pack.space.domainIds.toSet(),
-        expandToPhi: 63,
-      );
+      final List<TreeRow> rows = _build(pack);
 
-      // 单调性只在**同一域内**成立：跨域时 φ 从该域自己的最小层重新起算。
       int previous = -1;
-      String? domain;
-      for (final TreeRow row in rows) {
-        if (row.kind == TreeRowKind.domain) {
-          domain = row.id;
-          previous = -1;
-          continue;
-        }
-        if (row.kind != TreeRowKind.item) {
-          continue;
-        }
+      for (final TreeRow row in rows.where(
+        (TreeRow r) => r.kind == TreeRowKind.item,
+      )) {
         expect(
           row.phiLevel,
           greaterThanOrEqualTo(previous),
-          reason: '域 $domain 内不允许 φ 回退',
+          reason: '同域内不允许 φ 回退',
         );
         previous = row.phiLevel;
         expect(levels[row.id], row.phiLevel, reason: '行的 φ 必须等于 Kahn 层号');
       }
+      // 同层按标题：`甲`（a）与 `丁`（d）都在 φ=0。
+      final List<String> layer0 = <String>[
+        for (final TreeRow row in rows)
+          if (row.kind == TreeRowKind.item && row.phiLevel == 0) row.label,
+      ];
+      expect(layer0, <String>['丁', '甲'], reason: '同层按标题升序，与宇宙的深度一致');
     });
 
     test('指向未知的画成黑洞行：虚线、不可展开、恒在末位（SPEC-VIEW-007）', () {
       final LoadedPack pack = loadAlphaPack();
-      final List<TreeRow> rows = buildTree(
-        pack,
-        expandedDomains: pack.space.domainIds.toSet(),
-        expandToPhi: 63,
-      );
+      final List<TreeRow> rows = _build(pack);
       final List<TreeRow> holes = rows
           .where((TreeRow r) => r.kind == TreeRowKind.blackHole)
           .toList();
@@ -103,6 +175,7 @@ void main() {
         expect(hole.dashed, isTrue);
         expect(hole.expandable, isFalse, reason: '无实体 ⇒ 展开也没有内容');
         expect(hole.label, isNotEmpty, reason: '黑洞要有痕迹名，不能是空行');
+        expect(hole.spaceId, pack.space.id, reason: '黑洞也要知道往哪个空间里找');
       }
     });
 
@@ -113,18 +186,14 @@ void main() {
         const FixtureItem('python/lexical/inside', '圈内项'),
         const FixtureItem('python/lexical/outside', '圈外邻项', inScope: false),
       ]);
-      final List<TreeRow> rows = buildTree(
-        pack,
-        expandedDomains: const <String>{'python/lexical'},
-        expandToPhi: 0,
-      );
+      final List<TreeRow> rows = _build(pack);
 
       final TreeRow outside = rows.firstWhere(
         (TreeRow r) => r.id == 'python/lexical/outside',
       );
       expect(outside.kind, TreeRowKind.outsideNeighbor);
       expect(outside.dashed, isTrue, reason: '虚线是「存在但不是本空间的」的唯一视觉标记');
-      expect(outside.depth, 1);
+      expect(outside.depth, 3);
       expect(outside.expandable, isFalse, reason: '圈外项不给展开 —— 展开等于声称它有结构');
       expect(outside.label, '圈外邻项', reason: '仍要写原文标题，不能隐去');
 
@@ -133,6 +202,46 @@ void main() {
       );
       expect(inside.kind, TreeRowKind.item);
       expect(inside.dashed, isFalse);
+    });
+
+    test('筛选只作用于当前根（SPEC-VIEW-021）：别的空间的项不被当前空间的筛选藏掉', () {
+      final LoadedPack a = fixturePack(const <FixtureItem>[
+        FixtureItem('python/a', '甲'),
+        FixtureItem('python/b', '乙'),
+      ]);
+      final LoadedPack b = fixturePack(
+        const <FixtureItem>[FixtureItem('go/c', '丙', domainId: 'go/base')],
+        spaceId: 'go',
+        spaceName: 'Go 语法分层',
+      );
+
+      final List<TreeRow> rows = buildTree(
+        <LoadedPack>[a, b],
+        spaceId: 'python',
+        expandedSpaces: const <String>{'python', 'go'},
+        expandedDomains: const <String>{'python/lexical', 'go/base'},
+        visibleIds: const <String>{'python/a'},
+      );
+
+      expect(
+        rows
+            .where(
+              (TreeRow r) =>
+                  r.spaceId == 'python' && r.kind == TreeRowKind.item,
+            )
+            .map((TreeRow r) => r.id),
+        <String>['python/a'],
+        reason: '当前根里只留筛中的那一项',
+      );
+      expect(
+        rows
+            .where(
+              (TreeRow r) => r.spaceId == 'go' && r.kind == TreeRowKind.item,
+            )
+            .map((TreeRow r) => r.id),
+        <String>['go/c'],
+        reason: '另一个空间的项没被筛过，藏掉它等于替用户判了另一份数据',
+      );
     });
   });
 }

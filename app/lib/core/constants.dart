@@ -235,6 +235,31 @@ const double fitFocalEpsilon = 0.001;
 /// 不展开会让人误判「就这么点东西」；全展开则 63 层一次铺满，反而看不出骨架。
 const int treeInitialExpandPhi = 2;
 
+/// `C-91` 树里**层与层之间**的缩进（`SPEC-VIEW-006` 修订：0 / 14 / 28 / 42）。
+///
+/// 一个数管四层：写成四个字面量的话，改一层就得记得改另外三层，而漏改的那层
+/// 只会「看起来有点歪」—— 没有任何东西会变红。
+const double treeLevelIndent = 14;
+
+/// `C-92` 树里**项内 `⪯` 缩进**的封顶级数（`SPEC-VIEW-006` 修订第 5 条）。
+///
+/// 超出不再缩进：α 包 `maxφ = 63`，按 14 px 一级算要 882 px，深层项会被整条
+/// 推出屏幕右侧 —— 那时缩进表达的「多深」变成了「看不见」。
+const int treePhiIndentCap = 6;
+
+/// 树里四个层级的编号（`SPEC-VIEW-006` 修订的「深度 1/2/3/4」）。
+///
+/// 0 起算：`depth` 既算缩进（`depth × C-91`），也与面包屑段数对应
+/// （`depth + 1`）。**不写成拼音式的 `treeDepth0`** —— 名字要说清是哪一层，
+/// 否则读代码的人得回去查表。
+///
+/// ⚠️ 这四个值只在 `tree.dart` 构行时用到；`TreeRow.depth` 是**算好的结果**，
+/// 渲染层不再自己推 —— 两处各推一次就会出现「第 3 层缩进、第 2 层图标」。
+const int treeDepthRoot = 0;
+const int treeDepthSpace = 1;
+const int treeDepthDomain = 2;
+const int treeDepthItem = 3;
+
 /// `C-41` `φ` 轴向的居中偏移：`worldY = (φ01 − 本值) × phiHeight`。
 ///
 /// 不居中的话整个场景永远落在赤道面**上方**（`φ01 ≥ 0`），屏幕上只可能出现在

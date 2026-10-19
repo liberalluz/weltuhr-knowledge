@@ -7,12 +7,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:project_knowledge/core/constants.dart';
 import 'package:project_knowledge/core/entities/content.dart';
 import 'package:project_knowledge/core/enums.dart';
+import 'package:project_knowledge/core/view/zoom.dart';
 import 'package:project_knowledge/core/pack/pack_parse.dart';
 import 'package:project_knowledge/core/view/detail.dart';
 import 'package:project_knowledge/core/view/filter.dart';
 import 'package:project_knowledge/core/view/tree.dart';
 import 'package:project_knowledge/core/view/viewport.dart';
-import 'package:project_knowledge/core/view/zoom.dart';
 import 'package:project_knowledge/core/locate/locator.dart';
 import 'package:project_knowledge/features/detail/detail_panel.dart';
 import 'package:project_knowledge/features/locate/locate_overlay.dart';
@@ -540,32 +540,34 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('树里详情常驻右栏，不必推到 Z4（SPEC-VIEW-012）', (WidgetTester tester) async {
-      final LoadedPack pack = loadAlphaPack();
-      await _pumpScreen(tester, pack: pack, mode: ViewMode.tree);
-
-      expect(
-        find.byKey(hudDetailDrawerKey),
-        findsOneWidget,
-        reason: '树干上点行就等于聚焦，沿用「Z4 才滑出」会让点一次没反应',
-      );
-      expect(find.byKey(detailPanelKey), findsOneWidget);
-      expect(find.text('未选中知识项'), findsOneWidget, reason: '还没选行 ⇒ 空态，但面板在位');
-    });
-
-    testWidgets('树里选行 ⇒ 详情填上该行，再切回宇宙按 φ 定档（SPEC-VIEW-009）', (
+    testWidgets('树里没选中项就不开抽屉 —— 选中空间 / 域不是「选中一项」（SPEC-VIEW-006 修订第 4 条）', (
       WidgetTester tester,
     ) async {
       final LoadedPack pack = loadAlphaPack();
       await _pumpScreen(tester, pack: pack, mode: ViewMode.tree);
 
-      final Map<String, int> levels = phiLevelsOf(pack);
-      final List<TreeRow> rows = buildTree(
-        pack,
-        expandedDomains: pack.space.domainIds.toSet(),
-        expandToPhi: initialExpandPhi(maxPhiOf(pack)),
+      expect(
+        find.byKey(hudDetailDrawerKey),
+        findsNothing,
+        reason: '右栏照开的话会出现一个内容为空的框，而它看起来和「这一项没有详情」一模一样',
       );
-      // 选一个「有后继」的项：有子树 ⇒ 定档走 φ，不落 Z4。
+      expect(find.byKey(treeViewKey), findsOneWidget);
+    });
+
+    testWidgets('树里选行 ⇒ 详情填上该行，再切回宇宙落 Z4（SPEC-VIEW-009 修订）', (
+      WidgetTester tester,
+    ) async {
+      final LoadedPack pack = loadAlphaPack();
+      await _pumpScreen(tester, pack: pack, mode: ViewMode.tree);
+
+      final List<TreeRow> rows = buildTree(
+        <LoadedPack>[pack],
+        spaceId: pack.space.id,
+        expandedSpaces: <String>{pack.space.id},
+        expandedDomains: pack.space.domainIds.toSet(),
+      );
+      // **特意挑一个有子树的项**：旧判据（按 φ 定档）会把它送到 `Z3`，而修订后
+      // 一律落 `Z4` —— 拿一个「没有子树」的项验，两种判据都会绿。
       final TreeRow row = rows.firstWhere(
         (TreeRow r) =>
             r.kind == TreeRowKind.item &&
@@ -574,6 +576,7 @@ void main() {
 
       await tester.tap(find.byKey(treeRowKey(row)));
       await _pump(tester);
+      expect(find.byKey(hudDetailDrawerKey), findsOneWidget, reason: '选了一项 ⇒ 右栏出现');
       expect(
         find.descendant(
           of: find.byKey(detailPanelKey),
@@ -586,13 +589,111 @@ void main() {
       await tester.tap(find.byKey(hudModeIconKey));
       await _pump(tester);
 
-      final ZoomLevel expected = zoomForPhi(levels[row.id]!, hasChildren: true);
       expect(
         _crumbCount(tester),
-        _crumbsFor(expected),
-        reason: '段数 = 档位 —— 切回宇宙后走 φ 定档（VIEW-009），面包屑跟着它',
+        _crumbsFor(ZoomLevel.z4),
+        reason: '项一律落 Z4（VIEW-009 修订）—— 按 φ 定档会把它送到「整条链」而不是这一项',
       );
       expect(find.byKey(treeViewKey), findsNothing, reason: '回宇宙后树不该还留着');
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('树里点空间名 ⇒ 换根，仍停在树里（SPEC-VIEW-006 修订第 2 条）', (
+      WidgetTester tester,
+    ) async {
+      // 当前空间用**小夹具**而不是 α 包：α 包展开后有 80 多行，第二个空间那一行
+      // 落到 ListView 视口外，点不到 —— 那验的是「列表有多长」，不是「换根」。
+      final LoadedPack pack = fixturePack(const <FixtureItem>[
+        FixtureItem('python/lexical/a', '甲'),
+      ]);
+      final LoadedPack other = _z0Space();
+      await _pumpScreen(
+        tester,
+        pack: pack,
+        mode: ViewMode.tree,
+        others: <LoadedPack>[other],
+      );
+
+      final List<TreeRow> rows = buildTree(
+        <LoadedPack>[pack, other],
+        spaceId: pack.space.id,
+        expandedSpaces: <String>{pack.space.id},
+        expandedDomains: pack.space.domainIds.toSet(),
+      );
+      final TreeRow go = rows.firstWhere(
+        (TreeRow r) => r.kind == TreeRowKind.space && r.id == 'go',
+      );
+      expect(
+        find.text('d0'),
+        findsNothing,
+        reason: '前提：`go` 起先是收着的 —— 不先证明这一点，「换根后出现」可能本来就成立',
+      );
+
+      await tester.tap(find.byKey(treeRowKey(go)));
+      await _pump(tester);
+
+      expect(find.byKey(treeViewKey), findsOneWidget, reason: '换根不弹回宇宙');
+      expect(_crumbHas(tester, 'Go'), isTrue, reason: '面包屑第 2 段跟着换成新根');
+      expect(
+        find.text('d0'),
+        findsOneWidget,
+        reason: '新根被展开 ⇒ 它的域行出现了 —— 否则换根在树里没有任何可见后果',
+      );
+
+      // 换根之后没有选中项 ⇒ 切回宇宙落 `Z1`（`VIEW-009` 修订：空间层）。
+      await tester.tap(find.byKey(hudModeIconKey));
+      await _pump(tester);
+      expect(_crumbCount(tester), _crumbsFor(ZoomLevel.z1));
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('树里选中域 ⇒ 落 Z2 且 domainId 是该域，抽屉不开（SPEC-VIEW-006 修订第 3 / 4 条）', (
+      WidgetTester tester,
+    ) async {
+      final LoadedPack pack = loadAlphaPack();
+      await _pumpScreen(tester, pack: pack, mode: ViewMode.tree);
+
+      final List<TreeRow> rows = buildTree(
+        <LoadedPack>[pack],
+        spaceId: pack.space.id,
+        expandedSpaces: <String>{pack.space.id},
+        expandedDomains: pack.space.domainIds.toSet(),
+      );
+      final TreeRow domain = rows.firstWhere(
+        (TreeRow r) => r.kind == TreeRowKind.domain,
+      );
+      final TreeRow item = rows.firstWhere(
+        (TreeRow r) => r.kind == TreeRowKind.item,
+      );
+
+      // ⚠️ **先选一项再选域**，不能从「什么都没选」直接点域：那种写法里
+      // 「选中域时清掉旧的选中项」与「根本不清」结果一样，反证实测过 —— 它
+      // 照样绿。中间这一步才是这条判据的判别力所在。
+      await tester.tap(find.byKey(treeRowKey(item)));
+      await _pump(tester);
+      expect(find.byKey(hudDetailDrawerKey), findsOneWidget, reason: '前提：选一项之后右栏是开的');
+      expect(_crumbCount(tester), 4);
+
+      await tester.tap(find.byKey(treeRowKey(domain)));
+      await _pump(tester);
+
+      expect(find.byKey(treeViewKey), findsOneWidget, reason: '选中域不切视图');
+      expect(
+        find.byKey(hudDetailDrawerKey),
+        findsNothing,
+        reason: '选中域不是「选中一项」—— 抽屉留着就会写着上一个域的那一项',
+      );
+      expect(_crumbCount(tester), 3, reason: '面包屑落到第 3 段');
+      expect(_crumbHas(tester, domain.id), isTrue, reason: '第 3 段是那个域 —— 面包屑写的是 `domainId` 全名，与宇宙里同一口径');
+
+      await tester.tap(find.byKey(hudModeIconKey));
+      await _pump(tester);
+      expect(
+        _crumbCount(tester),
+        _crumbsFor(ZoomLevel.z2),
+        reason: '域落 Z2（VIEW-009 修订）—— 落点在哪一层，就落哪一档',
+      );
+      expect(_crumbHas(tester, domain.id), isTrue, reason: 'domainId 就是刚才那个域');
       expect(tester.takeException(), isNull);
     });
 
@@ -619,7 +720,11 @@ void main() {
       await _pump(tester);
 
       expect(find.byKey(treeEmptyKey), findsOneWidget);
-      expect(find.byKey(hudDetailDrawerKey), findsOneWidget);
+      expect(
+        find.byKey(hudDetailDrawerKey),
+        findsNothing,
+        reason: '没有可展开的树 ⇒ 也不会有选中项 ⇒ 右栏不开（VIEW-006 修订第 4 条）',
+      );
       expect(tester.takeException(), isNull);
     });
   });
