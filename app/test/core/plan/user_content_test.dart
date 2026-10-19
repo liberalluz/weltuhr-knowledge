@@ -1,0 +1,219 @@
+/// 三段「+ 自建」的核心层（`SPEC-PLAN-007` / `011`）。
+///
+/// 这里不 pump 任何 widget：自建的**难点不在表单，在「什么算一份合法的自建」**
+/// —— 空 `appliesTo` 与空列表的区别、配方少一个 review 步会不会被静默放过、
+/// 体系节点重复要不要报警。这些都能在纯函数上判，也只有在纯函数上才判得清。
+library;
+
+import 'package:flutter_test/flutter_test.dart';
+import 'package:project_knowledge/core/entities/content.dart';
+import 'package:project_knowledge/core/enums.dart';
+import 'package:project_knowledge/core/json.dart';
+import 'package:project_knowledge/core/plan/applies_to.dart';
+import 'package:project_knowledge/core/plan/method_bundle.dart';
+import 'package:project_knowledge/core/plan/user_content.dart';
+
+import '../../support/pack_fixture.dart';
+
+MethodStep _step(ExecutionOperator op, {StepPhase? phase, String? criteria}) =>
+    MethodStep(operator: op, phase: phase, criteria: criteria);
+
+void main() {
+  group('自建内容的 id 与 appliesTo 归一', () {
+    test('TC-PLAN-079 自建 id 优先用前缀本身，撞了才追加序号（无 SPEC：id 生成属实现口径）', () {
+      expect(uniqueContentId('user:src:内规', const <String>[]), 'user:src:内规');
+
+      // 撞了之后从 `taken.length` 起步往后试；关键是**同输入同输出**，
+      // 随机数会让「建了两次」与「改了一次」在事件流里分不开。
+      final String first = uniqueContentId(
+        'user:src:内规',
+        <String>['user:src:内规'],
+      );
+      expect(
+        uniqueContentId('user:src:内规', <String>['user:src:内规']),
+        first,
+        reason: '同一份输入必须给出同一个 id',
+      );
+      expect(first, isNot('user:src:内规'));
+      expect(
+        uniqueContentId('user:src:内规', <String>['user:src:内规', first]),
+        isNot(first),
+      );
+    });
+
+    test('TC-PLAN-080 空 appliesTo 读作「不限」，空列表与空 map 必须丢掉（SPEC-PLAN-007）', () {
+      // 表单里一个类型都没勾时给的是 `{'type': []}`。留着它，
+      // `appliesToItem` 走「数组取任一命中」⇒ 空列表恒不命中 ⇒ 全部项被筛空。
+      final JsonMap normalized = normalizeAppliesTo(<String, Object?>{
+        'type': <String>[],
+        'sixAxis': <String, Object?>{},
+        'layer': null,
+      });
+      expect(normalized, isEmpty);
+      expect(
+        appliesToItem(
+          normalized,
+          space: fixturePack(
+            <FixtureItem>[const FixtureItem('i1', '一')],
+          ).space,
+          item: fixturePack(
+            <FixtureItem>[const FixtureItem('i1', '一')],
+          ).items.first,
+        ),
+        isTrue,
+        reason: '归一后应读成「不限」，不是「任何类型都不适用」',
+      );
+    });
+
+    test('TC-PLAN-081 未认的 appliesTo 键仍抛（无 SPEC：沿用 appliesToItem 的未认键口径）', () {
+      expect(
+        () => normalizeAppliesTo(<String, Object?>{'relevance': 'high'}),
+        throwsA(isA<FormatException>()),
+      );
+    });
+  });
+
+  group('自建的源', () {
+    test('TC-PLAN-082 自建的源没有摘录正文，名字与版本必填（SPEC-PLAN-007）', () {
+      final SourceRef source = buildUserSource(
+        id: 'user:src:内规',
+        name: ' 内规 ',
+        authorityLevel: 'L1',
+        version: '1',
+      );
+      expect(source.name, '内规', reason: '前后空白不该带进候选名');
+      expect(
+        source.segments,
+        isEmpty,
+        reason: '内容绑定落地前拿不到摘录 —— 这是登记状态，不是漏填',
+      );
+      expect(source.appliesTo, isEmpty);
+
+      expect(
+        () => buildUserSource(
+          id: 'x',
+          name: '   ',
+          authorityLevel: 'L1',
+          version: '1',
+        ),
+        throwsA(isA<ArgumentError>()),
+      );
+      expect(
+        () => buildUserSource(
+          id: 'x',
+          name: '内规',
+          authorityLevel: 'L1',
+          version: '',
+        ),
+        throwsA(isA<ArgumentError>()),
+      );
+    });
+  });
+
+  group('自建的体系', () {
+    test('TC-PLAN-083 节点顺序就是学习次序，重复节点去重保首次（SPEC-PLAN-007）', () {
+      final Scheme scheme = buildUserScheme(
+        id: 'user:sch:先易后难',
+        name: '先易后难',
+        nodes: <String>['i3', 'i1', 'i3', 'i2'],
+        authorityLevel: 'L2',
+      );
+      expect(
+        scheme.nodes,
+        <String>['i3', 'i1', 'i2'],
+        reason: '顺序是规格的一部分（体系段选的就是「先学哪个」），不能排序',
+      );
+      expect(
+        () => buildUserScheme(
+          id: 'x',
+          name: '空序',
+          nodes: const <String>[],
+          authorityLevel: 'L2',
+        ),
+        throwsA(isA<ArgumentError>()),
+      );
+    });
+  });
+
+  group('自建方法：只能自定配方', () {
+    test('TC-PLAN-084 全「读 / 例」的配方被拒 —— 会静默绕过遗忘曲线（SPEC-PLAN-011）', () {
+      expect(
+        () => validateMethodRecipe(<MethodStep>[
+          _step(ExecutionOperator.read),
+          _step(ExecutionOperator.example),
+        ]),
+        throwsA(isA<ArgumentError>()),
+        reason: 'entity-fields §一.7 校验 ②：至少一个 review 步',
+      );
+
+      // 同样是「读」，但作者显式把 phase 覆盖成 review ⇒ 满足 ②。
+      validateMethodRecipe(<MethodStep>[
+        _step(ExecutionOperator.read, phase: StepPhase.review),
+      ]);
+    });
+
+    test('TC-PLAN-085 空配方被拒；一份自建只覆盖一个类型，bundle id 由 profile 派生（SPEC-PLAN-010）', () {
+      expect(
+        () => validateMethodRecipe(const <MethodStep>[]),
+        throwsA(isA<ArgumentError>()),
+      );
+
+      const UserMethodDraft draft = UserMethodDraft(
+        id: 'user:method:三遍法',
+        name: '三遍法',
+        type: ItemType.procedural,
+        steps: <MethodStep>[
+          MethodStep(operator: ExecutionOperator.read),
+          MethodStep(operator: ExecutionOperator.practice, criteria: '连做三次不出错'),
+        ],
+      );
+      final ({MethodProfile profile, MethodBundle bundle}) built =
+          buildUserMethod(draft);
+
+      expect(built.profile.origin, CandidateOrigin.user);
+      expect(built.profile.appliesTo, <String, Object?>{'type': 'procedural'});
+      expect(built.bundle.coveredTypes, <ItemType>{ItemType.procedural});
+      expect(
+        built.bundle.id,
+        userBundleIdOf('user:method:三遍法'),
+        reason: '重入时只凭 Plan.methodProfileId 就要能反查是哪一份自建',
+      );
+      expect(built.bundle.byType[ItemType.procedural], 'user:method:三遍法');
+    });
+
+    test('TC-PLAN-086 全步骤无 hint 时判得出来（不拦，但确认段要能说出来）（SPEC-PLAN-011）', () {
+      final ({MethodProfile profile, MethodBundle bundle}) noHint =
+          buildUserMethod(
+        const UserMethodDraft(
+          id: 'user:method:无提示',
+          name: '无提示',
+          type: ItemType.declarative,
+          steps: <MethodStep>[
+            MethodStep(operator: ExecutionOperator.read),
+            MethodStep(operator: ExecutionOperator.recall),
+          ],
+        ),
+      );
+      expect(
+        bundleHasAnyHint(noHint.bundle, <MethodProfile>[noHint.profile]),
+        isFalse,
+      );
+
+      final ({MethodProfile profile, MethodBundle bundle}) withHint =
+          buildUserMethod(
+        const UserMethodDraft(
+          id: 'user:method:有提示',
+          name: '有提示',
+          type: ItemType.declarative,
+          steps: <MethodStep>[
+            MethodStep(operator: ExecutionOperator.recall, hint: '先想标题'),
+          ],
+        ),
+      );
+      expect(
+        bundleHasAnyHint(withHint.bundle, <MethodProfile>[withHint.profile]),
+        isTrue,
+      );
+    });
+  });
+}

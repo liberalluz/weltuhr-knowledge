@@ -14,21 +14,35 @@
 ///
 /// ## 为什么三段共用一套卡片代码
 ///
-/// `SPEC-PLAN-008`：三段候选卡元素相同（名字 · 出处 · 读数 · 尾部「+ 自建」），
-/// 用户在第三段看到的东西与第一段长得一样，不用重新学。差异化只放在「读数」那
-/// 一行 —— 源看等级、体系看逆序、方法看类型覆盖（`SPEC-PLAN-020`）。
+/// `SPEC-PLAN-008`：三段候选卡元素相同（名字 · 出处 · **适用范围** · 读数 · 尾部
+/// 「+ 自建」），用户在第三段看到的东西与第一段长得一样，不用重新学。差异化只
+/// 放在「读数」那一行 —— 源看等级、体系看逆序、方法看类型覆盖（`SPEC-PLAN-020`）。
+///
+/// ## 自建的内容住在这里，不落盘
+///
+/// `SPEC-PLAN-007` 的链路是「草稿（本机）→ 立刻可选 → 提审 → 合并进 overlay」。
+/// 本笔只做前两段：自建的三份留在 [PlannerPanelState] 的字段里，`origin = user`，
+/// 关掉面板即丢。**跨会话持久化要等本地 overlay 存储**（`SPEC-GOV-008` /
+/// `PACK-011`，均未开工）—— 写一个临时 JSON 文件会与将来的 overlay 变成两份
+/// 判据，比重建更贵。
 library;
 
 import 'package:flutter/material.dart';
 
+import '../../core/constants.dart';
+import '../../core/entities/content.dart';
 import '../../core/entities/plan.dart';
+import '../../core/enums.dart';
+import '../../core/json.dart';
 import '../../core/pack/pack_parse.dart';
 import '../../core/plan/candidates.dart';
 import '../../core/plan/method_bundle.dart';
 import '../../core/plan/plan_draft.dart';
 import '../../core/plan/plan_events.dart';
+import '../../core/plan/platform_candidates.dart';
 import '../../core/plan/preview.dart';
-import '../../core/enums.dart';
+import '../../core/plan/user_content.dart';
+import 'user_draft_dialogs.dart';
 
 /// 四段的分节标题。**顺序即 `PlanSegment.values` + 末段「确认」。**
 const Map<PlanSegment, String> segmentTitles = <PlanSegment, String>{
@@ -47,6 +61,68 @@ const Map<CandidateOrigin, String> originLabels = <CandidateOrigin, String>{
 };
 
 String originLabel(CandidateOrigin origin) => originLabels[origin]!;
+
+/// 「适用范围」那一行的人话（`SPEC-PLAN-008` 五元素之一）。
+///
+/// **不显示 `appliesTo` 的 JSON 键值**：那一段是给作者看的机器口径（`type` /
+/// `sixAxis`），用户要看的是「这套东西管哪些项」。空 `appliesTo` 读作「不限」——
+/// 不是「没填」，是**声明过的不限**（`appliesToItem` 对空 map 恒真）。
+String appliesToText(JsonMap appliesTo) {
+  if (appliesTo.isEmpty) {
+    return '不限';
+  }
+  final List<String> parts = <String>[];
+  final Object? type = appliesTo['type'];
+  if (type != null) {
+    parts.add(_namesOf(type, _typeNameLabels));
+  }
+  final Object? layer = appliesTo['layer'];
+  if (layer != null) {
+    parts.add(_namesOf(layer, _layerNameLabels));
+  }
+  final Object? sixAxis = appliesTo['sixAxis'];
+  if (sixAxis is Map) {
+    for (final MapEntry<Object?, Object?> entry in sixAxis.entries) {
+      final String axis = sixAxisLabels['${entry.key}'] ?? '${entry.key}';
+      parts.add('$axis=${entry.value}');
+    }
+  }
+  final Object? spaceId = appliesTo['spaceId'];
+  if (spaceId != null) {
+    parts.add('空间 $spaceId');
+  }
+  return parts.isEmpty ? '不限' : parts.join(' · ');
+}
+
+/// 枚举名 → 中文名。`appliesTo` 里存的是**名字**（JSON 口径），标签表却是按
+/// 枚举建的，这里翻一次。
+final Map<String, String> _typeNameLabels = <String, String>{
+  for (final MapEntry<ItemType, String> entry in itemTypeLabels.entries)
+    entry.key.name: entry.value,
+};
+
+final Map<String, String> _layerNameLabels = <String, String>{
+  for (final MapEntry<Layer, String> entry in layerLabels.entries)
+    entry.key.name: entry.value,
+};
+
+String _namesOf(Object raw, Map<String, String> labels) {
+  if (raw is List) {
+    return raw.map((Object? v) => labels['$v'] ?? '$v').join(' / ');
+  }
+  return labels['$raw'] ?? '$raw';
+}
+
+/// 类型集合 → 「陈述 / 流程」这样的一句。**按枚举声明序**输出，不按集合的
+/// 迭代序 —— 同一套内容每次渲染都该是同一句话。
+String typesText(Iterable<ItemType> types) {
+  final Set<ItemType> set = types.toSet();
+  final List<String> parts = <String>[
+    for (final ItemType type in ItemType.values)
+      if (set.contains(type)) itemTypeLabels[type]!,
+  ];
+  return parts.isEmpty ? '不限' : parts.join(' / ');
+}
 
 class PlannerPanel extends StatefulWidget {
   const PlannerPanel({
@@ -93,6 +169,12 @@ class PlannerPanelState extends State<PlannerPanel> {
   /// 被清掉的旧值，用于「需重选」那句说明（`已选的 X 在…下覆盖 0`）。
   final Map<PlanSegment, String> _droppedNames = <PlanSegment, String>{};
 
+  /// 用户自建的三段内容（`SPEC-PLAN-007`）。**只活在这个 `State` 里**，见文件头。
+  final List<SourceRef> _userSources = <SourceRef>[];
+  final List<Scheme> _userSchemes = <Scheme>[];
+  final List<MethodProfile> _userProfiles = <MethodProfile>[];
+  final List<MethodBundle> _userBundles = <MethodBundle>[];
+
   late CandidateSet _candidates;
 
   String? get selectedSourceId => _sourceId;
@@ -127,6 +209,11 @@ class PlannerPanelState extends State<PlannerPanel> {
       widget.pack,
       schemeId: _schemeId,
       sourceId: _sourceId,
+      // 自建的三份必须喂进来，否则「立刻可选」只是一句文档。**通道 `P-2` 就
+      // 打通了**，这里一直没接 —— `P-8` 补的就是这一行起。
+      userSources: _userSources,
+      userSchemes: _userSchemes,
+      userMethodBundles: _userBundles,
     );
   }
 
@@ -186,7 +273,24 @@ class PlannerPanelState extends State<PlannerPanel> {
         return c.name;
       }
     }
-    return id;
+    // 自建的项一旦被筛出候选列表，就查不到名字了 —— 而「需重选」那句正是要说
+    // 「哪一项掉了」。退回自建表里找，否则用户看到的是 `user:src:内规` 这种
+    // 内部 id，等于让他自己去猜。
+    final List<String> names = switch (segment) {
+      PlanSegment.source => <String>[
+        for (final SourceRef s in _userSources)
+          if (s.id == id) s.name,
+      ],
+      PlanSegment.scheme => <String>[
+        for (final Scheme s in _userSchemes)
+          if (s.id == id) s.name,
+      ],
+      PlanSegment.method => <String>[
+        for (final MethodBundle b in _userBundles)
+          if (b.id == id) b.name,
+      ],
+    };
+    return names.isEmpty ? id : names.first;
   }
 
   @override
@@ -196,7 +300,17 @@ class PlannerPanelState extends State<PlannerPanel> {
       schemeId: _schemeId,
       target: widget.target,
       bundle: _selectedBundle,
+      userProfiles: _userProfiles,
+      userSchemes: _userSchemes,
     );
+    final MethodBundle? bundle = _selectedBundle;
+    // `entity-fields` §一.7 校验 ③：全步骤无 `hint` 时**不禁止**，但要说出代价。
+    final bool noHint =
+        bundle != null &&
+        !bundleHasAnyHint(bundle, <MethodProfile>[
+          ...platformMethodProfiles,
+          ..._userProfiles,
+        ]);
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -208,7 +322,7 @@ class PlannerPanelState extends State<PlannerPanel> {
             padding: const EdgeInsets.all(12),
             children: <Widget>[
               for (final PlanSegment segment in PlanSegment.values)
-                _segment(segment),
+                _segment(segment, noHint),
               _confirm(preview),
             ],
           ),
@@ -221,7 +335,7 @@ class PlannerPanelState extends State<PlannerPanel> {
 
   // ─────────────────────────── 左栏 ───────────────────────────
 
-  Widget _segment(PlanSegment segment) {
+  Widget _segment(PlanSegment segment, bool noHint) {
     final List<PlanCandidate> list = _candidates.of(segment);
     final String? selected = switch (segment) {
       PlanSegment.source => _sourceId,
@@ -260,20 +374,68 @@ class PlannerPanelState extends State<PlannerPanel> {
             ),
           for (final PlanCandidate c in list)
             _card(segment, c, selected == c.id),
+          if (segment == PlanSegment.method && noHint)
+            Text(
+              '本方法无提示可给，熟练档不受约束',
+              key: const Key('planner-no-hint'),
+              style: const TextStyle(fontSize: 11),
+            ),
+          // `SPEC-PLAN-007`：**不是独立页面**，就是列表尾部这一个动作。
           Padding(
             padding: const EdgeInsets.only(top: 6),
-            child: Text(
-              '+ 自建（P-8 开放）',
+            child: TextButton.icon(
               key: Key('planner-create-${segment.name}'),
-              style: TextStyle(
-                fontSize: 12,
-                color: Theme.of(context).disabledColor,
-              ),
+              onPressed: () => _createUser(segment),
+              icon: const Icon(Icons.add, size: 16),
+              label: const Text('+ 自建'),
             ),
           ),
         ],
       ),
     );
+  }
+
+  /// 三段的自建入口（`SPEC-PLAN-007`）。建完**立刻选中** —— 建完还要回头找
+  /// 一遍才叫「把建和选拆成两处」。
+  Future<void> _createUser(PlanSegment segment) async {
+    switch (segment) {
+      case PlanSegment.source:
+        final SourceRef? source = await showUserSourceDialog(
+          context,
+          takenIds: <String>[for (final SourceRef s in _userSources) s.id],
+        );
+        if (!mounted || source == null) {
+          return;
+        }
+        _userSources.add(source);
+        _select(PlanSegment.source, source.id);
+      case PlanSegment.scheme:
+        final Scheme? scheme = await showUserSchemeDialog(
+          context,
+          pack: widget.pack,
+          takenIds: <String>[for (final Scheme s in _userSchemes) s.id],
+        );
+        if (!mounted || scheme == null) {
+          return;
+        }
+        _userSchemes.add(scheme);
+        _select(PlanSegment.scheme, scheme.id);
+      case PlanSegment.method:
+        final UserMethodDraft? draft = await showUserMethodDialog(
+          context,
+          takenIds: <String>[
+            for (final MethodProfile p in _userProfiles) p.id,
+          ],
+        );
+        if (!mounted || draft == null) {
+          return;
+        }
+        final ({MethodProfile profile, MethodBundle bundle}) built =
+            buildUserMethod(draft);
+        _userProfiles.add(built.profile);
+        _userBundles.add(built.bundle);
+        _select(PlanSegment.method, built.bundle.id);
+    }
   }
 
   Widget _card(PlanSegment segment, PlanCandidate candidate, bool selected) {
@@ -311,6 +473,13 @@ class PlannerPanelState extends State<PlannerPanel> {
               ],
             ),
             const SizedBox(height: 2),
+            // `SPEC-PLAN-008` 的「适用范围」—— 五元素里此前一直缺这一项。
+            Text(
+              '适用 ${_scope(segment, candidate)}',
+              key: Key('planner-scope-${segment.name}-${candidate.id}'),
+              style: const TextStyle(fontSize: 11),
+            ),
+            const SizedBox(height: 2),
             Text(
               '${_readout(segment, candidate)} · ${_version(segment, candidate)}',
               style: const TextStyle(fontSize: 11),
@@ -338,6 +507,26 @@ class PlannerPanelState extends State<PlannerPanel> {
     }
   }
 
+  /// 卡片的「适用范围」—— 三段各由**自己的字段**派生，没有一个是编的：
+  ///
+  /// - 源：`SourceRef.appliesTo`（`entity-fields` §7.1 的四键）
+  /// - 体系：`Scheme` 没有 `appliesTo`，改由 `nodes` 里实际出现的 `Item.type` 说
+  /// - 方法：`MethodBundle.byType` 覆盖到的类型
+  String _scope(PlanSegment segment, PlanCandidate candidate) {
+    switch (segment) {
+      case PlanSegment.source:
+        return appliesToText((candidate as SourceCandidate).source.appliesTo);
+      case PlanSegment.scheme:
+        final SchemeCandidate c = candidate as SchemeCandidate;
+        return typesText(<ItemType>{
+          for (final String nodeId in c.scheme.nodes)
+            if (widget.pack.itemOf(nodeId) != null) widget.pack.itemOf(nodeId)!.type,
+        });
+      case PlanSegment.method:
+        return typesText((candidate as MethodCandidate).bundle.coveredTypes);
+    }
+  }
+
   String _version(PlanSegment segment, PlanCandidate candidate) {
     switch (segment) {
       case PlanSegment.source:
@@ -345,7 +534,8 @@ class PlannerPanelState extends State<PlannerPanel> {
       case PlanSegment.scheme:
         return '包 v${(candidate as SchemeCandidate).packVersion}';
       case PlanSegment.method:
-        return '内置';
+        // 平台档是内置的，自建档没有包版本可读 —— 写「内置」会让两处混成一句。
+        return candidate.origin == CandidateOrigin.user ? '自建' : '内置';
     }
   }
 
@@ -369,6 +559,8 @@ class PlannerPanelState extends State<PlannerPanel> {
         schemeId: schemeId,
         bundle: bundle,
         target: widget.target,
+        // 与预览那次必须是同一份自建体系，否则「预览 12 项、事件存 4 项」。
+        userSchemes: _userSchemes,
       ),
     );
   }

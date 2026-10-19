@@ -87,6 +87,10 @@ class PlannerPreview {
 /// [schemeId] 不存在时抛 `ArgumentError`（与 `loadCandidates` 同一口径：那是
 /// 调用方拿错了 id，静默回落到全量会让人以为这套体系覆盖了全部）。
 ///
+/// [userSchemes] / [userProfiles] 是用户自建档（`SPEC-PLAN-007`）。**不传自建
+/// 分支，自建的方法会被算成「未覆盖」** —— 预览报「未覆盖 N 项」、确认段据此
+/// 拦住，用户刚建的方法反而用不了。两处都按 `user > platform` 覆盖同 id。
+///
 /// [target] 为 `null` = 不按计划范围收窄（圈内全量）。给了它就只在
 /// `target.resolved` 圈定的项里数 [PlannerPreview.itemCount]；
 /// [PlannerPreview.denominator] **不受它影响** —— 分母是空间规模，不是计划规模。
@@ -96,16 +100,20 @@ PlannerPreview computePlannerPreview({
   PlanTarget? target,
   MethodBundle? bundle,
   List<MethodProfile> profiles = platformMethodProfiles,
+  List<MethodProfile> userProfiles = const <MethodProfile>[],
+  List<Scheme> userSchemes = const <Scheme>[],
 }) {
   final PlanScope scope = resolvePlanScope(
     pack: pack,
     schemeId: schemeId,
     target: target,
+    userSchemes: userSchemes,
   );
 
   final MethodBundle effective = bundle ?? platformMethodBundles.first;
   final Map<String, MethodProfile> byId = <String, MethodProfile>{
     for (final MethodProfile p in profiles) p.id: p,
+    for (final MethodProfile p in userProfiles) p.id: p,
   };
 
   int minutes = 0;
