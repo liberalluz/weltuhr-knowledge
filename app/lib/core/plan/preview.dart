@@ -50,6 +50,7 @@ import '../entities/plan.dart';
 import '../pack/pack_parse.dart';
 import 'method_bundle.dart';
 import 'platform_candidates.dart';
+import 'scope.dart';
 
 /// 预览的三个读数 + 两个「这个数有多可信」的标记。
 class PlannerPreview {
@@ -96,41 +97,11 @@ PlannerPreview computePlannerPreview({
   MethodBundle? bundle,
   List<MethodProfile> profiles = platformMethodProfiles,
 }) {
-  final List<Item> inScope = <Item>[
-    for (final Item item in pack.items)
-      if (item.inScope) item,
-  ];
-  final int denominator = inScope.length;
-
-  final List<Item> scoped;
-  if (schemeId == null) {
-    scoped = inScope;
-  } else {
-    final List<String>? nodes = pack.schemeNodes(schemeId);
-    if (nodes == null) {
-      throw ArgumentError('不存在的体系 id：`$schemeId`（`pack.schemes` 里没有）');
-    }
-    // 只数**圈内**项：圈外项是邻项（`VIEW-004`），既不能落点也不该进计划。
-    // 不拦的话，体系节点一旦含圈外项，项数会超过分母 —— 一份计划覆盖的项比
-    // 空间总量还多，是自相矛盾。用集合查而非按节点顺序取：这里只数个数与累加
-    // 分钟，与顺序无关，重复节点也顺带折成一项。
-    final Set<String> nodeSet = nodes.toSet();
-    scoped = <Item>[
-      for (final Item item in inScope)
-        if (nodeSet.contains(item.id)) item,
-    ];
-  }
-
-  final List<Item> scope;
-  if (target == null) {
-    scope = scoped;
-  } else {
-    final Set<String> keep = target.resolved.toSet();
-    scope = <Item>[
-      for (final Item item in scoped)
-        if (keep.contains(item.id)) item,
-    ];
-  }
+  final PlanScope scope = resolvePlanScope(
+    pack: pack,
+    schemeId: schemeId,
+    target: target,
+  );
 
   final MethodBundle effective = bundle ?? platformMethodBundles.first;
   final Map<String, MethodProfile> byId = <String, MethodProfile>{
@@ -139,7 +110,7 @@ PlannerPreview computePlannerPreview({
 
   int minutes = 0;
   int uncovered = 0;
-  for (final Item item in scope) {
+  for (final Item item in scope.items) {
     final String? profileId = effective.profileIdFor(item.type);
     final MethodProfile? profile = profileId == null ? null : byId[profileId];
     if (profile == null) {
@@ -152,8 +123,8 @@ PlannerPreview computePlannerPreview({
   }
 
   return PlannerPreview(
-    itemCount: scope.length,
-    denominator: denominator,
+    itemCount: scope.items.length,
+    denominator: scope.denominator,
     minutes: minutes,
     usingDefaultMethod: bundle == null,
     uncoveredItems: uncovered,

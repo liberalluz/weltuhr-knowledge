@@ -8,11 +8,12 @@
 /// - `S` / `D` / 掌握度 —— 归 `B6` 的 FSRS；这里只把迁移账本备好
 ///   （[FoldedState.carries] / [FoldedState.merges]），折算规则在
 ///   `migration.dart` 一处。
-/// - `Plan` 实体 —— 归 `B4`。本笔只保证 `plan_created` / `plan_revised`
-///   进不了游标与判定（事件类型已登记，不代表现在就要实现它）。
+/// - `Plan` 的 `progress` / `sessions` —— 派生自判定与学过的项，归 `QUANT`；
+///   这里只折出**意图**（源 / 体系 / 方法 / `target` / 版本）。
 library;
 
 import '../enums.dart';
+import '../entities/plan.dart';
 import '../json.dart';
 import 'event.dart';
 import 'migration.dart';
@@ -39,6 +40,7 @@ class FoldedState {
     required Map<String, FoldedNote> notes,
     required List<CarryLink> carries,
     required List<MergeLink> merges,
+    required Map<String, Plan> plans,
   }) : cursors = Map<String, int>.unmodifiable(cursors),
        passed = Set<String>.unmodifiable(passed),
        graduated = Set<String>.unmodifiable(graduated),
@@ -46,7 +48,8 @@ class FoldedState {
        retired = Set<String>.unmodifiable(retired),
        notes = Map<String, FoldedNote>.unmodifiable(notes),
        carries = List<CarryLink>.unmodifiable(carries),
-       merges = List<MergeLink>.unmodifiable(merges);
+       merges = List<MergeLink>.unmodifiable(merges),
+       plans = Map<String, Plan>.unmodifiable(plans);
 
   /// 空态：一条事件都没有时用它，不必特判。
   FoldedState.empty()
@@ -57,7 +60,8 @@ class FoldedState {
       retired = const <String>{},
       notes = const <String, FoldedNote>{},
       carries = const <CarryLink>[],
-      merges = const <MergeLink>[];
+      merges = const <MergeLink>[],
+      plans = const <String, Plan>{};
 
   /// 项 → **下一步**的步骤序号。折叠规则：`max(已完成 stepIndex) + 1`。
   ///
@@ -87,6 +91,18 @@ class FoldedState {
 
   /// 合并账本（按事件时间序）。
   final List<MergeLink> merges;
+
+  /// 计划，键 = 那份计划的 `plan_created` 事件 `id`（`plan_events.dart` 头部）。
+  ///
+  /// **同空间可并存多份**（`SPEC-PLAN-003`）—— 所以这里不能按 `spaceId` 做键，
+  /// 否则第二份会把第一份覆盖掉，而「两份独立存在」恰好是验收向量本身。
+  final Map<String, Plan> plans;
+
+  /// 某空间下的全部计划，按创建顺序。
+  List<Plan> plansOf(String spaceId) => <Plan>[
+    for (final Plan plan in plans.values)
+      if (plan.spaceId == spaceId) plan,
+  ];
 
   /// 下一步步骤序号；没学过返回 `0`（= 第一步）。
   int cursorOf(String itemId) => cursors[itemId] ?? 0;
@@ -159,6 +175,12 @@ FoldedState fold(
   final Map<String, List<String>> noteTexts = <String, List<String>>{};
   final List<CarryLink> carries = <CarryLink>[];
   final List<MergeLink> merges = <MergeLink>[];
+  final Map<String, Plan> plans = <String, Plan>{};
+
+  /// 每份计划名下重放了几条事件 —— 版本号的**唯一**来源。
+  ///
+  /// 不读 payload 的 `version`：那是第二份计数，重传或乱序时必然与重放条数打架。
+  final Map<String, int> planRevisions = <String, int>{};
 
   for (final Event event in ordered) {
     if (!seenIds.add(event.id)) {
@@ -191,9 +213,28 @@ FoldedState fold(
         graduated.add(_requireItem(event));
 
       case EventType.planCreated:
+        // `Plan` 的身份 = 这条事件的 id（不在 payload 里再写一份 `planId`）。
+        final String planId = event.id;
+        plans[planId] = _planFromEvent(
+          event,
+          id: planId,
+          version: _bumpVersion(planRevisions, planId),
+        );
+
       case EventType.planRevised:
-        // `Plan` 归 `B4`。现在折它 = 提前冻结一个还没设计的实体。
-        break;
+        final String planId = requireString(event.payload, 'planId');
+        if (!plans.containsKey(planId)) {
+          // 不静默补建（`SPEC-FND-014`）：一条指向不存在计划的修订，回放出来
+          // 会凭空多出一份「从没建过」的计划，比报错更难查。
+          throw FormatException(
+            '事件 `${event.id}` 的 `planId` 为 `$planId`，但该计划尚未创建',
+          );
+        }
+        plans[planId] = _planFromEvent(
+          event,
+          id: planId,
+          version: _bumpVersion(planRevisions, planId),
+        );
 
       case EventType.stateCarried:
         carries.add(CarryLink.fromPayload(eventId: event.id, payload: event.payload));
@@ -229,7 +270,31 @@ FoldedState fold(
     notes: notes,
     carries: carries,
     merges: merges,
+    plans: plans,
   );
+}
+
+/// 从一条计划类事件折出一份 `Plan`。
+///
+/// [id] 与 [version] 都由 `fold` 给 —— 前者是创建事件的 id，后者是重放条数。
+/// **payload 里没有这两个字段**，它们不是事件携带的事实，是重放的副产物。
+Plan _planFromEvent(Event event, {required String id, required int version}) => Plan(
+  id: id,
+  // 取信封上的 `spaceId`：它是 `fold(spaceId:)` 的过滤维度，payload 再写一份
+  // 会造出「过滤时按信封、还原时按 payload」的分裂。
+  spaceId: event.spaceId,
+  spaceVersion: requireString(event.payload, 'spaceVersion'),
+  target: PlanTarget.fromJson(requireMap(event.payload, 'target')),
+  sourcePolicy: requireMap(event.payload, 'sourcePolicy'),
+  schemeId: requireString(event.payload, 'schemeId'),
+  methodProfileId: requireString(event.payload, 'methodProfileId'),
+  version: version,
+);
+
+int _bumpVersion(Map<String, int> counts, String planId) {
+  final int next = (counts[planId] ?? 0) + 1;
+  counts[planId] = next;
+  return next;
 }
 
 /// 收一条 `note_revised`。

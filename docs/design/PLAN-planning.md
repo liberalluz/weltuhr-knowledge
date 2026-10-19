@@ -215,6 +215,8 @@ MethodBundle（被选中，Plan.methodProfileId 存它的 id）
 
 ### SPEC-PLAN-019 重入复用同一面板
 **裁定**：Runner 暴露缺口后回 Planner 时，**预填上次取值、`Plan.version + 1`**，不新开「重规划界面」。这是「Planner ↔ Runner 交替循环」的直接结果。
+
+**重规划写的是 `plan_revised`，带 `planId` 指回创建事件。** 同空间可并存多份（`PLAN-003`），没有这个字段就分不清改的是哪一份。`Plan.id` **就是 `plan_created` 事件的 `id`**，payload 里不再另写一份。`version` 由 `fold` 数该 `planId` 名下的事件条数得出，**不进 payload**（`event-types.md` §二 B）—— 写在 payload 里就是第二份计数，重传或乱序时两处必然打架。
 `src:` N-5 · 第 40 轮
 
 ---
@@ -262,6 +264,7 @@ MethodBundle（被选中，Plan.methodProfileId 存它的 id）
 |---|---|---|---|
 | PLAN-001 | 换源不改顺序 | 同一 Plan 换源后检查 `Scheme.nodes` | 序列完全不变 |
 | PLAN-003 | 同空间可并存多份 Plan | 为 Python 建两份 Plan（不同 target） | 两份独立存在，进度各算 |
+| PLAN-003 | 两份在事件流里分得开 | 同空间写两条 `plan_created` | `fold` 出两份，`id` 各为对应事件的 `id` |
 | PLAN-005 | 域不能配体系 | 提交 `scheme.domainId = "syntax"` | 校验失败 |
 | PLAN-007 | 三段都有「+ 自建」 | 打开 Planner ①②③ | 三段列表尾部均有该入口 |
 | PLAN-012 | 逆序候选不被删除 | Python 体系的四个候选 | 四个全部出现在列表（含逆序 4 处的工程路线） |
@@ -274,5 +277,6 @@ MethodBundle（被选中，Plan.methodProfileId 存它的 id）
 | PLAN-015 | `target` 只收窄项数 | 圈内 4 项 · 体系覆盖 4 项 · `target` 圈 2 项 | 项数 **2**、分母仍 **4** |
 | PLAN-015 | 圈外项不进计划 | 体系节点里含 1 项 `inScope: false` | 项数不含它，且 **项数 ≤ 分母** |
 | PLAN-016 | 定位结果带 target 进 Planner | 搜「Python 异步」→ 底部「按此范围建计划」 | Planner 的 target 已是该子图（≠150） |
+| PLAN-019 | 重规划版本由重放条数得出 | 建计划 + 一次 `plan_revised` | `version = 2`，且 payload 不带 `version` |
 | PLAN-020 | 方法排序键不需新字段 | 检查 schema | 无「relevance」类字段；排序由 `appliesTo` 算出 |
 | PLAN-021 | 无「一键生成」入口 | 打开 Planner | 只有三段 + 确认，无一键按钮 |

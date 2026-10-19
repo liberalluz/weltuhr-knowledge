@@ -15,6 +15,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:project_knowledge/core/entities/plan.dart';
 import 'package:project_knowledge/core/pack/pack_parse.dart';
+import 'package:project_knowledge/core/plan/plan_events.dart';
 import 'package:project_knowledge/features/planner/planner_panel.dart';
 
 import '../../support/pack_fixture.dart';
@@ -56,6 +57,7 @@ Future<void> _pump(
   String? source,
   String? scheme,
   PlanTarget? target,
+  void Function(PlanDraft draft)? onCreate,
 }) async {
   // 四段竖排在 800×600 下面要滚动，滚动会让 `find` 与坐标断言都失真 ——
   // 直接把视口撑高，验的是**顺序**而不是「能不能滚」。
@@ -69,6 +71,7 @@ Future<void> _pump(
           target: target,
           initialSourceId: source,
           initialSchemeId: scheme,
+          onCreate: onCreate,
         ),
       ),
     ),
@@ -229,6 +232,47 @@ void main() {
       textOf('preview-denominator'),
       '分母 4',
       reason: '分母是空间规模，target 只收窄「这次走多少」',
+    );
+  });
+
+  testWidgets('TC-PLAN-061 点「建计划」把草稿交出去，target 透传且 resolved 按当前包重算（SPEC-PLAN-019）', (
+    WidgetTester tester,
+  ) async {
+    PlanDraft? captured;
+    await _pump(
+      tester,
+      target: const PlanTarget(
+        selector: <String, Object?>{'kind': 'items'},
+        // 旧 resolved 里混一个不存在的项：草稿必须按当前包重算，不能照抄。
+        resolved: <String>['i1', 'i3', 'ghost'],
+      ),
+      onCreate: (PlanDraft draft) => captured = draft,
+    );
+
+    await tester.tap(find.byKey(const Key('planner-source-src-a')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('planner-scheme-sch-full')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('planner-method-method-bundle-memory')));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('planner-confirm-button')));
+    await tester.pumpAndSettle();
+
+    expect(captured, isNotNull, reason: '按钮可点就必须真的交出去');
+    expect(captured!.spaceId, 'python');
+    expect(captured!.schemeId, 'sch-full');
+    expect(captured!.methodProfileId, 'method-bundle-memory');
+    expect(captured!.sourcePolicy, <String, Object?>{'primary': 'src-a'});
+    expect(
+      captured!.target.selector,
+      <String, Object?>{'kind': 'items'},
+      reason: '选择式原样保留 —— 它记录的是用户当时怎么圈的',
+    );
+    expect(
+      captured!.target.resolved,
+      <String>['i1', 'i3'],
+      reason: 'ghost 不在包里，必须被重算掉',
     );
   });
 }
