@@ -18,13 +18,12 @@ class PlanTarget {
   /// 解析后的项 id。
   final List<String> resolved;
 
-  /// 派生于 [resolved]，不入库（避免两份可能不一致的真相）。
+  /// 派生于 [resolved]，**不入库也不序列化**（避免两份可能不一致的真相）。
   int get count => resolved.length;
 
   JsonMap toJson() => <String, Object?>{
     'selector': selector,
     'resolved': resolved,
-    'count': count,
   };
 }
 

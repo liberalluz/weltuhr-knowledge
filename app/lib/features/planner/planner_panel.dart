@@ -25,6 +25,8 @@ import '../../core/entities/plan.dart';
 import '../../core/pack/pack_parse.dart';
 import '../../core/plan/candidates.dart';
 import '../../core/plan/method_bundle.dart';
+import '../../core/plan/plan_draft.dart';
+import '../../core/plan/plan_events.dart';
 import '../../core/plan/preview.dart';
 import '../../core/enums.dart';
 
@@ -53,10 +55,17 @@ class PlannerPanel extends StatefulWidget {
     this.initialSourceId,
     this.initialSchemeId,
     this.initialMethodId,
+    this.onCreate,
     super.key,
   });
 
   final LoadedPack pack;
+
+  /// 点「建计划」时交出草稿。**事件由上层写** —— 面板不该知道 `EventStore`、
+  /// `HlcClock`、`userId` 这些东西，它只回答「用户选了什么」。
+  ///
+  /// 为 `null` 时按钮仍可点，但什么也不发生 —— 用于纯展示与骨架测试。
+  final void Function(PlanDraft draft)? onCreate;
 
   /// 这份计划的范围（`PLAN-016` 的定位结果入口会带窄 `target` 进来）。
   ///
@@ -342,6 +351,28 @@ class PlannerPanelState extends State<PlannerPanel> {
 
   // ─────────────────────────── 确认段 ───────────────────────────
 
+  /// 把三段选择交出去。`target` 原样透传 —— 面板不解算范围，
+  /// `composePlanDraft` 与预览调的是同一个 `resolvePlanScope`。
+  void _create() {
+    final MethodBundle? bundle = _selectedBundle;
+    final String? sourceId = _sourceId;
+    final String? schemeId = _schemeId;
+    // 按钮在「未选齐」时本就是 disabled，这里再判一次是因为 `onCreate` 为 null
+    // 与选择不全走了两条不同的路径，不能让 null 断言混进来。
+    if (bundle == null || sourceId == null || schemeId == null) {
+      return;
+    }
+    widget.onCreate?.call(
+      composePlanDraft(
+        pack: widget.pack,
+        sourceId: sourceId,
+        schemeId: schemeId,
+        bundle: bundle,
+        target: widget.target,
+      ),
+    );
+  }
+
   Widget _confirm(PlannerPreview preview) {
     final bool ready =
         _sourceId != null && _schemeId != null && _methodId != null;
@@ -366,7 +397,7 @@ class PlannerPanelState extends State<PlannerPanel> {
         const SizedBox(height: 6),
         FilledButton(
           key: const Key('planner-confirm-button'),
-          onPressed: blocked == null ? () {} : null,
+          onPressed: blocked == null ? _create : null,
           child: const Text('建计划'),
         ),
         if (blocked != null)
