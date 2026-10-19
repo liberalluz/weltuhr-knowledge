@@ -158,16 +158,29 @@ void main() {
       expect(both.schemes.map((SchemeCandidate c) => c.id), <String>['scheme-all']);
     });
 
-    test('同 id 三源并存时 user 覆盖 pack，但位置留在首次出现处（SPEC-PLAN-006）', () {
+    test('同 id 三源并存时 user 覆盖 pack 的**整条**记录（SPEC-PLAN-006）', () {
+      // `P-3` 起顺序由排序键决定（`SPEC-PLAN-020`），不再是「首次出现的位置」——
+      // 这条用例因此改成按 id 取，不再依赖列表位置。附带立一条真断言：覆盖的是
+      // 整条记录，自建版写的等级也一起生效，不是只换了个名字。
       final CandidateSet set = loadCandidates(
         _pack(),
         userSources: <SourceRef>[_userSource('src-a', '自建版 A')],
       );
 
-      expect(set.sources.first.id, 'src-a');
-      expect(set.sources.first.name, '自建版 A');
-      expect(set.sources.first.origin, CandidateOrigin.user);
-      expect(set.sources.last.origin, CandidateOrigin.pack);
+      final SourceCandidate merged = set.sources
+          .firstWhere((SourceCandidate c) => c.id == 'src-a');
+      expect(merged.name, '自建版 A');
+      expect(merged.origin, CandidateOrigin.user);
+      expect(
+        merged.authorityLevel,
+        'L4',
+        reason: '自建版声明的 `L4` 生效 ⇒ 它从第一掉到最后，而 `src-b` 的 `L1` 顶上来',
+      );
+      expect(
+        set.sources.where((SourceCandidate c) => c.id == 'src-a').length,
+        1,
+      );
+      expect(set.sources.first.id, 'src-b');
     });
 
     test('别的空间的源不进候选（SPEC-PLAN-006）', () {
