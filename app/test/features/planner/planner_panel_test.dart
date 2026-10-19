@@ -13,6 +13,7 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:project_knowledge/core/entities/plan.dart';
 import 'package:project_knowledge/core/pack/pack_parse.dart';
 import 'package:project_knowledge/features/planner/planner_panel.dart';
 
@@ -54,6 +55,7 @@ Future<void> _pump(
   WidgetTester tester, {
   String? source,
   String? scheme,
+  PlanTarget? target,
 }) async {
   // 四段竖排在 800×600 下面要滚动，滚动会让 `find` 与坐标断言都失真 ——
   // 直接把视口撑高，验的是**顺序**而不是「能不能滚」。
@@ -64,6 +66,7 @@ Future<void> _pump(
       home: Scaffold(
         body: PlannerPanel(
           pack: _pack(),
+          target: target,
           initialSourceId: source,
           initialSchemeId: scheme,
         ),
@@ -204,5 +207,28 @@ void main() {
     expect(find.textContaining('src-a'), findsWidgets);
     expect(find.textContaining('sch-full'), findsWidgets);
     expect(find.textContaining('记忆优先'), findsWidgets);
+  });
+
+  testWidgets('TC-PLAN-046 面板把 target 接进预览：项数收窄、分母不动（SPEC-PLAN-015）', (
+    WidgetTester tester,
+  ) async {
+    // `Z3` 圈定两项 i1 / i3 —— 空间圈内仍 4 项。
+    await _pump(
+      tester,
+      target: const PlanTarget(
+        selector: <String, Object?>{'kind': 'items'},
+        resolved: <String>['i1', 'i3'],
+      ),
+    );
+
+    String textOf(String key) =>
+        tester.widget<Text>(find.byKey(Key(key))).data!;
+
+    expect(textOf('preview-items'), '项数 2', reason: '只数 target 圈定的两项');
+    expect(
+      textOf('preview-denominator'),
+      '分母 4',
+      reason: '分母是空间规模，target 只收窄「这次走多少」',
+    );
   });
 }

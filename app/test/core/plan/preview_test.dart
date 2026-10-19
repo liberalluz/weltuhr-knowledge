@@ -8,6 +8,8 @@
 library;
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:project_knowledge/core/entities/content.dart';
+import 'package:project_knowledge/core/entities/plan.dart';
 import 'package:project_knowledge/core/enums.dart';
 import 'package:project_knowledge/core/pack/pack_parse.dart';
 import 'package:project_knowledge/core/plan/method_bundle.dart';
@@ -131,5 +133,125 @@ void main() {
     expect(preview.itemCount, 2);
     expect(preview.uncoveredItems, 2, reason: '两项都是程序类，这套方法没有分支');
     expect(preview.minutes, 0, reason: '没有可用步骤就不该凭空空出时长');
+  });
+
+  test('TC-PLAN-042 十项四步估出规格写的 140 分钟（SPEC-PLAN-015 验收向量）', () {
+    // 规格验收表原文：「10 项 × 4 步（读 3 + 忆 1 + 练 5 + 讲 5）⇒ 预估 140 分钟」。
+    // 这一条不验算法结构，只验**规格里那个数**真的算得出来 —— 平台内置的五套
+    // 方法没有一套是「读忆练讲」四步，所以必须自造一份 profile。
+    const MethodProfile fourStep = MethodProfile(
+      id: 'method-four-step',
+      name: '读忆练讲',
+      steps: <MethodStep>[
+        MethodStep(operator: ExecutionOperator.read),
+        MethodStep(operator: ExecutionOperator.recall),
+        MethodStep(operator: ExecutionOperator.practice),
+        MethodStep(operator: ExecutionOperator.teach),
+      ],
+      appliesTo: <String, Object?>{},
+      origin: CandidateOrigin.platform,
+    );
+    const MethodBundle bundle = MethodBundle(
+      id: 'bundle-four-step',
+      name: '读忆练讲',
+      origin: CandidateOrigin.platform,
+      byType: <ItemType, String>{ItemType.declarative: 'method-four-step'},
+    );
+
+    final PlannerPreview preview = computePlannerPreview(
+      pack: fixturePack(<FixtureItem>[
+        for (int i = 1; i <= 10; i++) FixtureItem('i$i', '第 $i 项'),
+      ]),
+      bundle: bundle,
+      profiles: <MethodProfile>[fourStep],
+    );
+
+    expect(preview.itemCount, 10);
+    expect(
+      preview.minutes,
+      140,
+      reason: '（3 + 1 + 5 + 5）× 10 = 140，与 `PLAN-015` 验收表的读数一致',
+    );
+  });
+
+  test('TC-PLAN-043 圈外项既不计入分母，也不进项数（SPEC-PLAN-015）', () {
+    final LoadedPack pack = fixturePack(
+      <FixtureItem>[
+        const FixtureItem('i1', '一'),
+        const FixtureItem('i2', '二'),
+        const FixtureItem('out', '圈外邻项', inScope: false),
+      ],
+      schemes: <String, List<String>>{
+        'sch-all': <String>['i1', 'i2', 'out'],
+      },
+    );
+
+    final PlannerPreview none = computePlannerPreview(pack: pack);
+    final PlannerPreview withScheme =
+        computePlannerPreview(pack: pack, schemeId: 'sch-all');
+
+    expect(none.denominator, 2, reason: '分母只数圈内项');
+    expect(none.itemCount, 2);
+    expect(
+      withScheme.itemCount,
+      2,
+      reason: '体系节点含圈外项也不进计划 —— 圈外项是邻项，不能落点',
+    );
+    expect(
+      withScheme.denominator,
+      2,
+      reason: '项数恒 ≤ 分母：不拦圈外项时这里会变成 3 > 2',
+    );
+  });
+
+  test('TC-PLAN-044 target 收窄项数，分母不动（SPEC-PLAN-015）', () {
+    final LoadedPack pack = _mixedPack();
+    // `Z3` 圈定两项：i1 与 i3。
+    final PlanTarget target = PlanTarget(
+      selector: <String, Object?>{'kind': 'items', 'domainId': 'python/lexical'},
+      resolved: <String>['i1', 'i3'],
+    );
+
+    final PlannerPreview full =
+        computePlannerPreview(pack: pack, schemeId: 'sch-full');
+    final PlannerPreview narrowed = computePlannerPreview(
+      pack: pack,
+      schemeId: 'sch-full',
+      target: target,
+    );
+
+    expect(narrowed.itemCount, 2, reason: '只数 target 圈定的两项');
+    expect(
+      narrowed.denominator,
+      full.denominator,
+      reason: '分母是空间规模，不随 target 变 —— 缩了就看不出「空间还有多少没排」',
+    );
+    expect(
+      narrowed.minutes,
+      lessThan(full.minutes),
+      reason: '时长跟项数走，不跟分母走',
+    );
+  });
+
+  test('TC-PLAN-045 target 与体系取交集，两边都不放宽（SPEC-PLAN-015）', () {
+    final LoadedPack pack = _mixedPack();
+    // target 圈了 i1 / i3 / i4，而 `sch-part` 只含 i1 / i2 ⇒ 交集只有 i1。
+    final PlanTarget target = PlanTarget(
+      selector: <String, Object?>{},
+      resolved: <String>['i1', 'i3', 'i4'],
+    );
+
+    final PlannerPreview preview = computePlannerPreview(
+      pack: pack,
+      schemeId: 'sch-part',
+      target: target,
+    );
+
+    expect(
+      preview.itemCount,
+      1,
+      reason: 'i3 / i4 在 target 里但不在体系里；体系不会因为 target 变宽',
+    );
+    expect(preview.denominator, 4);
   });
 }
