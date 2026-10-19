@@ -50,8 +50,16 @@
 
 | 类型 | 何时写 | 关键 payload | 状态 |
 |---|---|---|---|
-| `plan_created` | 建计划完成 | `spaceId` · `spaceVersion` · `target{selector, resolvedCount}` · `sourcePolicy` · `schemeId` · `methodProfileId` | 推论 |
-| `plan_revised` | Runner 暴露缺口后回 Planner 重规划 | 同上 + `version = 前值 + 1` | 推论 |
+| `plan_created` | 建计划完成 | `spaceVersion` · `target{selector, resolved}` · `sourcePolicy` · `schemeId` · `methodProfileId` | 已定（`B4` 第 6 笔补登记 —— 原文写 `target{selector, resolvedCount}` 且把 `spaceId` 也列进来，两处都错，见下） |
+| `plan_revised` | Runner 暴露缺口后回 Planner 重规划 | 同上 + `planId`（指回创建事件） | 已定（原文写「`version = 前值 + 1`」，`B4` 第 6 笔改为不写 `version`，见下） |
+
+**`Plan` 的身份 = `plan_created` 事件的 `id`。** `plan_created` 的 payload **不写 `planId`** —— 一个实体既有自己的 id、又有创建事件的 id，两者表达同一件事，迟早出现「对不上」的回放歧义，而它没有信息增量。反过来 `plan_revised` **必须**带 `planId`：同空间可并存多份（`SPEC-PLAN-003`），没有这个字段就折不出「改的是哪一份」，「建两份 Plan，两份独立存在」这条验收向量在事件层无法表达。
+
+**`spaceId` 不进 payload。** 信封上已有（`Event.spaceId`），它还是 `fold(spaceId:)` 的过滤维度；payload 再写一份，就会出现「过滤时按信封、还原时按 payload」的分裂。
+
+**`version` 不进 payload。** 它由 `fold` 数该 `planId` 名下的事件条数得出，与笔记版本同一口径（`noteVersion` = 该节 `note_revised` 计数）。写在 payload 里就是第二份计数：重传、乱序、或有人手改一条，两处必然打架。
+
+**`target` 的键是 `{selector, resolved}`，`count` 派生、不序列化。** 原表写 `resolvedCount`、`PlanTarget.toJson()` 曾写 `count`，三处三个名字，同一个量变成三个字段。
 
 > `Plan` 是**多次意图**，同一空间可并存多份（如「入门跑通」与「专攻异步」）。`Plan` 的键是 `spaceId`，**不存在跨空间的「总 Plan」**。
 

@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:project_knowledge/core/entities/plan.dart';
 import 'package:project_knowledge/core/enums.dart';
 import 'package:project_knowledge/core/events/event.dart';
 import 'package:project_knowledge/core/events/fold.dart';
@@ -67,6 +68,54 @@ Event _note(String id, int physical, String text, {String? itemId = 'py-a', int?
         'targetVersion': ?targetVersion,
       },
     );
+
+Event _planCreated(
+  String id,
+  int physical, {
+  String spaceId = 'python',
+  String schemeId = 'sch-full',
+  List<String> resolved = const <String>['py-a'],
+}) => _event(
+  id: id,
+  type: EventType.planCreated,
+  physical: physical,
+  itemId: null,
+  spaceId: spaceId,
+  payload: <String, Object?>{
+    'spaceVersion': '0.1.0',
+    'target': <String, Object?>{
+      'selector': <String, Object?>{},
+      'resolved': resolved,
+    },
+    'sourcePolicy': <String, Object?>{'primary': 'src-official'},
+    'schemeId': schemeId,
+    'methodProfileId': 'method-bundle-understand',
+  },
+);
+
+Event _planRevised(
+  String id,
+  int physical, {
+  required String planId,
+  String schemeId = 'sch-narrow',
+  List<String> resolved = const <String>['py-a', 'py-b'],
+}) => _event(
+  id: id,
+  type: EventType.planRevised,
+  physical: physical,
+  itemId: null,
+  payload: <String, Object?>{
+    'planId': planId,
+    'spaceVersion': '0.1.0',
+    'target': <String, Object?>{
+      'selector': <String, Object?>{},
+      'resolved': resolved,
+    },
+    'sourcePolicy': <String, Object?>{'primary': 'src-official'},
+    'schemeId': schemeId,
+    'methodProfileId': 'method-bundle-understand',
+  },
+);
 
 void main() {
   group('基本', () {
@@ -405,6 +454,79 @@ void main() {
         fold(events, spaceId: 'python', userId: 'u-a').passed,
         <String>{'py-a'},
       );
+    });
+  });
+
+  group('计划', () {
+    test('TC-PLAN-055 plan_created 折出一份，版本从 1 起（无 SPEC：event-types.md §二 B）', () {
+      final FoldedState state = fold(<Event>[_planCreated('e1', 1000)]);
+
+      expect(state.plans.keys, <String>['e1'], reason: '身份 = 创建事件的 id');
+      final Plan plan = state.plans['e1']!;
+      expect(plan.id, 'e1');
+      expect(plan.spaceId, 'python');
+      expect(plan.spaceVersion, '0.1.0');
+      expect(plan.schemeId, 'sch-full');
+      expect(plan.methodProfileId, 'method-bundle-understand');
+      expect(plan.sourcePolicy, <String, Object?>{'primary': 'src-official'});
+      expect(plan.target.resolved, <String>['py-a']);
+      expect(plan.version, 1);
+    });
+
+    test('TC-PLAN-056 同空间两份计划独立存在（SPEC-PLAN-003 验收向量）', () {
+      final FoldedState state = fold(<Event>[
+        _planCreated('e1', 1000, schemeId: 'sch-full', resolved: <String>['py-a']),
+        _planCreated('e2', 2000, schemeId: 'sch-narrow', resolved: <String>['py-a', 'py-b']),
+      ]);
+
+      expect(state.plans.length, 2);
+      expect(state.plansOf('python').length, 2);
+      expect(state.plans['e1']!.schemeId, 'sch-full');
+      expect(state.plans['e2']!.schemeId, 'sch-narrow');
+      // 两份各自的版本独立计数，不是「同空间共用一份」。
+      expect(state.plans['e1']!.version, 1);
+      expect(state.plans['e2']!.version, 1);
+    });
+
+    test('TC-PLAN-057 plan_revised 版本 +1，且新 payload 覆盖旧值（SPEC-PLAN-019）', () {
+      final FoldedState state = fold(<Event>[
+        _planCreated('e1', 1000),
+        _planRevised('e2', 2000, planId: 'e1'),
+      ]);
+
+      final Plan plan = state.plans['e1']!;
+      expect(plan.version, 2);
+      expect(plan.schemeId, 'sch-narrow', reason: '重规划换了体系');
+      expect(plan.target.resolved, <String>['py-a', 'py-b']);
+      expect(state.plans.length, 1, reason: '重规划改的是同一份，不是新开一份');
+    });
+
+    test('TC-PLAN-058 plan_revised 指向不存在的计划即抛错，不静默补建（SPEC-FND-014）', () {
+      expect(
+        () => fold(<Event>[_planRevised('e2', 2000, planId: 'ghost')]),
+        throwsFormatException,
+      );
+    });
+
+    test('TC-PLAN-059 同一条创建事件重传只算一次，版本不涨（无 SPEC：event-types.md §一 幂等）', () {
+      final Event created = _planCreated('e1', 1000);
+      final FoldedState state = fold(<Event>[created, created]);
+
+      expect(state.plans['e1']!.version, 1);
+      expect(state.plans.length, 1);
+    });
+
+    test('TC-PLAN-060 spaceId 过滤：别空间的计划折不进来（SPEC-FND-010）', () {
+      final FoldedState state = fold(
+        <Event>[
+          _planCreated('e1', 1000),
+          _planCreated('e2', 2000, spaceId: 'german'),
+        ],
+        spaceId: 'python',
+      );
+
+      expect(state.plans.keys, <String>['e1']);
+      expect(state.plansOf('german'), isEmpty);
     });
   });
 

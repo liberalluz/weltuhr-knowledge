@@ -176,7 +176,9 @@ void main() {
         'version': 1,
       });
       expect(plan.target.count, 3);
-      expect(plan.toJson()['target'], containsPair('count', 3));
+      // 本条原断言是 `containsPair('count', 3)` —— 与测试名「不单独存」直接
+      // 打架：名字说不存，断言说序列化出来带它。`P-6` 把它改成真在验这件事。
+      expect(plan.toJson()['target'], isNot(contains('count')));
     });
   });
 }

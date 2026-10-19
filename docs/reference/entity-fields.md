@@ -166,14 +166,14 @@
 
 | 字段 | 类型 | 说明 |
 |---|---|---|
-| `id` | string | — |
+| `id` | string | = 该计划 `plan_created` 事件的 `id`。**不在 payload 里另写一份**（`event-types.md` §二 B） |
 | `spaceId` | string | **键**。一空间可并存多份 Plan |
 | `spaceVersion` | string | 建计划时的包版本 |
-| `target` | object | `{ selector, resolved[], count }`。**粒度随视距**：Z1 ≈150 项 / Z3 ≈12 项 / Z4 = 1 项 |
+| `target` | object | `{ selector, resolved[] }`。**粒度随视距**：Z1 ≈150 项 / Z3 ≈12 项 / Z4 = 1 项。`count` 是 `resolved.length` 的派生值，**不序列化** |
 | `sourcePolicy` | object | 主源 + 按类型 + 例外，引用 `SourceRef.id` |
 | `schemeId` | string | — |
 | `methodProfileId` | string | — |
-| `version` | int | 重规划时 +1 |
+| `version` | int | 重规划时 +1。**由 `fold` 数该计划名下的事件条数得出**，payload 不写（`event-types.md` §二 B） |
 | `progress` | object | **派生**：`{ learned / total, segments[] }`。分母 = 圈内项数（含未纳入路径的游离项） |
 | `sessions` | object[] | 一组连续的、以项边界（= ⑤ 检验完成）收尾的执行段 |
 
