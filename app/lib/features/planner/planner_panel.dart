@@ -21,6 +21,7 @@ library;
 
 import 'package:flutter/material.dart';
 
+import '../../core/entities/plan.dart';
 import '../../core/pack/pack_parse.dart';
 import '../../core/plan/candidates.dart';
 import '../../core/plan/method_bundle.dart';
@@ -48,6 +49,7 @@ String originLabel(CandidateOrigin origin) => originLabels[origin]!;
 class PlannerPanel extends StatefulWidget {
   const PlannerPanel({
     required this.pack,
+    this.target,
     this.initialSourceId,
     this.initialSchemeId,
     this.initialMethodId,
@@ -55,6 +57,12 @@ class PlannerPanel extends StatefulWidget {
   });
 
   final LoadedPack pack;
+
+  /// 这份计划的范围（`PLAN-016` 的定位结果入口会带窄 `target` 进来）。
+  ///
+  /// **只收窄预览的「项数」，不动「分母」** —— 分母是空间规模（`PLAN-015`）。
+  /// 缺省 = 圈内全量，此时预览与不传 `target` 完全一致。
+  final PlanTarget? target;
 
   /// 重入时预填（`SPEC-PLAN-019`）。预填值若不在候选里，按「需重选」处理。
   final String? initialSourceId;
@@ -177,6 +185,7 @@ class PlannerPanelState extends State<PlannerPanel> {
     final PlannerPreview preview = computePlannerPreview(
       pack: widget.pack,
       schemeId: _schemeId,
+      target: widget.target,
       bundle: _selectedBundle,
     );
 
