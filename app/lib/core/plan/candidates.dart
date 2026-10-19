@@ -29,6 +29,7 @@ import '../enums.dart';
 import '../json.dart';
 import '../pack/pack_parse.dart';
 import 'method_bundle.dart';
+import 'ordering.dart';
 import 'platform_candidates.dart';
 
 /// Planner 的三段。声明顺序即左栏排版顺序（`P-4` 定：体系 → 源 → 方法）。
@@ -84,6 +85,9 @@ class SourceCandidate implements PlanCandidate {
 
   /// 出处等级 `L0` / `L1` / `L2` / `L4`：源段唯一的排序键（`SPEC-PLAN-020`）。
   String get authorityLevel => source.authorityLevel;
+
+  /// 「为何推荐」—— 排序键本身就是理由（`SPEC-PLAN-021` 只做 A 级）。
+  String get reason => '出处等级 $authorityLevel';
 }
 
 class SchemeCandidate implements PlanCandidate {
@@ -92,6 +96,7 @@ class SchemeCandidate implements PlanCandidate {
     required this.coverage,
     required this.origin,
     required this.packVersion,
+    required this.orderCost,
   });
 
   final Scheme scheme;
@@ -106,6 +111,10 @@ class SchemeCandidate implements PlanCandidate {
   /// 包版本：`Scheme` 自身没有版本字段，卡片「版本」一栏取建包版本。
   final String packVersion;
 
+  /// 逆序代价：体系段唯一的排序键（`SPEC-PLAN-020`），同时也是卡片上那行
+  /// 「本序 N 处逆序」的来源（`SPEC-PLAN-012`）。
+  final SchemeOrderCost orderCost;
+
   @override
   String get id => scheme.id;
 
@@ -114,14 +123,17 @@ class SchemeCandidate implements PlanCandidate {
 
   /// 出处等级（`L0` / `L1` / `L2` / `L4`），驱动候选卡的等级徽标。
   String get authorityLevel => scheme.authorityLevel;
+
+  String get reason => orderCost.display;
 }
 
 class MethodCandidate implements PlanCandidate {
-  const MethodCandidate({required this.bundle});
+  const MethodCandidate({required this.bundle, required this.typeCoverage});
 
   final MethodBundle bundle;
 
-  /// 类型覆盖读数由排序笔（`P-3`）算，本笔不抢跑（`SPEC-PLAN-020`）。
+  /// 类型覆盖读数：方法段唯一的排序键（`SPEC-PLAN-020`）。
+  final TypeCoverage typeCoverage;
 
   @override
   String get id => bundle.id;
@@ -131,6 +143,8 @@ class MethodCandidate implements PlanCandidate {
 
   @override
   CandidateOrigin get origin => bundle.origin;
+
+  String get reason => typeCoverage.display;
 }
 
 class CandidateSet {
@@ -140,6 +154,10 @@ class CandidateSet {
     required this.methods,
   });
 
+  /// 三段**都已按各自的键排好序**（`SPEC-PLAN-020`），面板直接按列表顺序渲染。
+  ///
+  /// 排序只重排、不删（`SPEC-PLAN-013`）：逆序多的体系仍在 `schemes` 里，
+  /// 只是靠后。
   final List<SourceCandidate> sources;
   final List<SchemeCandidate> schemes;
   final List<MethodCandidate> methods;
@@ -158,7 +176,7 @@ class CandidateSet {
 
 // ────────────────────────────── 装载 ──────────────────────────────
 
-/// 一次装载三段候选。
+/// 一次装载三段候选，**并各自排好序**（`SPEC-PLAN-020` / `021` 的 A 级）。
 ///
 /// [schemeId] 给出时源候选按「覆盖 > 0」收窄；[sourceId] 给出时体系候选按同样
 /// 规则收窄。两者可同时给出（重入时预填两支）。
@@ -175,19 +193,28 @@ CandidateSet loadCandidates(
   List<MethodBundle> userMethodBundles = const <MethodBundle>[],
 }) {
   final List<String> nodes = _referenceNodes(pack, schemeId);
+  final List<Item> refItems = <Item>[
+    for (final String id in nodes)
+      if (pack.itemOf(id) != null) pack.itemOf(id)!,
+  ];
 
   return CandidateSet(
-    sources: _sources(pack, nodes, schemeId != null, userSources),
-    schemes: _schemes(pack, sourceId, userSchemes),
-    methods: <MethodCandidate>[
-      for (final Origined<MethodBundle> entry in mergeByOrigin<MethodBundle>(
-        platform: platformMethodBundles,
-        pack: const <MethodBundle>[],
-        user: userMethodBundles,
-        idOf: (MethodBundle b) => b.id,
-      ))
-        MethodCandidate(bundle: entry.value),
-    ],
+    sources: stableSorted<SourceCandidate>(
+      _sources(pack, nodes, schemeId != null, userSources),
+      (SourceCandidate a, SourceCandidate b) =>
+          authorityRank(a.authorityLevel) - authorityRank(b.authorityLevel),
+    ),
+    schemes: stableSorted<SchemeCandidate>(
+      _schemes(pack, sourceId, userSchemes),
+      (SchemeCandidate a, SchemeCandidate b) =>
+          a.orderCost.inversions - b.orderCost.inversions,
+    ),
+    methods: stableSorted<MethodCandidate>(
+      _methods(refItems, userMethodBundles),
+      // 覆盖率高者靠前 ⇒ 反向比较。并列（如都覆盖 4/4）回落到声明顺序。
+      (MethodCandidate a, MethodCandidate b) => b.typeCoverage.ratio
+          .compareTo(a.typeCoverage.ratio),
+    ),
   );
 }
 
@@ -281,10 +308,35 @@ List<SchemeCandidate> _schemes(
         coverage: coverage,
         origin: entry.origin,
         packVersion: pack.space.version,
+        orderCost: schemeOrderCost(
+          scheme: scheme,
+          edges: pack.edges,
+          itemById: pack.itemById,
+        ),
       ),
     );
   }
   return out;
+}
+
+/// 方法候选：平台三套组合 + 用户自建（`P-8` 前恒空）。
+///
+/// 类型覆盖**按参照集合算**，所以「同一套方法在这个体系下覆盖 4/4、在那个体系下
+/// 覆盖 2/3」是正常的 —— 排序键就该是当前上下文里的读数。
+List<MethodCandidate> _methods(List<Item> refItems, List<MethodBundle> user) {
+  final List<Origined<MethodBundle>> merged = mergeByOrigin<MethodBundle>(
+    platform: platformMethodBundles,
+    pack: const <MethodBundle>[],
+    user: user,
+    idOf: (MethodBundle b) => b.id,
+  );
+  return <MethodCandidate>[
+    for (final Origined<MethodBundle> entry in merged)
+      MethodCandidate(
+        bundle: entry.value,
+        typeCoverage: methodTypeCoverage(bundle: entry.value, items: refItems),
+      ),
+  ];
 }
 
 /// 源是否属于本空间。**只看 `spaceId`** —— `type` / `layer` / `sixAxis` 在源上
