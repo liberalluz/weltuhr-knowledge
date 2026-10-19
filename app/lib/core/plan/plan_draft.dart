@@ -5,14 +5,14 @@
 /// 两者都调 [resolvePlanScope]。这不是代码复用癖 —— 预览报 12 项而事件里存
 /// 120 项，是同一份计划的两个读数，用户看到哪个都觉得另一个坏了。
 ///
-/// ## `selector` 本笔只落空对象
+/// ## `selector` 的四个取值已由 `P-7` 定下
 ///
-/// `PlanTarget.selector` 存「选择式」（结果会随视图与包版本变），但它的**字段级
-/// 结构规格里还没定** —— Z3 子图、Z4 单项各自怎么表达选择式，归 `SPEC-PLAN-016`
-/// 的三个入口（`P-7`）。本笔只接「整个空间」这一种：空 `selector` = 未按任何
-/// 视图收窄，与 `Z1`（全空间）等价。
+/// `PlanTarget.selector` 存「选择式」（结果会随视图与包版本变）；四种形态
+/// （`space` / `domain` / `item` / `query`）见 [PlanSelector]，解算见
+/// [resolvePlanTarget]。`P-6` 曾只落空对象 —— 那时字段级结构还没定。
 ///
-/// 与其现在编一个 `{kind: …}` 的假 schema 让后面照着抄，不如留空并在这里写清。
+/// [target] 为 `null` 是**测试与构造输入**才走的路径，产品代码不走：三个入口
+/// 都显式给一份 selector（`P-7`）。
 library;
 
 import '../entities/content.dart';
@@ -20,6 +20,7 @@ import '../entities/plan.dart';
 import '../pack/pack_parse.dart';
 import 'method_bundle.dart';
 import 'plan_events.dart';
+import 'plan_target.dart';
 import 'scope.dart';
 
 /// 组装草稿。[target] 给了就沿用它的 `selector`，并把 `resolved` 按当前包

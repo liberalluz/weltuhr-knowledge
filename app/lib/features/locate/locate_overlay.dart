@@ -93,6 +93,9 @@ const Key locateNoticeKey = Key('locate-notice');
 /// 结果区顶部那一行「在全部空间中搜索」（`SPEC-VIEW-031`）。
 const Key locateSearchAllKey = Key('locate-search-all');
 
+/// 定位结果底部的「按此范围建计划」（`SPEC-PLAN-016` 第三入口，`B4` `P-7`）。
+const Key locatePlanHereKey = Key('locate-plan-here');
+
 /// 空间前缀与标题之间的分隔符。抽出来是因为测试要断言「没有它」。
 const String locateSpaceSeparator = ' › ';
 
@@ -121,6 +124,7 @@ class LocateOverlay extends StatefulWidget {
     required this.onPick,
     required this.onPickNear,
     required this.onDismiss,
+    this.onPlanHere,
     this.otherSpaces = const <LoadedPack>[],
     this.scopeSpaceId,
     this.domainId,
@@ -154,6 +158,16 @@ class LocateOverlay extends StatefulWidget {
   final void Function(String itemId) onPickNear;
 
   final VoidCallback onDismiss;
+
+  /// 底部「按此范围建计划」（`SPEC-PLAN-016` 第三入口）。
+  ///
+  /// 交出的是**整次定位结果**，不是某一行的命中：这条入口的语义是「为这一轮
+  /// 搜索圈出的范围建一份计划」，范围由 `query` 唯一确定（`PlanSelector.query`），
+  /// 与用户点了哪一行无关。行内跳转仍走 [onPick]。
+  ///
+  /// `null` = 没有上层接收，按钮不渲染 —— 与 `PlannerPanel.onCreate` 同口径：
+  /// 一个按下没反应的按钮比没有按钮更糟。
+  final void Function(LocateResult result)? onPlanHere;
 
   /// 当前视图的域上下文（选中项所在的域）。只影响分诊的 ③ / ④ 分野
   /// （`VIEW-030`）：知道往哪放才谈得上新增。
@@ -446,20 +460,54 @@ class _LocateOverlayState extends State<LocateOverlay> {
       if (_canWiden) _widenRow(),
       if (result.state == LocateState.located) _directHint(),
     ];
+    // 底部 CTA 只在**至少有一条落点类命中**时出现。
+    //
+    // 筛选类（`LocateKind.axis`）不算：它写的是 `axisFilter`、不换根
+    // （`VIEW-028`），不是范围 —— 只搜到一个轴值时圈不出任何项，给了按钮
+    // 就是「按此范围建一份 0 项的计划」。
+    final bool canPlan =
+        widget.onPlanHere != null &&
+        hits.any((LocateHit hit) => hit.kind != LocateKind.axis);
     return ListView.builder(
       key: locateResultsKey,
       shrinkWrap: true,
       padding: const EdgeInsets.symmetric(vertical: 6),
-      itemCount: hits.length + lead.length,
+      itemCount: hits.length + lead.length + 1,
       itemBuilder: (BuildContext context, int index) {
         if (index < lead.length) {
           return lead[index];
         }
-        final LocateHit hit = hits[index - lead.length];
-        return _row(hit, prefix: ambiguous.contains(hit.label));
+        final int row = index - lead.length;
+        if (row < hits.length) {
+          return _row(hits[row], prefix: ambiguous.contains(hits[row].label));
+        }
+        return canPlan ? _planHere(result) : const SizedBox.shrink();
       },
     );
   }
+
+  /// 「按此范围建计划」（`SPEC-PLAN-016` 第三行）。
+  ///
+  /// 放底部而不是每行一个：这一行说的是「为**这一轮搜索**建计划」，范围是
+  /// 命中集的并，与单行无关。每行各挂一个会让用户以为点了只学那一项。
+  Widget _planHere(LocateResult result) => Padding(
+    padding: const EdgeInsets.fromLTRB(14, 8, 14, 6),
+    child: Align(
+      alignment: Alignment.centerLeft,
+      child: TextButton(
+        key: locatePlanHereKey,
+        onPressed: () => widget.onPlanHere?.call(result),
+        style: TextButton.styleFrom(
+          backgroundColor: paletteSelected,
+          foregroundColor: paletteTextPrimary,
+          minimumSize: const Size(96, 30),
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        ),
+        child: const Text('按此范围建计划', style: TextStyle(fontSize: 12)),
+      ),
+    ),
+  );
 
   /// 「在全部空间中搜索」那一行（`SPEC-VIEW-031`）。
   ///
