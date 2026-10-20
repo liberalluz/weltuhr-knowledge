@@ -7,6 +7,8 @@
 /// 所以本文件只有「包长什么样」与「怎么问文件系统」，零解析逻辑。
 library;
 
+import '../storage/store_fs.dart';
+
 /// 一个知识空间在磁盘上的形态：同目录下 `manifest.json` + `dist/pack.json`。
 ///
 /// `SPEC-PACK-018` 只钉死 `pack.json` 的位置（`<仓根>/content/<空间>/dist/pack.json`），
@@ -30,17 +32,14 @@ class PackLayout {
 
 /// 文件系统接缝 —— 探测与解析只通过它触盘。
 ///
-/// 三件事刻意做成**总函数**（不抛异常）：`isFile` / `listDirs` / `readString`。
+/// 三个读方法刻意做成**总函数**（不抛异常）：`isFile` / `listDirs` / `readString`。
 /// 加载器要回答的第一个问题是「这里为什么没有内容」，而一个从 `dart:io`
 /// 穿出来的 `PathNotFoundException` 只会告诉调用方「挂了」，不会告诉用户
 /// 「少了清单还是少了产物」。读不到一律 `null`，由探测层翻译成具体原因。
-abstract interface class PackFs {
-  /// 是否为**已存在且可读**的普通文件。
-  bool isFile(String path);
-
-  /// 列出一级子目录名（不含路径前缀），**不含**文件。目录不存在时返回空列表。
-  List<String> listDirs(String path);
-
-  /// 读 UTF-8 文本。不存在 / 权限不足 / 非 UTF-8 一律 `null`。
-  String? readString(String path);
-}
+///
+/// **方法声明在 [`StoreFs`](../storage/store_fs.dart)，本接口零方法。**
+/// 原来这里自带三个声明，与存储三区的另外两个区各写一份 —— 加一个读方法要改
+/// 三处，而三处必然分叉。现在只留一个**类型名**：`PackFs` = 「这次读的是内容包」，
+/// 与「这次读的是什么」无关的能力全部在 `StoreFs`。本条不改变任何既有实现的
+/// 义务（三个方法仍须实现），只是把它们收口到一处。
+abstract interface class PackFs implements StoreFs {}

@@ -651,3 +651,18 @@ final RegExp slugPattern = RegExp(r'^[a-z0-9-]+$');
 
 /// 保留段前缀（`path-rules` `P-04`）。
 const String reservedSegmentPrefix = '_';
+
+// ─────────────────── 十五、存储三区（`B13a` 笔 3 · `entity-fields` §〇） ───────────────────
+
+/// 原子写用的临时文件后缀：`pack.json` → `pack.json.tmp0`。
+///
+/// **必须与目标同目录**（同目录才保证同一文件系统、rename 才原子），
+/// 所以它只能是后缀而不是「系统临时目录里的随机名」。
+const String atomicTempSuffix = '.tmp';
+
+/// 事件日志的行分隔（`core/storage/store_fs.dart` 的 `appendLine`）。
+///
+/// 固定 `\n` 而不是 `Platform.lineTerminator`：事件日志是要跨设备同步、要被
+/// 服务端同构解析的**交换格式**，平台差异必须挡在写入侧 —— 否则同一份日志在
+/// Windows 上多出 `\r`，按行哈希或按字节比对的地方全部错位。
+const String eventLogLineBreak = '\n';
