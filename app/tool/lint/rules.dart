@@ -132,10 +132,21 @@ bool _isTestFile(String path) =>
 
 String _normalize(String path) => path.replaceAll(r'\', '/');
 
-/// 事件类与事件存储类的名字（`SPEC-FND-012`）。
+/// 事件类名（`SPEC-FND-012`）。
 const String _eventClassName = 'Event';
-const String _eventStoreClassName = 'EventStore';
 const String _copyWithName = 'copyWith';
+
+/// `EventStore` 与存储三区里的事件区接口（`SPEC-FND-012` · `entity-fields` §〇）。
+///
+/// 名单从单名改成集合，是因为笔 3 立了 `AppendOnlyStoreFs` —— 名字里不带
+/// `Event`，但**同样不许出现改写方法**。只按 `EventStore` 精确匹配的话，新接口
+/// 上长出一个 `clear()` 不会被任何东西拦住，而它恰恰就是「清空历史」的写法。
+/// 不做「名字以 `Store` 结尾」这类启发式：`StoreLayout` 不是 append-only 存储，
+/// 会被误报。
+const Set<String> _appendOnlyClassNames = <String>{
+  'EventStore',
+  'AppendOnlyStoreFs',
+};
 
 /// `EventStore` 上被禁止的方法名 —— 任一出现都意味着「历史可被改写」。
 const Set<String> _forbiddenStoreMethods = <String>{
@@ -303,13 +314,13 @@ class _EventAppendOnlyVisitor extends RecursiveAstVisitor<void> {
   void visitClassDeclaration(ClassDeclaration node) {
     final String name = node.namePart.typeName.lexeme;
 
-    if (name == _eventStoreClassName) {
+    if (_appendOnlyClassNames.contains(name)) {
       for (final ClassMember member in node.body.members) {
         if (member is MethodDeclaration &&
             _forbiddenStoreMethods.contains(member.name.lexeme)) {
           _report(
             member.offset,
-            '`EventStore` 不得有 `${member.name.lexeme}()` —— 历史事件不可修改或删除（`SPEC-FND-012`）',
+            '`$name` 不得有 `${member.name.lexeme}()` —— 历史事件不可修改或删除（`SPEC-FND-012`）',
           );
         }
       }

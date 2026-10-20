@@ -43,3 +43,32 @@ class IllegalNodeSlotError extends ArgumentError {
   final Axis axis;
   final LevelSlot levelSlot;
 }
+
+/// 存储三区的布局不成立（`entity-fields.md` §〇）。
+///
+/// 两种不成立：**根为空**（空根会把整棵树当成一个区，`'{root}/x'` 拼出来是 `/x`）
+/// 与**两区互相包含**。后者不是洁癖：可写区若落在只读区里面，一次原子写就能改写
+/// 分发内容 —— 而「只读分发区」的全部意义是包正文不会被本机的写操作碰到。
+///
+/// 抛错而不是断言：`assert` 在 release 里被剥掉，而三区重叠恰恰是**用户机器上**
+/// 才会出现的形态（自定义数据目录、把数据盘挂在 `/content` 下），开发机上永远
+/// 测不出来。
+class InvalidStoreLayoutError extends ArgumentError {
+  /// 某一区的根为空。
+  InvalidStoreLayoutError.empty(this.zone, this.root)
+    : other = null,
+      super('存储三区的「${zone.name}」根目录为空（归一化后为 `$root`）。');
+
+  /// 两区互相包含。
+  InvalidStoreLayoutError.overlapping(this.zone, this.root, this.other)
+    : super(
+        '存储三区的根目录重叠：`$root`（${zone.name}）与 `$other` 互相包含。'
+        '三区必须物理分离 —— 否则可写区的原子写能落到只读区里。',
+      );
+
+  final StoreZone zone;
+  final String root;
+
+  /// 与 [root] 重叠的另一区根（`empty` 时为 `null`）。
+  final String? other;
+}
