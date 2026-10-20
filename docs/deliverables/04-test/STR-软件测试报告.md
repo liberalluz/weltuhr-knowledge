@@ -1,6 +1,6 @@
 # 软件测试报告（STR）
 
-> **版号**：`v0.30.0` · **记录类**：每轮测试后追加，**旧轮次不删不改**
+> **版号**：`v0.31.0` · **记录类**：每轮测试后追加，**旧轮次不删不改**
 > 本文件记录**每轮实际执行结果**。计划与用例分别在 [`STP`](STP-软件测试计划.md) 与 [`STD`](STD-软件测试说明.md)。
 
 ## 修订历史
@@ -34,6 +34,7 @@
 | `v0.27.0` | 2026-10-19 | 新增**轮次 `R14i`**：`P-7` 三入口与范围的选择式的沙箱内自验证（**623 passed** · analyze 0 · lint 123 文件 0 违规 · `check.dart` 0 处：首跑 **6 处**，`D2` ×4（`SCMP` §5.1 追加新行未删旧行，该表每份文件只认一行）+ `D4` ×2（§4.1 覆盖增量算漏 `PLAN-016` / `017`，实为 +3 不是 +1），全属本笔自家缺陷，已修）。⚠️ **笔序表写三个入口，实际只有一个半做得了** —— 进展视图「新建计划」的宿主全仓不存在（`ViewMode.progress` 零引用，规格 `QUANT-011`、属 `B6`），本笔不挂空回调。⚠️ **两处规格缺口由本笔定下**：`target.selector` 的四值判别式联合（新增 `SPEC-PLAN-022`）、`PLAN-017` 的承载形态 = 一整页路由。⚠️ **四处独立反证**红 1 / 1 / 2 / 1；其中反证 1 第一次**没红是因为补丁没落进文件**（`python` 的替换遇 CRLF 静默不改）—— 没红要先确认补丁生效。⚠️ 三处实现坑：同一 `testWidgets` 换档不生效（`initialZoom` 只读一次）、取消路径不能判「widget 还在树上」（有常驻帧，判 `canPop()`）、`TC-PLAN-047`–`061` 已被 `P-6` 占用（本笔重编为 `062`–`078`） |
 | `v0.28.0` | 2026-10-19 | 新增**轮次 `R14j`**：`P-8` 三段「+ 自建」与重入复用的沙箱内自验证（**643 passed** · analyze 0 · lint 127 文件 0 违规 · `check.dart` 0 处：首跑 **4 处**，全是 `D3` / `D4` 的本笔读数滞后，不涉及判据）。⚠️ **本笔首个红是「自建体系一选中就抛」**：`loadCandidates` 的 `_referenceNodes` 仍直接问 `pack.schemeNodes`，自建体系不在包里 ⇒ 把节点查找收成公开的 `schemeNodesOf`（`core/plan/scope.dart`），`scope` 与 `candidates` 共用一份。⚠️ **源的自建只能「登记」**：覆盖算 `Item.sourceRefs` 命中数，客户端反向写不了 ⇒ 恒 0，已选体系时被筛掉并标「需重选」，不做特例。⚠️ **两处旧口径顺手澄清**：`itemTypeLabels` / `layerLabels` 由 `detail_panel.dart` 的私有副本上收到 `core/constants.dart`（与 `sixAxisLabels` 同族）；`PLAN-019` 的 `version + 1` 早被 `P-6` 推翻，本笔只补 `revising` 入参与 `planId` 同源。 |
 | `v0.29.0` | 2026-10-19 | 新增**轮次 `R14k`**：`B4-R` 终端界面走查修正的沙箱内自验证（**647 passed** · analyze 0 · lint 127 文件 0 违规 · `check.dart` 分两层报：从 **4 处** → **3 处** → **0 处**）。⚠️ **走查的八条里两处是真缺陷**：自建源建完即消失（`_select` → `_reload` 筛掉 → `_dropChecks` 清空三步连环）· 覆盖 0 的自建源凭空消失；另两处可用性（④ 确认固定底部 · 720 断点堆叠）、一处文案、一处数据缺口登记（`english` / `german` `excerpts = 0`）、两处未修登记。**六处独立反证各红 1 条、无连坐**。⚠️ `check.dart` 的两层报错都是**本笔读数滞后**，不是判据问题 —— 补完一层又浮一层，与 `P-8` 那次同型。`STD` 升 `v0.52.0` · `STP` 升 `v0.50.0` · `SCMP` 升 `v0.55.0` |
+| `v0.31.0` | 2026-10-20 | 新增**轮次 `R15a`**：`B13a` 笔 1（`Node` 按槽位两分）的沙箱内自验证 —— `flutter test` **668 passed**（647 → 668，9 单元 + 12 架构）· analyze 0 · lint 129 文件 0 违规 · docs 0 违规 0 警告；**四处独立反证各红 1 条、无连坐**（`R6`/`R7`/`R8`/`R9` 逐条破坏后各只报 1 处） |
 | `v0.30.0` | 2026-10-19 | 新增**轮次 `R14l`**：`english` / `german` 补源摘录与 `sourceRefs` 的数据侧自验证（**647 passed**（持平，本笔不动 Dart 代码）· analyze 0 · lint 127 文件 0 违规 · `check.dart` 0 处 · `verify.py --suite` **40 个 `[ok]`** · 错误码覆盖 **37/37**）。⚠️ **探清一件事：只补 `excerpts` 解不开死锁** —— 覆盖 = `Item.sourceRefs` ∩ 体系节点，两包 80 项全为 `[]` ⇒ 源再多覆盖也是 0；必须**写源 + 逐项回填 `sourceRefs`** 两步。⚠️ **首周体系那一列是真检查项**：两包各有第二套体系（24 节点），某条源若在其下覆盖 0 就会被筛掉 —— 全量体系齐、换首周少一条，正是走查里那类组合缺陷；六条源最小 3 / 24。**界面侧未验**（仍待终端走查）。`SCMP` 升 `v0.56.0` |
 
 ---
@@ -1468,6 +1469,44 @@
 - **百科源的等级是补的裁定**：`L4` 在方法论里是「社区聚合与索引、禁作结论来源」，把协作百科归进去会自相矛盾，故记 `L2` 并在 `content/README.md` 标**待评审**。
 - **每条源的段数不均**（Cambridge 5 段、ELT 2 段）：段数按「该源真正讲到的章节」定，没有凑数。
 - `python` 包**未动**（4 条源、150 项全覆盖，本来就正常）。
+
+### 轮次 `R15a` · 2026-10-20 · `B13a` 笔 1（`Node` 按槽位两分）的**沙箱内自验证**
+
+| 项 | 填什么 |
+|---|---|
+| 环境 | **沙箱**（`flutter test` · `flutter analyze` · `dart run tool/lint/check.dart` · `dart run tool/docs/check.dart`） |
+| 触发 | `ADR-0007` 落地首笔：`Node` 变 `sealed`、`StructuralNode` / `LearnableNode` 两分、12 对合法槽位进静态表、`R6`–`R9` 四条形态检查 |
+| 观测方式 | 全套回归 + 四条规则**逐条反证**（破坏真实源码 → 只跑 lint → 还原） |
+| 结论 | 全绿；四条规则各红 **1** 条、互不连坐 ⇒ 一条规则只锁一件事 |
+| ⚠️ 未验 | **消费侧迁移（笔 4–5）未开始** —— 本笔只立地基，`Item` 仍在、47 个引用点未动；**三元校验器与 JSON 原子写（笔 2–3）也未开始**，`B13a` 出口「旧实体零残留」远未达成 |
+
+**读数**
+
+| 检查 | 结果 |
+|---|---|
+| `flutter test` | **668 passed**（647 → 668：`node_test` 9 条 + `rules_test` 12 条） |
+| `flutter analyze` | **0 issue**（首轮有 1 条 `use_super_parameters` info，见下） |
+| `dart run tool/lint/check.dart` | **129 文件 0 违规**（127 → 129） |
+| `dart run tool/docs/check.dart` | **0 处违规 · 0 处警告** |
+
+**四条反证（各红 1 条，无连坐）**
+
+| 反证 | 报了什么 |
+|---|---|
+| 给 `StructuralNode` 加 `final Layer? layer;` | `node.dart:79 [R6]` —— 1 条 |
+| 把 `LearnableNode.layer` 改成 `Layer?` | `node.dart:111 [R7]` —— 1 条 |
+| 追加 `Node probeNode() => Node();` | `node.dart:146 [R8]` —— 1 条 |
+| 给 `Node` 加 `final String? path;` | `node.dart:23 [R9]` —— 1 条 |
+
+每条改完立刻还原，末次复查回到「129 文件 0 违规」。**这是本笔最有价值的读数**：若两条反证红到同一批用例，那批用例只是同一件事的重复观测。
+
+**`use_super_parameters` 那一条 info 没有用 `// ignore` 压掉**
+
+首轮 analyze 报：`LearnableNode` 的十个转发参数「could be super parameters」。但 `levelSlot` 必须由本类钉死为 `planet`，而 Dart 不允许「super 形参 + 显式 super 调用」并存。仓里**没有任何 `// ignore` 先例**，与其开一个压制口子，不如把 `levelSlot` 从基类字段改成**抽象 getter**：`StructuralNode` 用自己的 `final levelSlot` 实现（槽位对它是数据），`LearnableNode` 用 `get levelSlot => LevelSlot.planet`（槽位对它是类型的一部分）。这样参数**在签名里根本不存在** —— 不是「被校验住」，是「不存在」。已回写 `ADR-0007` 决策 1。
+
+**`R8` 首跑漏了一条：`Node(...)` 在 AST 里不是构造表达式**
+
+`Node(...)` 不带 `new` / `const` 时，analyzer 14 解析成 **`MethodInvocation`**（解析期分不清构造函数与同名函数），只有 `new Node()` 才是 `InstanceCreationExpression`。首跑因此漏掉最常见写法，被 `TC-INF-032` 当场抓住。规则现在两条路径都看，`Node.create()` 这类带目标的调用不算。
 
 ### 轮次格式（新增时照此填）
 

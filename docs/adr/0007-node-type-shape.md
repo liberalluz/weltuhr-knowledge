@@ -92,6 +92,14 @@ final class LearnableNode extends Node {
 
 `LearnableNode` 的 `levelSlot` 由构造函数固定，不开放给调用方 —— 它只有一个合法值，开放就等于留一个能写错的口子。
 
+> **实现修订（`B13a` 笔 1，2026-10-20）**：`levelSlot` 落地为**抽象 getter**，而不是上面片段里的基类字段。
+> 原因就是上一句话本身 —— 基类字段必然是构造函数参数，`LearnableNode` 就得接收它、再在构造体里
+> 校验「必须是 `planet`」，那正是「开放了、但希望你别传错」。改成 getter 后：`StructuralNode`
+> 用自己的 `final LevelSlot levelSlot` 提供实现（槽位对它是**数据**，五种），`LearnableNode` 用
+> `LevelSlot get levelSlot => LevelSlot.planet`（槽位对它是**类型的一部分**）。**参数在签名里根本不存在**，
+> 这条口子不是「被校验住」，而是「不存在」。字段集不变，`node.levelSlot` 的读法也不变。
+
+
 ### 2. 派生字段不成为字段
 
 台账标「派生」的三项，**不作为 `Node` 的成员**，改为纯函数：
@@ -125,6 +133,13 @@ bool isWritable(Scope scope) => scope == Scope.s4;  // S0-S3 来自包或治理�
 | `occupation` | `supercluster` · `group` · `galaxy` · `cluster` · `star` | 5 |
 
 这张表在代码里是 `const Set<(Axis, LevelSlot)>`，`StructuralNode` 构造时校验、反序列化时也走同一处。**这是唯一一处允许在运行期抛错的类型约束** —— 因为它在编译期无法表达（轴是运行期读取的数据，不是类型参数）。
+
+> **实现修订（`B13a` 笔 1，2026-10-20）**：本表只覆盖**骨架**五槽位，`system`（行星系）不在其中 ——
+> 它是载荷容器，轴继承自父恒星，三轴都合法。上面「结构节点 = 五槽位之一」漏了 `system`，
+> 而它确实属 `StructuralNode`（没有 `type` / `layer` / `requirements`）。落地口径因此是
+> **「`system` 放行 ∨ 命中 12 对表」**，而不是把 `system` 补进表里做成 15 对：
+> 列进表里的后果是每新增一级载荷容器都要回来改表，而「不限轴」只需一个判断。
+> 枚举里 `LevelSlot` 共七值（五骨架 + `system` + `planet`）。
 
 ## 被否方案
 

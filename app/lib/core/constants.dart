@@ -595,3 +595,35 @@ const double governorSlowRadiusPx = 60;
 /// `B10` 登录后由真实账号取代，**既有事件不批量改写** —— 认领靠新增
 /// `identity_adopted` 事件（`SPEC-ACC-014`）。
 const String localDefaultUserId = 'local';
+
+// ──────────────────────── 十三、节点槽位合法性（`B13a`） ────────────────────────
+
+/// 骨架**结构节点**的 `(axis, level_slot)` 合法对 —— **12 对**，不是 8×3 = 24。
+///
+/// `ADR-0007` 决策 4：三轴占用的槽位不同，所以合法组合不是全笛卡尔积。
+/// 学科轴只到 `star`（研究生目录只到一级学科，二级由学位授予单位自设，
+/// 不存在全国统一目录）⇒ 它跳过 `galaxy` 与 `cluster`；角色轴多出 `cluster`（小类）。
+///
+/// ⚠️ **`system`（行星系）不在本表内，且不是漏写**：它是载荷容器，轴继承自父恒星，
+/// 三种轴都合法，所以「不限轴」比「列进表里」更准确 —— 两者的区别在恒星之下
+/// 新增一级载荷时该怎么办：列进表里要回来改表，不限轴则一个新槽位都不动。
+/// `StructuralNode` 的校验因此是「`system` 放行 ∨ 命中本表」。
+///
+/// 这张表也是**唯一的放行清单**：不在表里的组合，构造即抛 [IllegalNodeSlotError]。
+const Set<(Axis, LevelSlot)> legalSkeletonSlots = <(Axis, LevelSlot)>{
+  // 学科轴：超星系团 → 星系群 → 恒星（跳过星系与星团）
+  (Axis.discipline, LevelSlot.supercluster),
+  (Axis.discipline, LevelSlot.group),
+  (Axis.discipline, LevelSlot.star),
+  // 专业轴：超星系团 → 星系群 → 星系 → 恒星
+  (Axis.major, LevelSlot.supercluster),
+  (Axis.major, LevelSlot.group),
+  (Axis.major, LevelSlot.galaxy),
+  (Axis.major, LevelSlot.star),
+  // 角色轴：超星系团 → 星系群 → 星系 → 星团 → 恒星
+  (Axis.occupation, LevelSlot.supercluster),
+  (Axis.occupation, LevelSlot.group),
+  (Axis.occupation, LevelSlot.galaxy),
+  (Axis.occupation, LevelSlot.cluster),
+  (Axis.occupation, LevelSlot.star),
+};
