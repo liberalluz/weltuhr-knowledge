@@ -1,4 +1,4 @@
-/// `tool/docs` 五条规则的回归。
+/// `tool/docs` 六条规则的回归。
 ///
 /// 为什么检查器要自测：规则自己改错了会**静默失效** —— 工具跑绿、人以为文档
 /// 自洽、实际什么都没查。本笔就撞过两次：`D1` 在转义反引号处截断名字（5 条假红）、
@@ -74,8 +74,38 @@ Map<String, String> _tests() => <String, String>{
       'app/test/a_test.dart': "test('甲', () {});\ntest('乙', () {});\n",
     };
 
-List<DocIssue> _run(Map<String, String> docs, {Map<String, String>? tests}) =>
-    checkAll(DocContext(docs: docs, tests: tests ?? _tests()));
+List<DocIssue> _run(
+  Map<String, String> docs, {
+  Map<String, String>? tests,
+  Map<String, String> markdown = const <String, String>{},
+  Set<String> repoPaths = const <String>{},
+}) => checkAll(
+      DocContext(
+        docs: docs,
+        tests: tests ?? _tests(),
+        markdown: markdown,
+        repoPaths: repoPaths,
+      ),
+    );
+
+/// `D6` 的夹具：一份位于 `docs/a/note.md` 的文档，与它「周围真实存在」的路径集。
+///
+/// 路径集刻意包含**目录**（`docs/reference`）：链接指向目录是合法写法，只收文件
+/// 会把这类判成坏链 —— 这条约定由 `TC-DOC-016` 守住。
+Set<String> _repoPaths() => <String>{
+      'docs',
+      'docs/a',
+      'docs/a/note.md',
+      'docs/a/target.md',
+      'docs/reference',
+      'docs/reference/path-rules.md',
+    };
+
+List<DocIssue> _runLinks(String body) => _run(
+      _docs(),
+      markdown: <String, String>{'docs/a/note.md': body},
+      repoPaths: _repoPaths(),
+    );
 
 /// 把某份文档里的一段替换掉。夹具用，`old` 必须唯一存在。
 Map<String, String> _patch(Map<String, String> docs, String file, String old, String now) {
@@ -275,6 +305,62 @@ void main() {
       expect(d5, hasLength(1));
       expect(d5.single.isWarning, isTrue);
       expect(d5.single.message, contains('唯一登记处'));
+    });
+  });
+
+  group('D6 相对链接', () {
+    test('TC-DOC-016 指向存在的文件或目录都不报（无 SPEC：检查器规则）', () {
+      // 同目录目标、上跳到另一个目录、以及**指向目录**（`../reference/` → `docs/reference`，
+      // 路径集里有这个目录但没有「同名文件」）三种合法形态。
+      final List<DocIssue> issues = _runLinks(
+        '见 [同目录](target.md)、[目录](../reference/)、'
+        '[带锚点](target.md#三) 与 [本文档](#一)。\n',
+      );
+      expect(issues, isEmpty);
+    });
+
+    test('TC-DOC-017 指向不存在的文件就报，并把解析后的路径写进消息（无 SPEC：检查器规则）', () {
+      final List<DocIssue> issues = _runLinks('见 [坏](missing.md)。\n');
+      expect(issues, hasLength(1));
+      expect(issues.single.ruleId, 'D6');
+      expect(issues.single.line, 1);
+      expect(issues.single.message, contains('missing.md'));
+      expect(issues.single.message, contains('docs/a/missing.md'),
+          reason: '只报原文不够 —— 得说清它被解析成了什么，才能判断是写错还是判断错');
+    });
+
+    test('TC-DOC-018 少一层上跳会解析到错误目录（本仓真实踩过的形态，无 SPEC：检查器规则）', () {
+      // 真实事故：`docs/deliverables/01-plan/` 下写 `../design/00-index.md`，
+      // 以为是 `docs/design/`，实际解析成 `docs/deliverables/design/`。
+      // 这里用同样的错法复现：从 `docs/a/note.md` 写 `../target.md`。
+      final List<DocIssue> issues = _runLinks('见 [坏](../target.md)。\n');
+      expect(issues, hasLength(1));
+      expect(issues.single.message, contains('解析为 `docs/target.md`'),
+          reason: '若实现少退一层（当成 `docs/a/target.md`）本例不报，就验不出这条');
+    });
+
+    test('TC-DOC-019 上跳越过仓库根单独报，不与「文件不存在」混为一谈（无 SPEC：检查器规则）', () {
+      final List<DocIssue> issues = _runLinks('见 [坏](../../../outside.md)。\n');
+      expect(issues, hasLength(1));
+      expect(issues.single.message, contains('越过仓库根'));
+    });
+
+    test('TC-DOC-020 外链 / 锚点 / 站内绝对路径 / 围栏内 / 行内代码里的链接一律不校验（无 SPEC：检查器规则）', () {
+      // 五类都放**坏**目标：只要实现漏掉任何一类过滤，这里就会红。
+      final List<DocIssue> issues = _runLinks(
+        '[外链](https://example.com/none.md) · [邮件](mailto:a@b.c) · '
+        '[锚点](#三) · [站内绝对](/docs/none.md)\n'
+        '\n'
+        '```dart\n'
+        '[示例](nowhere.md)\n'
+        '```\n'
+        '\n'
+        '正文里描述链接语法时要写 `[参考层](reference/)` 这种形态，它不是真链接。\n'
+        // 多反引号定界：描述「链接文本里带反引号」时就是这个写法。单反引号的正则
+        // 会剥成半截、剩下 `](y)` 被当真链接 —— 实跑在 `STR` 里踩过一次。
+        '带反引号的链接文本写成 `` [`x`](y) `` 才对。\n',
+      );
+      expect(issues, isEmpty, reason: '围栏与行内代码里贴示例是常态，校验它只会制造假红');
     });
   });
 }
