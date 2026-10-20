@@ -1,9 +1,25 @@
 # VIEW · 宇宙与视图
 
+> ## ⛔ 本卷整体作废（2026-10-20）
+>
+> **本卷 40 条 `SPEC-VIEW-*` 不再作为实施依据，正文原样保留以便回溯与抢救。**
+>
+> **失效依据**：[`ADR-0005`](../adr/0005-three-axis-tree-replaces-six-axis.md) 决策 3（三轴七级容器树取代五档径向投影）· [`ADR-0006`](../adr/0006-3d-rendering-stack-and-visual-style.md)（渲染栈定为 `flutter_scene`，视觉四决策重定）。
+>
+> **为什么整卷作废而不是逐条改**：本卷的地基是「五档视距 `Z0`–`Z4` + 六通道两叠加 + 三视图投影」，这三样在新本体下**全部不存在**。`Z0`–`Z4` 在本卷出现 **258 处**，逐条改等于重写；而新规格要写「3D 宇宙 + 容器树双视图怎么定义」，那依赖 `B17` 的设计 —— **现在写就是再猜一次**，正是 `R-19` 的成因。
+>
+> **唯一可抢救的部分**：§树的四类行（`VIEW-006` 附近的树缩进与行类型）与 `VIEW-014`「点星 ⇒ 详情」的分派原则，可给 `B17a`（容器树七级）作输入。抢救时**重新裁定，不继承编号**。
+>
+> **现在该读哪儿**：字段与实体 → [`../reference/entity-fields.md`](../reference/entity-fields.md)；容器轴与深度 → [`../reference/skeleton-catalog.md`](../reference/skeleton-catalog.md)；为什么换 → `ADR-0005` / `0006`。
+>
+> **清偿状态**：见 [`00-index`](00-index.md) §二.1。
+
 > **前置阅读**：[FND](FND-foundation.md)。通道编码的数值一律见 [`../reference/channel-table.md`](../reference/channel-table.md)。
 > **明确不管**：掌握度怎么算（→ [QUANT](QUANT-quantification.md)）· 笔记内容与版本（→ [NOTE](NOTE-notes.md)）· 定位后的规划（→ [PLAN](PLAN-planning.md)）。
 
 ---
+
+<!-- 以下为 2026-10-20 之前的正文，已整体作废，仅作回溯。不得据它开工。 -->
 
 ## 一、视距
 
