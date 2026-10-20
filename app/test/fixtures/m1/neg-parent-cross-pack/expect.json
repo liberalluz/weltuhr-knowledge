@@ -1,0 +1,6 @@
+{
+  "base": "m1",
+  "exit": 1,
+  "codes": ["E-PARENT-CROSS-PACK"],
+  "note": "唯一缺陷：`var` 的 parent_id 直接写成 `skeleton:major/080901`，绕过 `minimal-pack.md` §4.1 的「`attach_to` 物化为唯一一条跨包主父」规则。后果具体：卸载本包时要么拆掉骨架节点、要么留下悬空父链，两个都不可接受（P-15 / entity-fields §3）。跨包只允许 `attach_to` 申报的那一个方向。"
+}

@@ -1,0 +1,137 @@
+{
+  "plugin_id": "m1-demo",
+  "name": "M1 最小示例包",
+  "version": "1.0.0",
+  "kinds": [
+    "payload"
+  ],
+  "namespace": "m1-demo",
+  "schema_version": 1,
+  "skeleton_requires": ">=1.0.0 <2.0.0",
+  "deps": [],
+  "license": "MIT",
+  "author": "weltuhr",
+  "origin": "fixture",
+  "review_state": "approved",
+  "signature": null,
+  "axes": [
+    "major"
+  ],
+  "payload": {
+    "attach_to": "skeleton:major/080901",
+    "subtree_root": "system",
+    "level_range": [
+      "system",
+      "planet"
+    ],
+    "counts": {
+      "star": 0,
+      "system": 1,
+      "planet": 2
+    },
+    "official_code_coverage": false,
+    "path_reservations": [
+      {
+        "parent_id": "skeleton:major/080901",
+        "slug": "cs-core"
+      }
+    ],
+    "sources": [],
+    "schemes": [],
+    "has_steps": false,
+    "has_criteria": false,
+    "has_quiz": false,
+    "quiz_types": [],
+    "est_minutes_coverage": 0
+  },
+  "nodes": [
+    {
+      "id": "m1-demo:cs-core",
+      "axis": "major",
+      "level_slot": "system",
+      "official_code": null,
+      "name": "计算机核心",
+      "slug": "cs-core",
+      "scope": "S1",
+      "pack_id": "m1-demo",
+      "status": "live",
+      "tags": [],
+      "catalog_refs": []
+    },
+    {
+      "id": "m1-demo:var",
+      "axis": "major",
+      "level_slot": "planet",
+      "official_code": null,
+      "name": "变量与绑定",
+      "slug": "same",
+      "scope": "S1",
+      "pack_id": "m1-demo",
+      "status": "live",
+      "tags": [],
+      "catalog_refs": [],
+      "type": "declarative",
+      "layer": "persistent",
+      "requirements": {
+        "boundary": "present",
+        "justification": "present",
+        "proposition": "present",
+        "relation": "present",
+        "how": "present",
+        "tacit": "missing"
+      }
+    },
+    {
+      "id": "m1-demo:func",
+      "axis": "major",
+      "level_slot": "planet",
+      "official_code": null,
+      "name": "函数",
+      "slug": "same",
+      "scope": "S1",
+      "pack_id": "m1-demo",
+      "status": "live",
+      "tags": [],
+      "catalog_refs": [],
+      "type": "procedural",
+      "layer": "persistent",
+      "requirements": {
+        "boundary": "present",
+        "justification": "present",
+        "proposition": "present",
+        "relation": "present",
+        "how": "present",
+        "tacit": "missing"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "type": "parent",
+      "child_id": "m1-demo:cs-core",
+      "parent_id": "skeleton:major/080901",
+      "kind": "main"
+    },
+    {
+      "type": "parent",
+      "child_id": "m1-demo:var",
+      "parent_id": "m1-demo:cs-core",
+      "kind": "main"
+    },
+    {
+      "type": "parent",
+      "child_id": "m1-demo:func",
+      "parent_id": "m1-demo:cs-core",
+      "kind": "main"
+    },
+    {
+      "type": "prerequisite",
+      "from_id": "m1-demo:var",
+      "to_id": "m1-demo:func",
+      "strength": "required"
+    }
+  ],
+  "entries": [],
+  "sources": [],
+  "schemes": []
+}
