@@ -1,0 +1,14 @@
+{
+  "base": null,
+  "exit": 0,
+  "codes": [],
+  "note": "正例基线：3 节点（1 system + 2 planet）· 4 边（3 parent main + 1 prerequisite required）· 2 entry。所有反例以此为准、只改一处。骨架父 path 由 skeletonPaths 注入 —— 笔 2 用此常量，B13b 起换真骨架、接口不变（见 minimal-pack.md §4.2）。paths 是 pathOf 的期望输出，也是三元里 path 一元的唯一断言形式。",
+  "skeletonPaths": {
+    "skeleton:major/080901": "major/08/0809/080901"
+  },
+  "paths": {
+    "m1-demo:cs-core": "major/08/0809/080901/cs-core",
+    "m1-demo:var": "major/08/0809/080901/cs-core/var",
+    "m1-demo:func": "major/08/0809/080901/cs-core/func"
+  }
+}

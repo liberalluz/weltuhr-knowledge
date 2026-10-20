@@ -1,0 +1,6 @@
+{
+  "base": "m1",
+  "exit": 1,
+  "codes": ["E-ID-DUP"],
+  "note": "唯一缺陷：`func` 的 id 与 `var` 都写成 `m1-demo:var`。id 是唯一锚点，重复会让「这条事件属于哪一项」变成两解（P-07 的 id 侧）。edges 里对 `m1-demo:func` 的引用因此悬空 —— 但 `id 唯一` 早于 `父链可达`，fail-fast 只报本码，这正是校验顺序必须固定的理由。"
+}

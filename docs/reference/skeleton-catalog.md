@@ -1,7 +1,7 @@
 # 骨架数据规格
 
 > **本文件是骨架数据集的唯一权威处**：三轴用哪份目录、各层取什么条目、节点如何编号与定位、体积预算。
-> 其余文档一律引用不复制。包的装载与 manifest 字段见 [`entity-fields.md`](entity-fields.md) §1，path 的 16 条规则见插件标准，本文件不复述。
+> 其余文档一律引用不复制。包的装载与 manifest 字段见 [`entity-fields.md`](entity-fields.md) §1；path 的 16 条规则见 [`path-rules.md`](path-rules.md)（`2026-10-20` 成文 —— 此前四份文档都写「见插件标准」，而该文档不存在），本文件不复述。
 > 定位：`B13b` 的输入规格。**本文件定稿后 `B13b` 才可开工**（`SDP` §4.2）。`B13a`（实体层）不依赖本文件 —— 这也是 `B13` 拆两半的理由。
 
 ## 一、什么是骨架
@@ -66,7 +66,7 @@
 |---|---|
 | `id` | `<axis>/<official_code>`；无官方码时用 `<axis>/<slug>`。骨架层一律有官方码 ⇒ **骨架 id 全部由码构成** |
 | `axis` | `discipline` / `major` / `role` —— 三个轴根即 `/discipline`、`/major`、`/role`，同时消解 path 冲突 |
-| `path` | 位置，由父级 `path` + 本段 slug 拼成；同父唯一；slug 为 kebab-case。16 条规则见插件标准，本文件不复述 |
+| `path` | 位置，由父级 `path` + 本段 slug 拼成；同父唯一；slug 为 kebab-case。16 条规则见 [`path-rules.md`](path-rules.md)，本文件不复述 |
 | `URI` | = `path` |
 | `official_code` | 官方代码原样存储（含前导零，如 `0812`）；**不得转成数字** |
 | `level_slot` | 取 §三 表；**存槽位名，不存层号** |
