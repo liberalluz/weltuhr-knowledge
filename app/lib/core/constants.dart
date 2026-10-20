@@ -627,3 +627,27 @@ const Set<(Axis, LevelSlot)> legalSkeletonSlots = <(Axis, LevelSlot)>{
   (Axis.occupation, LevelSlot.cluster),
   (Axis.occupation, LevelSlot.star),
 };
+
+// ─────────────────── 十四、id / path 三元（`B13a` 笔 2 · `path-rules`） ───────────────────
+
+/// 骨架节点 id 的前缀（`entity-fields` §2）：`skeleton:{local_id}`。
+///
+/// 它与 `{plugin_id}:{local_id}` 是**两条命名空间**：骨架全量内置、不走插件，
+/// 所以它没有 `plugin_id`。「这个 id 属于骨架还是载荷」在三元校验里是一等判据
+/// （`P-15` 跨包边界、`attach_to` 的唯一例外），故前缀进常量表而不是散在比较里。
+const String skeletonNodePrefix = 'skeleton:';
+
+/// `{plugin_id}:{local_id}` 与骨架前缀共用的命名空间分隔符。
+const String idNamespaceSeparator = ':';
+
+/// `path` 段的分隔符（`path-rules` `P-02`）。**无前后导斜杠**。
+const String pathSeparator = '/';
+
+/// `slug` 的合法字符集（`path-rules` `P-04`）。
+///
+/// **`_` 不在其中**：下划线开头的段是**保留段**（如 `_extra`），只允许系统生成、
+/// 作者不可自取。保留与普通因此在字符层面就能区分，不必再维护一份保留字清单。
+final RegExp slugPattern = RegExp(r'^[a-z0-9-]+$');
+
+/// 保留段前缀（`path-rules` `P-04`）。
+const String reservedSegmentPrefix = '_';
