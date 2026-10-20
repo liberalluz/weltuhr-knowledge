@@ -1,0 +1,251 @@
+{
+  "plugin_id": "m1-demo",
+  "name": "M1 最小示例包",
+  "version": "1.0.0",
+  "kinds": ["payload"],
+  "namespace": "m1-demo",
+  "schema_version": 1,
+  "skeleton_requires": ">=1.0.0 <2.0.0",
+  "deps": [],
+  "license": "MIT",
+  "author": "weltuhr",
+  "origin": "fixture",
+  "review_state": "approved",
+  "signature": null,
+  "axes": ["major"],
+  "payload": {
+    "attach_to": "skeleton:major/080901",
+    "subtree_root": "system",
+    "level_range": ["system", "planet"],
+    "counts": { "star": 0, "system": 1, "planet": 2 },
+    "official_code_coverage": false,
+    "path_reservations": [
+      { "parent_id": "skeleton:major/080901", "slug": "cs-core" }
+    ],
+    "sources": ["m1-tutorial"],
+    "schemes": ["m1-scheme"],
+    "has_steps": true,
+    "has_criteria": true,
+    "has_quiz": true,
+    "quiz_types": ["choice"],
+    "est_minutes_coverage": 1.0
+  },
+  "nodes": [
+    {
+      "id": "m1-demo:cs-core",
+      "axis": "major",
+      "level_slot": "system",
+      "official_code": null,
+      "name": "计算机核心",
+      "slug": "cs-core",
+      "scope": "S1",
+      "pack_id": "m1-demo",
+      "status": "live",
+      "tags": [],
+      "catalog_refs": []
+    },
+    {
+      "id": "m1-demo:var",
+      "axis": "major",
+      "level_slot": "planet",
+      "official_code": null,
+      "name": "变量与绑定",
+      "slug": "var",
+      "scope": "S1",
+      "pack_id": "m1-demo",
+      "status": "live",
+      "tags": [],
+      "catalog_refs": [],
+      "type": "declarative",
+      "layer": "persistent",
+      "requirements": {
+        "boundary": "present",
+        "justification": "present",
+        "proposition": "present",
+        "relation": "present",
+        "how": "present",
+        "tacit": "missing"
+      }
+    },
+    {
+      "id": "m1-demo:func",
+      "axis": "major",
+      "level_slot": "planet",
+      "official_code": null,
+      "name": "函数",
+      "slug": "func",
+      "scope": "S1",
+      "pack_id": "m1-demo",
+      "status": "live",
+      "tags": [],
+      "catalog_refs": [],
+      "type": "procedural",
+      "layer": "persistent",
+      "requirements": {
+        "boundary": "present",
+        "justification": "present",
+        "proposition": "present",
+        "relation": "present",
+        "how": "present",
+        "tacit": "missing"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "type": "parent",
+      "child_id": "m1-demo:cs-core",
+      "parent_id": "skeleton:major/080901",
+      "kind": "main"
+    },
+    {
+      "type": "parent",
+      "child_id": "m1-demo:var",
+      "parent_id": "m1-demo:cs-core",
+      "kind": "main"
+    },
+    {
+      "type": "parent",
+      "child_id": "m1-demo:func",
+      "parent_id": "m1-demo:cs-core",
+      "kind": "main"
+    },
+    {
+      "type": "prerequisite",
+      "from_id": "m1-demo:var",
+      "to_id": "m1-demo:func",
+      "strength": "required"
+    }
+  ],
+  "entries": [
+    {
+      "node_id": "m1-demo:var",
+      "summary": "把名字绑到值上，并在需要时重新绑定。",
+      "outcomes": ["能说明赋值语句做了什么", "能区分名字与对象"],
+      "resources": [
+        {
+          "kind": "规范",
+          "title": "The Python Tutorial §7.2",
+          "url": "https://docs.python.org/3/tutorial/introduction.html",
+          "license": "PSF-2.0",
+          "lang": "en"
+        }
+      ],
+      "aliases": [],
+      "keywords": ["assignment", "binding"],
+      "body": "赋值语句把名字重新绑定到值。名字不是容器，只是指向对象；因此修改对象会让所有指向它的名字都看到变化。",
+      "steps": [
+        {
+          "operator": "read",
+          "instruction": "读完 §7.2，留意「重新绑定」这个词。",
+          "phase": "first"
+        },
+        {
+          "operator": "recall",
+          "instruction": "不看材料，说出名字与对象的关系。",
+          "phase": "both"
+        }
+      ],
+      "selfCheck": ["能说出名字不是容器"],
+      "criteria": [
+        {
+          "id": "c1",
+          "statement": "能独立解释 `a = [1]; b = a; b.append(2)` 之后为什么 `a` 也变成 `[1, 2]`"
+        }
+      ],
+      "quiz": [
+        {
+          "id": "q1",
+          "criterion_id": "c1",
+          "type": "choice",
+          "prompt": "`a = [1]; b = a; b.append(2)` 之后 `a` 的值是？",
+          "answer": "[1, 2]",
+          "judge": "auto"
+        }
+      ],
+      "estMinutes": 12,
+      "methodId": null
+    },
+    {
+      "node_id": "m1-demo:func",
+      "summary": "把一段逻辑收成可复用的、带名字的调用单元。",
+      "outcomes": ["能定义并调用一个函数", "能说明参数与返回值的传递"],
+      "resources": [
+        {
+          "kind": "规范",
+          "title": "The Python Tutorial §4.8",
+          "url": "https://docs.python.org/3/tutorial/controlflow.html#defining-functions",
+          "license": "PSF-2.0",
+          "lang": "en"
+        }
+      ],
+      "aliases": [],
+      "keywords": ["function", "argument"],
+      "body": "`def` 创建一个函数对象并绑定名字；调用时实参绑定到形参，返回值由 `return` 给出。",
+      "steps": [
+        {
+          "operator": "example",
+          "instruction": "看 §4.8 的 `fib` 例子，标出形参与实参。",
+          "phase": "first"
+        },
+        {
+          "operator": "practice",
+          "instruction": "写一个把列表元素加倍的函数并调用它。",
+          "phase": "both"
+        },
+        {
+          "operator": "explain",
+          "instruction": "向别人解释参数是怎么传进函数的。",
+          "phase": "both"
+        }
+      ],
+      "selfCheck": ["能说清形参与实参的对应"],
+      "criteria": [
+        {
+          "id": "c1",
+          "statement": "能独立写出一个带返回值、并至少有一个参数的函数，且说明调用时的绑定过程"
+        }
+      ],
+      "quiz": [
+        {
+          "id": "q1",
+          "criterion_id": "c1",
+          "type": "choice",
+          "prompt": "`def f(x): return x * 2` 之后调用 `f(3)` 得到？",
+          "answer": "6",
+          "judge": "auto"
+        }
+      ],
+      "estMinutes": 15,
+      "methodId": null
+    }
+  ],
+  "sources": [
+    {
+      "id": "m1-tutorial",
+      "name": "The Python Tutorial",
+      "kind": "material",
+      "authority_level": "official",
+      "version": "3.13",
+      "segments": [
+        {
+          "text": "Assignment statements are used to (re)bind names to values.",
+          "locator": "§7.2",
+          "license": "PSF-2.0"
+        }
+      ],
+      "appliesTo": {
+        "axes": ["major"],
+        "node_scope": ["m1-demo:var", "m1-demo:func"]
+      }
+    }
+  ],
+  "schemes": [
+    {
+      "id": "m1-scheme",
+      "name": "M1 最小路线",
+      "nodes": ["m1-demo:cs-core", "m1-demo:var"],
+      "authority_level": "official"
+    }
+  ]
+}

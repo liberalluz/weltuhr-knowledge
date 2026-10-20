@@ -1,0 +1,6 @@
+{
+  "base": "m1",
+  "exit": 1,
+  "codes": ["E-SLUG-FORMAT"],
+  "note": "唯一缺陷：`func` 的 slug 写成 `Func_2` —— 同时违反两条字符集约束（大写、下划线非保留段）。slug 会直接进 path 段，字符集一破，path 就不再是可直接拼进 URI 的形态（P-04）。"
+}

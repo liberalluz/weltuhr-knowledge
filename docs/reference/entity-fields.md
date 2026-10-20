@@ -86,7 +86,7 @@
 | `type` | enum? | **仅可学项**：`declarative` / `procedural` / `skill` / `tacit` |
 | `layer` | enum? | **仅可学项**：`persistent` / `view` / `ephemeral` |
 | `requirements` | object? | **仅可学项**：六要件 × 三态，取值见下 |
-| `path` | string | **派生** = 父链 `slug` 串联。同子树内段数 = 该子树层数；官方与编外可不同 |
+| `path` | string | **派生** = 父链 `slug` 串联。同子树内段数 = 该子树层数；官方与编外可不同。**16 条规则见 [`path-rules.md`](path-rules.md)**，本表不复述 |
 | `inScope` | bool | **派生** = 是否在 `Plan.subtree_root` 子树下 |
 | `depth` | int | **派生** = `level_slot` 在轴内的序号，**仅供展示**，不得用于判据 |
 
@@ -217,7 +217,7 @@
 
 | 字段 | 类型 | 说明 |
 |---|---|---|
-| `operator` | enum | **六类之一，不得自创**：`read` 读 · `example` 例 · `recall` 忆 · `practice` 练 · `explain` 讲 · `do` 做。与界面组件 **1:1** |
+| `operator` | enum | **六类之一，不得自创**：`read` 读 · `example` 例 · `recall` 忆 · `practice` 练 · `explain` 讲 · `do` 做。与界面组件 **1:1**。⑤⑥ 标识符**已裁定保持** `explain` / `do`（`2026-10-20`，原 `OD-03`）—— `teach` / `build` 案被否：`build` 与 `content/tools/build.py`、`build/` 目录、CI 的 `build` 步骤**同词异义** |
 | `phase` | enum | `first` / `review` / `both`。**默认由算子派生**：`read`·`example` → `first`；其余 → `both`。作者可覆盖 |
 | `instruction` | string | 本步指令 |
 
@@ -231,7 +231,9 @@
 |---|---|---|
 | `id` | string | 段内唯一 |
 | `statement` | string | 能力断言（「能解释 Transformer 的注意力机制」） |
-| `judge_type` | enum | 决定系统判还是自评 |
+
+> **不设 `judge_type`**（`2026-10-20` 裁定，原 `OD-02`）：`criteria` 与 `quiz` 是 1:1（`criterion_id`，见 §9.3），故「系统判还是自评」由 `quiz[].judge` **派生**即可。与 `progressKind` 不入库（同由 `judge` 派生）同构 —— 1:1 关系下留两个同义字段，等于给不一致留一条合法路径（错的状态可表达，就一定会有人表达出来）。
+> 由此 `criteria` 只有 `id` 与 `statement` 两个字段，**它不承载任何判定信息**：判定全在 `quiz`。
 
 > **空 `criteria` = 打卡式**：跳过 ⑤、直接记 `checked`、`S` 永不增长、**永不毕业**。它是学习痕迹，不通往出口。
 
@@ -249,7 +251,7 @@
 > **不设 `covers[]` 数组**：criteria 与 quiz 定为 1:1 后，单值 `criterion_id` 即可表达；需要多题就拆多条 criteria。
 > **三档判定**：`达成`（全部 criteria 通过 / 部分 / 全未）× `独立性`（无脚手架 / 用过提示）。**无脚手架 + 全达成 = 熟练；有脚手架 + 达成 = 合格；未达成 = 未过**。
 > **不设 `passLine` 阈值** —— 跨包可比的前提是不让作者改分数线。
-> `progressKind`（`verified` / `checked`）**不入库**，由 `judge` 自动派生。
+> `progressKind`（`verified` / `checked`）**不入库**，由 `judge` 自动派生；`criteria` 也**不再设** `judge_type`，同由此处派生（§9.2 注）。
 > 模型生成的题不入包：不可复现、不参与 SRS 判定（`SPEC-PACK-006`）。
 
 ### 10. `Scheme` —— 体系（路径模板，可跨轴）
