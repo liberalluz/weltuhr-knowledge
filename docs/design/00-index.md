@@ -68,6 +68,8 @@
 | [not-list](../reference/not-list.md) | 明确不做 + 理由 | 全部（实施者必读） | 待修订 —— `N-01` / `N-11` / `N-13` 的**理由**引旧机制（结论仍成立） |
 
 > 另有**上游理论长文** [`../reference/knowledge-system-learning-methodology.md`](../reference/knowledge-system-learning-methodology.md) —— 全案的理论依据。它是 `design/` 的**上游**（design 全部引用它，它不引用 design），改动频率远低于 design，故归入参考层而非设计基线。
+>
+> 同层的第二篇是 [`../reference/knowledge-space-navigation-methodology.md`](../reference/knowledge-space-navigation-methodology.md) —— **三轴容器树的论证依据**（16 个维度的取舍 · 三轴锚点质量 · 七级同构逐级映射）。它同样只作上游：**结论以 [`ADR-0005`](../adr/0005-three-axis-tree-replaces-six-axis.md) / [`0006`](../adr/0006-3d-rendering-stack-and-visual-style.md) / [`0007`](../adr/0007-node-type-shape.md) 为准**，方法论本身可继续演进。
 
 ## 四、跨文档约束清单
 

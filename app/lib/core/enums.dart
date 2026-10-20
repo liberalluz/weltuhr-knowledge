@@ -55,7 +55,11 @@ enum RequirementState {
         return value;
       }
     }
-    _unknownWire('RequirementState', raw, values.map((RequirementState v) => v.wire));
+    _unknownWire(
+      'RequirementState',
+      raw,
+      values.map((RequirementState v) => v.wire),
+    );
   }
 }
 
@@ -69,7 +73,14 @@ Never _unknownWire(String enumName, String raw, Iterable<String> allowed) =>
     throw FormatException('$enumName 取值不在册：`$raw`（允许 ${allowed.join(" / ")}）');
 
 /// 六要件：**只有这六个键**，顺序固定。
-enum RequirementKey { boundary, justification, proposition, relation, how, tacit }
+enum RequirementKey {
+  boundary,
+  justification,
+  proposition,
+  relation,
+  how,
+  tacit,
+}
 
 /// 六类执行算子（`SPEC-STEP-012`）。**不得自创第七类。**
 enum ExecutionOperator { read, example, recall, practice, teach, build }
@@ -136,3 +147,112 @@ enum ViewMode { universe, tree, detail, locateResult, progress, practice }
 // `ZoomLevel` **不在这里** —— 它带 `code` / `label` 两个界面字段，是
 // `core/view/zoom.dart` 的 `enum ZoomLevel`。两个同名枚举并存过一阵，
 // 两边一起 import 就 `ambiguous_import`；唯一出处比「枚举都放 enums.dart」重要。
+
+// ───────────────────── 三轴容器树（`ADR-0005` · `ADR-0007`） ─────────────────────
+
+/// 三轴：**容器树的轴**，不是四项标签（`ADR-0005` 决策 1）。JSON 取值同枚举名。
+enum Axis {
+  discipline,
+  major,
+  occupation;
+
+  static Axis fromWire(String raw) {
+    for (final Axis value in values) {
+      if (value.name == raw) {
+        return value;
+      }
+    }
+    _unknownWire('Axis', raw, values.map((Axis v) => v.name));
+  }
+}
+
+/// 节点槽位（`entity-fields` §2）：**语义槽位，不是深度序号**。
+///
+/// 三轴实际占用的槽位不同 —— 学科轴只到 `star`（研究生目录没有全国统一的
+/// 二级目录），角色轴多出 `cluster`。所以任何「第 n 层就是某某」的写法都是错的，
+/// 只能按槽位判断。合法组合见 `constants.dart` 的 `legalSkeletonSlots`。
+///
+/// ⚠️ 台账写「八个语义槽位」，表里实际只列出**七个**：`supercluster` / `group` /
+/// `galaxy` / `cluster` / `star` / `system` / `planet`。差额疑为「可观测宇宙（根）」
+/// 那一级，而根已由 `supercluster` 承担，故本枚举按实测七个建。
+enum LevelSlot {
+  supercluster,
+  group,
+  galaxy,
+  cluster,
+  star,
+  system,
+  planet;
+
+  static LevelSlot fromWire(String raw) {
+    for (final LevelSlot value in values) {
+      if (value.name == raw) {
+        return value;
+      }
+    }
+    _unknownWire('LevelSlot', raw, values.map((LevelSlot v) => v.name));
+  }
+}
+
+/// 可见范围 / 可写性（`entity-fields` §2）。`S0`–`S3` 来自包或治理流程，
+/// **代码层只直写 `S4`**（`ADR-0007` 决策 3：可写性是纯函数，不是类型）。
+///
+/// 线上取值是大写的 `S0`–`S4`，与枚举名不同形 —— 所以走 [wire]，不用 `name`。
+enum Scope {
+  s0,
+  s1,
+  s2,
+  s3,
+  s4;
+
+  /// 线上取值：`S0`–`S4`。
+  String get wire => name.toUpperCase();
+
+  static Scope fromWire(String raw) {
+    for (final Scope value in values) {
+      if (value.wire == raw) {
+        return value;
+      }
+    }
+    _unknownWire('Scope', raw, values.map((Scope v) => v.wire));
+  }
+}
+
+/// 节点状态（`entity-fields` §2）。`tombstone` 是**软删** —— 目录撤条目时
+/// 节点不消失，否则既有学习进度会指向空。
+enum NodeStatus {
+  live,
+  tombstone,
+  revoked;
+
+  static NodeStatus fromWire(String raw) {
+    for (final NodeStatus value in values) {
+      if (value.name == raw) {
+        return value;
+      }
+    }
+    _unknownWire('NodeStatus', raw, values.map((NodeStatus v) => v.name));
+  }
+}
+
+/// 可学节点的知识类型（`entity-fields` §2「仅可学项」）。
+///
+/// 与 [ItemType] **同值域、不同名**：`Item` 是旧实体，`ADR-0007` 定 `LearnableNode`
+/// 的字段类型为 `LearnableType`。两者会并存到 `B13a` 笔 5（`Item` 删除时 [ItemType]
+/// 一并消失），**不得让 `ItemType` 出现在 `LearnableNode` 上** —— 那会让「旧实体零残留」
+/// 变成一句空话。
+enum LearnableType {
+  declarative,
+  procedural,
+  skill,
+  tacit;
+
+  static LearnableType fromWire(String raw) {
+    for (final LearnableType value in values) {
+      if (value.name == raw) {
+        return value;
+      }
+    }
+    _unknownWire('LearnableType', raw, values.map((LearnableType v) => v.name));
+  }
+}
