@@ -127,20 +127,27 @@
 
 ### 三、节号变更与受影响引用（本次不改，另批处理）
 
-`entity-fields.md` 由 13 节扩为 18 节，节号全部重排。全仓按**旧节号**引用的地方共 12 处，现全部错位：
+`entity-fields.md` 由 13 节扩为 18 节，节号全部重排。全仓按**旧节号**引用的地方共 **11 处**（2026-10-20 重扫；原记「12 处」，复现不出 —— 当时本节表只有 10 行，漏 `STR:949`），现全部错位：
 
-| 文件:行 | 旧引用 | 新位置 | 性质 |
-|---|---|---|---|
-| `design/FND-foundation.md:17` | `§2` | `§2`（`Node`） | 编号巧合不变，语义已由 `Item` 变 `Node` |
-| `design/PLAN-planning.md:117` | `§7.1`（源四键） | `§11` | 编号变 |
-| `design/PLAN-planning.md:166` | `§一.7` 校验 ② | `§12` | 编号变 |
-| `design/PLAN-planning.md:314` | `§8`「存 selector」 | `§13` | 编号变 **+ 内容失效**（`selector` 已删） |
-| `reference/constants.md:117` | `§2`（`C-35` `SIX_AXIS_KEYS`） | — | **常量本身应废**：六轴已不存在 |
-| `deliverables/04-test/STD:1434` | `§一.5` 逆序数 | `§10` | 编号变（`inversions` 语义改为「违反 required 边的处数」） |
-| `deliverables/04-test/STD:1584` | `§8` | `§13` | 编号变 **+ 内容失效**（`spaceId`/`spaceVersion` 已改） |
-| `deliverables/04-test/STD:1603` | `§8` `PlanTarget.selector` | `§13` | **内容失效** |
-| `deliverables/04-test/STD:1671` | `§一.7` | `§12` | 编号变 |
-| `deliverables/04-test/STD:1807` | `Item` 表 `primaryAxis` | `Node` 表（字段已删） | **内容失效** |
+| 文件:行 | 旧引用 | 新位置 | 性质 | 修复批 |
+|---|---|---|---|---|
+| `design/FND-foundation.md:17` | `§2` | `§2`（`Node`） | **用词失效**：语义已由 `Item` 变 `Node` | 笔 6 |
+| `design/PLAN-planning.md:117` | `§7.1`（源四键） | `§11` | 编号变 | 笔 6 |
+| `design/PLAN-planning.md:166` | `§一.7` 校验 ② | `§12` | 编号变 | 笔 6 |
+| `design/PLAN-planning.md:314` | `§8`「存 selector」 | `§13` | 编号变 **+ 内容失效**（`selector` 已删） | `B4` |
+| `reference/constants.md:146` | `§2`（`C-35` `SIX_AXIS_KEYS`） | — | **常量本身应废**：六轴已不存在 | 笔 6 |
+| `deliverables/04-test/STD:1447` | `§一.5` 逆序数 | `§10` | 编号变（`inversions` 语义改为「违反 required 边的处数」） | 笔 6 |
+| `deliverables/04-test/STD:1597` | `§8` | `§13` | 编号变 **+ 内容失效**（`spaceId`/`spaceVersion` 已改） | `B4` |
+| `deliverables/04-test/STD:1616` | `§8` `PlanTarget.selector` | `§13` | **内容失效** | `B4` |
+| `deliverables/04-test/STD:1684` | `§一.7` | `§12` | 编号变 | 笔 6 |
+| `deliverables/04-test/STD:1846` | `Item` 表 `primaryAxis` | `Node` 表（字段已删） | **内容失效** | 笔 6 |
+| `deliverables/04-test/STR:949` | `§一.5` | `§10` | 编号变 | 笔 6 |
+
+> ⚠️ **重扫结论（2026-10-20）**：行号 **6 处已漂移**（`constants` 117 → 146；`STD` 五行各 +13 / +13 / +13 / +13 / +39）。修时**以重扫为准，本表只当预期** —— 且不能只改编号：11 处里 **6 处内容已失效**，编号改对也仍是错的陈述。
+>
+> **修复归属**：**7 处随 `B13a` 笔 6**（纯编号 4 · `FND` 用词 1 · 六轴残留 2），该笔本就要「用例名去旧实体名」，同一批改完不在两处维护；**3 处挂 `B4` 重判时**（`PLAN:314` · `STD:1597` · `STD:1616`），它们指向 `Plan.selector` / `spaceId`，要等 `SPEC-PLAN-001` 改成「跨轴 route + 三条校验」后才有新说法，现在改会改两次。
+>
+> **另 3 处非旧节号但不统一**：`ADR-0007:6` · `reference/glossary.md:10` · `adr/README.md:14` 写作 `§1.2`（指 §2 `Node`），全仓通用写法是 `§2`。齐一时一并改，不计入上表。
 
 > `deliverables/` 下的改动须走配置管理与版号递增，不得随本次重写顺带修改。
 
