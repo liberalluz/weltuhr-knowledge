@@ -1,0 +1,6 @@
+{
+  "base": "m1",
+  "exit": 1,
+  "codes": ["E-ID-FORMAT"],
+  "note": "唯一缺陷：`m1-demo:var` 的 id 写成 `m1-demo:v1:var`，多了一段版本号。id 必须`{plugin_id}:{local_id}`两段、不带版本 —— 带了则每次升版所有已学事件指向旧 id（P-09）。edges 里对 `m1-demo:var` 的引用因此悬空，但 `id 格式` 早于 `父链可达`，fail-fast 只报本码。"
+}
