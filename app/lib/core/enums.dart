@@ -327,3 +327,20 @@ enum EdgeStrength {
     _unknownWire('EdgeStrength', raw, values.map((EdgeStrength v) => v.name));
   }
 }
+
+/// 存储三区（`entity-fields.md` §〇）。
+///
+/// 取值与那张表逐行对应。**这里只给区的身份，不给区的路径** —— 路径归
+/// `StoreLayout`（三个根由调用方注入），访问能力归 `core/storage/store_fs.dart`
+/// 的三个接口。三者分开的理由：同一份代码要能在「开发期仓内目录」「用户数据
+/// 目录」「将来的云端挂载」上跑，而**区的位置会变、能力不变**。
+enum StoreZone {
+  /// 骨架 / 载荷 / 地形 / 方法 / 覆盖包正文 —— 只能读。
+  readOnly,
+
+  /// `S4` 自建节点 · 个人 `OverlayPatch` · `PathClaim` 墓碑 —— 读 + 原子写。
+  writable,
+
+  /// 学 / 评 / 复习 / 访问 —— 只 append。
+  event,
+}
