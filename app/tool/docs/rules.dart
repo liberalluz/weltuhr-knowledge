@@ -1,4 +1,4 @@
-/// 交付物一致性检查的五条规则（`D1`–`D5`）。
+/// 交付物一致性检查的六条规则（`D1`–`D6`）。
 ///
 /// 为什么单独一支、不进 `tool/lint`：`lint` 管的是**代码**的架构不变量（`R1`–`R5`），
 /// 判据是「这一行代码违反了哪条约束」；这里管的是**四份交付物之间的口径**，判据是
@@ -47,6 +47,8 @@ class DocContext {
   const DocContext({
     required this.docs,
     required this.tests,
+    this.markdown = const <String, String>{},
+    this.repoPaths = const <String>{},
   });
 
   /// 相对仓库根的文件路径 → 内容。
@@ -55,6 +57,20 @@ class DocContext {
   /// 相对仓库根的测试文件路径 → 内容。键要做成 `app/test/...` 形式，
   /// 与 `STD` 落点列的写法一致。
   final Map<String, String> tests;
+
+  /// 参与 `D6` 链接检查的 **全部** Markdown：相对仓库根路径 → 内容。
+  ///
+  /// 比 [docs] 宽得多（`docs/` 67 份 + `.github/` 与各目录 README，实测 91 份）
+  /// —— 这是刻意的：链接断掉的地方**不限于四份交付物**，`00-index` / `reference/`
+  /// 这些引用层文件才是相对链接最密集的地方。
+  ///
+  /// 缺省为空集，于是 `D6` 对只构造了 [docs] / [tests] 的老用例零影响。
+  final Map<String, String> markdown;
+
+  /// 仓库内的**全部**文件与目录（相对仓库根，`/` 分隔），供 `D6` 判目标是否存在。
+  ///
+  /// 含目录：链接可以指向一个目录（`[参考层](reference/)`），那不算坏链。
+  final Set<String> repoPaths;
 }
 
 /// 参与口径检查的四份文件。顺序即报错顺序。
@@ -103,6 +119,7 @@ List<DocIssue> checkAll(DocContext ctx) {
     ...checkD3CaseCounts(ctx),
     ...checkD4SpecCoverage(ctx),
     ...checkD5TestCount(ctx),
+    ...checkD6Links(ctx),
   ];
 }
 
@@ -947,6 +964,155 @@ List<DocIssue> checkD5TestCount(DocContext c) {
   }
 
   return out;
+}
+
+// ---------------------------------------------------------------------------
+// D6 · 相对链接
+// ---------------------------------------------------------------------------
+
+/// `D6`：Markdown 里指向**仓内**的相对链接，目标路径必须存在。
+///
+/// 为什么要有这条：`D1`–`D5` 全在查「数对不对」，没有一条查「路对不对」。于是
+/// 本仓真实踩过 —— 在 `docs/deliverables/01-plan/` 下写 `../design/00-index.md`
+/// （正确是 `../../design/`），**三处全错而 `check.dart` 照样全绿**：那个目录在
+/// `01-plan` 下不存在，但没人看链接。检查器不报的错，就只能等人翻到那一页才
+/// 发现 —— 与 `D1`–`D5` 的失效模式一样，但更隐蔽（数字错了读者当场能看出来，
+/// 链接坏了要点击才知道）。
+///
+/// 只查**相对路径**，三种目标一律跳过：
+/// - **带 scheme 的**（`https:` / `mailto:` / `tel:`）：外链的可用性不是本仓的事，
+///   而且检查外链要把 CI 变成网络依赖。
+/// - **页内锚点**（`#…`）：锚点是否真实存在要解析标题 slug，判据本身有版本差异，
+///   收益远低于代价。
+/// - **站点绝对路径**（`/…`）：本仓的 Markdown 不经站点渲染，这种写法不成立，
+///   但它是「渲染侧的事」，不是「文件在不在」的事。
+///
+/// 代码围栏内的链接同样跳过：文档里贴示例是常态，围栏里的路径本来就可能是
+/// 占位符（`[x](path)`），校验它只会制造假红。
+///
+/// **目标是目录也算存在** —— `[参考层](reference/)` 是合法写法，判据是「这个
+/// 路径在仓里能不能落地」，不是「它是不是文件」。
+List<DocIssue> checkD6Links(DocContext c) => scanLinks(c).issues;
+
+/// `D6` 的一趟扫描结果：查了几条、坏了几条。
+///
+/// 计数单独暴露，是因为「查了 749 条」与「0 处违规」是两句不同的话 —— 只报后者
+/// 时，扫描范围意外塌成 0 条也是全绿。`check.dart` 把两个数一起打出来。
+class LinkScan {
+  const LinkScan({required this.checked, required this.issues});
+
+  /// 真正判过存在性的条数（跳过外链 / 锚点 / 围栏之后）。
+  final int checked;
+  final List<DocIssue> issues;
+}
+
+/// 扫一遍全部 Markdown 的相对链接。
+LinkScan scanLinks(DocContext c) {
+  final List<DocIssue> out = <DocIssue>[];
+  int checked = 0;
+  final List<String> files = c.markdown.keys.toList()..sort();
+  for (final String file in files) {
+    final List<String> lines = c.markdown[file]!.split('\n');
+    bool inFence = false;
+    for (int i = 0; i < lines.length; i++) {
+      if (_fenceRe.hasMatch(lines[i])) {
+        inFence = !inFence;
+        continue;
+      }
+      if (inFence) {
+        continue;
+      }
+      // 行内代码同样跳过：`` `[参考层](reference/)` `` 这种写法是在**描述**链接
+      // 语法本身（本仓 `STP` / `SCMP` 就这么写），不是一条真链接。剥成占位符再扫，
+      // 链接文本里的反引号（`` [`x`](y) ``）不受影响 —— `](` 与目标仍在。
+      final String scanLine = lines[i].replaceAll(_inlineCodeRe, '\u0000');
+      for (final RegExpMatch m in _linkRe.allMatches(scanLine)) {
+        final String raw = m.group(1)!;
+        if (_isExternalTarget(raw)) {
+          continue;
+        }
+        // 锚点跟在路径后面（`x.md#三`）：判存在只看路径那一段。
+        final String target = raw.split('#').first;
+        if (target.isEmpty || target.startsWith('/')) {
+          continue;
+        }
+        checked++;
+        final String? resolved = _resolveLink(file, target);
+        if (resolved == null) {
+          out.add(
+            DocIssue(
+              ruleId: 'D6',
+              file: file,
+              line: i + 1,
+              message: '相对链接上跳越过仓库根：`$raw`',
+            ),
+          );
+          continue;
+        }
+        if (!c.repoPaths.contains(resolved)) {
+          out.add(
+            DocIssue(
+              ruleId: 'D6',
+              file: file,
+              line: i + 1,
+              message: '相对链接指向不存在的路径：`$raw`（解析为 `$resolved`）',
+            ),
+          );
+        }
+      }
+    }
+  }
+  return LinkScan(checked: checked, issues: out);
+}
+
+/// 行内链接 / 图片：`](目标)`。图片（`![alt](…)`）同样命中，两者都是路径承诺。
+final RegExp _linkRe = RegExp(r'\]\(\s*([^)\s]+)\s*\)');
+
+/// 代码围栏开闭行（三个反引号或三个波浪号，至多三格缩进）。
+final RegExp _fenceRe = RegExp(r'^ {0,3}(?:```|~~~)');
+
+/// 行内代码：成对的同数量反引号之间。
+///
+/// 必须支持**多反引号**定界（`` ``…`` ``）：描述「链接文本里带反引号」这类写法时
+/// 就会用到，用单反引号的正则会把 `` `` [`x`](y) `` `` 剥成半截、剩下的 `](y)`
+/// 被当成真链接 —— 实跑踩过一次，`STR` 里那处示例就此报假红。
+final RegExp _inlineCodeRe = RegExp(r'(`+).*?\1');
+
+/// 外链、页内锚点 —— 不判存在。
+bool _isExternalTarget(String raw) {
+  if (raw.startsWith('#')) {
+    return true;
+  }
+  return RegExp(r'^[a-zA-Z][a-zA-Z0-9+.\-]*:').hasMatch(raw);
+}
+
+/// 把 [target] 按 [fromFile] 所在目录解析成仓库相对路径。
+///
+/// 返回 `null` 表示**上跳越过仓库根**（`../../../x` 从 `docs/x.md` 出发）——
+/// 那不是「链坏了」，是这条链接根本不可能指向仓内，单独给一句更准的话。
+///
+/// 不调 `package:path`：这一支是纯函数、零依赖，为十行逻辑引一个包不划算；
+/// 也不解 `%20` 之类的百分号编码 —— 本仓路径一律直接写中文，没有编码形态，
+/// 出现编码说明写法本身就不对，应当报出来而不是替它兜。
+String? _resolveLink(String fromFile, String target) {
+  final int slash = fromFile.lastIndexOf('/');
+  final List<String> segs = slash < 0
+      ? <String>[]
+      : fromFile.substring(0, slash).split('/');
+  for (final String part in target.split('/')) {
+    if (part.isEmpty || part == '.') {
+      continue;
+    }
+    if (part == '..') {
+      if (segs.isEmpty) {
+        return null;
+      }
+      segs.removeLast();
+      continue;
+    }
+    segs.add(part);
+  }
+  return segs.join('/');
 }
 
 /// 报「实扫多/少了几条」，让日志能直接对上账。
