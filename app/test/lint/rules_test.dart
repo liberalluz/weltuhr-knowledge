@@ -13,14 +13,18 @@ void main() {
     });
 
     test('core 引用 dart:ui 被拦（R1）', () {
-      final issues = checkSource(path: 'lib/core/x.dart', source: "import 'dart:ui';\n");
+      final issues = checkSource(
+        path: 'lib/core/x.dart',
+        source: "import 'dart:ui';\n",
+      );
       expect(issues.map((LintIssue i) => i.ruleId), contains(ruleCrossLayer));
     });
 
     test('core 引用 features/ 被拦（R1）', () {
       final issues = checkSource(
         path: 'lib/core/x.dart',
-        source: "import 'package:project_knowledge/features/universe/view.dart';\n",
+        source:
+            "import 'package:project_knowledge/features/universe/view.dart';\n",
       );
       expect(issues.map((LintIssue i) => i.ruleId), contains(ruleCrossLayer));
     });
@@ -90,7 +94,10 @@ class Event {
 }
 ''',
       );
-      expect(issues.map((LintIssue i) => i.ruleId), contains(ruleEventAppendOnly));
+      expect(
+        issues.map((LintIssue i) => i.ruleId),
+        contains(ruleEventAppendOnly),
+      );
     });
 
     test('Event 出现可变字段被拦（R3）', () {
@@ -98,7 +105,10 @@ class Event {
         path: 'lib/core/events/event.dart',
         source: 'class Event {\n  String id = "";\n}\n',
       );
-      expect(issues.map((LintIssue i) => i.ruleId), contains(ruleEventAppendOnly));
+      expect(
+        issues.map((LintIssue i) => i.ruleId),
+        contains(ruleEventAppendOnly),
+      );
     });
 
     test('Event 的子类同样受限（R3：按名不按路径）', () {
@@ -106,7 +116,10 @@ class Event {
         path: 'lib/features/x.dart',
         source: 'class StepEvent extends Event {\n  bool done = false;\n}\n',
       );
-      expect(issues.map((LintIssue i) => i.ruleId), contains(ruleEventAppendOnly));
+      expect(
+        issues.map((LintIssue i) => i.ruleId),
+        contains(ruleEventAppendOnly),
+      );
     });
 
     test('EventStore 出现 delete 被拦（R3）', () {
@@ -114,7 +127,10 @@ class Event {
         path: 'lib/core/events/event_store.dart',
         source: 'class EventStore {\n  void delete(String id) {}\n}\n',
       );
-      expect(issues.map((LintIssue i) => i.ruleId), contains(ruleEventAppendOnly));
+      expect(
+        issues.map((LintIssue i) => i.ruleId),
+        contains(ruleEventAppendOnly),
+      );
     });
 
     test('全 final 且只 append / readAll 不误报（R3）', () {
@@ -142,15 +158,22 @@ class EventStore {
         path: 'lib/features/universe/frame_painter.dart',
         source: 'class FramePainter {\n  FramePainter(SourceRef s) {}\n}\n',
       );
-      expect(issues.map((LintIssue i) => i.ruleId), contains(ruleSourceNotVisual));
+      expect(
+        issues.map((LintIssue i) => i.ruleId),
+        contains(ruleSourceNotVisual),
+      );
     });
 
     test('绘制层按参数名收源被拦（R4：类型写成 Object 也躲不掉）', () {
       final issues = checkSource(
         path: 'lib/features/universe/frame_painter.dart',
-        source: 'class FramePainter {\n  void render(Object? sourceRefs) {}\n}\n',
+        source:
+            'class FramePainter {\n  void render(Object? sourceRefs) {}\n}\n',
       );
-      expect(issues.map((LintIssue i) => i.ruleId), contains(ruleSourceNotVisual));
+      expect(
+        issues.map((LintIssue i) => i.ruleId),
+        contains(ruleSourceNotVisual),
+      );
     });
 
     test('场景装配层收源被拦（R4：core/frame 也算视觉通道）', () {
@@ -158,7 +181,10 @@ class EventStore {
         path: 'lib/core/frame/scene.dart',
         source: 'class Scene {\n  Scene(SourceSegment segment) {}\n}\n',
       );
-      expect(issues.map((LintIssue i) => i.ruleId), contains(ruleSourceNotVisual));
+      expect(
+        issues.map((LintIssue i) => i.ruleId),
+        contains(ruleSourceNotVisual),
+      );
     });
 
     test('详情页显示源名不拦（R4 收窄后只管通道，SPEC-VIEW-004 要求写进详情）', () {
@@ -222,6 +248,136 @@ void main() {
       final issues = checkSource(
         path: 'lib/core/x.dart',
         source: "void main() {\n  test('某个行为', () {});\n}\n",
+      );
+      expect(issues, isEmpty);
+    });
+  });
+
+  group('R6 结构节点不得声明可学字段', () {
+    test('StructuralNode 声明 layer 被拦（R6）', () {
+      final issues = checkSource(
+        path: 'lib/core/entities/node.dart',
+        source:
+            'class StructuralNode extends Node {\n  final String? layer;\n}\n',
+      );
+      expect(issues, hasLength(1));
+      expect(issues.single.ruleId, ruleStructuralNodeFieldSet);
+    });
+
+    test('StructuralNode 不带三项放行（R6）', () {
+      final issues = checkSource(
+        path: 'lib/core/entities/node.dart',
+        source:
+            'class StructuralNode extends Node {\n  final String slug;\n}\n',
+      );
+      expect(issues, isEmpty);
+    });
+
+    test('同名类不在册时不管 —— 名字是 LearnableNode 才查（R6）', () {
+      final issues = checkSource(
+        path: 'lib/core/x.dart',
+        source: 'class Structural {\n  final String? layer;\n}\n',
+      );
+      expect(issues, isEmpty);
+    });
+  });
+
+  group('R7 可学节点三项非可空', () {
+    test('三项齐全且非空放行（R7）', () {
+      final issues = checkSource(
+        path: 'lib/core/entities/node.dart',
+        source:
+            'class LearnableNode extends Node {\n'
+            '  final LearnableType type;\n'
+            '  final Layer layer;\n'
+            '  final ItemRequirements requirements;\n'
+            '}\n',
+      );
+      expect(issues, isEmpty);
+    });
+
+    test('一项写成可空被拦（R7）', () {
+      final issues = checkSource(
+        path: 'lib/core/entities/node.dart',
+        source:
+            'class LearnableNode extends Node {\n'
+            '  final LearnableType type;\n'
+            '  final Layer? layer;\n'
+            '  final ItemRequirements requirements;\n'
+            '}\n',
+      );
+      expect(issues, hasLength(1));
+      expect(issues.single.ruleId, ruleLearnableNodeFieldSet);
+      expect(issues.single.message, contains('layer'));
+    });
+
+    test('缺一项被拦（R7）', () {
+      final issues = checkSource(
+        path: 'lib/core/entities/node.dart',
+        source:
+            'class LearnableNode extends Node {\n'
+            '  final LearnableType type;\n'
+            '  final Layer layer;\n'
+            '}\n',
+      );
+      expect(issues, hasLength(1));
+      expect(issues.single.ruleId, ruleLearnableNodeFieldSet);
+      expect(issues.single.message, contains('requirements'));
+    });
+  });
+
+  group('R8 Node 不得直接构造', () {
+    test('直接构造 Node 被拦（R8）', () {
+      final issues = checkSource(
+        path: 'lib/core/x.dart',
+        source: "Node f() => Node(id: 'a');\n",
+      );
+      expect(issues, hasLength(1));
+      expect(issues.single.ruleId, ruleNodeNoDirectConstruction);
+    });
+
+    test('Node 类体内有 factory 被拦（R8）', () {
+      final issues = checkSource(
+        path: 'lib/core/entities/node.dart',
+        source: 'sealed class Node {\n  factory Node.make() => throw 0;\n}\n',
+      );
+      expect(issues, hasLength(1));
+      expect(issues.single.ruleId, ruleNodeNoDirectConstruction);
+    });
+
+    test('建子类不算直接构造（R8）', () {
+      final issues = checkSource(
+        path: 'lib/core/x.dart',
+        source: "StructuralNode f() => StructuralNode(id: 'a');\n",
+      );
+      expect(issues, isEmpty);
+    });
+  });
+
+  group('R9 派生三项不作字段', () {
+    test('Node 声明 path 被拦（R9）', () {
+      final issues = checkSource(
+        path: 'lib/core/entities/node.dart',
+        source: 'sealed class Node {\n  final String path;\n}\n',
+      );
+      expect(issues, hasLength(1));
+      expect(issues.single.ruleId, ruleNodeNoDerivedFields);
+    });
+
+    test('子类声明 depth 同样被拦（R9）', () {
+      final issues = checkSource(
+        path: 'lib/core/entities/node.dart',
+        source:
+            'class StructuralNode extends Node {\n  final int depth = 0;\n}\n',
+      );
+      expect(issues, hasLength(1));
+      expect(issues.single.ruleId, ruleNodeNoDerivedFields);
+    });
+
+    test('无关类声明 path 不查（R9）', () {
+      final issues = checkSource(
+        path: 'lib/core/x.dart',
+        source: 'class Route {\n  final String path;\n}\n',
       );
       expect(issues, isEmpty);
     });

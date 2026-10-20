@@ -1,6 +1,8 @@
 /// 核心层的错误类型。
 library;
 
+import 'enums.dart';
+
 /// 常量未裁定的哨兵错误。
 ///
 /// `docs/reference/constants.md` 的纪律：**任何 `TBD` 项在落地前必须先在
@@ -20,4 +22,24 @@ class TbdConstantError extends UnsupportedError {
 
   /// 常量编号（`constants.md` 里的 `C-xx` 标识）。
   final String constantId;
+}
+
+/// 非法的 `(axis, level_slot)` 组合（`ADR-0007` 决策 4）。
+///
+/// **这是全项目唯一允许在运行期抛错的类型约束。** 理由：轴是运行期读取的数据
+/// （包里的节点写 `axis: major`），不是类型参数，编译器看不见；而合不合法是一张
+/// 静态表。`StructuralNode` 构造时与反序列化时走同一处校验，不留第二条路径。
+///
+/// 抛错而不是断言（`assert`）：断言在 release 里被剥掉，非法组合会静默存活到
+/// 生产环境 —— 那正是 `ADR-0007` 要挡的「错的状态可表达，就一定会有人表达出来」。
+class IllegalNodeSlotError extends ArgumentError {
+  IllegalNodeSlotError(this.axis, this.levelSlot)
+    : super(
+        '非法的节点槽位组合：axis=${axis.name} × level_slot=${levelSlot.name}。'
+        '骨架结构节点的合法对只有 12 对（见 constants.dart），'
+        '`system` 是载荷容器、轴继承自父恒星，不在此表内。',
+      );
+
+  final Axis axis;
+  final LevelSlot levelSlot;
 }
