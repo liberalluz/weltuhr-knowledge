@@ -9,6 +9,9 @@
 | [0002](0002-dev-order-vertical-slice.md) | 开发顺序：纵切优先与风险前置 | 已接受 | 全部 |
 | [0003](0003-view-radial-axis-and-channel-thresholds.md) | 宇宙视图的径向语义与三处通道判据 | 已接受 | `VIEW-002` / `VIEW-003` / `VIEW-007` · `channel-table` · `entity-fields` · `C-34` |
 | [0004](0004-accounts-as-usage-prerequisite.md) | 账号作为使用前提 | 已接受（**覆盖 `0002` 的「服务端不在关键路径」**） | `ACC` · `SYNC` · `SDP` §4 · `X-09` · `C-45`–`C-51` |
+| [0005](0005-three-axis-tree-replaces-six-axis.md) | 三轴容器树取代六轴坐标 | 已接受（**覆盖 `FND-002` / `FND-006` / `FND-007`**，并收窄 `0004`） | `entity-fields` · `FND` · `PACK` · `PLAN` · `STEP` · `VIEW` · `ACC` · `SDP` |
+| [0006](0006-3d-rendering-stack-and-visual-style.md) | 3D 渲染栈与视觉风格 | 已接受（`0005` 未决项之一；**附 spike 闸门**） | `VIEW` · `entity-fields` · `skeleton-catalog` · `SDP` §4.2 `B17b` / §4.5 · `app/pubspec.yaml` · `infra/` |
+| [0007](0007-node-type-shape.md) | `Node` 的类型形态：按槽位分型 | 已接受 | `entity-fields` §1.2 · `SDP` §4.2 `B13a` · `core/entities/` · 647 用例的构造点 |
 
 ## 何时需要 ADR
 
