@@ -36,6 +36,8 @@ import json
 import os
 import subprocess
 import sys
+import tempfile
+from pathlib import Path
 
 ZERO_SHA = "0" * 40
 _SCOPES_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "scopes.json")
@@ -113,11 +115,26 @@ def changed_files(root, base):
     别人的提交算进来。`--no-renames` 让重命名拆成删 + 增两条，避免
     `{old => new}` 这类输出被当成单一路径。
 
+    **`-z` 不是可选项**：`core.quotepath` 默认开着，非 ASCII 路径会被输出成
+    `"docs/deliverables/01-plan/SDP-\\350\\275\\257..."` —— **带引号且八进制转义**。
+    本仓 `docs/deliverables/` 25 份**全是中文文件名**，一旦拿到这种形态，
+    `normalize()` 与 `hits()` 的前缀匹配全部落空 ⇒ 只改交付物的 PR 判「未命中」
+    ⇒ 静默跳过 `tool/docs/check.dart` 与 `flutter test`，而 check 仍报 success。
+    `-z` 下 git 按原始字节输出、以 NUL 分隔，既无转义也无引号（也顺带免疫
+    文件名含空格）。2026-10-20 由 PR #87 现场撞出。
+
     返回 `(files, None)` 或 `(None, 原因)`。失败由调用方降级成「全跑」。
     """
     try:
         r = subprocess.run(
-            ["git", "diff", "--name-only", "--no-renames", "{0}...HEAD".format(base)],
+            [
+                "git",
+                "diff",
+                "--name-only",
+                "--no-renames",
+                "-z",
+                "{0}...HEAD".format(base),
+            ],
             cwd=root,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
@@ -134,12 +151,64 @@ def changed_files(root, base):
         if fatal:
             return None, fatal[0]
         return None, lines[0] if lines else "git diff 退出码 {0}".format(r.returncode)
-    return [ln for ln in (r.stdout or "").splitlines() if ln.strip()], None
+    return [p for p in (r.stdout or "").split("\0") if p.strip()], None
 
 
 # ---------------------------------------------------------------------------
 # 自检
 # ---------------------------------------------------------------------------
+
+
+def self_test_changed_files():
+    """端到端：`changed_files()` 必须返回**裸**中文路径。
+
+    这条用例的存在理由，正是原来那批用例的盲区：它们喂的全是理想输入
+    （`"docs/deliverables/04-test/STD-软件测试说明.md"`），而 `git diff
+    --name-only` 的真实输出是 `"docs/deliverables/.../STD-\\350\\275\\257..."`。
+    **把输入形态 mock 成理想态，被测的那条语义就永远测不出来** —— 本仓
+    25 份交付物全是中文文件名，于是一路静默到 2026-10-20 才被一笔只改
+    交付物的 PR 撞出（`app-checks` 7 秒空跑、报 success）。
+
+    git 不可用或建不出仓时返回**失败**而非跳过：跳过就是再给一次假绿。
+    """
+    with tempfile.TemporaryDirectory() as td:
+
+        def git(*args):
+            return subprocess.run(
+                ["git"] + list(args),
+                cwd=td,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                encoding="utf-8",
+                errors="replace",
+            )
+
+        rel = "docs/deliverables/01-plan/SDP-软件开发计划.md"
+        try:
+            if git("init", "-q").returncode != 0:
+                return False, "git init 失败"
+            git("config", "user.email", "ci@example.invalid")
+            git("config", "user.name", "ci")
+            target = Path(td) / rel
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_text("v1\n", encoding="utf-8")
+            if git("add", "-A").returncode != 0:
+                return False, "git add 失败"
+            if git("commit", "-qm", "base").returncode != 0:
+                return False, "首笔提交失败（git 身份不可用？）"
+            base = git("rev-parse", "HEAD").stdout.strip()
+            target.write_text("v2\n", encoding="utf-8")
+            if git("commit", "-qam", "change").returncode != 0:
+                return False, "第二笔提交失败"
+        except OSError as exc:
+            return False, "临时仓库建不起来：{0}".format(exc)
+
+        files, err = changed_files(td, base)
+        if err:
+            return False, err
+        if rel not in files:
+            return False, "未返回裸路径，实得 {0}".format(files)
+        return True, ""
 
 
 def self_test(scopes):
@@ -163,6 +232,7 @@ def self_test(scopes):
         ("content", ["content/tools/build.py"], True, "内容脚本"),
         ("content", ["app/tool/ci/affected.py"], True, "判据改动触发一次回归"),
         ("content", ["docs/guides/environment.md"], False, "文档不触发"),
+        ("app", ["docs/reference/术语表.md"], False, "参考层中文名不进口径对账"),
     ]
 
     failed = 0
@@ -181,10 +251,15 @@ def self_test(scopes):
             )
             failed += 1
 
+    ok, why = self_test_changed_files()
+    if not ok:
+        stderr_write("[ci:self-test] 失败 · 中文名路径端到端 · {0}".format(why))
+        failed += 1
+
     if failed:
         stderr_write("[ci:self-test] {0} 条失败".format(failed))
         return 1
-    stdout_write("[ci:self-test] {0} 条通过".format(len(cases)))
+    stdout_write("[ci:self-test] {0} 条通过".format(len(cases) + 1))
     return 0
 
 
@@ -224,7 +299,11 @@ def main(argv=None):
     parser.add_argument("--scope", help="作用域 id，见 scopes.json")
     parser.add_argument("--base", help="基线 sha；PR 用 base.sha，push 用 event.before")
     parser.add_argument("--root", default="..", help="仓库根（在 app/ 下执行时默认 ..）")
-    parser.add_argument("--self-test", action="store_true", help="跑内置断言，不读 git")
+    parser.add_argument(
+        "--self-test",
+        action="store_true",
+        help="跑内置断言；纯函数用例不碰仓库，端到端用例在临时目录建一个 disposable 仓",
+    )
     parser.add_argument("--list", action="store_true", help="列出作用域与输入闭包")
     args = parser.parse_args(argv)
 

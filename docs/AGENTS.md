@@ -53,7 +53,7 @@
 | 段 | 内容 | 已写实 |
 |---|---|---|
 | [`deliverables/01-plan/`](deliverables/01-plan/) | 计划类 7 份 | `SDP` §4 计划表 · `SCMP` §三 基线 · `DPMR` 前史 · 其余骨架 |
-| [`deliverables/02-requirements/`](deliverables/02-requirements/) | 需求类 5 份 | `SRS` 已含 `v0.1.0` 切片（128 / 171）与归属全量 |
+| [`deliverables/02-requirements/`](deliverables/02-requirements/) | 需求类 5 份 | `SRS` 已含 `v0.1.0` 切片（**141 / 203**）与归属全量。⚠️ 其中 `ACC` 12 条随 `ADR-0005` 决策 6 失效（`P1` 无登录、无服务端），待 `SRS` 清偿 |
 | [`deliverables/03-design/`](deliverables/03-design/) | 设计类 4 份 | `SDD` 分章映射 · 其余骨架 |
 | [`deliverables/04-test/`](deliverables/04-test/) | 测试类 3 份 | `STP` 分层与判据 · `STR` 不追溯声明 · `STD` 编号规则 |
 | [`deliverables/05-delivery/`](deliverables/05-delivery/) | 交付类 5 份 | 全为骨架 |

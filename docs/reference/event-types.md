@@ -1,7 +1,8 @@
 # 事件类型表
 
 > **唯一权威处**：事件类型全集与字段只在本文件定义。
-> **铁律：事件是唯一事实源。** 所有可写状态必须由 `fold(events, asOf)` 得出；不得引入与之并行的可写状态表（会话游标、笔记版本、掌握度快照皆同）。
+> **铁律：学习状态以事件为唯一事实源。** 所有**学习状态**必须由 `fold(events, asOf)` 得出；不得引入与之并行的可写状态表（会话游标、笔记版本、掌握度快照皆同）。
+> **适用边界**（[`ADR-0005`](../adr/0005-three-axis-tree-replaces-six-axis.md) 决策 5）：本铁律**不覆盖内容**。用户自建节点、个人覆盖补丁属「可写内容区」，是事实本身、不是事实的投影，不入事件流。判据是**事实的累积 vs 事实的投影**，不是「谁产生的」。
 
 ## 一、公共信封（所有事件共有）
 
@@ -10,9 +11,9 @@
 | `id` | string | 全局唯一。**`id` 建 UNIQUE 索引做上传幂等** —— 「同一条事件被传两次」只保留一条 |
 | `type` | enum | 见 §二 |
 | `hlc` | object | `{ physical: int, counter: int, deviceId: string }` —— **混合逻辑时钟**，离线也能生成且保证全序 |
-| `spaceId` | string | 所属知识空间 |
+| `spaceId` | string | 所属包的 `plugin_id`（`ADR-0005` 后取代「知识空间」）。**仍非空** —— 取值与 `itemId` 的前缀同源，只为 `fold(spaceId:)` 提供过滤维度 |
 | `userId` | string | **数据归属**。与 `hlc` 分工不同：`userId` 定「这条属于谁」，`hlc` 定「谁先谁后」。`v0.1.0` 取本地默认值，**非空、不写 `null`**（空值会让 `fold` 的过滤维度多出第三个分支）。见 [`ACC-013`](../design/ACC-accounts.md) |
-| `itemId` | string \| null | 目标知识项；迁移类事件可为 null 或指向旧 id |
+| `itemId` | string \| null | 目标节点（= `Node.id`）。迁移类事件可为 null 或指向旧 id |
 | `at` | string | ISO-8601，由 `hlc` 派生，供人阅读；**排序一律用 `hlc`，不用 `at`** |
 | `payload` | object | 各类型自有字段，见 §二 |
 
@@ -50,7 +51,7 @@
 
 | 类型 | 何时写 | 关键 payload | 状态 |
 |---|---|---|---|
-| `plan_created` | 建计划完成 | `spaceVersion` · `target{selector, resolved}` · `sourcePolicy` · `schemeId` · `methodProfileId` | 已定（`B4` 第 6 笔补登记 —— 原文写 `target{selector, resolvedCount}` 且把 `spaceId` 也列进来，两处都错，见下） |
+| `plan_created` | 建计划完成 | `subtreeRoot` · `primaryAxis` · `packVersions` · `sourcePolicy` · `schemeId` · `methodProfileId` | 已定（`B4` 第 6 笔补登记 —— 原文写 `target{selector, resolvedCount}` 且把 `spaceId` 也列进来，两处都错，见下）。**`ADR-0005` 后改名**：`spaceVersion` → `packVersions`（单值装不下多包）；`target{selector, resolved}` 取消，改 `subtreeRoot`（节点 id），`resolved` 降为派生 |
 | `plan_revised` | Runner 暴露缺口后回 Planner 重规划 | 同上 + `planId`（指回创建事件） | 已定（原文写「`version = 前值 + 1`」，`B4` 第 6 笔改为不写 `version`，见下） |
 
 **`Plan` 的身份 = `plan_created` 事件的 `id`。** `plan_created` 的 payload **不写 `planId`** —— 一个实体既有自己的 id、又有创建事件的 id，两者表达同一件事，迟早出现「对不上」的回放歧义，而它没有信息增量。反过来 `plan_revised` **必须**带 `planId`：同空间可并存多份（`SPEC-PLAN-003`），没有这个字段就折不出「改的是哪一份」，「建两份 Plan，两份独立存在」这条验收向量在事件层无法表达。
@@ -59,9 +60,9 @@
 
 **`version` 不进 payload。** 它由 `fold` 数该 `planId` 名下的事件条数得出，与笔记版本同一口径（`noteVersion` = 该节 `note_revised` 计数）。写在 payload 里就是第二份计数：重传、乱序、或有人手改一条，两处必然打架。
 
-**`target` 的键是 `{selector, resolved}`，`count` 派生、不序列化。** 原表写 `resolvedCount`、`PlanTarget.toJson()` 曾写 `count`，三处三个名字，同一个量变成三个字段。
+**`resolved` 是派生值，不进 payload。** `ADR-0005` 之后子树根已足以表达目标：`resolved`（子树下全部可学项 id）由节点树 + 已装载载荷算出，**载荷安装变化时必须重算**，否则参照集合会指向已卸载的项。原表写 `resolvedCount`、`PlanTarget.toJson()` 曾写 `count`，三处三个名字 —— 随 `selector` 一并取消。
 
-> `Plan` 是**多次意图**，同一空间可并存多份（如「入门跑通」与「专攻异步」）。`Plan` 的键是 `spaceId`，**不存在跨空间的「总 Plan」**。
+> `Plan` 是**多次意图**，同一子树可并存多份（如「入门跑通」与「专攻异步」）。`Plan` 的键是 `subtreeRoot`，**不存在跨子树的「总 Plan」**。
 
 ### C. 内容迁移（`PACK` / `GOV`）
 
@@ -96,14 +97,39 @@
 
 **`itemIdRange` 为空时不是「全部空间」**：它是「认领该 `spaceId` 下的全部匿名事件」。跨空间的认领要逐空间各写一条。
 
+### F. 导航（`NAV`）
+
+| 类型 | 何时写 | 关键 payload | 是否写判定 | 状态 |
+|---|---|---|---|---|
+| `navigate` | **地址发生变更**时 | `toId` · `axis` · `via` | ❌ | 新增（`ADR-0005` 决策 5） |
+
+`via` 取值：`drill` 下钻 · `wormhole` 虫洞 · `axis` 切轴 · `crumb` 面包屑 · `back` 后退 · `forward` 前进 · `recent` 最近访问。
+
+**三条规则：**
+
+1. **镜头动作不写。** 旋转 / 缩放 / 平移不改地址，与「只有点击下钻改地址」这条铁律天然对齐，不需要额外判断。
+2. **后退 / 前进也要写**（`via = back/forward`）。否则「A → 虫洞跳到 B → 后退到 A → 关闭应用」重开时会 fold 出 B，位置就错了。
+3. **`navigate` 可裁剪，学习类事件永不裁剪。** 最近访问只留最近 N 条（N ≥ 100，因需按 id 去重）；而 ⑦ 毕业判据 `S ≥ 180` 是时间累积型，裁一条就少一条。两类事件的保留策略不同，这是唯一需要分开处理的地方。
+
+**投影产物（不建表）**：
+
+| 产物 | 规则 |
+|---|---|
+| 最近访问 | 按 `toId` 去重、保留最近一次、上限 100 条、重启保留 |
+| 后退 / 前进双栈 | 事件流上的游标，会话内有效；重启后前进栈清空 |
+| 清空 | 手动清空或重置时清空。**它不属 S4 自建内容**，与「重置不清 uid 与自建节点」不冲突 |
+
+> 这取代了原先计划的 `AddressLog` 独立实体 —— 它与铁律「不得引入并行的可写状态表」正面冲突。双栈是「刚跳完想回去」，列表是「刚才那个在哪」，两者互补但同源于这条事件流。
+
 ## 三、不写入事件的东西（明确排除）
 
 | 项 | 为什么 |
 |---|---|
 | 会话游标 | 由 `step_completed` fold 得出（`(itemId, stepIndex)`），不建 `SessionCursor` 表 —— 否则多一个「表与事件不一致以谁为准」的新问题 |
+| 最近访问 / 后退前进栈 | 由 `navigate` fold 得出（§二 F），**不建 `AddressLog` 表** —— 与「会话游标不建表」同一理由 |
 | `R(t)` 当前可提取率 | 由 `D`/`S` 与经过时间算得，派生值 |
-| 掌握度 `mastery` | 由 `D`/`S` + 六要件完整度算出，派生值 |
-| 进度百分比 | 由 `item_passed` 计数 / 圈内项数算得，派生值 |
+| 掌握度 `mastery` | 由 `D`/`S` + 六要件完整度 `d` 算出，派生值 |
+| 进度百分比 | 由 `item_passed` 计数 / `Plan.subtreeRoot` 子树下的可学项数算得，派生值 |
 | 笔记内容正文 | 正文走 `note_revised` 的 payload；**不另存一份当前态快照** |
 | 界面状态（`ViewState`） | 属本地偏好，不是学习事实；跨设备同步策略另行处理 |
 

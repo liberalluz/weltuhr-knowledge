@@ -11,35 +11,61 @@
 
 ## 二、十份主题文档
 
-| 文档 | 主体 | 条数 | 前置阅读 | 明确不管（归谁） |
+**「主体」列写的是 `ADR-0005` 之后的应有形态，不是当前正文的实际内容** —— 十卷里已有六卷的判据建在旧本体上，逐卷处置见 §二.1。读某卷前先查那张表。
+
+| 文档 | 主体（`ADR-0005` 之后的应有形态） | 条数 | 状态 | 前置阅读 | 明确不管（归谁） |
+|---|---|---|---|---|---|
+| [FND](FND-foundation.md) | KST 三元组 · **三轴七级容器树** · 六要件三态 · `⪯`（挂地形层）· 身份与地址之辨 · 事件折叠底座 | 16 | 局部待修订 | — | 视图与档位（VIEW）· 包格式（PACK） |
+| [VIEW](VIEW-views.md) | 容器树 + 3D 宇宙双视图 · 档位与换根 · 虫洞过渡 · 详情面板 · 搜索四类落点 | 40 | **整体作废** | FND | 掌握度公式（QUANT）· 笔记内容（NOTE） |
+| [PACK](PACK-content-pack.md) | **四类包**（`skeleton` / `payload` / `overlay` / `terrain` / `method`）· manifest 三组 · 载荷子树 · path 16 条规则 | 18 | 局部待修订 | FND | 事件字段（reference/event-types）· 审核裁定（GOV） |
+| [PLAN](PLAN-planning.md) | 源=材料 · 体系=**跨轴 route** · 方法=动作+判据 · 三段自建 · `Plan` 实体 · 实时预览 · 候选排序 | 22 | 局部待修订 | FND · PACK | 方法与判据的执行（STEP） |
+| [STEP](STEP-learning-steps.md) | 七步行为 · Runner 三入队源 · 会话边界 · 步骤游标 · 六类执行算子 · 检验两出口（前置挂 `terrain`） | 34 | 局部待修订 | FND · PLAN | SRS 参数与公式（QUANT） |
+| [QUANT](QUANT-quantification.md) | 掌握度两维 · 进度离散 · 三层单调状态 · **`requirements` 只挂行星层** · FSRS 参数落位 | 15 | 局部待修订 | FND · STEP | 视觉表达（VIEW）· 常量数值（reference/constants） |
+| [NOTE](NOTE-notes.md) | `Note` 实体 · 三层内容 · 两套切换 · 单向导出三戳 · 按节版本 · 与判定的隔离 | 19 | 术语待同步 | FND · PACK · STEP | 模板排版（平台声明）· 笔记内容正确性（内容作者） |
+| [GOV](GOV-governance.md) | 提交四裁定 · `OverlayPatch` · `PathClaim` 墓碑 · 跨设备 HLC 合并 · 孤儿项 · 降级五档 | 14 | 局部待修订 | FND · PACK | 包格式（PACK） |
+| [ACC](ACC-accounts.md) | 账号为**云能力**前提 · 账号/登录方式分层 · 三渠道 · 注册五步 · 会话双令牌 · `userId` 接缝 | 15 | **现行** | FND · event-types | 事件搬运（SYNC）· 包格式（PACK）· 治理裁定权（GOV） |
+| [SYNC](SYNC-sync.md) | 只搬不判 · 双向游标 · 三端点 · 三张表 · 包版本三态 · 触发时机 · 可中断增量 | 16 | 术语待同步 | FND · GOV · ACC · event-types | 事件类型（event-types）· 合并语义（GOV）· 账号与会话（ACC） |
+
+合计 **209 条编号条目**（十份文档各自 `1..N` 连续编号，无跨文档重号）。
+
+> **`PLAN` 是 22 条而非 21**（2026-10-20 实测）：本表原记 21、合计 208 —— 实际 `SPEC-PLAN-022`（范围的选择式有且只有四种）早已在正文里，索引未回填。与换本体无关，是一处旧账。
+
+> **`VIEW` 为什么曾单独扩到 40 条**（2026-10-18）：`B12` 逐级下钻单列了五档形态（`VIEW-036`–`040`），因为它们各自有独立的真实性约束与必写断言。⚠️ **这五条随 `B12` 一并作废** —— 见 §二.1。
+
+### 二.1 作废登记（`ADR-0005` / `0006` / `0007` 的清偿进度）
+
+**为什么单列**：`ADR-0005` 换掉本体后，六卷的判据不再成立，但**没有任何东西会因此变红** —— 文档自洽、测试全绿，只有实施者按旧前提开工时才暴露。`§七` 的 A 级变更要求「先出 ADR 再改规格」，ADR 出了、规格没跟上，规则本身没被执行。这张表把缺口显式化。
+
+| 卷 | 条数 | 状态 | 失效依据 | 缺口 |
 |---|---|---|---|---|
-| [FND](FND-foundation.md) | KST 三元组 · 六轴 + 三层 · 六要件三态 · `⪯` · 坐标与容器之辨 · 事件折叠底座 | 16 | — | 视距与通道（VIEW）· 包格式（PACK） |
-| [VIEW](VIEW-views.md) | Z0–Z4 · 逐级下钻五档形态 · 六通道两叠加 · 三视图投影 · HUD 七区块（不含事件计数）· 树四层四类行 · 详情六入口两壳 · 快速定位 | 40 | FND | 掌握度公式（QUANT）· 笔记内容（NOTE） |
-| [PACK](PACK-content-pack.md) | 边界三判据 · 一空间一包 · pack schema · 稳定 `Item.id` · overlay 双平面 · 版本迁移 | 18 | FND | 事件字段（reference/event-types）· 审核裁定（GOV） |
-| [PLAN](PLAN-planning.md) | 源=材料 · 体系=顺序 · 方法=动作+判据 · 三段自建 · 逆序数 · `Plan` 实体 · 实时预览 · 候选排序 | 21 | FND · PACK | 方法与判据的执行（STEP） |
-| [STEP](STEP-learning-steps.md) | 七步行为 · Runner 三入队源 · 会话边界 · 步骤游标 · 六类执行算子 · 检验两出口 · 保持 · 毕业 | 34 | FND · PLAN | SRS 参数与公式（QUANT） |
-| [QUANT](QUANT-quantification.md) | 掌握度两维 · 进度离散 · 三层单调状态 · `verified/checked` · FSRS 参数落位 | 15 | FND · STEP | 视觉表达（VIEW）· 常量数值（reference/constants） |
-| [NOTE](NOTE-notes.md) | `Note` 实体 · 三层内容 · 两套切换 · 单向导出三戳 · 按节版本 · 与判定的隔离 | 19 | FND · PACK · STEP | 模板排版（平台声明）· 笔记内容正确性（内容作者） |
-| [GOV](GOV-governance.md) | 提交四裁定 · 最小三字段 · 即入 overlay · 跨设备 HLC 合并 · 孤儿项 · 降级五档 | 14 | FND · PACK | 包格式（PACK） |
-| [ACC](ACC-accounts.md) | 账号为使用前提 · 账号/登录方式分层 · 三渠道 · 注册五步 · 会话双令牌 · `userId` 接缝 | 15 | FND · event-types | 事件搬运（SYNC）· 包格式（PACK）· 治理裁定权（GOV） |
-| [SYNC](SYNC-sync.md) | 只搬不判 · 双向游标 · 三端点 · 三张表 · 包版本三态 · 触发时机 · 可中断增量 | 16 | FND · GOV · ACC · event-types | 事件类型（event-types）· 合并语义（GOV）· 账号与会话（ACC） |
+| `FND` | 16 | 局部待修订 | `ADR-0005` 决策 1 / 4 | 六轴 + 三层 → 三轴七级；`⪯` 改挂地形层 |
+| `VIEW` | 40 | **整体作废** | `ADR-0005` 决策 3 + `ADR-0006` | 五档径向投影与六通道全数失效，待 `B17` 落地后重写。仅「树四类行」可抢救给 `B17a` |
+| `PACK` | 18 | 局部待修订 | `ADR-0005` 决策 2 | 一空间一包 → 四类包；`pack.json` 五段 → manifest 三组 |
+| `PLAN` | 22 | 局部待修订 | `ADR-0005` §二 PLAN 行 | `Scheme` 线性扩展 → 跨轴 route + 三校验 |
+| `STEP` | 34 | 局部待修订 | `ADR-0005` 决策 4 | 前置检查挂 `PrerequisiteEdge`，不再直读 `⪯` |
+| `QUANT` | 15 | 局部待修订 | `ADR-0005` §二 QUANT 行 | `requirements` 从项下移到行星层 |
+| `NOTE` | 19 | 术语待同步 | `ADR-0007` | `itemId` → `nodeId`；`Item` → `Node` |
+| `GOV` | 14 | 局部待修订 | `ADR-0005` 决策 2 | overlay 双平面 → `OverlayPatch` + `PathClaim` 墓碑 |
+| `ACC` | 15 | **现行** | — | 排期后移 `P2`，**设计本身未变** |
+| `SYNC` | 16 | 术语待同步 | `ADR-0007` | `itemId` → `nodeId` |
 
-合计 **208 条编号条目**（十份文档各自 `1..N` 连续编号，无跨文档重号）。
+**清偿顺序**（按入口链，不按文档类型）：`00-index`（本文件）→ `VIEW` / `channel-table` / `constants` → 六卷条目级 → `SRS` / `SDD` → `STP` / `STD`。
 
-> **为什么 `VIEW` 是 40 条而不是 35**（2026-10-18）：`B12` 逐级下钻单列了五档形态（`VIEW-036`–`040`），因为它们各自有独立的真实性约束与必写断言，塞进 `VIEW-001` 那张四列表会变成一张读不完的表。**其余改动全是修订段** —— `VIEW-002/006/007/009/010/014/015/018/019/027/031` 十一处改的是既有条目的判据，不新增编号。
+> **`STP` / `STD` 必须押后**：683 条用例的名字绑在旧实体类名上，正确改法取决于 `B13a` 落地的真类名。现在改是猜，`B13a` 一落地又要改一遍。
+> **`constants.md` §十一 / §十三 只标废、不写新值**：新值要等 `B17b` 的 spike，现在写等于再猜一次 —— 与 `R-19` 同一种错法。
 
 ## 三、参考层（`../reference/`）
 
 被多份文档引用，**只在 `../reference/` 维护**。六张横切表：
 
-| 表 | 内容 | 主要引用方 |
-|---|---|---|
-| [channel-table](../reference/channel-table.md) | 视觉通道 ↔ 语义维度（含唯一豁免） | VIEW · QUANT |
-| [constants](../reference/constants.md) | 全部数值常量 | 全部 |
-| [event-types](../reference/event-types.md) | 事件类型全集 | PACK · STEP · NOTE · GOV |
-| [entity-fields](../reference/entity-fields.md) | 实体字段表 | 全部 |
-| [glossary](../reference/glossary.md) | 术语与八对辨析 | 全部 |
-| [not-list](../reference/not-list.md) | 明确不做 + 理由 | 全部（实施者必读） |
+| 表 | 内容 | 主要引用方 | 状态 |
+|---|---|---|---|
+| [channel-table](../reference/channel-table.md) | 视觉通道 ↔ 语义维度（含唯一豁免） | ~~VIEW · QUANT~~ | **整体作废** —— 六通道随 `ADR-0005` 决策 3 与 `ADR-0006` 失效 |
+| [constants](../reference/constants.md) | 全部数值常量 | 全部 | 部分作废 —— 见该文件头的作废登记 |
+| [event-types](../reference/event-types.md) | 事件类型全集 | PACK · STEP · NOTE · GOV | **现行**（已补 `navigate`） |
+| [entity-fields](../reference/entity-fields.md) | 实体字段表 | 全部 | **现行**（已按 `ADR-0005` / `0007` 重写） |
+| [glossary](../reference/glossary.md) | 术语与八对辨析 | 全部 | 待修订 —— 五条术语与一处二分建在旧本体上 |
+| [not-list](../reference/not-list.md) | 明确不做 + 理由 | 全部（实施者必读） | 待修订 —— `N-01` / `N-11` / `N-13` 的**理由**引旧机制（结论仍成立） |
 
 > 另有**上游理论长文** [`../reference/knowledge-system-learning-methodology.md`](../reference/knowledge-system-learning-methodology.md) —— 全案的理论依据。它是 `design/` 的**上游**（design 全部引用它，它不引用 design），改动频率远低于 design，故归入参考层而非设计基线。
 
@@ -58,6 +84,8 @@
 | **X-07 已学不可撤销** | `item_passed` 是 append-only 事件；只有包版本迁移可改变其指向 | QUANT · PACK · GOV |
 | **X-08 顺序与范围分离** | 体系（顺序）定义在空间级；`target`（范围）随视距。不得给域单独配体系 | FND · PLAN · NOTE |
 | **X-09 同步只搬不判** | 同步层只搬运事件与校验包版本，**不去重、不做冲突解决、不计算状态**；合并一律由客户端 `fold` 完成。违反它不会有任何测试变红 —— 故须显式成条 | SYNC · GOV · PACK |
+
+> ⚠️ **`X-01`–`X-03` 与 `X-08` 的表述对象已不存在，但内核仍然成立**。这四条的**判据**（不补默认值 / 一通道一维度 / 不同构不映射 / 范围与顺序分离）在新本体下全部照样适用；失效的只是它们各自举例的「通道」「`φ` 坐标」「视距」这些词。重写 `VIEW` 时一并改写措辞，**本文件不先行改写** —— 在没有新档位定义之前改写，等于再猜一次。
 
 ## 五、编号规则
 
@@ -102,7 +130,9 @@
 |---|---|---|
 | **C 级** | 只改措辞、补例子 | 直接改，PR 里说明 |
 | **B 级** | 改常量数值、改字段可空性、新增事件类型 | PR + 变更说明 + 回填横切表 |
-| **A 级** | 改地基判据（六轴、`⪯`、事件模型、通道表） | 先出 ADR，评审通过后改规格 |
+| **A 级** | 改地基判据（三轴容器树 · 地形层 `⪯` · 事件模型 · 四类包 · 身份与地址分离） | 先出 ADR，**评审通过后同一批内改规格并登 §二.1** |
 | **D 级** | 与 NOT 清单冲突 | **不做**；除非推翻 NOT 条目并留痕 |
+
+> ⚠️ **A 级原本只写「先出 ADR，评审通过后改规格」，`ADR-0005` 只做了前半** —— 规格滞后至今，而期间没有任何东西变红。这正是 §二.1 存在的理由：规则要求两步，缺了第二步不会有反馈，只会让下一个读规格的人按旧前提开工。**故 A 级判据补上「同一批内」与「登 §二.1」两个约束。**
 
 规格是活文档，**不设版号**；交付物（`../deliverables/`）才独立递增 `vX.Y.Z`。
