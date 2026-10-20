@@ -256,3 +256,74 @@ enum LearnableType {
     _unknownWire('LearnableType', raw, values.map((LearnableType v) => v.name));
   }
 }
+
+// ────────────────────── 三类边（`entity-fields` §3–§5） ──────────────────────
+
+/// 父子边形态（`entity-fields` §3）。
+///
+/// `main` **每节点恰好一条**，`secondary` 是 0..N 的附加归属。
+/// 主父不可覆盖（`S0`–`S4` 任何一层都不得改），这条由 `ParentIndex` 与
+/// 三元校验器的「父链可达 + 跨包」两面共同守。
+enum ParentEdgeKind {
+  main,
+  secondary;
+
+  static ParentEdgeKind fromWire(String raw) {
+    for (final ParentEdgeKind value in values) {
+      if (value.name == raw) {
+        return value;
+      }
+    }
+    _unknownWire('ParentEdgeKind', raw, values.map((ParentEdgeKind v) => v.name));
+  }
+}
+
+/// 虫洞边形态（`entity-fields` §4）：**单值**，判定顺序
+/// `sameName` > `manyToMany` > `granularity`。
+///
+/// 单值而非数组：三形态本身会重叠（`0812 ↔ 080901` 既像同名异编又像粒度错位），
+/// 多值等于把「这条边画成什么样」的矛盾推给渲染层。
+enum WormholeKind {
+  sameName,
+  manyToMany,
+  granularity;
+
+  /// 线上取值走蛇形 —— 与枚举名不同形，故走 [wire] 而非 `name`。
+  String get wire {
+    switch (this) {
+      case WormholeKind.sameName:
+        return 'same_name';
+      case WormholeKind.manyToMany:
+        return 'many_to_many';
+      case WormholeKind.granularity:
+        return 'granularity';
+    }
+  }
+
+  static WormholeKind fromWire(String raw) {
+    for (final WormholeKind value in values) {
+      if (value.wire == raw) {
+        return value;
+      }
+    }
+    _unknownWire('WormholeKind', raw, values.map((WormholeKind v) => v.wire));
+  }
+}
+
+/// 先修强度（`entity-fields` §5）。
+///
+/// `⪯` = `required` 边的传递闭包，是**全项目唯一偏序源**；
+/// `recommended` 只影响排序建议与 UI 提示，不构成可达性约束。
+enum EdgeStrength {
+  required,
+  recommended;
+
+  static EdgeStrength fromWire(String raw) {
+    for (final EdgeStrength value in values) {
+      if (value.name == raw) {
+        return value;
+      }
+    }
+    _unknownWire('EdgeStrength', raw, values.map((EdgeStrength v) => v.name));
+  }
+}
