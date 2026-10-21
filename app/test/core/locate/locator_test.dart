@@ -110,7 +110,7 @@ void main() {
       expect(result.top?.target, 'python:lexical');
     });
 
-    test('命中轴根 ⇒ 部分命中，且归「空间」档（点它换整棵树）', () {
+    test('命中轴根 ⇒ 部分命中，且归「空间」档（点它换整棵树）（SPEC-FND-006 / SPEC-FND-008）', () {
       final LocateResult result = locator.locate('研究生目录');
       expect(result.state, LocateState.partial);
       expect(result.top?.kind, LocateKind.space);
@@ -174,7 +174,7 @@ void main() {
       expect(byNodeId.top?.target, 'python:lex-keyword');
     });
 
-    test('名字与 id 各算一条命中，但同一目标只留最强那条', () {
+    test('名字与 id 各算一条命中，但同一目标只留最强那条（C-27）', () {
       // 「装饰器」既不是 id 也不是子串，只有名字命中 ⇒ 该目标只出现一次。
       final LocateResult result = locator.locate('装饰器');
       expect(
@@ -298,7 +298,7 @@ void main() {
   });
 
   group('圈定范围（ADR-0007 决策 2：inScope 是派生值）', () {
-    test('给了子树根 ⇒ 子树外的是圈外，进 hits 但进不了 usableHits', () {
+    test('给了子树根 ⇒ 子树外的是圈外，进 hits 但进不了 usableHits（ADR-0007 决策 2）', () {
       final LocateResult result = Locator.single(
         _pack(),
         subtreeRoot: 'python:lexical',
@@ -309,7 +309,7 @@ void main() {
       expect(result.hits.first.inScope, isFalse);
     });
 
-    test('子树根自己算圈内（子树含根）', () {
+    test('子树根自己算圈内（子树含根）（ADR-0007 决策 2）', () {
       final LocateResult result = Locator.single(
         _pack(),
         subtreeRoot: 'python:fn',
@@ -318,7 +318,7 @@ void main() {
       expect(result.top?.inScope, isTrue);
     });
 
-    test('不给子树根 ⇒ 不判圈内，每条命中都可用', () {
+    test('不给子树根 ⇒ 不判圈内，每条命中都可用（ADR-0007 决策 2）', () {
       final LocateResult result = Locator.single(_pack()).locate('装饰器');
       expect(result.usableHits, isNotEmpty);
       expect(
