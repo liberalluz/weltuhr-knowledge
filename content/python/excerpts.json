@@ -22,10 +22,7 @@
       }
     ],
     "appliesTo": {
-      "spaceId": "python",
-      "sixAxis": {
-        "stack": "Python"
-      }
+      "spaceId": "python"
     }
   },
   {
@@ -41,10 +38,7 @@
       }
     ],
     "appliesTo": {
-      "spaceId": "python",
-      "sixAxis": {
-        "stack": "Python"
-      }
+      "spaceId": "python"
     }
   },
   {
@@ -60,10 +54,7 @@
       }
     ],
     "appliesTo": {
-      "spaceId": "python",
-      "sixAxis": {
-        "stack": "Python"
-      }
+      "spaceId": "python"
     }
   },
   {
@@ -79,10 +70,7 @@
       }
     ],
     "appliesTo": {
-      "spaceId": "python",
-      "sixAxis": {
-        "stack": "Python"
-      }
+      "spaceId": "python"
     }
   }
 ]
