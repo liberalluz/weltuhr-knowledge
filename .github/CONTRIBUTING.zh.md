@@ -42,6 +42,8 @@
 
 未讨论的大 PR 会被关闭而不是评审 —— 不是不欢迎，是**评审一份已经写完的 A 级改动**等于事后追认，成本比从头讨论高。
 
+> **干活前一次**：`git config core.hooksPath .githooks` —— 不设则本地钩子不生效，直推 `main` 只在**推上去之后**由 CI 判红。命令与失效方式见 [git-conventions §2.1](../docs/guides/git-conventions.md)。
+
 ## 三、提 PR 前的五件事
 
 | # | 项 | 判据 |

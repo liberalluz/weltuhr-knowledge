@@ -103,6 +103,19 @@
 - ⚠️ **远端分支保护在当前账号下不可用**（GitHub 免费账号的私有仓不支持）⇒ **远端不拦**。替代装置在近端两道，判据落点见 §3.5：`.githooks/pre-push`（本地，`git push` 当场失败）· `repo-hygiene` 的「main 只接受 PR」步骤（CI，直推后红）。`pre-push` **同时管引用类型**：只放行 `refs/heads/*` 与 §五 命名的 tag。
 - 装置只拦「忘了」，不拦「故意」——`--no-verify` 与手写伪编号都绕得过去。**不因技术上没拦住就当作允许**。开关清单见 §4.3。
 
+### 2.1 clone 后第一件事：让钩子真正生效
+
+```bash
+git config core.hooksPath .githooks   # 每台机器设一次
+git config --get core.hooksPath       # 自查：应回显 .githooks
+```
+
+`core.hooksPath` 是**本地配置，不进仓库** —— `.githooks/pre-push` 在库里，钩子却不会自动启用。这是本装置**唯一的失效方式**：文件看着都在，`git push` 时一行也没跑。新克隆、换机、重装后必跑上面第一句。
+
+不设的后果不是「没有保护」，而是**保护降级为事后**：本地不再当场失败，直推 `main` 改由 `repo-hygiene` 判红 —— 但那时远端已经脏了。故这条是**必跑**，不是建议。
+
+> Git 没有「仓库自带钩子自动启用」的机制（`core.hooksPath` 只能靠本地或全局配置），这是 Git 的限制，不是本仓的疏漏。要彻底免设只能靠平台侧分支保护，而当前账号类型不提供（见上）。入口处的一句话指向见 [`.github/CONTRIBUTING.md`](../../.github/CONTRIBUTING.md) §二。
+
 ---
 
 ## 三、提交信息
