@@ -98,3 +98,18 @@ jobs:
           fi
           echo "区间：$range"
           bash .githooks/commit-msg --range "$range"
+
+      # ── main 只接受 PR ──────────────────────────────────────────────
+      # 判据在 `.githooks/pre-push`，与本地 hook **同一个文件**、同一个 `--range` 入口。
+      # 本地那端让 `git push` 当场失败；这端让「已经推上去的直推」留下红灯 ——
+      # 远端分支保护在本账号的私有仓不可用（§4.3），近端两道是唯一替代装置。
+      #
+      # ⚠️ 只在 `push` 事件跑：PR 事件的 head 是特性分支，那上面的提交本就没有
+      #    `(#NNN)`（编号是合入时才写上去的），拿这条判据去卡 PR 必然全红。
+      # ⚠️ 本步骤校验不到 tag：`on.push` 只挂 `branches: [main]`，推 tag 不触发
+      #    workflow。tag 判据只有近端一道，见 `.githooks/pre-push` 的注释。
+      - name: main 只接受 PR
+        if: github.event_name == 'push'
+        run: |
+          echo "区间：${{ github.event.before }}..${{ github.event.after }}"
+          bash .githooks/pre-push --range "${{ github.event.before }}..${{ github.event.after }}"
