@@ -1,6 +1,6 @@
 # 软件结构设计说明（SDD）
 
-> **版号**：`v0.13.0` · **状态**：§二 §三 已写实，§四–§六 待填（§2.1 视图层为**正式视图层二十三份**（实扫），`core/` 文件树按实扫补全至 **五十一份**（树内 40 条，`plan/` 11 份待笔 6 补登） —— 定位层拆引擎与分诊，构图层拆绘制与拾取，视图层含导航记忆与**运动时钟**；`B3` 笔 10 起导航记忆带空间维度、`B12` 第六笔起带域维度，**文件数两次都没变**；`B12` 的五档逐级下钻各档一对「几何 + 绘制」，视图层文件数 12 → 23 全部来自 `B12`；`V-1i` 前半新增 `core/view/motion.dart`，同时把 `V-1d` 漏登的 `core/graph/subtrees.dart` 补进树 —— 计数 31 与实扫 32 差的就是它）
+> **版号**：`v0.14.0` · **状态**：§二 §三 已写实，§四–§六 待填（§2.1 视图层为**正式视图层二十三份**（实扫），`core/` 文件树按实扫补全至 **五十九份**（树内 48 条，`plan/` 11 份待笔 6 补登） —— 定位层拆引擎与分诊，构图层拆绘制与拾取，视图层含导航记忆与**运动时钟**；`B3` 笔 10 起导航记忆带空间维度、`B12` 第六笔起带域维度，**文件数两次都没变**；`B12` 的五档逐级下钻各档一对「几何 + 绘制」，视图层文件数 12 → 23 全部来自 `B12`；`V-1i` 前半新增 `core/view/motion.dart`，同时把 `V-1d` 漏登的 `core/graph/subtrees.dart` 补进树 —— 计数 31 与实扫 32 差的就是它）
 > 本文件是**软件结构**的设计视图。分章与 `design/` 主题文档对齐，实现细节**回指不复制**。当前已映射**八份**（`FND` / `VIEW` / `PACK` / `PLAN` / `STEP` / `QUANT` / `NOTE` / `GOV`）；`ACC` / `SYNC` 两域属 `v0.1.0` 服务端新增，**结构与机制待补**（见 `ACC` / `SYNC` 本身，本文件暂不映射）。
 > **追溯补录**：2026-10-17 · §二 §三 依据 `app/lib/` · `app/tool/lint/` · `content/tools/` 的既有代码反推，非当时所写。
 
@@ -12,6 +12,7 @@
 | `v0.2.0` | 2026-10-17 | **追溯补录** §二 分层与模块边界、§三 内容管线。据代码现状写实，并标明第三段（运行期加载）尚未实现 |
 | `v0.12.0` | 2026-10-18 | §2.1 `core/view/` 由 7 份 → **8 份**（增 `motion.dart`，`V-1i` 前半）：三个纯函数（`orbitPhase` 相位 · `spunRadians` 相位→弧度 · `governorFactor` 减速系数）+ 一个换算（`advanceClock` 累计时钟）。放 `core/view/` 而不是屏幕里的理由与 `navigation.dart` 同一套 —— 「时钟只增不回卷」「跨周期边界相位连续」「系数随距离单调」全是**可判定**的判据，留在 `_State` 里只能靠 widget test 隔着 24 s 的 `pump` 间接验。同版按**实扫**修两处：`core/` 总数 31 → **33**（`graph/subtrees.dart` 是 `V-1d` 新增却一直没进树 —— 那一笔只改了 §5 的份数没改本树），树内计数行「共 28 份」也早已与树自身条目数（31）不一致，一并校正。**注意这里刻意不放 `Ticker` / `AnimationController`** —— 那两个是 Flutter 类型，核心层禁 `dart:ui`（`R1` 规则），时钟只以「秒数」进出 |
 | `v0.13.0` | 2026-10-20 | §2.1 `core/` 树补登 **7 份**并新增 **`storage/` 一层**：`entities/node.dart` · `entities/edge.dart` · `events/id.dart` · `graph/parent_index.dart` · `pack/triple_validator.dart`（前五份是笔 1 / 笔 2 落下却没进树的）+ `storage/store_fs.dart` · `storage/store_layout.dart`（笔 3 新建）。计数按 `find` 实扫改为 **51 份**。⚠️ **树内只有 40 条** —— `plan/` 11 份（`P-6`–`P-8` 落地）从来没进过树，树下一段已显式列出，补登归 `B13a` 笔 6。这不是本笔新增的滞后，是攒了三批的；写明而非静默改。同时把 `pack_fs.dart` 的描述从「文件系统抽象」改为「内容包的只读接缝」—— 它现在零方法、三方法收口到 `StoreFs` |
+| `v0.14.0` | 2026-10-21 | §2.1 `core/` 树补登 **8 份**（笔 4 落下却未进树）：`entities/` 七份 —— `pack.dart` · `entry.dart` · `path_claims.dart` · `overlay_patch.dart` · `source.dart` · `scheme.dart` · `method.dart`，`pack/` 一份 —— `pack_reader.dart`。计数按 `find` 实扫 51 → **59 份**、树内 40 → **48 条**；`plan/` 11 份仍待笔 6 补登。⚠️ `source` / `scheme` / `method` 三份与 `entities/content.dart` 里的旧同名类型**并存** —— 旧件是 α 包链路（12 个用例仍在跑），删除归笔 5，树里已就地标注 |
 | `v0.11.0` | 2026-10-18 | §2.1 `features/` 增两个文件：`universe/star_closeup.dart`（`Z4` 恒星特写的几何）与 `universe/star_closeup_painter.dart`（绘制）。与 `Z3` 同为「几何 / 绘制」一对，理由也相同 —— 前者是纯函数（可断言轨道数、确定性、斑点分布），后者只负责把布局变成画布指令。⚠️ **顺带修一处长期滞后**：§2.1 视图层一行自 `v0.7.0` 起一直写「12 份」，而 `B12` 前四笔各增一对几何 / 绘制文件后再没人改它；本版按**实扫**改为 **23 份**（`universe/` 20 + `locate/` 1 + `detail/` 1 + `palette.dart` 1）。这不是本笔新增导致的，是四笔累计未同步 —— 写明而非静默改 |
 | `v0.10.0` | 2026-10-18 | §2.1 `navigation.dart` 再扩一格：`ViewSnapshot` 加 `domainId`（七字段，`SPEC-VIEW-015` 修订三）。**文件数不变** —— 「域」和「空间」同属这条判据的**参数**，不是新的一层。为什么这个字段非在 `core/view/` 不可：`Z2` 的画面只画一个域，而域**推不出来**（档位 + 空间只说了「在这个空间的某个域里」，选中项在从 `Z3` 退到 `Z2` 时被清空）—— 判据落到屏幕里就只能靠 widget test 间接验，而漏掉的表现是「返回后空屏配两段面包屑」，没有任何东西会变红 |
 | `v0.9.0` | 2026-10-18 | §2.1 `core/view/navigation.dart` 的职责扩一格：`ViewSnapshot` 加 `spaceId`（六字段），`trail` 的元素由 `itemId` 改为 `TrailStep{spaceId, itemId}`。**文件数不变** —— 多根是这条判据的参数，不是新的一层。放这里的理由与 `v0.8.0` 同： 「返回该回到哪个空间的哪一项」是可判定判据，留在 `State` 里只能靠 widget test 间接验 |
@@ -53,7 +54,7 @@
 `core/` 实际文件：
 
 ```
-app/lib/core/                    共 51 份（树内 40 条；`plan/` 11 份尚未补登，见下）
+app/lib/core/                    共 59 份（树内 48 条；`plan/` 11 份尚未补登，见下）
 ├── constants.dart          常量表（docs/reference/constants.md 的代码投影）
 ├── enums.dart              枚举全集（含 wire 名映射）
 ├── errors.dart             错误类型（含 TbdConstantError）
@@ -62,8 +63,15 @@ app/lib/core/                    共 51 份（树内 40 条；`plan/` 11 份尚�
 ├── entities/
 │   ├── content.dart        Item · ItemRequirements · Edge · Scheme · SourceRef · MethodProfile
 │   ├── edge.dart           三类边 `sealed` 三分 + 按 `type` 判别符分派（唯一入口）
+│   ├── entry.dart          NodeEntry · Resource · EntryStep · Criterion · QuizItem（补裁 `source_refs[]`）
+│   ├── method.dart         新格式 MethodProfile · MethodBundle（旧件在 `content.dart`，笔 5 收口）
 │   ├── node.dart           `Node` 按槽位 `sealed` 两分（结构 / 可学）+ `R6`–`R9` 守形态
+│   ├── overlay_patch.dart  OverlayPatch（`value` 为 `Object?`，**不收窄**）
+│   ├── pack.dart           Pack + 四类特化事实（`kinds[]` 与字段一一对应，违反抛 `IllegalPackKindError`）
+│   ├── path_claims.dart    PathClaim（`live` / `tombstone`）+ PathAlias（蛇形 wire）
 │   ├── plan.dart           Plan · Target
+│   ├── scheme.dart         新格式 Scheme（带 `AuthorityLevel`；旧件在 `content.dart`，笔 5 收口）
+│   ├── source.dart         新格式 SourceRef · SourceSegment · SourceAppliesTo（同上，笔 5 收口）
 │   └── state.dart          SrsState · ViewState 等状态实体
 ├── events/
 │   ├── event.dart          Event · Hlc · EventType ↔ wire 名
@@ -84,11 +92,12 @@ app/lib/core/                    共 51 份（树内 40 条；`plan/` 11 份尚�
 │   ├── diagnose.dart       无命中的四类分诊 + 邻近候选（不过滤、不渲染）
 │   └── locator.dart        快速定位匹配 + 三态（判在可用命中上）
 ├── pack/
-│   ├── cycle_check.dart    环检测
+│   ├── cycle_check.dart    环检测（`findCyclesFrom` 供新解析层复用，旧签名转调）
 │   ├── dart_io_pack_fs.dart 唯一 `dart:io` 处（读 + 原子写 + 追加）
 │   ├── pack_fs.dart        内容包的只读接缝（`StoreFs` 的包语义名）
-│   ├── pack_parse.dart     清单 + 产物 → LoadedPack
+│   ├── pack_parse.dart     清单 + 产物 → LoadedPack（旧格式，笔 5 删）
 │   ├── pack_probe.dart     候选根探测
+│   ├── pack_reader.dart    单文件六段解析（无 `meta` 信封；`counts` 与 `nodes[]` 实扫一致）
 │   └── triple_validator.dart 三元校验器（6 码 fail-fast，`path-rules` §六）
 ├── storage/
 │   ├── store_fs.dart       三区接缝：只读 / 可写（原子写）/ 只追加
@@ -104,7 +113,7 @@ app/lib/core/                    共 51 份（树内 40 条；`plan/` 11 份尚�
     └── zoom.dart           五档视距 + `φ` → 档位
 ```
 
-⚠️ **`plan/` 11 份（`applies_to` · `candidates` · `method_bundle` · `ordering` · `plan_draft` · `plan_events` · `plan_target` · `platform_candidates` · `preview` · `scope` · `user_content`）尚未进树** —— 它们随 `B4` 的 `P-6`–`P-8` 落地，而那一批只改了别处的份数、没回头改本树。上面那句「共 51 份」是按 `find` 实扫的，不是树内条数相加（40 + 11）。补登归 `B13a` 笔 6 收口，不在笔 3 的范围里 —— 笔 3 只补了它自己新增的 `storage/` 与笔 1 / 笔 2 落下的 4 份（`node` · `edge` · `parent_index` · `triple_validator`）与 `events/id.dart`。
+⚠️ **`plan/` 11 份（`applies_to` · `candidates` · `method_bundle` · `ordering` · `plan_draft` · `plan_events` · `plan_target` · `platform_candidates` · `preview` · `scope` · `user_content`）尚未进树** —— 它们随 `B4` 的 `P-6`–`P-8` 落地，而那一批只改了别处的份数、没回头改本树。上面那句「共 59 份」是按 `find` 实扫的，不是树内条数相加（48 + 11）；树内 48 条已对账 —— 无「树里有、磁盘无」，亦无反向漏登。补登归 `B13a` 笔 6 收口：笔 3 只补了它自己新增的 `storage/` 两份与笔 1 / 笔 2 落下的 5 份（`node` · `edge` · `parent_index` · `triple_validator` · `events/id`），笔 4 补了本笔新增的 8 份（`entities/` 七 + `pack_reader`）。
 
 ### 2.2 约束如何被强制执行
 
