@@ -343,7 +343,7 @@ class MethodStep {
   factory MethodStep.fromJson(JsonMap json) {
     final Object? phase = json['phase'];
     return MethodStep(
-      operator: ExecutionOperator.values.byName(
+      operator: ExecutionOperator.fromWire(
         requireString(json, 'operator'),
       ),
       params: json['params'] == null
@@ -379,14 +379,14 @@ class MethodStep {
         return StepPhase.first;
       case ExecutionOperator.recall:
       case ExecutionOperator.practice:
-      case ExecutionOperator.teach:
-      case ExecutionOperator.build:
+      case ExecutionOperator.explain:
+      case ExecutionOperator.doStep:
         return StepPhase.both;
     }
   }
 
   JsonMap toJson() => <String, Object?>{
-    'operator': operator.name,
+    'operator': operator.wire,
     if (phase != null) 'phase': phase!.name,
     if (params.isNotEmpty) 'params': params,
     if (hint != null) 'hint': hint,
