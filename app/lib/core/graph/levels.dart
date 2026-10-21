@@ -8,16 +8,26 @@
 /// 一个「有两条前置链、其中一条很深」的项摆到前一层，看起来像前置已学完。
 library;
 
-import '../entities/content.dart';
+import '../entities/edge.dart';
+import '../enums.dart';
 
 /// 边端点不在 `nodeIds` 里时的处置：**忽略这条边**。
 ///
-/// 理由与解析层一致（`pack_parse.dart` 的注释）：存在性校验在构建期
+/// 理由与解析层一致（`pack_reader.dart` 的注释）：存在性校验在构建期
 /// `validator.py` 已拒过，客户端再写一份就是**两份会分叉的判据**；
 /// 而坏掉时的表象是「少几条边 / 层号偏小」，不是崩溃。
+///
+/// ## 只认 `strength == required`
+///
+/// `⪯` 的定义是「`required` 边的传递闭包」（`entity-fields` §2 · `glossary` §14）。
+/// `recommended` 是「建议先学」，不构成可达性 —— 把它算进层号会让一个只被
+/// 「建议」指向的项往后挪一层，看起来像它真有前置。
+///
+/// 过滤放在**这里**而不是调用方：`prerequisites` 返回全部先修边，五处调用点
+/// 各自记得筛「只取 required」是不现实的，漏一处就悄悄改了 `φ` 的语义。
 Map<String, int> kahnLevels({
   required Iterable<String> nodeIds,
-  required Iterable<Edge> edges,
+  required Iterable<PrerequisiteEdge> edges,
 }) {
   final Map<String, int> level = <String, int>{
     for (final String id in nodeIds) id: 0,
@@ -25,12 +35,15 @@ Map<String, int> kahnLevels({
   final Map<String, int> indegree = <String, int>{for (final String id in level.keys) id: 0};
   final Map<String, List<String>> successors = <String, List<String>>{};
 
-  for (final Edge edge in edges) {
-    if (!level.containsKey(edge.from) || !level.containsKey(edge.to)) {
+  for (final PrerequisiteEdge edge in edges) {
+    if (edge.strength != EdgeStrength.required) {
       continue;
     }
-    successors.putIfAbsent(edge.from, () => <String>[]).add(edge.to);
-    indegree[edge.to] = (indegree[edge.to] ?? 0) + 1;
+    if (!level.containsKey(edge.fromId) || !level.containsKey(edge.toId)) {
+      continue;
+    }
+    successors.putIfAbsent(edge.fromId, () => <String>[]).add(edge.toId);
+    indegree[edge.toId] = (indegree[edge.toId] ?? 0) + 1;
   }
 
   // Kahn：入度 0 的先入队；出边时把层号传播给后继，取较大者。

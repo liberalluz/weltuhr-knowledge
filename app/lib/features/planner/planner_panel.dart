@@ -27,16 +27,19 @@
 /// 判据，比重建更贵。
 library;
 
-import 'package:flutter/material.dart';
+// `Axis` 与 `core/enums.dart` 的 `Axis`（三条容器轴）撞名。本文件用到的是
+// 后者，而 flutter 那一份（水平/垂直）在这里一次都用不到。
+import 'package:flutter/material.dart' hide Axis;
 
 import '../../core/constants.dart';
-import '../../core/entities/content.dart';
+import '../../core/entities/method.dart';
 import '../../core/entities/plan.dart';
+import '../../core/entities/scheme.dart';
+import '../../core/entities/source.dart';
 import '../../core/enums.dart';
 import '../../core/json.dart';
-import '../../core/pack/pack_parse.dart';
+import '../../core/pack/pack_reader.dart';
 import '../../core/plan/candidates.dart';
-import '../../core/plan/method_bundle.dart';
 import '../../core/plan/plan_draft.dart';
 import '../../core/plan/plan_events.dart';
 import '../../core/plan/platform_candidates.dart';
@@ -100,10 +103,30 @@ String appliesToText(JsonMap appliesTo) {
   return parts.isEmpty ? '不限' : parts.join(' · ');
 }
 
+/// 源侧「适用范围」的人话（`entity-fields` §11 的 `{axes[], node_scope[]}`）。
+///
+/// ⚠️ **不能与方法侧 [appliesToText] 共用**（`entity-fields` §12 那条注记）：
+/// 源那侧两键**必填**、过滤依据是「`node_scope` ∩ 子树」；方法那侧三键可省、
+/// 按节点自身取值过滤。同一个函数渲染两处，会得到一份"看着都对、实际永远为真"
+/// 的说明。
+///
+/// `axes` 是 `node_scope` 的简写（「学科轴下全部节点」），所以有轴就报轴；
+/// 两者都空读作**不限** —— 与自建源的默认值一致（自建源没有绑定，见
+/// `buildUserSource`）。
+String sourceAppliesToText(SourceAppliesTo appliesTo) {
+  final List<String> parts = <String>[
+    for (final Axis axis in appliesTo.axes) axisLabels[axis]!,
+  ];
+  if (appliesTo.nodeScope.isNotEmpty) {
+    parts.add('点名 ${appliesTo.nodeScope.length} 个节点');
+  }
+  return parts.isEmpty ? '不限' : parts.join(' · ');
+}
+
 /// 枚举名 → 中文名。`appliesTo` 里存的是**名字**（JSON 口径），标签表却是按
 /// 枚举建的，这里翻一次。
 final Map<String, String> _typeNameLabels = <String, String>{
-  for (final MapEntry<ItemType, String> entry in itemTypeLabels.entries)
+  for (final MapEntry<LearnableType, String> entry in learnableTypeLabels.entries)
     entry.key.name: entry.value,
 };
 
@@ -128,11 +151,11 @@ String _namesOf(Object raw, Map<String, String> labels) {
 
 /// 类型集合 → 「陈述 / 流程」这样的一句。**按枚举声明序**输出，不按集合的
 /// 迭代序 —— 同一套内容每次渲染都该是同一句话。
-String typesText(Iterable<ItemType> types) {
-  final Set<ItemType> set = types.toSet();
+String typesText(Iterable<LearnableType> types) {
+  final Set<LearnableType> set = types.toSet();
   final List<String> parts = <String>[
-    for (final ItemType type in ItemType.values)
-      if (set.contains(type)) itemTypeLabels[type]!,
+    for (final LearnableType type in LearnableType.values)
+      if (set.contains(type)) learnableTypeLabels[type]!,
   ];
   return parts.isEmpty ? '不限' : parts.join(' / ');
 }
@@ -140,7 +163,10 @@ String typesText(Iterable<ItemType> types) {
 class PlannerPanel extends StatefulWidget {
   const PlannerPanel({
     required this.pack,
-    this.target,
+    required this.spaceId,
+    required this.subtreeRoot,
+    required this.primaryAxis,
+    required this.packVersions,
     this.initialSourceId,
     this.initialSchemeId,
     this.initialMethodId,
@@ -148,19 +174,29 @@ class PlannerPanel extends StatefulWidget {
     super.key,
   });
 
-  final LoadedPack pack;
+  final PackContent pack;
+
+  /// 事件信封上的空间 id。**不进 payload**（`event-types.md` §二 B），
+  /// 但 `PlanDraft` 要拿它填信封，所以面板得知道。
+  final String spaceId;
+
+  /// 这份计划的范围根（节点 id）。取代旧的 `PlanTarget.selector`。
+  ///
+  /// **必填**：`inScope` 是派生的（`entity-fields` §2），没有根就无从算圈内，
+  /// 而「缺省 = 圈内全量」在新本体里不存在 —— 全量也得有个根（轴根）。
+  final String subtreeRoot;
+
+  /// 主序轴的默认值（由模式给出，可被体系显式覆盖）。
+  final Axis primaryAxis;
+
+  /// 建计划那一刻的包版本组合。
+  final PackVersions packVersions;
 
   /// 点「建计划」时交出草稿。**事件由上层写** —— 面板不该知道 `EventStore`、
   /// `HlcClock`、`userId` 这些东西，它只回答「用户选了什么」。
   ///
   /// 为 `null` 时按钮仍可点，但什么也不发生 —— 用于纯展示与骨架测试。
   final void Function(PlanDraft draft)? onCreate;
-
-  /// 这份计划的范围（`PLAN-016` 的定位结果入口会带窄 `target` 进来）。
-  ///
-  /// **只收窄预览的「项数」，不动「分母」** —— 分母是空间规模（`PLAN-015`）。
-  /// 缺省 = 圈内全量，此时预览与不传 `target` 完全一致。
-  final PlanTarget? target;
 
   /// 重入时预填（`SPEC-PLAN-019`）。预填值若不在候选里，按「需重选」处理。
   final String? initialSourceId;
@@ -319,8 +355,9 @@ class PlannerPanelState extends State<PlannerPanel> {
   Widget build(BuildContext context) {
     final PlannerPreview preview = computePlannerPreview(
       pack: widget.pack,
+      subtreeRoot: widget.subtreeRoot,
+      parents: widget.pack.parents,
       schemeId: _schemeId,
-      target: widget.target,
       bundle: _selectedBundle,
       userProfiles: _userProfiles,
       userSchemes: _userSchemes,
@@ -508,6 +545,7 @@ class PlannerPanelState extends State<PlannerPanel> {
         final Scheme? scheme = await showUserSchemeDialog(
           context,
           pack: widget.pack,
+          subtreeRoot: widget.subtreeRoot,
           takenIds: <String>[for (final Scheme s in _userSchemes) s.id],
         );
         if (!mounted || scheme == null) {
@@ -611,7 +649,10 @@ class PlannerPanelState extends State<PlannerPanel> {
     switch (segment) {
       case PlanSegment.source:
         final SourceCandidate c = candidate as SourceCandidate;
-        return '${c.authorityLevel} · 覆盖 ${c.coverage.covered}/${c.coverage.total}';
+        final AuthorityLevel? level = c.authorityLevel;
+        // `catalog` 源不标等级（`entity-fields` §11），所以这一格可能为空。
+        final String label = level == null ? '目录' : authorityLabels[level]!;
+        return '$label · 覆盖 ${c.coverage.covered}/${c.coverage.total}';
       case PlanSegment.scheme:
         final SchemeCandidate c = candidate as SchemeCandidate;
         final String cover = c.coverage == null
@@ -626,20 +667,24 @@ class PlannerPanelState extends State<PlannerPanel> {
   /// 卡片的「适用范围」—— 三段各由**自己的字段**派生，没有一个是编的：
   ///
   /// - 源：`SourceRef.appliesTo`（`entity-fields` §11 的 `{axes[], node_scope[]}`）
-  /// - 体系：`Scheme` 没有 `appliesTo`，改由 `nodes` 里实际出现的 `Item.type` 说
+  /// - 体系：`Scheme` 没有 `appliesTo`，改由 `nodes` 里实际出现的
+  ///   `LearnableNode.type` 说
   /// - 方法：`MethodBundle.byType` 覆盖到的类型
   String _scope(PlanSegment segment, PlanCandidate candidate) {
     switch (segment) {
       case PlanSegment.source:
-        return appliesToText((candidate as SourceCandidate).source.appliesTo);
+        return sourceAppliesToText(
+          (candidate as SourceCandidate).source.appliesTo,
+        );
       case PlanSegment.scheme:
         final SchemeCandidate c = candidate as SchemeCandidate;
-        return typesText(<ItemType>{
+        return typesText(<LearnableType>{
           for (final String nodeId in c.scheme.nodes)
-            if (widget.pack.itemOf(nodeId) != null) widget.pack.itemOf(nodeId)!.type,
+            if (widget.pack.learnableOf(nodeId) != null)
+              widget.pack.learnableOf(nodeId)!.type,
         });
       case PlanSegment.method:
-        return typesText((candidate as MethodCandidate).bundle.coveredTypes);
+        return typesText((candidate as MethodCandidate).bundle.byType.keys);
     }
   }
 
@@ -657,8 +702,8 @@ class PlannerPanelState extends State<PlannerPanel> {
 
   // ─────────────────────────── 确认段 ───────────────────────────
 
-  /// 把三段选择交出去。`target` 原样透传 —— 面板不解算范围，
-  /// `composePlanDraft` 与预览调的是同一个 `resolvePlanScope`。
+  /// 把三段选择交出去。范围与包版本原样透传 —— 面板不解算范围，
+  /// `composePlanDraft` 与预览走的是同一个模型（子树根 + 派生 `inScope`）。
   void _create() {
     final MethodBundle? bundle = _selectedBundle;
     final String? sourceId = _sourceId;
@@ -671,10 +716,13 @@ class PlannerPanelState extends State<PlannerPanel> {
     widget.onCreate?.call(
       composePlanDraft(
         pack: widget.pack,
+        spaceId: widget.spaceId,
+        subtreeRoot: widget.subtreeRoot,
+        primaryAxis: widget.primaryAxis,
+        packVersions: widget.packVersions,
         sourceId: sourceId,
         schemeId: schemeId,
         bundle: bundle,
-        target: widget.target,
         // 与预览那次必须是同一份自建体系，否则「预览 12 项、事件存 4 项」。
         userSchemes: _userSchemes,
       ),

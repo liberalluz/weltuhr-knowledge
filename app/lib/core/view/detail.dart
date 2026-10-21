@@ -1,22 +1,32 @@
 /// 详情三区的**渲染模型**（`SPEC-VIEW-013` / `VIEW-014` / `VIEW-017`）。
 ///
-/// 三区 = **关系 / 要件 / 来源**（`NOTE-007` 修订）。事实信息（标题、层级、类型、
-/// 六轴）在**页头**，不占分区 —— 它一屏只有一行，做成分区会把关系与来源挤到
+/// 三区 = **关系 / 要件 / 来源**（`NOTE-007` 修订）。事实信息（名字、层级、类型、
+/// 轴）在**页头**，不占分区 —— 它一屏只有一行，做成分区会把关系与来源挤到
 /// 窄壳抽屉的首屏之外。
 ///
-/// 为什么单开这一层而不是让 widget 直接读 `LoadedPack`：
+/// 为什么单开这一层而不是让 widget 直接读 `PackContent`：
 ///
 /// - `features/` 只吃**渲染模型**，不认领域实体 —— `R4` 的原始意图是「源不进
-///   视觉通道」，收窄后由 `_isVisualChannel` 守；但详情页若直接拿 `Item`，
+///   视觉通道」，收窄后由 `_isVisualChannel` 守；但详情页若直接拿 `Node`，
 ///   下一笔想在点半径里塞个来源计数就成了顺手的事。
 /// - 两壳一套内容（`VIEW-017`）：三区的**字段与顺序**由这里定，宽壳 / 窄壳只
 ///   换布局断点。放在 widget 里定顺序，迟早出现两个壳的字段顺序不一致。
+///
+/// ## 笔 5c：`sixAxis` / `domainId` 从详情模型里消失
+///
+/// 两个字段随六轴一起没了（`entity-fields` 附录）。页头原来那行
+/// 「域 · 层级 · 类型」现在是「轴 · 层级 · 类型」—— `Node.axis` 是三轴单值，
+/// 它本来就更适合做一行的定宽事实位。
 library;
 
-import '../entities/content.dart';
+import '../constants.dart';
+import '../entities/edge.dart';
+import '../entities/node.dart';
+import '../entities/source.dart';
 import '../enums.dart';
+import '../graph/in_scope.dart';
 import '../ids.dart';
-import '../pack/pack_parse.dart';
+import '../pack/pack_reader.dart';
 
 /// 关系区一行的**方向**。
 ///
@@ -51,10 +61,15 @@ class RelationRow {
 
   final RelationKind kind;
 
-  /// 对方的标题；缺口时是 id 末段。
+  /// 对方的名字；缺口时是 id 末段。
   final String label;
 
-  /// 虚线 = 弱依赖 / 指向未知。与宇宙的线型**同源**（`edge.type`），不是各画各的。
+  /// 虚线 = **建议**前置 / 指向未知。与宇宙的线型**同源**
+  /// （`PrerequisiteEdge.strength`），不是各画各的。
+  ///
+  /// `strength` 从三值（`strong` / `weak` / `unknown`）收成两值
+  /// （`required` / `recommended`）：`unknown` 由「`recommended` + 后继不在本包」
+  /// 表达（`entity-fields` 附录）。
   final bool dashed;
 
   /// 对方在圈外（`VIEW-007` 的圈外邻项）。详情里可跳过去，但树里它是虚线支线。
@@ -105,8 +120,9 @@ class ProvenanceRow {
 
   final String name;
 
-  /// `L0 / L1 / L2 / L4`。
-  final String authorityLevel;
+  /// 五档语义值（`entity-fields` §11）。**可空**：`kind = catalog` 的源
+  /// 本身就是权威，不标等级。
+  final AuthorityLevel? authorityLevel;
   final List<ProvenanceSegment> segments;
 
   /// 项引用了某个源 id，但包里没有这一条。
@@ -116,18 +132,23 @@ class ProvenanceRow {
   final bool missing;
 
   /// 缺源时没有等级可显示。
-  String get levelLabel => missing ? '缺源' : authorityLevel;
+  String get levelLabel {
+    if (missing) {
+      return '缺源';
+    }
+    final AuthorityLevel? level = authorityLevel;
+    return level == null ? '目录' : authorityLabels[level]!;
+  }
 }
 
 /// 一项的完整详情。
 class ItemDetail {
   const ItemDetail({
     required this.id,
-    required this.title,
+    required this.name,
+    required this.axis,
     required this.layer,
     required this.type,
-    required this.domainId,
-    required this.sixAxis,
     required this.relations,
     required this.requirements,
     required this.provenance,
@@ -135,19 +156,20 @@ class ItemDetail {
   });
 
   final String id;
-  final String title;
+  final String name;
+
+  /// 页头的事实位。**单值**：节点只属于一条轴（旧 `sixAxis` 是每轴一值的 map，
+  /// 那是六轴时代的形态）。
+  final Axis axis;
   final Layer layer;
-  final ItemType type;
-  final String domainId;
-  final Map<String, String> sixAxis;
+  final LearnableType type;
 
   final List<RelationRow> relations;
   final List<RequirementRow> requirements;
   final List<ProvenanceRow> provenance;
-  final bool inScope;
 
-  /// 域 id 的显示末段。
-  String get domainLabel => idTail(domainId);
+  /// **派生**（`inScopeOf`），不是字段：同一节点在不同计划下取值不同。
+  final bool inScope;
 
   /// 缺的格数 —— 页头那行「差几格」读它。
   int get gapCount => requirements.where((RequirementRow r) => r.isGap).length;
@@ -157,70 +179,88 @@ class ItemDetail {
       relations.where((RelationRow r) => r.kind == RelationKind.gap).length;
 }
 
-/// 构详情。项不在册 ⇒ `null`（**不造空壳**：一个 id 对不上任何项的详情页，
-/// 会让用户以为这项存在但没内容）。
+/// 构详情。节点不在册 ⇒ `null`（**不造空壳**：一个 id 对不上任何节点的详情页，
+/// 会让用户以为它存在但没内容）。
 ///
-/// 关系区**含跨域边**（`SPEC-VIEW-006`：跨域边只在宇宙与详情里画）。
-ItemDetail? buildItemDetail(LoadedPack pack, String itemId) {
-  final Item? item = pack.itemOf(itemId);
-  if (item == null) {
+/// 结构节点没有 `NodeEntry`、也没有 `requirements` ⇒ 同样返回 `null`：
+/// 详情页的「要件」区对恒星/星系无从填起，而给一个「六格全空」的页面，
+/// 会被读成「这一项什么都没写」（`ADR-0007` 决策 1）。
+///
+/// [subtreeRoot] 用来算 `inScope`（派生，见 `graph/in_scope.dart`）。
+///
+/// 关系区**含跨轴边**（`SPEC-VIEW-006`：跨轴边只在宇宙与详情里画）。
+ItemDetail? buildItemDetail(
+  PackContent pack,
+  String itemId, {
+  required String subtreeRoot,
+}) {
+  final LearnableNode? node = pack.learnableOf(itemId);
+  if (node == null) {
     return null;
   }
+  // `sourceRefs` 落在内容侧；结构节点没有 entry，上面已排除，此处可直接读。
+  final List<String> sourceRefs = pack.entryOf(itemId)?.sourceRefs ?? const <String>[];
 
   final List<RelationRow> relations = <RelationRow>[];
-  for (final Edge edge in pack.edges) {
-    if (edge.to == itemId) {
+  for (final PrerequisiteEdge edge in pack.prerequisites) {
+    if (edge.toId == itemId) {
       relations.add(
-        _relationRow(pack, RelationKind.prerequisite, edge.from, edge.type),
+        _relationRow(pack, subtreeRoot, RelationKind.prerequisite, edge.fromId, edge),
       );
     }
-    if (edge.from == itemId) {
+    if (edge.fromId == itemId) {
       relations.add(
-        _relationRow(pack, RelationKind.successor, edge.to, edge.type),
+        _relationRow(pack, subtreeRoot, RelationKind.successor, edge.toId, edge),
       );
     }
   }
 
   final List<RequirementRow> requirements = <RequirementRow>[
     for (final RequirementKey key in RequirementKey.values)
-      RequirementRow(key: key, state: item.requirements.states[key]!),
+      RequirementRow(key: key, state: node.requirements.states[key]!),
   ];
 
   final Map<String, SourceRef> refById = <String, SourceRef>{
-    for (final SourceRef ref in pack.excerpts) ref.id: ref,
+    for (final SourceRef ref in pack.sources) ref.id: ref,
   };
   final List<ProvenanceRow> provenance = <ProvenanceRow>[
-    for (final String refId in item.sourceRefs)
-      _provenanceRow(refById[refId], refId),
+    for (final String refId in sourceRefs) _provenanceRow(refById[refId], refId),
   ];
 
   return ItemDetail(
-    id: item.id,
-    title: item.title,
-    layer: item.layer,
-    type: item.type,
-    domainId: item.domainId,
-    sixAxis: item.sixAxis,
+    id: node.id,
+    name: node.name,
+    axis: node.axis,
+    layer: node.layer,
+    type: node.type,
     relations: relations,
     requirements: requirements,
     provenance: provenance,
-    inScope: item.inScope,
+    inScope: inScopeOf(node, subtreeRoot: subtreeRoot, parents: pack.parents),
   );
 }
 
 RelationRow _relationRow(
-  LoadedPack pack,
+  PackContent pack,
+  String subtreeRoot,
   RelationKind kind,
   String otherId,
-  EdgeType type,
+  PrerequisiteEdge edge,
 ) {
-  final Item? other = pack.itemOf(otherId);
+  final Node? other = pack.nodeOf(otherId);
   return RelationRow(
     // 端口不在册 ⇒ 缺口，方向信息随之失效（「缺口」比「某方向的前置缺」更有用）。
     kind: other == null ? RelationKind.gap : kind,
-    label: other?.title ?? idTail(otherId),
-    dashed: type != EdgeType.strong,
-    outside: other != null && !other.inScope,
+    label: other?.name ?? idTail(otherId),
+    dashed: edge.strength != EdgeStrength.required,
+    // 圈外判在**任何类型的节点**上：可学节点与结构节点共用 `inScopeOf` 这一条
+    // 判据（`ADR-0007` 决策 2）。限定成「结构节点才判」会让圈外的可学邻项被画
+    // 成实线，而那正是 `VIEW-007` 要区分的东西。
+    outside: other != null && !inScopeOf(
+      other,
+      subtreeRoot: subtreeRoot,
+      parents: pack.parents,
+    ),
     itemId: other?.id,
   );
 }
@@ -229,7 +269,7 @@ ProvenanceRow _provenanceRow(SourceRef? ref, String refId) {
   if (ref == null) {
     return ProvenanceRow(
       name: refId,
-      authorityLevel: '',
+      authorityLevel: null,
       segments: const <ProvenanceSegment>[],
       missing: true,
     );

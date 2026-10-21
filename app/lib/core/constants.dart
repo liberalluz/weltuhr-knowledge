@@ -122,11 +122,15 @@ const Grade scaffoldCap = Grade.pass;
 // ──────────────────────────── 八、内容与匹配 ────────────────────────────
 
 /// `C-27` 快速定位的首期匹配字段集合。**不扩 schema**：别名与拼音延后。
+///
+/// 笔 5c 按新本体改齐，**由五项降为四项**：旧表的 `item.title` → `node.name`、
+/// `item.sixAxis` → `node.axis`、`space.name` → `pack.name`、`item.domainId` →
+/// **删除**（域已不是项的字段，而是树上的结构节点；它的名字由 `node.name`
+/// 一并覆盖，另立一项会变成同一个判据的两种写法）。
 const List<String> searchMatchFields = <String>[
-  'item.title',
-  'item.domainId',
-  'space.name',
-  'item.sixAxis',
+  'node.name',
+  'node.axis',
+  'pack.name',
   'scheme.nodes',
 ];
 
@@ -194,27 +198,27 @@ const Map<String, String> sixAxisLabels = <String, String>{
   'stack': '技术栈',
 };
 
-/// `ItemType` 的中文名（`entity-fields` §2）。
+/// `LearnableType` 的中文名（`entity-fields` §2）。
 ///
 /// 与 [sixAxisLabels] 同一条理由进常量表：取值是代码的标识、中文名是同一件事的
 /// 另一种写法，两处各存一份的话，改一个类型的名字要记得翻两个文件。
 /// 原本只在 `features/detail/detail_panel.dart` 里有一份私有副本，`B4` `P-8` 的
 /// 候选卡「适用范围」是第二处要用的地方 —— 两份就会分叉，故上收到此处。
-const Map<ItemType, String> itemTypeLabels = <ItemType, String>{
-  ItemType.declarative: '陈述',
-  ItemType.procedural: '流程',
-  ItemType.skill: '技能',
-  ItemType.tacit: '默会',
+const Map<LearnableType, String> learnableTypeLabels = <LearnableType, String>{
+  LearnableType.declarative: '陈述',
+  LearnableType.procedural: '流程',
+  LearnableType.skill: '技能',
+  LearnableType.tacit: '默会',
 };
 
-/// `Layer` 的中文名（`entity-fields` §2）。进常量表的理由同 [itemTypeLabels]。
+/// `Layer` 的中文名（`entity-fields` §2）。进常量表的理由同 [learnableTypeLabels]。
 const Map<Layer, String> layerLabels = <Layer, String>{
   Layer.persistent: '持久',
   Layer.view: '视图',
   Layer.ephemeral: '瞬时',
 };
 
-/// 三条容器轴的中文名（`entity-fields` §2 `Node.axis`）。理由同 [itemTypeLabels]。
+/// 三条容器轴的中文名（`entity-fields` §2 `Node.axis`）。理由同 [learnableTypeLabels]。
 ///
 /// 笔 5c-1 新增：`appliesTo.axes` 取代 `spaceId` 之后，候选卡的「适用范围」
 /// 那一行要写「学科」而不是 `discipline`。旧表 [sixAxisLabels] 是六轴时代的
@@ -223,6 +227,18 @@ const Map<Axis, String> axisLabels = <Axis, String>{
   Axis.discipline: '学科',
   Axis.major: '专业',
   Axis.occupation: '角色',
+};
+
+/// 源出处等级的中文名（`entity-fields` §11 五档）。理由同上。
+///
+/// 笔 5c 新增：`L0`–`L4` 编号已废（`L` 前缀在项目内撞过三处名），候选卡与详情页
+/// 若直接渲染 `enum.name` 会露出 `official` / `community` 这类英文标识。
+const Map<AuthorityLevel, String> authorityLabels = <AuthorityLevel, String>{
+  AuthorityLevel.official: '官方',
+  AuthorityLevel.standard: '标准',
+  AuthorityLevel.textbook: '教材',
+  AuthorityLevel.reference: '手册',
+  AuthorityLevel.community: '社区',
 };
 
 /// `C-34` 虚实通道判据：六要件里「不可外化」格 **≥ 3** 即判「虚」（默会类）。

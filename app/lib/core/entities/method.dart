@@ -1,6 +1,7 @@
 /// 方法（配方）—— `entity-fields` §12，第五类包。
 ///
-/// ⚠️ **与 `content.dart` 里的旧 `MethodProfile` 同名**，共存理由同 `source.dart`。
+/// 笔 5c 之前它与 `content.dart` 里的旧 `MethodProfile` 同名并存，旧类已随
+/// `Item` 一并删除。
 ///
 /// 独立成包的理由：一份配方可服务多个载荷包（N:M），语言类配方不必跟着每个
 /// 语言包各发一份。

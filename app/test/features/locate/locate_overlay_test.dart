@@ -3,34 +3,67 @@
 /// 这里**不验跳转**：浮层不认识档位与筛选，它只把「用户选了哪一条」交出去。
 /// 「选了之后世界怎么变」在 `universe_screen_test.dart` 里验 —— 分成两处，
 /// 是因为它们失败时的含义完全不同（一处是列错了，一处是跳错了）。
+///
+/// ## 笔 5c：整份改用自己的小包
+///
+/// 旧版靠 `loadAlphaPack()`（`support/alpha_pack.dart`，已随 `pack_parse.dart` 删除）。
+/// 新本体下「圈内」是**派生值**（`ADR-0007` 决策 2）：没有 `inScope` 字段可填，
+/// 要造圈外项就得把它的父挂到 `subtreeRoot` 之外 —— 见 [_outside]。
+///
+/// 档位也变了：`system` / `planet` 这些骨架槽位取代了旧的「门类 / 类 / 中类」
+/// 标签，`locateKindOf` 只把 `group`/`galaxy`/`cluster` 读成域、`planet` 读成项。
+/// 所以这里只造 `system`（子树根，自己不参与落点）与 `planet`（项）两种。
 library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:project_knowledge/core/enums.dart';
 import 'package:project_knowledge/core/locate/locator.dart';
-import 'package:project_knowledge/core/pack/pack_parse.dart';
+import 'package:project_knowledge/core/pack/pack_reader.dart';
 import 'package:project_knowledge/features/locate/locate_overlay.dart';
 
-import '../../support/alpha_pack.dart';
 import '../../support/pack_fixture.dart';
 
+/// 子树根：所有**圈内**的项都挂在它下面。
+///
+/// 它自己是个 `system` 槽位的结构节点 —— `locateKindOf` 对它返回 `null`，
+/// 所以「子树根」不会作为落点出现在结果列表里（它是容器，不是内容）。
+const String _root = 'py/fn';
+
+/// 另一颗在子树之外的容器：用它挂「圈外项」。
+///
+/// `inScopeOf` 判的是「是不是 [subtreeRoot] 自己或它的后裔」，父挂在别人
+/// 名下就自然落在圈外 —— 不需要、也没有 `inScope: false` 这种字段可填。
+const String _outside = 'py/other';
+
 void main() {
-  late LoadedPack pack;
+  late PackContent pack;
 
   setUpAll(() {
-    pack = loadAlphaPack();
+    pack = _basePack();
   });
+
+  /// 与浮层内部同口径地定位。
+  ///
+  /// **不直接 `Locator.single(pack)`**：那样 `subtreeRoot` 为 `null`，每条命中
+  /// 都算圈内 —— 拿它去算 `hit` 再找 `Key`，在「圈外项」的用例里会算出浮层
+  /// 根本不会渲染的那一条（假红/假绿都由此而来）。
+  LocateResult locateIn(
+    PackContent target,
+    String query, {
+    String? subtreeRoot = _root,
+  }) => Locator(<PackContent>[target], subtreeRoot: subtreeRoot).locate(query);
 
   Future<void> pump(
     WidgetTester tester, {
     required void Function(LocateResult, LocateHit) onPick,
-    void Function(String itemId)? onPickNear,
+    void Function(String nodeId)? onPickNear,
     bool withPack = true,
     String? domainId,
-    LoadedPack? packOverride,
-    List<LoadedPack> otherSpaces = const <LoadedPack>[],
-    String? scopeSpaceId,
+    PackContent? packOverride,
+    List<PackContent> otherPacks = const <PackContent>[],
+    String? scopePluginId,
     VoidCallback? onDismiss,
     void Function(LocateResult result)? onPlanHere,
   }) async {
@@ -42,8 +75,9 @@ void main() {
             height: 700,
             child: LocateOverlay(
               pack: withPack ? (packOverride ?? pack) : null,
-              otherSpaces: otherSpaces,
-              scopeSpaceId: scopeSpaceId,
+              subtreeRoot: _root,
+              otherPacks: otherPacks,
+              scopePluginId: scopePluginId,
               domainId: domainId,
               onPick: onPick,
               onPickNear: onPickNear ?? (String _) {},
@@ -75,8 +109,8 @@ void main() {
     await pump(tester, onPick: (_, _) {});
     await type(tester, '装饰器');
 
-    final LocateResult result = Locator.single(pack).locate('装饰器');
-    expect(result.state, LocateState.located, reason: '前提：α 包里这是唯一精确命中');
+    final LocateResult result = locateIn(pack, '装饰器');
+    expect(result.state, LocateState.located, reason: '前提：这个包里它是唯一精确命中');
 
     expect(find.textContaining('唯一命中'), findsOneWidget);
     expect(find.byKey(locateRowKey(result.hits.first)), findsOneWidget);
@@ -98,10 +132,10 @@ void main() {
   testWidgets('点结果行交出去的是该行，不是第一条（SPEC-VIEW-029）', (WidgetTester tester) async {
     LocateHit? picked;
     await pump(tester, onPick: (_, LocateHit hit) => picked = hit);
-    // 「抽象」在 α 包里既是能力轴的取值，又是某标题的子串 ⇒ 多条命中。
+    // 「抽象」既是某一项的完整标题，又是另一项标题的前缀 ⇒ 多条命中。
     await type(tester, '抽象');
 
-    final LocateResult result = Locator.single(pack).locate('抽象');
+    final LocateResult result = locateIn(pack, '抽象');
     expect(result.hits.length, greaterThan(1), reason: '前提：这句输入给多条命中');
 
     final LocateHit second = result.hits[1];
@@ -114,10 +148,11 @@ void main() {
     WidgetTester tester,
   ) async {
     await pump(tester, onPick: (_, _) {});
-    await type(tester, '计算机科学');
+    // 三轴的标签固定（`axisLabels`）：`major` = 「专业」。
+    await type(tester, '专业');
 
-    final LocateResult result = Locator.single(pack).locate('计算机科学');
-    expect(result.hits.first.kind, LocateKind.axis, reason: '前提：α 包里这是轴值');
+    final LocateResult result = locateIn(pack, '专业');
+    expect(result.hits.first.kind, LocateKind.axis, reason: '前提：「专业」是轴值');
 
     final Finder row = find.byKey(locateRowKey(result.hits.first));
     expect(row, findsOneWidget);
@@ -159,15 +194,17 @@ void main() {
   testWidgets('同名跨空间才写前缀，单空间不重复写空间名（SPEC-VIEW-033）', (
     WidgetTester tester,
   ) async {
-    final LoadedPack here = fixturePack(
-      const <FixtureItem>[FixtureItem('p1', '装饰器')],
-      spaceId: 'python',
-      spaceName: 'Python',
+    final PackContent here = _toyPack(
+      pluginId: 'python',
+      packName: 'Python',
+      itemId: 'py/decorator',
+      itemName: '装饰器',
     );
-    final LoadedPack there = fixturePack(
-      const <FixtureItem>[FixtureItem('g1', '装饰器')],
-      spaceId: 'go',
-      spaceName: 'Go',
+    final PackContent there = _toyPack(
+      pluginId: 'go',
+      packName: 'Go',
+      itemId: 'go/decorator',
+      itemName: '装饰器',
     );
 
     // 只有本空间：一条命中，不写前缀 —— 每行都写一遍同样的空间名是噪音。
@@ -175,10 +212,10 @@ void main() {
       tester,
       onPick: (_, _) {},
       packOverride: here,
-      scopeSpaceId: 'python',
+      scopePluginId: 'python',
     );
     await type(tester, '装饰器');
-    final LocateHit only = Locator.single(here).locate('装饰器').hits.first;
+    final LocateHit only = locateIn(here, '装饰器').hits.first;
     expect(
       find.descendant(
         of: find.byKey(locateRowKey(only)),
@@ -198,8 +235,8 @@ void main() {
       tester,
       onPick: (_, _) {},
       packOverride: here,
-      otherSpaces: <LoadedPack>[there],
-      scopeSpaceId: 'python',
+      otherPacks: <PackContent>[there],
+      scopePluginId: 'python',
     );
     await type(tester, '装饰器');
     await tester.tap(find.byKey(locateSearchAllKey));
@@ -211,15 +248,17 @@ void main() {
   testWidgets('窄作用域才给「在全部空间中搜索」，Z0 与单空间都不给（SPEC-VIEW-031）', (
     WidgetTester tester,
   ) async {
-    final LoadedPack here = fixturePack(
-      const <FixtureItem>[FixtureItem('p1', '装饰器')],
-      spaceId: 'python',
-      spaceName: 'Python',
+    final PackContent here = _toyPack(
+      pluginId: 'python',
+      packName: 'Python',
+      itemId: 'py/decorator',
+      itemName: '装饰器',
     );
-    final LoadedPack there = fixturePack(
-      const <FixtureItem>[FixtureItem('g1', '闭包')],
-      spaceId: 'go',
-      spaceName: 'Go',
+    final PackContent there = _toyPack(
+      pluginId: 'go',
+      packName: 'Go',
+      itemId: 'go/closure',
+      itemName: '闭包',
     );
 
     // 窄作用域 + 还有别的空间 ⇒ 给。
@@ -227,8 +266,8 @@ void main() {
       tester,
       onPick: (_, _) {},
       packOverride: here,
-      otherSpaces: <LoadedPack>[there],
-      scopeSpaceId: 'python',
+      otherPacks: <PackContent>[there],
+      scopePluginId: 'python',
     );
     await type(tester, '装饰器');
     expect(find.byKey(locateSearchAllKey), findsOneWidget);
@@ -247,7 +286,7 @@ void main() {
       tester,
       onPick: (_, _) {},
       packOverride: here,
-      otherSpaces: <LoadedPack>[there],
+      otherPacks: <PackContent>[there],
     );
     await type(tester, '闭包');
     expect(find.byKey(locateSearchAllKey), findsNothing);
@@ -257,24 +296,26 @@ void main() {
       tester,
       onPick: (_, _) {},
       packOverride: here,
-      scopeSpaceId: 'python',
+      scopePluginId: 'python',
     );
     await type(tester, '闭包');
     expect(find.byKey(locateSearchAllKey), findsNothing);
   });
 
-  testWidgets('跨空间的命中照样交给 onPick，且带着它自己的空间（SPEC-VIEW-031）', (
+  testWidgets('跨空间的命中照样交给 onPick，且带着它自己的包（SPEC-VIEW-031）', (
     WidgetTester tester,
   ) async {
-    final LoadedPack here = fixturePack(
-      const <FixtureItem>[FixtureItem('p1', '装饰器')],
-      spaceId: 'python',
-      spaceName: 'Python',
+    final PackContent here = _toyPack(
+      pluginId: 'python',
+      packName: 'Python',
+      itemId: 'py/decorator',
+      itemName: '装饰器',
     );
-    final LoadedPack there = fixturePack(
-      const <FixtureItem>[FixtureItem('g1', '闭包')],
-      spaceId: 'go',
-      spaceName: 'Go',
+    final PackContent there = _toyPack(
+      pluginId: 'go',
+      packName: 'Go',
+      itemId: 'go/closure',
+      itemName: '闭包',
     );
 
     LocateHit? picked;
@@ -282,10 +323,11 @@ void main() {
       tester,
       onPick: (_, LocateHit hit) => picked = hit,
       packOverride: here,
-      otherSpaces: <LoadedPack>[there],
+      otherPacks: <PackContent>[there],
     );
     await type(tester, '闭包');
-    final LocateHit foreign = Locator.single(there).locate('闭包').hits.first;
+    // 多包时浮层把圈定根置空（别的包的树根不可能在这个子树下），这里同口径。
+    final LocateHit foreign = locateIn(there, '闭包', subtreeRoot: null).hits.first;
     await tester.tap(find.byKey(locateRowKey(foreign)));
     await tester.pump();
 
@@ -294,8 +336,8 @@ void main() {
       isNotNull,
       reason: '多根之后拦下来就成了「搜得到却点不动」—— 换根是屏幕层的事',
     );
-    expect(picked!.spaceId, 'go', reason: '命中带着空间，调用方才换得对根');
-    expect(picked!.target, 'g1');
+    expect(picked!.packId, 'go', reason: '命中带着包 id，调用方才换得对根');
+    expect(picked!.target, 'go/closure');
     expect(
       find.byKey(locateNoticeKey),
       findsNothing,
@@ -344,23 +386,23 @@ void main() {
       findsNothing,
       reason: '新增入口只能挂在「已给过候选且用户说都不对」之后',
     );
-    expect(find.byKey(locateNearRowKey('python/fn-decorator')), findsOneWidget);
+    expect(find.byKey(locateNearRowKey('py/fn-decorator')), findsOneWidget);
 
-    await tester.tap(find.byKey(locateNearRowKey('python/fn-decorator')));
+    await tester.tap(find.byKey(locateNearRowKey('py/fn-decorator')));
     await tester.pump();
-    expect(nearId, 'python/fn-decorator');
+    expect(nearId, 'py/fn-decorator');
   });
 
   testWidgets('类 ②「都不对」：有域上下文才展开表单，标题预填输入（SPEC-VIEW-030）', (
     WidgetTester tester,
   ) async {
-    await pump(tester, onPick: (_, _) {}, domainId: 'python/func');
+    await pump(tester, onPick: (_, _) {}, domainId: _root);
     await type(tester, '装饰器参数');
     await tester.tap(find.byKey(locateTriageActionKey));
     await tester.pump();
 
     expect(find.byKey(locateFormKey), findsOneWidget);
-    expect(find.textContaining('python/func'), findsOneWidget);
+    expect(find.textContaining(_root), findsOneWidget);
     final TextField title = tester.widget<TextField>(
       find.byKey(locateFormTitleKey),
     );
@@ -382,7 +424,7 @@ void main() {
   testWidgets('表单是死的一次性查询：填它不改外层输入、提交也不留筛选（SPEC-VIEW-032）', (
     WidgetTester tester,
   ) async {
-    await pump(tester, onPick: (_, _) {}, domainId: 'python/func');
+    await pump(tester, onPick: (_, _) {}, domainId: _root);
     await type(tester, '虚拟环境');
     expect(find.text('新增这一项'), findsOneWidget);
 
@@ -405,11 +447,7 @@ void main() {
   testWidgets('类 ①：圈外项不列成结果，只给「申请纳入」（SPEC-VIEW-030）', (
     WidgetTester tester,
   ) async {
-    final LoadedPack fixed = fixturePack(const <FixtureItem>[
-      FixtureItem('python/fn-metaclass', '元类', inScope: false),
-      FixtureItem('python/lex-keyword', '关键字'),
-    ]);
-    await pump(tester, onPick: (_, _) {}, packOverride: fixed);
+    await pump(tester, onPick: (_, _) {});
     await type(tester, '元类');
 
     expect(find.byKey(locateResultsKey), findsNothing);
@@ -430,13 +468,9 @@ void main() {
     WidgetTester tester,
   ) async {
     LocateResult? handed;
-    final LoadedPack fixed = fixturePack(const <FixtureItem>[
-      FixtureItem('python/async', '协程'),
-    ]);
     await pump(
       tester,
       onPick: (_, _) {},
-      packOverride: fixed,
       onPlanHere: (LocateResult result) => handed = result,
     );
     await type(tester, '协程');
@@ -453,16 +487,8 @@ void main() {
   testWidgets('TC-PLAN-077 只命中筛选类 ⇒ 不给「按此范围建计划」（SPEC-PLAN-016）', (
     WidgetTester tester,
   ) async {
-    final LoadedPack fixed = fixturePack(const <FixtureItem>[
-      FixtureItem('python/async', '协程', ability: '基础语法'),
-    ]);
-    await pump(
-      tester,
-      onPick: (_, _) {},
-      packOverride: fixed,
-      onPlanHere: (LocateResult _) {},
-    );
-    await type(tester, '基础语法');
+    await pump(tester, onPick: (_, _) {}, onPlanHere: (LocateResult _) {});
+    await type(tester, '专业');
 
     expect(
       find.byKey(locateResultsKey),
@@ -479,10 +505,7 @@ void main() {
   testWidgets('TC-PLAN-078 没有上层接收 ⇒ 不渲染这个入口（SPEC-PLAN-016）', (
     WidgetTester tester,
   ) async {
-    final LoadedPack fixed = fixturePack(const <FixtureItem>[
-      FixtureItem('python/async', '协程'),
-    ]);
-    await pump(tester, onPick: (_, _) {}, packOverride: fixed);
+    await pump(tester, onPick: (_, _) {});
     await type(tester, '协程');
 
     expect(find.byKey(locateResultsKey), findsOneWidget);
@@ -493,3 +516,39 @@ void main() {
     );
   });
 }
+
+/// 基础包：一个子树根、一个子树外的容器、以及几颗可学的项。
+///
+/// 「元类」的父是 [_outside] ⇒ 在库里、也对得上，但不在圈内（类 ① 的素材）。
+PackContent _basePack() => fixturePack(
+  const <FixtureNode>[
+    FixtureNode(_root, '函数', slot: LevelSlot.system),
+    FixtureNode(_outside, '别处', slot: LevelSlot.system),
+    FixtureNode('py/fn-decorator', '装饰器', parentId: _root),
+    FixtureNode('py/fn-metaclass', '元类', parentId: _outside),
+    FixtureNode('py/lex-keyword', '关键字', parentId: _root),
+    FixtureNode('py/abst', '抽象', parentId: _root),
+    FixtureNode('py/abst-class', '抽象类', parentId: _root),
+    FixtureNode('py/async', '协程', parentId: _root),
+  ],
+  pluginId: 'python',
+  packName: 'Python 语法分层',
+);
+
+/// 只有一个根 + 一个项的小包，用来造「两个空间各有一处同名项」。
+///
+/// 根 id 固定成 [_root]：单包搜索时浮层会拿它判圈内，包内根若另起 id，
+/// 这里造出来的项会一律被判成圈外，于是「同名前缀」用例会红在毫不相干的地方。
+PackContent _toyPack({
+  required String pluginId,
+  required String packName,
+  required String itemId,
+  required String itemName,
+}) => fixturePack(
+  <FixtureNode>[
+    FixtureNode(_root, '$packName 根', slot: LevelSlot.system),
+    FixtureNode(itemId, itemName, parentId: _root),
+  ],
+  pluginId: pluginId,
+  packName: packName,
+);

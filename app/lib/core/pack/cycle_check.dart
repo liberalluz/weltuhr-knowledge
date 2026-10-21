@@ -12,8 +12,6 @@
 /// `test/core/pack/cycle_check_test.dart` 的向量维持。
 library;
 
-import '../entities/content.dart';
-
 /// 图遍历三色。
 enum _Color { unvisited, onStack, done }
 
@@ -22,13 +20,9 @@ enum _Color { unvisited, onStack, done }
 /// 只沿「两端都是字符串且非自环」的边遍历 —— 自环（`from == to`）不是环，
 /// 是**数据错误**，由构建期以各自错误码报出，加载器不为它编一条环。
 ///
-/// ⚠️ 旧 `Edge` 版的入口保留（`pack_parse.dart` 在用），新格式走
-/// [findCyclesFrom] —— 两套边模型只有「提取端点」这一步不同，算法不复制。
-List<List<String>> findCycles(List<Edge> edges) => findCyclesFrom(<({String from, String to})>[
-  for (final Edge edge in edges) (from: edge.from, to: edge.to),
-]);
-
-/// 端点对版本的入口（新格式的 [PrerequisiteEdge] 没有 `id`，只有两端）。
+/// 入参是**端点对**而不是边对象：三类边里只有 `PrerequisiteEdge` 参与 `⪯`，
+/// 而它的两端就是全部所需信息。收边对象会让本函数依赖一条边类型，也就把
+/// 「环检测」绑在了某个实体版本的形状上。
 List<List<String>> findCyclesFrom(List<({String from, String to})> edges) {
   final Map<String, Set<String>> adjacency = <String, Set<String>>{};
   for (final ({String from, String to}) edge in edges) {
