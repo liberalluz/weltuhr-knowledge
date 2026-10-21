@@ -146,7 +146,7 @@ void main() {
         MethodStep(operator: ExecutionOperator.read),
         MethodStep(operator: ExecutionOperator.recall),
         MethodStep(operator: ExecutionOperator.practice),
-        MethodStep(operator: ExecutionOperator.teach),
+        MethodStep(operator: ExecutionOperator.explain),
       ],
       appliesTo: <String, Object?>{},
       origin: CandidateOrigin.platform,

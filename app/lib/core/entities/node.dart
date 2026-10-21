@@ -18,6 +18,7 @@ library;
 import '../constants.dart';
 import '../enums.dart';
 import '../errors.dart';
+import '../json.dart';
 import 'content.dart';
 
 /// 树节点基类。字段集以 `docs/reference/entity-fields.md` §2 为唯一权威处。
@@ -141,4 +142,60 @@ final class LearnableNode extends Node {
   /// 一并改名为 `Requirements`。本笔不改 —— 改名会让 47 个引用点同时断，
   /// 与「每笔各自可验证」的分笔口径冲突。
   final ItemRequirements requirements;
+}
+
+/// 按 `level_slot` 分派（**唯一入口**，`ADR-0007` 决策 3）。
+///
+/// 分派轴是槽位而不是 `scope`，理由见类文档：五个 `scope` 的字段集完全相同，
+/// 唯一的形态分叉是「可学与否」，而它恰好等于「槽位是不是 `planet`」。
+///
+/// 未知槽位不在这里拦：`LevelSlot.fromWire` 已经抛了「取值不在册」，
+/// 那比「分派失败」更能说明数据哪里错了。`StructuralNode` 构造体再判
+/// `(axis, level_slot)` 的 12 对 —— 两道关都在，且都不靠自觉。
+Node nodeFromJson(JsonMap json) {
+  final Axis axis = Axis.fromWire(requireString(json, 'axis'));
+  final LevelSlot slot = LevelSlot.fromWire(requireString(json, 'level_slot'));
+  final String id = requireString(json, 'id');
+  final String name = requireString(json, 'name');
+  final String slug = requireString(json, 'slug');
+  final Scope scope = Scope.fromWire(requireString(json, 'scope'));
+  final String packId = requireString(json, 'pack_id');
+  final NodeStatus status = NodeStatus.fromWire(requireString(json, 'status'));
+  final List<String> tags = requireStringList(json, 'tags');
+  final List<String> catalogRefs = requireStringList(json, 'catalog_refs');
+  final String? officialCode = optionalString(json, 'official_code');
+
+  if (slot == LevelSlot.planet) {
+    return LearnableNode(
+      id: id,
+      axis: axis,
+      name: name,
+      slug: slug,
+      scope: scope,
+      packId: packId,
+      status: status,
+      tags: tags,
+      catalogRefs: catalogRefs,
+      officialCode: officialCode,
+      // 三项在结构节点上不存在 ⇒ 行星缺了它们不是「默认值」，是坏数据。
+      // `requireX` 会让它当场报字段缺名，而不是塞一个默认值继续跑。
+      type: LearnableType.fromWire(requireString(json, 'type')),
+      layer: Layer.fromWire(requireString(json, 'layer')),
+      requirements: ItemRequirements.fromJson(requireMap(json, 'requirements')),
+    );
+  }
+
+  return StructuralNode(
+    id: id,
+    axis: axis,
+    name: name,
+    slug: slug,
+    scope: scope,
+    packId: packId,
+    status: status,
+    tags: tags,
+    catalogRefs: catalogRefs,
+    officialCode: officialCode,
+    levelSlot: slot,
+  );
 }

@@ -383,8 +383,8 @@ const Map<ExecutionOperator, String> operatorLabels = <ExecutionOperator, String
   ExecutionOperator.example: '例',
   ExecutionOperator.recall: '忆',
   ExecutionOperator.practice: '练',
-  ExecutionOperator.teach: '讲',
-  ExecutionOperator.build: '做',
+  ExecutionOperator.explain: '讲',
+  ExecutionOperator.doStep: '做',
 };
 
 /// 自建的方法。返回 `null` = 取消。
