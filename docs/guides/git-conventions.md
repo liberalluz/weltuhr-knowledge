@@ -100,7 +100,8 @@
 - `<type>` 取提交类型（`feat` / `fix` / `docs` / `refactor` / `test` / `chore`），`<topic>` 小写连字符。示例：`feat/quick-locate` · `docs/design-spec` · `fix/hlc-clamp`。
 - **不建**长期 `develop`，**不建**常驻 release 分支。
 - **唯一例外**：**仓库初始化首提**（骨架 + `.gitignore` + `LICENSE` + 根 `README.md` + `.github/SECURITY.md` + 本文件 + 模块入口 README）可在 `main` 直接完成 —— **全局仅此一次**，其余一律走 PR。
-- ⚠️ **分支保护在当前账号下不可用**（GitHub 免费账号的私有仓不支持），故「禁直推」**靠自觉**，不因技术上没拦住就当作允许。开关清单见 §4.3。
+- ⚠️ **远端分支保护在当前账号下不可用**（GitHub 免费账号的私有仓不支持）⇒ **远端不拦**。替代装置在近端两道，判据落点见 §3.5：`.githooks/pre-push`（本地，`git push` 当场失败）· `repo-hygiene` 的「main 只接受 PR」步骤（CI，直推后红）。`pre-push` **同时管引用类型**：只放行 `refs/heads/*` 与 §五 命名的 tag。
+- 装置只拦「忘了」，不拦「故意」——`--no-verify` 与手写伪编号都绕得过去。**不因技术上没拦住就当作允许**。开关清单见 §4.3。
 
 ---
 
@@ -164,12 +165,20 @@
 
 ### 3.5 判据
 
-| 层 | 落点 | 何时生效 |
-| --- | --- | --- |
-| 本地 | [`.githooks/commit-msg`](../../.githooks/commit-msg) | 每次 `git commit`；**一次性启用**：`git config core.hooksPath .githooks` |
-| CI | `repo-hygiene` 的「提交信息」步骤 | 每个 PR 与每次 push，只校验本次新增的提交 |
+| 判据 | 层 | 落点 | 何时生效 |
+| --- | --- | --- | --- |
+| 提交信息格式（§3） | 本地 | [`.githooks/commit-msg`](../../.githooks/commit-msg) | 每次 `git commit`；**一次性启用**：`git config core.hooksPath .githooks` |
+| 同上 | CI | `repo-hygiene` 的「提交信息」步骤 | 每个 PR 与每次 push，只校验本次新增的提交 |
+| 推 `main` 必走 PR（§二 / §4.1） | 本地 | [`.githooks/pre-push`](../../.githooks/pre-push) | 每次 `git push`；同一句 `core.hooksPath` |
+| 同上 | CI | `repo-hygiene` 的「main 只接受 PR」步骤 | 只在 push 到 `main` 时；PR 事件不跑 |
+| tag 命名（§五） | 本地 | 同 `.githooks/pre-push` | 每次 `git push`；只放行 `vX.Y.Z` · `pack/<space>/vX.Y.Z`，其余拒；删除放行 |
+| 同上 | CI | — | **无**：`on.push` 只挂 `branches: [main]`，推 tag 不触发 workflow |
 
-两端**共用同一个脚本**，不各写一份。两份判据等于没有判据：本地放行、CI 红，人会去改 CI 而不是改提交；反过来 CI 放行、本地红，人会 `--no-verify`。
+每条判据的本地与 CI **共用同一个脚本**，不各写一份。两份判据等于没有判据：本地放行、CI 红，人会去改 CI 而不是改提交；反过来 CI 放行、本地红，人会 `--no-verify`。
+
+**直推判据的取法**：不判「目标是不是 `main`」，判「这次推上去的**每个提交标题是否带 `(#NNN)`**」。`(#NNN)` 不是提交字段，而是 squash 合并时由平台写进标题的纯文本 —— 有它 ⇔ 走过 PR。这样一条正则同时放行了两种合法情形：本地 `main` 与远端已同步（区间为空）、仓库初始化首提（远端 `sha` 全 0）。另有一条：删除 `main` 直接拒（§4.3 `Allow deletions` ❌）。
+
+**tag 判据的取法**：不判「是不是 tag」就拒 —— §五 要求发布时打 tag，一律拒会把正事挡掉。取**命名白名单**：只有 §五 那两种形态放行，其余拒；删除远端 tag 放行（误推要能回收，拒删除只会逼人 `--no-verify`）。⚠️ **原写法有个静默漏洞**：`case "$remote_ref" in refs/heads/main) ;; *) continue ;;` 把 tag 一起丢进了「不是 main 就跳过」的分支 —— 于是备份 tag 一路无阻。现在先分引用类型，再谈 `main`。
 
 校验项：`type` 11 值 · `scope` 6 值（可省略，给了就必须在值内）· `subject` 非空、≤ 72 字符、句尾不加句号 · header 与 body 之间空一行。
 
@@ -277,6 +286,7 @@
 - **内容包 tag：`pack/<space>/vX.Y.Z`** —— 例 `pack/python/v1.2.0`。`space` 取 `KnowledgeSpace.id`（稳定标识，与版本无关），版本取 `meta.version` 的 semver ⇒ tag 名不引入任何新标识。用 `/` 而非 `-`：`git tag -l 'pack/*/v1.*'` 可跨空间筛（`-l` 通配按 `/` 分段），且空间 id 含连字符时无解析歧义。**取某空间当前版本**：`git tag -l 'pack/python/*' --sort=-v:refname | head -1` —— **`--sort` 不能省**：默认是**字典序升序**，`head -1` 取到的不是最高版（实测：只有 `v1.2.0` 与 `v1.9.0` 时默认取到 `v1.2.0`）。**被否方案**：全局号 `pack-vX.Y.Z`（违反 `PACK-001`「空间可单独升级而不牵动别的空间」）· 连字符形态（解析歧义）· 不打 tag（无法从 git 侧回答「`python v1.2.0` 对应哪次提交」，且已定「打 tag 即对外承诺」）。
 - **overlay 不打 tag** —— `overlay@N` 来自用户提交与审核、存在服务端 DB（`PACK-009`/`PACK-011` 两平面），**不在仓库里**。tag 只标记仓库内容，不在仓库里的状态层不设 tag。
 - **只能打在全绿的 commit 上** —— `python content/tools/build.py` 全空间通过 + 校验器通过（DAG / 稳定 id / 六要件三态）。`dist/` 不入库（`PACK-018`），tag 是唯一指针，打在构建不过的 commit 上等于发了个拿不到的包。
+- **命名由 `pre-push` 判** —— 上表两种形态之外的 tag 一律拒推（备份 / 临时标记只留本地，永不进远端）；删除远端 tag 放行。⚠️ 「打在全绿的 commit 上」是**人工判据**，hook 只看得到 tag 名，判不了它指向哪条构建。
 - **版本写在 `manifest.json`，不靠 `build.py` 生成** —— `manifest.json` 的 `version` 是包版本的**唯一事实源**（semver），`build.py` **原样透传**到 `pack.json` 的 `meta.version`，**不得改写**（否则同一 commit 两次构建产出不同版本，与「tag 是唯一指针」冲突）。tag 名中的版本须与之**逐字一致**（与「两端 `pubspec.yaml` 逐字相同」同族，可加机器校验）。
 - **tag 用附注 tag**（`git tag -a`），消息 = 版本号 + 交付范围一行，**推送至远程**。
 - **打 tag 即对外承诺**：首个 tag 的时机与版本号由维护者决策，本文**不预置**。
