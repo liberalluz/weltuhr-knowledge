@@ -1,0 +1,209 @@
+#!/usr/bin/env bash
+# 提交信息格式判据 —— 本地 hook 与 CI **共用同一份逻辑**。
+#
+# 只认 docs/guides/git-conventions.md §3：
+#   §3.1 type 11 值（必填）
+#   §3.2 scope 6 值（可省略；给了就必须是这六个，且**子维度不进 scope**）
+#   §3.3 subject ≤72 字符、句尾不加句号；有 body 时 header 与 body 之间空一行
+#
+# 用法：
+#   .githooks/commit-msg <消息文件>            # git hook（单条）
+#   .githooks/commit-msg --range <rev-range>   # CI（逐条；merge 提交自动放行）
+#
+# 退出码：0 通过 · 1 有违规。
+#
+# ── 为什么是 shell 而不是并进 app/tool/lint（Dart）─────────────────────
+# `repo-hygiene` 这个 job 不装 Flutter/Dart，它只有 5 秒的预算。为一条正则
+# 去装 SDK，等于让最便宜的判据变成最贵的那条。本地与 CI 两端都有 bash。
+#
+# ── 为什么两端必须共用同一份文件 ──────────────────────────────────────
+# 分成两份的后果很具体：本地放行、CI 红，人会去改 CI 而不是改提交；反过来
+# CI 放行、本地红，人会 `--no-verify`。判据一旦有两份，就等于没有判据。
+
+set -u
+
+# ⚠️ 这里是 ERE（`grep -E`），分隔符必须是裸 `|`。写成 `\|` 是 BRE 的「或」，
+# 在 ERE 里它只是字面竖线 —— 结果是一条**永远不匹配**的正则，全仓提交全被判红。
+TYPES='feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert'
+SCOPES='app|server|pack|docs|infra|repo'
+MAX=72
+
+# ⚠️ 三个正则必须放进变量再用。直接写进 `[[ s =~ ... ]]` 时，bash 会把正则里的
+# `[^)]` 当成条件表达式的右括号来解析，报 `syntax error ... unexpected token )`
+# —— 这个坑只在对 `[[ ]]` 里内联的正则成立，走变量就绕开了。
+HEADER_RE="^(${TYPES})(\([a-z/]+\))?!?:\ .+\$"
+SCOPE_RE='^[a-z]+\(([^)]+)\)'
+SCOPE_OK_RE="^(${SCOPES})\$"
+
+# ⚠️ 字符数 vs 字节数。`${#s}` 在 UTF-8 locale 下按**字符**，在 C/POSIX 下按
+# **字节**（一个汉字 3 字节）。同一句 60 字的中文提交，前者算 60、后者算 180 ——
+# 判据会在两台机器上给出相反结论，而且看不出原因。这里先探一次，按字节就直接
+# 报「环境不合格」，不拿错误的度量去判。
+PROBE='中'
+if [ "${#PROBE}" -ne 1 ]; then
+  echo "commit-msg: 当前 locale 不是 UTF-8（\`\${#s}\` 按字节计数，本应是 1 得到 ${#PROBE}），无法正确度量 subject 长度。" >&2
+  echo "commit-msg: 设 LANG=C.UTF-8（或 en_US.UTF-8）后重试。" >&2
+  exit 1
+fi
+
+FAIL=0
+
+# 跳过不归本判据管的消息形态：
+#   Merge / Revert  —— git 与平台生成的固定句式，改不动也不必改
+#   fixup! / squash! / amend! —— rebase 中间态，最终会被合掉
+skip_msg() {
+  case "$1" in
+    'Merge '* | 'Revert "'* | 'fixup! '* | 'squash! '* | 'amend! '*) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+# 入参是**消息全文**，不是文件名 —— 全流程纯 bash 内建，不 fork。
+# 逐条 `sed` / `grep` 的写法在 Windows 上一次 fork 约 100 ms，一条消息要 4 条
+# 外部命令，百条提交的 PR 就是几十秒；而这条判据的定位是「比 check-ignore 还便宜」。
+check_msg() {
+  local msg=$1 label=$2
+  local first second rest scope subject len
+
+  # 去 CRLF：Windows 上 `core.autocrlf` 可能把消息写成 CRLF，行尾会带 \r，
+  # 「subject 末尾是句号」与「第二行是否为空」两条判据都会误伤。
+  msg=${msg//$'\r'/}
+  # 去尾部换行，免得最后一行被当成空行或反之
+  while [ "${msg%$'\n'}" != "$msg" ]; do msg=${msg%$'\n'}; done
+
+  first=${msg%%$'\n'*}
+  if [ "$first" = "$msg" ]; then
+    second=''
+  else
+    rest=${msg#*$'\n'}
+    second=${rest%%$'\n'*}
+  fi
+
+  if [ -z "$first" ]; then
+    echo "FAIL $label: 首行为空" >&2
+    FAIL=1
+    return
+  fi
+
+  if skip_msg "$first"; then
+    return
+  fi
+
+  # ① header 形态：<type>(<scope>)?!?: <subject>
+  #    scope 先用 `[a-z/]+` 做形态匹配，再单独判取值 —— 两步分开，错误信息才准：
+  #    「形态不对」和「取值不在六值内」是两种改法。
+  if [[ ! $first =~ $HEADER_RE ]]; then
+    echo "FAIL $label: header 不符合 \`<type>(<scope>): <subject>\`" >&2
+    echo "      实得：$first" >&2
+    case "$first" in
+      *\(*[A-Z_]*\)*) echo "      提示：scope 只能是小写字母" >&2 ;;
+    esac
+    FAIL=1
+    return
+  fi
+
+  if [[ $first =~ $SCOPE_RE ]]; then
+    scope=${BASH_REMATCH[1]}
+    if [[ ! $scope =~ $SCOPE_OK_RE ]]; then
+      echo "FAIL $label: scope \`$scope\` 不在 §3.2 的 6 值内（app / server / pack / docs / infra / repo）" >&2
+      case "$scope" in
+        */*) echo "      子维度不进 scope：\`$scope\` 是目录或子模块名，不是顶层单元" >&2 ;;
+        *) echo "      view / plan / core / tool / test 归 \`app\`；content 归 \`pack\`；笔号与交付物归 \`docs\`" >&2 ;;
+      esac
+      FAIL=1
+      return
+    fi
+  fi
+
+  # ② subject：非空、≤72 字符、句尾不加句号
+  subject=${first#*: }
+  if [ "$subject" = "$first" ]; then
+    echo "FAIL $label: 缺 \`: \` 与 subject" >&2
+    FAIL=1
+    return
+  fi
+  len=${#subject}
+  if [ "$len" -gt "$MAX" ]; then
+    echo "FAIL $label: subject ${len} 字符，超过 ${MAX}（按字符数计，不按显示宽度）" >&2
+    echo "      实得：$subject" >&2
+    FAIL=1
+  fi
+  case "$subject" in
+    *。 | *.)
+      echo "FAIL $label: subject 句尾不得加句号" >&2
+      FAIL=1
+      ;;
+  esac
+
+  # ③ header 与 body 之间空一行。只看第二行是否为空白行：没有 body 时第二行
+  #    取不到东西，也是空 —— 两种情况都合规。
+  if [ -n "$second" ]; then
+    echo "FAIL $label: header 与 body 之间必须空一行" >&2
+    echo "      第二行：$second" >&2
+    FAIL=1
+  fi
+}
+
+mode=${1:-}
+if [ "$mode" = '--range' ]; then
+  range=${2:-}
+  if [ -z "$range" ]; then
+    echo "usage: $0 --range <rev-range>" >&2
+    exit 1
+  fi
+  # GitHub 在新分支首推时把 `before` 给成全 0，区间会变成 `0000…0000..<sha>`。
+  # 这种区间 rev-list 报错，而错误信息与「提交信息不合规」毫无关系 —— 在这里
+  # 明确退化成「只看这一条」，不让判据红在一条误导性的错误上。
+  case "$range" in
+    *0000000000000000000000000000000000000000*)
+      range="-n 1 ${range##*..}"
+      ;;
+  esac
+
+  # 所有消息**一次取出**，用 NUL 分隔分段。逐条 `git log -1` 的写法在 Windows 上
+  # 每条约 100 ms，一个百条提交的 PR 要跑十几秒；而这条判据的时限是「比 check-ignore
+  # 还便宜」。
+  tmp=$(mktemp)
+  # shellcheck disable=SC2086
+  if ! git log --format='%H%n%B%x00' $range >"$tmp" 2>/dev/null; then
+    echo "FAIL 无法解析区间 \`$range\`（base 是否已 fetch？fetch-depth 是否够？）" >&2
+    rm -f "$tmp"
+    exit 1
+  fi
+  if [ ! -s "$tmp" ]; then
+    echo "提交信息：区间内无提交，跳过"
+    rm -f "$tmp"
+    exit 0
+  fi
+
+  n=0
+  while IFS= read -r -d '' block; do
+    # ⚠️ git 在每条记录**之后**除了 `%x00` 还会补一个换行，所以第二块起会以
+    # 换行开头。不剥掉它，`%%$'\n'*` 取到的「首行」是空串，而真正被当成首行的
+    # 是下一行的 SHA —— 表现为「校验 99 条、每条都报 header 不符合、label 为空」。
+    block=${block#$'\n'}
+    [ -z "$block" ] && continue
+    sha=${block%%$'\n'*}
+    n=$((n + 1))
+    check_msg "${block#*$'\n'}" "$(printf '%.7s' "$sha")"
+  done <"$tmp"
+  rm -f "$tmp"
+  echo "提交信息：校验 ${n} 条"
+else
+  if [ -z "$mode" ]; then
+    echo "usage: $0 <msg-file> | $0 --range <rev-range>" >&2
+    exit 1
+  fi
+  if [ ! -f "$mode" ]; then
+    echo "FAIL 找不到消息文件：$mode" >&2
+    exit 1
+  fi
+  check_msg "$(cat "$mode")" 'HEAD'
+fi
+
+if [ "$FAIL" -ne 0 ]; then
+  echo '' >&2
+  echo '提交信息不符合 docs/guides/git-conventions.md §3。改正后无需重跑测试。' >&2
+  exit 1
+fi
+exit 0
