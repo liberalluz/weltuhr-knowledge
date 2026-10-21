@@ -225,7 +225,7 @@
 | 版号 | 份数 | 文件 |
 |---|---|---|
 | `v0.75.0` | 1 | `SCMP`（**`B13a` 笔 5c-1：`appliesTo` 匹配器落到新本体（契约收口）** —— 键集 `{spaceId, type, layer}` → **`{type, axes, layer}`**（`spaceId` 与 `sixAxis` 同待遇：传了就抛），入参 `Item` + `KnowledgeSpace` → **`Node`**；`type` / `layer` 只对可学节点有意义，结构节点上声明它们 ⇒ 不命中。两个形状分清：源的 `{axes[], node_scope[]}` 两键必填、方法的 `{type, axes, layer}` 三键可省。5 条契约用例从 `candidates_test.dart` 拆到 `app/test/core/plan/applies_to_test.dart`。⚠️ **代码改动 3 份 lib + 2 份测试 + 1 份新夹具，用例表与 `Dart` 读数双不变**；⚠️ **如实登记：该函数仍无生产调用方**，接线归 5c-2） |
-| `v0.61.0` | 1 | `STD`（`appliesTo` 契约收口：§3.44 五条改判 —— `TC-PLAN-017` 由 `spaceId` 改 `axes` · `TC-PLAN-016` 扩到两个废键 · `TC-PLAN-014` 补结构节点与空数组两条断言 · `TC-PLAN-018` 补形状错；五条的落点由 `candidates_test.dart` 改为 `applies_to_test.dart`。**用例表 789 条、`Dart` 419 条均不变**） |
+| `v0.62.0` | 1 | `STD`（5c 收口同步：包解析 9 条落点由已删的 `pack_parse_test` 改指 `pack_reader_test`（5 条逐字改名 · 2 条随 `meta` 段取消作废 · 2 条标待补）；α 包 4 条与 `TC-PACK-042`/`043` 作废；`TC-PLAN-062`–`067` 随 `PlanSelector` / `PlanTarget` 废除作废；§3.45 五条改名对齐 `AuthorityLevel` 五档。⚠️ **如实登记三条覆盖欠账**：真实内容包四数校验 · 150 项自定位 · 题库悬空引用，夹具删除后无自动化。**用例表 789 条不变**（作废按 `D3` 保留行）） |
 | `v0.55.0` | 1 | `STP`（「架构」36 → **41**、编号扩到 `TC-INF-042`、合计 784 → **789**；`R10` 五条并入既有 `TC-INF` 段，**不新增执行方式**，仍全部走 `flutter test`） |
 | `v0.39.0` | 1 | `STR`（轮次 `R15i`：5c-1 的沙箱内自验证 —— 三处独立反证，结构节点跳过 `type` 判据红 1 · 键集退回 `spaceId` 红 **3**（**有连坐**，如实记）· 形状错静默放行红 1；`flutter test` **419 passed** 持平、lint **101 文件** 0 违规） |
 | `v0.16.0` | 1 | `SDD`（§2.1 树补 **1 份** `entities/requirement.dart`；`content.dart` 那一行改为「旧实体件，删归笔 5c」。计数 49 → **50 份**、树内 38 → **39 条**） |
