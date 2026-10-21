@@ -45,7 +45,10 @@ void main(List<String> args) {
   }
 
   final Map<String, String> docs = <String, String>{};
-  for (final String rel in docFiles) {
+  // 按 `versionDocFiles`（六份）读盘：它是 `docFiles` 的超集，`D2` 要查 `SDP` /
+  // `SDD` 的版号自洽，其余规则仍只认 `docFiles` —— 多读不影响它们，少读就是
+  // 「文件不存在」错报。
+  for (final String rel in versionDocFiles) {
     final File f = File('$repoRoot/$rel');
     if (!f.existsSync()) {
       // 缺文件不在读盘阶段退出：让 `D2` 报「文件不存在」，一处失败不掩其余。
