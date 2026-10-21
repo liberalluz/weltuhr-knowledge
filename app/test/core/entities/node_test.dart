@@ -1,12 +1,12 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:project_knowledge/core/constants.dart';
-import 'package:project_knowledge/core/entities/content.dart';
+import 'package:project_knowledge/core/entities/requirement.dart';
 import 'package:project_knowledge/core/entities/node.dart';
 import 'package:project_knowledge/core/enums.dart';
 import 'package:project_knowledge/core/errors.dart';
 
-ItemRequirements _requirements() =>
-    const ItemRequirements(<RequirementKey, RequirementState>{
+Requirements _requirements() =>
+    const Requirements(<RequirementKey, RequirementState>{
       RequirementKey.boundary: RequirementState.present,
       RequirementKey.justification: RequirementState.present,
       RequirementKey.proposition: RequirementState.present,
