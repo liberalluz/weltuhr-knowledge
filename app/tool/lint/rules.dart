@@ -103,6 +103,25 @@ const String ruleNodeNoDirectConstruction = 'R8';
 /// `path` 比对的地方都还在用旧值 —— 没有断言会红。
 const String ruleNodeNoDerivedFields = 'R9';
 
+/// R10：append-only 存储**接口的方法面是封闭集**。
+///
+/// `R3` 列的是「禁止的方法名」—— 黑名单只能拦住**想到过**的名字。有人往
+/// `AppendOnlyStoreFs` 里加一个 `writeStringAtomic`，它不在名单里，于是整条判据
+/// 静默失效。这正是 `R-08` 的原话：「凡靠约定保证的，先问『违反它会不会有任何
+/// 东西变红』」—— 对「**加**一个方法」这个方向，原来的答案是不会。
+///
+/// 本条把方向翻过来：接口体里**只允许**白名单上的方法，多一个就报，不管它叫什么。
+/// 「事件区多了一个方法」这件事本身需要一次决定，而不是靠命名撞车才发现。
+///
+/// ⚠️ **只查接口声明体，不查实现类**：`DartIoPackFs` 同时 `implements PackFs,
+/// WritableStoreFs, AppendOnlyStoreFs` —— 它**应当**有 `writeStringAtomic`。
+/// 按实现类查会把这种合法的能力叠加判成违规，那种规则活不过一次重构。
+/// 洞在接口上：接口一开，所有实现者都被要求提供它。
+///
+/// ⚠️ **白名单里没有 `write*` 前缀匹配**：前缀是启发式（`writeThroughCache()`
+/// 这种读方法也会中招），而封闭集不需要启发式 —— 不在集合里就是新增。
+const String ruleAppendOnlySurface = 'R10';
+
 /// `lib/core/**` 不得出现的外部依赖前缀。
 const List<String> _forbiddenUriPrefixes = <String>[
   'package:flutter',
@@ -148,6 +167,18 @@ const Set<String> _appendOnlyClassNames = <String>{
   'AppendOnlyStoreFs',
 };
 
+/// append-only 存储**接口**与它允许的方法集（`R10`）。
+///
+/// 与 `_forbiddenStoreMethods` 的分工：那张表是**黑名单**（`R3`，查 `EventStore`
+/// 与 `AppendOnlyStoreFs` 的类体里有没有这些名字），本表是**白名单**（多一个就报）。
+/// 两张表都留着不是冗余 —— 黑名单管「改」，白名单管「加」。
+///
+/// 实现类不在本表范围内（见 `R10` 的说明）。
+const Map<String, Set<String>> _appendOnlySurfaces = <String, Set<String>>{
+  'EventStore': <String>{'append', 'readAll', 'byId'},
+  'AppendOnlyStoreFs': <String>{'appendLine'},
+};
+
 /// `EventStore` 上被禁止的方法名 —— 任一出现都意味着「历史可被改写」。
 const Set<String> _forbiddenStoreMethods = <String>{
   'delete',
@@ -188,9 +219,12 @@ const Set<String> _derivedFieldNames = <String>{'path', 'inScope', 'depth'};
 ///   （`GOV` 三位、`QUANT` 五位），所以这里不能写死 `{3}`
 /// - `C-NN` —— 常量编号（`docs/reference/constants.md`）
 /// - `ADR-NNNN` —— 架构决策（`docs/adr/`）
-/// - `R<n>` —— 本文件里的规则自身
+/// - `R<n>` —— 本文件里的规则自身。⚠️ 写成 `\d+` 不是 `\d`：`R10` 出现时
+///   `\bR\d\b` **匹配不到**（`1` 与 `0` 都是词字符，中间没有词边界），
+///   于是「新规则自己的测试标了号反而被判没标号」—— 这条正则在写的时候
+///   规则只有九条，第十条一来就露馅
 final RegExp _specTagPattern = RegExp(
-  r'SPEC-[A-Z]+-\d{3}|\bC-\d{2}\b|ADR-\d{4}|\bR\d\b',
+  r'SPEC-[A-Z]+-\d{3}|\bC-\d{2}\b|ADR-\d{4}|\bR\d+\b',
 );
 
 /// 写不出标号时的显式豁免（后面必须跟理由）。
@@ -246,6 +280,9 @@ List<LintIssue> checkSource({required String path, required String source}) {
 
   // R8 也按类型名：直接构造 `Node(...)` 与 `Node` 类体内的 `factory` 都算。
   unit.accept(_NodeConstructionVisitor(parsed, normalized, issues));
+
+  // R10 同理按接口名：`EventStore` / `AppendOnlyStoreFs` 的声明可能落在任何层。
+  unit.accept(_AppendOnlySurfaceVisitor(parsed, normalized, issues));
 
   if (_isVisualChannel(normalized)) {
     unit.accept(_SourceNotVisualVisitor(parsed, normalized, issues));
@@ -373,6 +410,55 @@ class _EventAppendOnlyVisitor extends RecursiveAstVisitor<void> {
     _issues.add(
       LintIssue(
         ruleId: ruleEventAppendOnly,
+        path: _path,
+        line: _lineOf(_parsed, offset),
+        message: message,
+      ),
+    );
+  }
+}
+
+/// 查 append-only 存储**接口的方法面**（`R10`）。
+///
+/// 只认声明体本身，不认实现类 —— 理由见 `ruleAppendOnlySurface` 的说明。
+class _AppendOnlySurfaceVisitor extends RecursiveAstVisitor<void> {
+  _AppendOnlySurfaceVisitor(this._parsed, this._path, this._issues);
+
+  final ParseStringResult _parsed;
+  final String _path;
+  final List<LintIssue> _issues;
+
+  @override
+  void visitClassDeclaration(ClassDeclaration node) {
+    final String name = node.namePart.typeName.lexeme;
+    final Set<String>? allowed = _appendOnlySurfaces[name];
+
+    if (allowed != null) {
+      for (final ClassMember member in node.body.members) {
+        if (member is! MethodDeclaration) {
+          continue;
+        }
+        final String method = member.name.lexeme;
+        // 私有成员是实现者的内部辅助，不进调用面。
+        if (method.startsWith('_') || allowed.contains(method)) {
+          continue;
+        }
+        _report(
+          member.offset,
+          '`$name` 只允许 `${allowed.join("` / `")}`，'
+          '出现 `$method()` 即接口面被扩大 —— 事件区就不再是「只能追加」'
+          '（`SPEC-FND-012`）',
+        );
+      }
+    }
+
+    super.visitClassDeclaration(node);
+  }
+
+  void _report(int offset, String message) {
+    _issues.add(
+      LintIssue(
+        ruleId: ruleAppendOnlySurface,
         path: _path,
         line: _lineOf(_parsed, offset),
         message: message,
