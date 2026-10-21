@@ -1,19 +1,19 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:project_knowledge/core/entities/edge.dart';
+import 'package:project_knowledge/core/entities/content.dart';
 import 'package:project_knowledge/core/enums.dart';
 import 'package:project_knowledge/core/graph/levels.dart';
+import 'package:project_knowledge/core/pack/pack_parse.dart';
 
-PrerequisiteEdge _edge(
-  String from,
-  String to, {
-  EdgeStrength strength = EdgeStrength.required,
-}) => PrerequisiteEdge(fromId: from, toId: to, strength: strength);
+import '../../support/alpha_pack.dart';
+
+Edge _edge(String from, String to) =>
+    Edge(id: '$from-$to', from: from, to: to, type: EdgeType.strong);
 
 void main() {
   test('链：a→b→c 得 0 / 1 / 2（SPEC-VIEW-002）', () {
     final Map<String, int> levels = kahnLevels(
       nodeIds: <String>['a', 'b', 'c'],
-      edges: <PrerequisiteEdge>[_edge('a', 'b'), _edge('b', 'c')],
+      edges: <Edge>[_edge('a', 'b'), _edge('b', 'c')],
     );
     expect(levels, <String, int>{'a': 0, 'b': 1, 'c': 2});
   });
@@ -21,12 +21,7 @@ void main() {
   test('菱形：汇合点取两侧较深的一层（SPEC-VIEW-002）', () {
     final Map<String, int> levels = kahnLevels(
       nodeIds: <String>['a', 'b', 'c', 'd'],
-      edges: <PrerequisiteEdge>[
-        _edge('a', 'b'),
-        _edge('a', 'c'),
-        _edge('b', 'd'),
-        _edge('c', 'd'),
-      ],
+      edges: <Edge>[_edge('a', 'b'), _edge('a', 'c'), _edge('b', 'd'), _edge('c', 'd')],
     );
     expect(levels['d'], 2);
   });
@@ -35,11 +30,7 @@ void main() {
     // a→b→c 与 a→c 并存：c 的层号必须是 2，不能因为有一条直达边就算 1。
     final Map<String, int> levels = kahnLevels(
       nodeIds: <String>['a', 'b', 'c'],
-      edges: <PrerequisiteEdge>[
-        _edge('a', 'b'),
-        _edge('b', 'c'),
-        _edge('a', 'c'),
-      ],
+      edges: <Edge>[_edge('a', 'b'), _edge('b', 'c'), _edge('a', 'c')],
     );
     expect(levels['c'], 2);
   });
@@ -47,7 +38,7 @@ void main() {
   test('孤立节点为 0 层，与入度为 0 的节点同层（SPEC-VIEW-002）', () {
     final Map<String, int> levels = kahnLevels(
       nodeIds: <String>['a', 'b', 'lonely'],
-      edges: <PrerequisiteEdge>[_edge('a', 'b')],
+      edges: <Edge>[_edge('a', 'b')],
     );
     expect(levels['lonely'], 0);
   });
@@ -55,32 +46,21 @@ void main() {
   test('空边集：全部 0 层（SPEC-VIEW-002）', () {
     final Map<String, int> levels = kahnLevels(
       nodeIds: <String>['a', 'b', 'c'],
-      edges: const <PrerequisiteEdge>[],
+      edges: const <Edge>[],
     );
     expect(levels.values.every((int value) => value == 0), isTrue);
   });
 
-  test('端点不在册的边被忽略，不影响层号（无 SPEC：存在性校验在构建期）', () {
+  test('端点不在册的边被忽略，不影响层号（无 SPEC：存在性校验在构建期，见 pack_parse 注释）', () {
     final Map<String, int> levels = kahnLevels(
       nodeIds: <String>['a', 'b'],
-      edges: <PrerequisiteEdge>[_edge('a', 'ghost'), _edge('ghost', 'b')],
-    );
-    expect(levels, <String, int>{'a': 0, 'b': 0});
-  });
-
-  test('`recommended` 不参与 ⪯：只被建议指向的节点仍在 0 层（ADR-0005 决策 4）', () {
-    // 把它算进层号会让一个「只被建议指向」的项往后挪一层，看起来像它真有前置。
-    final Map<String, int> levels = kahnLevels(
-      nodeIds: <String>['a', 'b'],
-      edges: <PrerequisiteEdge>[
-        _edge('a', 'b', strength: EdgeStrength.recommended),
-      ],
+      edges: <Edge>[_edge('a', 'ghost'), _edge('ghost', 'b')],
     );
     expect(levels, <String, int>{'a': 0, 'b': 0});
   });
 
   test('边顺序不影响结果 —— 层号取 max，与入队顺序无关（SPEC-VIEW-002）', () {
-    final List<PrerequisiteEdge> edges = <PrerequisiteEdge>[
+    final List<Edge> edges = <Edge>[
       _edge('a', 'b'),
       _edge('b', 'c'),
       _edge('a', 'c'),
@@ -101,9 +81,32 @@ void main() {
     expect(
       () => kahnLevels(
         nodeIds: <String>['a', 'b'],
-        edges: <PrerequisiteEdge>[_edge('a', 'b'), _edge('b', 'a')],
+        edges: <Edge>[_edge('a', 'b'), _edge('b', 'a')],
       ),
       throwsFormatException,
     );
+  });
+
+  test('真实 α 包：150 项全部有层号，最深 63 层（SPEC-VIEW-002）', () {
+    final LoadedPack pack = loadAlphaPack();
+    final Map<String, int> levels = kahnLevels(
+      nodeIds: pack.items.map((Item item) => item.id),
+      edges: pack.edges,
+    );
+    expect(levels.length, 150);
+    int maxLevel = 0;
+    int zeroLevel = 0;
+    for (final int value in levels.values) {
+      if (value > maxLevel) {
+        maxLevel = value;
+      }
+      if (value == 0) {
+        zeroLevel += 1;
+      }
+    }
+    // 这两个数是内容侧事实，不是调出来的：α 包的 ⪯ 近乎一条长链。
+    // 它们决定宇宙视图把 φ 直接当高度时会不会把节点推出画面，`B3` 必须知道。
+    expect(maxLevel, 63);
+    expect(zeroLevel, 3);
   });
 }

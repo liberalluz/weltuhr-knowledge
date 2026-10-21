@@ -1,7 +1,12 @@
-/// 源（材料）—— `entity-fields` §11。
+/// 源（材料）—— `entity-fields` §11 的新形态。
 ///
-/// 笔 5c 之前它与 `content.dart` 里的旧 `SourceRef`（`excerpts` 段，六轴时代
-/// 的「选段」）同名并存。旧类已随 `Item` 一并删除，同名问题随之消失。
+/// ⚠️ **与 `content.dart` 里的旧 `SourceRef` 同名**：旧类服务 `excerpts` 段
+/// （六轴时代的「选段」），新类服务 `sources` 段。两者**没有任何文件同时
+/// import** —— 旧消费点只认 `content.dart`，新解析器只认本文件。旧类在
+/// `B13a` 笔 5 随 `Item` 一并删除，届时同名问题自然消失。
+///
+/// 换成同名新文件而不是临时名（如 `SourceRefV2`）：临时名会活在调用点里，
+/// 笔 5 得再改一遍；同名则**笔 5 只需删旧定义**。
 library;
 
 import '../enums.dart';

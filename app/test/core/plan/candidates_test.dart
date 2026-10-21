@@ -1,95 +1,120 @@
+import 'dart:convert';
+
 import 'package:flutter_test/flutter_test.dart';
-import 'package:project_knowledge/core/entities/method.dart';
-import 'package:project_knowledge/core/entities/source.dart';
+import 'package:project_knowledge/core/entities/content.dart';
 import 'package:project_knowledge/core/enums.dart';
-import 'package:project_knowledge/core/pack/pack_reader.dart';
+import 'package:project_knowledge/core/pack/pack_parse.dart';
 import 'package:project_knowledge/core/plan/applies_to.dart';
 import 'package:project_knowledge/core/plan/candidates.dart';
+import 'package:project_knowledge/core/plan/method_bundle.dart';
 import 'package:project_knowledge/core/plan/platform_candidates.dart';
 
 import '../../support/node_fixture.dart';
-import '../../support/pack_fixture.dart';
 
-/// 四类各一项：让「按 `LearnableType` 派生」有四种对象可指。
+/// 四类各一项：让「按 `Item.type` 派生」有四种对象可指。
 ///
 /// `sourceRefs` 刻意做成**不全**：`i-skill` / `i-tacit` 不引用任何源 ——
 /// 「覆盖 > 0 才进候选」这条如果写成「全在」，就测不出筛掉的那一半。
 ///
-/// 三条源里有一条 `kind = catalog`：它绑 `Node.catalog_refs`，不该混进候选卡
-/// （`entity-fields` §11 注记）。旧夹具用「另一个空间的源」造这个形状，
-/// 那条判据随 `spaceId` 一起废了 —— 现在同一条规则由 `kind` 表达。
-PackContent _pack() => fixturePack(
-  const <FixtureNode>[
-    FixtureNode(
-      'python:lex',
-      '词法',
-      slot: LevelSlot.group,
-      parentId: 'python:root',
-    ),
-    FixtureNode('python:root', '研究生目录', slot: LevelSlot.supercluster),
-    FixtureNode(
-      'i-dec',
-      '陈述项',
-      parentId: 'python:lex',
-      type: LearnableType.declarative,
-      sourceRefs: <String>['src-a'],
-    ),
-    FixtureNode(
-      'i-proc',
-      '流程项',
-      parentId: 'python:lex',
-      type: LearnableType.procedural,
-      sourceRefs: <String>['src-b'],
-    ),
-    FixtureNode(
-      'i-skill',
-      '技能项',
-      parentId: 'python:lex',
-      type: LearnableType.skill,
-    ),
-    FixtureNode(
-      'i-tacit',
-      '默会项',
-      parentId: 'python:lex',
-      type: LearnableType.tacit,
-    ),
-  ],
-  schemes: <String, List<String>>{
-    'scheme-all': <String>['i-dec', 'i-proc', 'i-skill', 'i-tacit'],
-    'scheme-dec-only': <String>['i-dec'],
-  },
-  sources: const <String, String>{
-    'src-a': 'A 材料',
-    'src-b': 'B 材料',
-    'src-catalog': '研究生目录',
-  },
-  catalogSources: const <String>{'src-catalog'},
-);
+/// 三条源里有一条 `spaceId = java`：客户端不该显示别的空间的材料，而 α 包
+/// 单空间，造不出这种形状。
+LoadedPack _pack() {
+  final List<Map<String, Object?>> items = <Map<String, Object?>>[
+    _item('i-dec', 'declarative', <String>['src-a']),
+    _item('i-proc', 'procedural', <String>['src-b']),
+    _item('i-skill', 'skill', <String>[]),
+    _item('i-tacit', 'tacit', <String>[]),
+  ];
 
-/// 自建源：整条记录来自用户，等级取最低一档。
-SourceRef _userSource(String id, String name) => SourceRef.fromJson(
-  <String, Object?>{
-    'id': id,
-    'name': name,
-    'kind': 'material',
-    'authority_level': 'community',
-    'version': '1.0',
-    'appliesTo': <String, Object?>{
-      'axes': <String>['major'],
-      'node_scope': <String>[],
-    },
-  },
-);
+  final Map<String, Object?> manifest = <String, Object?>{
+    'id': 'python',
+    'name': 'Python',
+    'version': '0.1.0',
+    'sixAxis': <String, String>{'subject': '计算机科学'},
+    'accent': '#3776ab',
+    'order': 10,
+    'domainIds': <String>['python/lexical'],
+  };
+
+  final Map<String, Object?> pack = <String, Object?>{
+    'meta': <String, Object?>{'space': 'python', 'version': '0.1.0'},
+    'items': items,
+    'edges': <Map<String, Object?>>[],
+    'schemes': <Map<String, Object?>>[
+      <String, Object?>{
+        'id': 'scheme-all',
+        'name': '全量序',
+        'nodes': <String>['i-dec', 'i-proc', 'i-skill', 'i-tacit'],
+        'authorityLevel': 'L1',
+      },
+      <String, Object?>{
+        'id': 'scheme-dec-only',
+        'name': '只含陈述项',
+        'nodes': <String>['i-dec'],
+        'authorityLevel': 'L2',
+      },
+    ],
+    'questions': <Map<String, Object?>>[],
+    'excerpts': <Map<String, Object?>>[
+      _excerpt('src-a', 'A 材料', 'L0', 'python'),
+      _excerpt('src-b', 'B 材料', 'L1', 'python'),
+      _excerpt('src-java', '别的空间的材料', 'L2', 'java'),
+    ],
+  };
+
+  return parsePack(
+    manifestJson: jsonEncode(manifest),
+    packJson: jsonEncode(pack),
+  );
+}
+
+Map<String, Object?> _item(String id, String type, List<String> sourceRefs) =>
+    <String, Object?>{
+      'id': id,
+      'title': id,
+      'sixAxis': <String, String>{'subject': '计算机科学', 'ability': '基础语法'},
+      'layer': 'persistent',
+      'type': type,
+      'requirements': <String, Object?>{
+        'boundary': 'present',
+        'justification': 'present',
+        'proposition': 'present',
+        'relation': 'present',
+        'how': 'present',
+        'tacit': 'not_externalizable',
+      },
+      'sourceRefs': sourceRefs,
+      'domainId': 'python/lexical',
+      'inScope': true,
+    };
+
+Map<String, Object?> _excerpt(
+  String id,
+  String name,
+  String level,
+  String spaceId,
+) => <String, Object?>{
+  'id': id,
+  'name': name,
+  'authorityLevel': level,
+  'version': '1.0',
+  'segments': <Map<String, Object?>>[
+    <String, Object?>{'text': '摘录正文', 'locator': '§1', 'license': 'PSF-2.0'},
+  ],
+  'appliesTo': <String, Object?>{'spaceId': spaceId},
+};
+
+SourceRef _userSource(String id, String name) =>
+    SourceRef.fromJson(_excerpt(id, name, 'L4', 'python'));
 
 void main() {
   group('三段候选装载', () {
-    test('不给体系与源时，源候选是包内全部（`catalog` 除外），覆盖按全包项数算（SPEC-PLAN-006）', () {
+    test('不给体系与源时，源候选是空间内全部、覆盖按全空间项数算（SPEC-PLAN-006）', () {
       final CandidateSet set = loadCandidates(_pack());
 
       expect(
         set.sources.map((SourceCandidate c) => c.id),
         <String>['src-a', 'src-b'],
-        reason: '`catalog` 源不进候选 —— 它回答「按下哪份文件」而不是「去哪学」',
       );
       for (final SourceCandidate candidate in set.sources) {
         expect(candidate.coverage.total, 4);
@@ -136,21 +161,22 @@ void main() {
     });
 
     test('同 id 三源并存时 user 覆盖 pack 的**整条**记录（SPEC-PLAN-006）', () {
-      // 覆盖的是整条记录，自建版写的等级也一起生效，不是只换了个名字。
+      // `P-3` 起顺序由排序键决定（`SPEC-PLAN-020`），不再是「首次出现的位置」——
+      // 这条用例因此改成按 id 取，不再依赖列表位置。附带立一条真断言：覆盖的是
+      // 整条记录，自建版写的等级也一起生效，不是只换了个名字。
       final CandidateSet set = loadCandidates(
         _pack(),
         userSources: <SourceRef>[_userSource('src-a', '自建版 A')],
       );
 
-      final SourceCandidate merged = set.sources.firstWhere(
-        (SourceCandidate c) => c.id == 'src-a',
-      );
+      final SourceCandidate merged = set.sources
+          .firstWhere((SourceCandidate c) => c.id == 'src-a');
       expect(merged.name, '自建版 A');
       expect(merged.origin, CandidateOrigin.user);
       expect(
         merged.authorityLevel,
-        AuthorityLevel.community,
-        reason: '自建版声明的等级生效 ⇒ 它从第一掉到最后，而 `src-b` 顶上来',
+        'L4',
+        reason: '自建版声明的 `L4` 生效 ⇒ 它从第一掉到最后，而 `src-b` 的 `L1` 顶上来',
       );
       expect(
         set.sources.where((SourceCandidate c) => c.id == 'src-a').length,
@@ -159,7 +185,16 @@ void main() {
       expect(set.sources.first.id, 'src-b');
     });
 
-    test('不存在的体系 id 抛错，不返回空列表（无 SPEC：静默空表会被读成「零覆盖」）', () {
+    test('别的空间的源不进候选（SPEC-PLAN-006）', () {
+      final CandidateSet set = loadCandidates(_pack());
+
+      expect(
+        set.sources.map((SourceCandidate c) => c.id),
+        isNot(contains('src-java')),
+      );
+    });
+
+    test('不存在的体系 id 抛错，不返回空列表（无 SPEC：`PLAN` 未定此契约，静默空表会被读成「零覆盖」）', () {
       expect(
         () => loadCandidates(_pack(), schemeId: 'scheme-nope'),
         throwsArgumentError,
@@ -198,28 +233,30 @@ void main() {
 
   group('平台内置的方法分支与组合', () {
     test('每套组合的每个类型分支都在分支册内，且该分支的 appliesTo 覆盖该类型（SPEC-PLAN-010）', () {
+      final LoadedPack pack = _pack();
       final Map<String, MethodProfile> index = platformMethodProfileIndex();
 
       for (final MethodBundle bundle in platformMethodBundles) {
         expect(
           bundle.byType.length,
-          LearnableType.values.length,
+          ItemType.values.length,
           reason: '组合 `${bundle.id}` 缺类型 —— 缺的那类会落到「无方法可用」',
         );
-        bundle.byType.forEach((LearnableType type, String profileId) {
+        bundle.byType.forEach((ItemType type, String profileId) {
           final MethodProfile? profile = index[profileId];
-          expect(
-            profile,
-            isNotNull,
-            reason: '组合 `${bundle.id}` 指向了不存在的方法 `$profileId`',
-          );
+          expect(profile, isNotNull, reason: '组合 `${bundle.id}` 指向了不存在的方法 `$profileId`');
+          final Item? item = _firstItemOfType(pack, type);
+          expect(item, isNotNull, reason: 'α 包里没有 `$type` 的项，这条分支就无从验证');
+          // 匹配器收 `Node`（笔 5c-1），不再收 `Item` —— 平台方法的 `appliesTo`
+          // 只声明 `type`，故节点取哪个轴不影响本条结论。α 包的 `Item` 只用来
+          // 断言「这个类型在包里存在」。
           expect(
             appliesToNode(
               profile!.appliesTo,
-              node: learnableNode(type: type),
+              node: learnableNode(type: LearnableType.fromWire(type.name)),
             ),
             isTrue,
-            reason: '方法 `$profileId` 的 appliesTo 声明不覆盖 `${type.name}`',
+            reason: '方法 `$profileId` 的 appliesTo 声明不覆盖 `$type`',
           );
         });
       }
@@ -240,9 +277,18 @@ void main() {
         (MethodBundle b) => b.id == 'method-bundle-understand',
       );
 
-      expect(understand.profileOf(LearnableType.declarative), 'method-feynman');
-      expect(understand.profileOf(LearnableType.procedural), 'method-deliberate');
-      expect(understand.profileOf(LearnableType.skill), 'method-shadowing');
+      expect(understand.profileIdFor(ItemType.declarative), 'method-feynman');
+      expect(understand.profileIdFor(ItemType.procedural), 'method-deliberate');
+      expect(understand.profileIdFor(ItemType.skill), 'method-shadowing');
     });
   });
+}
+
+Item? _firstItemOfType(LoadedPack pack, ItemType type) {
+  for (final Item item in pack.items) {
+    if (item.type == type) {
+      return item;
+    }
+  }
+  return null;
 }

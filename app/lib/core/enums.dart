@@ -23,6 +23,23 @@ enum Layer {
   }
 }
 
+/// 知识项类型：决定方法派发（`entity-fields` §2）。JSON 取值 `declarative` / `procedural` / `skill` / `tacit`。
+enum ItemType {
+  declarative,
+  procedural,
+  skill,
+  tacit;
+
+  static ItemType fromWire(String raw) {
+    for (final ItemType value in values) {
+      if (value.name == raw) {
+        return value;
+      }
+    }
+    _unknownWire('ItemType', raw, values.map((ItemType v) => v.name));
+  }
+}
+
 /// 六要件三态（`SPEC-FND-004`）。JSON 取值为蛇形小写。
 enum RequirementState {
   present,
@@ -288,10 +305,10 @@ enum NodeStatus {
 
 /// 可学节点的知识类型（`entity-fields` §2「仅可学项」）。
 ///
-/// 笔 5c 之前这里还有个 `ItemType`（同值域、为旧 `Item` 而设）。它已随
-/// `content.dart` 一并删除 —— 两个同值域的枚举并存，代码里就永远存在
-/// 「这个位置该用哪个」的判断题，而答错的表象是类型不匹配，只在跨实体拼接时
-/// 才暴露。
+/// 与 [ItemType] **同值域、不同名**：`Item` 是旧实体，`ADR-0007` 定 `LearnableNode`
+/// 的字段类型为 `LearnableType`。两者会并存到 `B13a` 笔 5（`Item` 删除时 [ItemType]
+/// 一并消失），**不得让 `ItemType` 出现在 `LearnableNode` 上** —— 那会让「旧实体零残留」
+/// 变成一句空话。
 enum LearnableType {
   declarative,
   procedural,

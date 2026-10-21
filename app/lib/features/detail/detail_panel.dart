@@ -84,7 +84,7 @@ const Map<RequirementState, String> _requirementStateLabels =
 
 /// 层级与类型的显示名已上收到 `core/constants.dart`（`P-8`：候选卡的「适用
 /// 范围」是第二处要用的地方，两份副本会分叉），这里直接用 `layerLabels` /
-/// `learnableTypeLabels`。
+/// `itemTypeLabels`。
 
 class DetailPanel extends StatelessWidget {
   const DetailPanel({
@@ -160,12 +160,9 @@ class DetailPanel extends StatelessWidget {
 
   Widget _header(ItemDetail detail) {
     final List<String> facts = <String>[
-      // 旧第一格是 `domainId` 的末段 —— `domainId` 随六轴一并删除
-      // （`entity-fields` 附录），改为 `Node.axis`：它同样是「这项属于哪一片」
-      // 的单值事实，而三轴树里那一格本来就更该显示轴名。
-      axisLabels[detail.axis] ?? detail.axis.name,
+      detail.domainLabel,
       layerLabels[detail.layer] ?? detail.layer.name,
-      learnableTypeLabels[detail.type] ?? detail.type.name,
+      itemTypeLabels[detail.type] ?? detail.type.name,
     ];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -175,7 +172,7 @@ class DetailPanel extends StatelessWidget {
           const SizedBox(height: 6),
         ],
         Text(
-          detail.name,
+          detail.title,
           style: const TextStyle(
             color: paletteTextPrimary,
             fontSize: 15,

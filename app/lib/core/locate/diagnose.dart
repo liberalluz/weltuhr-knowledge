@@ -2,7 +2,7 @@
 ///
 /// ## 为什么分诊在 `core/` 而不在浮层里
 ///
-/// 判断「措辞不同」要把用户输入与每一项的名字做片段比对 —— 那需要遍历节点。
+/// 判断「措辞不同」要把用户输入与每一项的标题做片段比对 —— 那需要遍历 `Item`。
 /// 放在 `features/locate/` 里就是视图层读实体做业务判断，`R1` 会拦；而这道判据
 /// 迟早要出现在第二处（树里搜不到也要分诊），写两遍就会分叉成两套「像不像」。
 ///
@@ -31,9 +31,8 @@
 library;
 
 import '../constants.dart';
-import '../entities/node.dart';
-import '../graph/in_scope.dart';
-import '../pack/pack_reader.dart';
+import '../entities/content.dart';
+import '../pack/pack_parse.dart';
 import 'locator.dart';
 
 /// 无命中的四种事实（`SPEC-VIEW-030`）。
@@ -58,14 +57,14 @@ enum DiagnoseClass {
 /// 它写排序。
 class NearItem {
   const NearItem({
-    required this.nodeId,
-    required this.name,
+    required this.itemId,
+    required this.title,
     required this.overlap,
   });
 
-  final String nodeId;
+  final String itemId;
 
-  final String name;
+  final String title;
 
   /// 与输入共享的片段数 —— **排序依据，不是阈值**：只要有共享就算候选，
   /// 多与少的差别只体现在先后上。`C-28` 管的是「命中」的模糊阈值（且 v0.1
@@ -88,10 +87,10 @@ class LocateDiagnosis {
   /// 仅类 ①：命中的圈外项（好让界面说得出「库里有「元类」，但不在圈内」）。
   final List<LocateHit> outside;
 
-  /// 仅类 ②：邻近候选，已按共享片段数降序（同分按名字）。
+  /// 仅类 ②：邻近候选，已按共享片段数降序（同分按标题）。
   final List<NearItem> near;
 
-  /// 仅类 ③：新增项该挂到的域（结构节点 id）。
+  /// 仅类 ③：新增项该挂到的域。
   final String? domainId;
 }
 
@@ -102,15 +101,10 @@ class LocateDiagnosis {
 /// - 已经有能落点的命中：[LocateResult.isEmpty] 为 `false`，那是正向路径。
 ///
 /// [domainId] 是当前视图的域上下文（用户在哪个域里），只影响 ③ 与 ④ 的分野。
-///
-/// [subtreeRoot] 与 `Locator` 同口径：`null` = 不判圈内（每条候选都算圈内）。
-/// 两个参数必须一起传 —— 定位时说「这一条在圈外」、分诊时又说「圈内没有相近的
-/// 项」，用的若是两个不同的根，结论会自相矛盾。
 LocateDiagnosis? diagnose({
-  required PackContent pack,
+  required LoadedPack pack,
   required LocateResult result,
   String? domainId,
-  String? subtreeRoot,
 }) {
   if (result.query.trim().isEmpty) {
     return null;
@@ -126,11 +120,7 @@ LocateDiagnosis? diagnose({
     return LocateDiagnosis(kind: DiagnoseClass.outOfScope, outside: outside);
   }
 
-  final List<NearItem> near = nearItemsOf(
-    pack,
-    result.query,
-    subtreeRoot: subtreeRoot,
-  );
+  final List<NearItem> near = nearItemsOf(pack, result.query);
   if (near.isNotEmpty) {
     return LocateDiagnosis(kind: DiagnoseClass.differentWording, near: near);
   }
@@ -149,17 +139,10 @@ LocateDiagnosis? diagnose({
 /// **只看圈内项**：圈外的相似项帮不上「换词」—— 它列出来也只能申请纳入，
 /// 而那是类 ① 的出口，已经在前面判过了。
 ///
-/// 只收**项档**（`LocateKind.item`），不收域与轴根：域是容器，把它列进「你要找的
-/// 是不是这个」会把用户带到一片还没下钻的空树；而轴取值是筛选类，命中了就走
-/// 不到这里，在这里扩面只会让「最接近的」被一堆同轴的项占满。
-///
-/// 只比对**名字**：`C-27` 的匹配面里有轴取值与域，但那些是「这个词是不是某个
-/// 轴值」的判定，在这里扩面同样是噪音 —— 用户要找的是**一个东西**。
-List<NearItem> nearItemsOf(
-  PackContent pack,
-  String query, {
-  String? subtreeRoot,
-}) {
+/// 只比对**标题**：`C-27` 的匹配面里有轴取值与域，但那些是「这个词是不是某个
+/// 轴值」的判定，命中了就是筛选类、走不到这里。在这里扩面只会让「最接近的」
+/// 被一堆同轴的项占满，而用户要找的是**一个东西**。
+List<NearItem> nearItemsOf(LoadedPack pack, String query) {
   final Set<String> wanted = _gramsOf(query);
   if (wanted.isEmpty) {
     // 一个字（或一个字母）连片段都构不成：此时任何「像不像」都是猜，
@@ -168,26 +151,22 @@ List<NearItem> nearItemsOf(
   }
 
   final List<NearItem> found = <NearItem>[];
-  for (final Node node in pack.nodes) {
-    if (locateKindOf(node) != LocateKind.item) {
+  for (final Item item in pack.items) {
+    if (!item.inScope) {
       continue;
     }
-    final String? root = subtreeRoot;
-    if (root != null && !inScopeOf(node, subtreeRoot: root, parents: pack.parents)) {
-      continue;
-    }
-    final int overlap = _gramsOf(node.name).intersection(wanted).length;
+    final int overlap = _gramsOf(item.title).intersection(wanted).length;
     if (overlap == 0) {
       continue;
     }
-    found.add(NearItem(nodeId: node.id, name: node.name, overlap: overlap));
+    found.add(NearItem(itemId: item.id, title: item.title, overlap: overlap));
   }
   found.sort((NearItem a, NearItem b) {
     final int byOverlap = b.overlap.compareTo(a.overlap);
     if (byOverlap != 0) {
       return byOverlap;
     }
-    return a.name.compareTo(b.name);
+    return a.title.compareTo(b.title);
   });
   return List<NearItem>.unmodifiable(found);
 }
