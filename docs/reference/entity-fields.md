@@ -198,11 +198,14 @@
 
 与 `Node` 分离：`nodes[]` 进地址空间（改动要校验父子与 DAG），`entries[]` 只是文本（改动不影响结构）。混在一起无法单独升级。
 
+> **`source_refs` 是 `B13a` 笔 4 补登的**（2026-10-21）：旧 `Item.sourceRefs` 迁移时在本体系里没有落点 —— `Node` 表没有它（源引用不影响结构，进 `nodes[]` 会让「改一条引用」也要过父子与 DAG 校验），本表也没有。落内容侧而非 `Node`：`resources` 回答「推荐去哪学」，`source_refs` 回答「我这句话引自哪份材料的哪一段」，前者是给学习者的建议，后者是可追溯的引用（能追到 `segments[].locator`）——受众与校验方式都不同，合成一个字段会让两者互相污染。
+
 | 字段 | 形态 | 可字段级 patch |
 |---|---|---|
 | `summary` | 一句话 | ✅ |
 | `outcomes[]` | 能做什么 | ✅ 按元素 |
 | `resources[]` | `{kind, title, url, license, lang}`，kind ∈ 课程/书/视频/工具/规范 | ✅ 按元素 |
+| `source_refs[]` | 引用 `SourceRef.id`（`kind = material`）。**本节点内容引自哪几份材料** | ✅ 按元素 |
 | `aliases[]` | 别名（检索与虫洞对齐用） | ✅ |
 | `keywords[]` | 自由文本，**与骨架 `tags` 不是一回事** | ✅ |
 | `body` | Markdown 整块 | ❌ 整块替换（等价 fork） |

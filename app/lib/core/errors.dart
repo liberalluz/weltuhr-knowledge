@@ -72,3 +72,29 @@ class InvalidStoreLayoutError extends ArgumentError {
   /// 与 [root] 重叠的另一区根（`empty` 时为 `null`）。
   final String? other;
 }
+
+/// `kinds[]` 与四类特化字段对不上（`entity-fields` §1）。
+///
+/// **两个方向都是错的**，而且错法不同：
+/// - 声明了 `payload` 却没有 payload 字段 ⇒ 装前显示一片空白，用户以为包是空的
+/// - 带了 payload 字段却没声明 `kind` ⇒ 包里明明有几百个行星，`LoadedPack`
+///   根本不读它；界面显示「零可学项」，而没有任何一处会报错
+///
+/// 第二种更隐蔽，也是这个错误类存在的主要理由：它不是一个可以靠 review
+/// 看出来的形态（两段数据离得很远），只能靠构造期比对。
+class IllegalPackKindError extends ArgumentError {
+  IllegalPackKindError(this.pluginId, this.kind, {required this.declared})
+    : super(
+        declared
+            ? '包 `$pluginId` 在 `kinds[]` 里声明了 `${kind.name}`，'
+                  '但没有对应的 `${kind.name}` 特化字段。'
+            : '包 `$pluginId` 带了 `${kind.name}` 特化字段，'
+                  '却没在 `kinds[]` 里声明 —— 那份数据不会被任何一方读取。',
+      );
+
+  final String pluginId;
+  final PackKind kind;
+
+  /// `true` = 声明了 kind 但缺字段；`false` = 有字段但没声明 kind。
+  final bool declared;
+}
