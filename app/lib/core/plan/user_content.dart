@@ -21,18 +21,23 @@
 ///
 /// ## 只能自定「配方」
 ///
-/// `SPEC-PLAN-011`：可自定步骤数 / 先后 / 循环 / 每步判据与参数 / `phase` /
+/// `SPEC-PLAN-011`：可自定步骤数 / 先后 / 循环 / 每步指令与 `phase` /
 /// 是否有 `hint`；**不可**自定执行算子（6 类之外不得新增）、事件类型、SRS 时钟、
 /// 进度口径。落到这里就是一个硬约束：[UserMethodDraft] 的步骤只收
-/// [MethodStep]，而它的 `operator` 是枚举 —— 想自创算子必须先改枚举，那已经
+/// [EntryStep]，而它的 `operator` 是枚举 —— 想自创算子必须先改枚举，那已经
 /// 不是「自建」了。
+///
+/// ⚠️ **步骤上没有 `criteria`**：判据归内容侧 `NodeEntry.criteria[]`
+/// （`entity-fields` §9.2），自建方法只描述怎么做。
 library;
 
-import '../entities/content.dart';
+import '../entities/entry.dart';
+import '../entities/method.dart';
+import '../entities/scheme.dart';
+import '../entities/source.dart';
 import '../enums.dart';
 import '../json.dart';
 import 'applies_to.dart';
-import 'method_bundle.dart';
 
 /// 自建 id 的前缀，见文件头。**三段各一个**，避免不同类的自建互相撞号。
 const String userSourceIdPrefix = 'user:src:';
@@ -92,14 +97,21 @@ JsonMap normalizeAppliesTo(JsonMap raw) {
 /// 造一条自建的源（`SPEC-PLAN-007`）。
 ///
 /// `segments` 恒空：自建的源在**内容绑定**落地前拿不到摘录正文，覆盖率也恒为
-/// `0`（绑定关系住在 `Item.sourceRefs`，属内容侧）。这不是留白，是登记 ——
+/// `0`（绑定关系住在 `NodeEntry.source_refs`，属内容侧）。这不是留白，是登记 ——
 /// 规格修订已如实写明「源的自建在内容绑定落地前只作登记」。
+///
+/// [appliesTo] 默认两键皆空 —— **不参与候选过滤**（`candidates.dart` 的
+/// `_sources` 只按覆盖数筛）。旧实现用它比对 `spaceId` 把别的空间的源挡掉，
+/// 而「一空间一包」已废，那条过滤整体作废（`entity-fields` §11 注记）。
 SourceRef buildUserSource({
   required String id,
   required String name,
-  required String authorityLevel,
+  required AuthorityLevel authorityLevel,
   required String version,
-  JsonMap appliesTo = const <String, Object?>{},
+  SourceAppliesTo appliesTo = const SourceAppliesTo(
+    axes: <Axis>[],
+    nodeScope: <String>[],
+  ),
 }) {
   final String trimmed = name.trim();
   if (trimmed.isEmpty) {
@@ -112,10 +124,13 @@ SourceRef buildUserSource({
   return SourceRef(
     id: id,
     name: trimmed,
+    // 自建的只能是材料源：编目依据回答「这个官方码依据哪份文件」，
+    // 用户自建的东西没有官方码可依据。
+    kind: SourceKind.material,
     authorityLevel: authorityLevel,
     version: ver,
     segments: const <SourceSegment>[],
-    appliesTo: normalizeAppliesTo(appliesTo),
+    appliesTo: appliesTo,
   );
 }
 
@@ -128,7 +143,7 @@ Scheme buildUserScheme({
   required String id,
   required String name,
   required List<String> nodes,
-  required String authorityLevel,
+  required AuthorityLevel authorityLevel,
 }) {
   final String trimmed = name.trim();
   if (trimmed.isEmpty) {
@@ -166,11 +181,11 @@ class UserMethodDraft {
 
   final String id;
   final String name;
-  final ItemType type;
-  final List<MethodStep> steps;
+  final LearnableType type;
+  final List<EntryStep> steps;
 }
 
-/// 校验配方（`entity-fields` §一.7 的 ① ② + `SPEC-PLAN-011`）。
+/// 校验配方（`entity-fields` §9 的 ① ② + `SPEC-PLAN-011`）。
 ///
 /// ① 算子在册 —— 由枚举天然保证，不需要运行时检查（想自创算子得先改枚举）。
 /// ② **至少一个 `review` 步骤** —— 等价于「至少有一个 `both` 类算子」。全是
@@ -178,17 +193,17 @@ class UserMethodDraft {
 ///    但「学过就忘」不会被任何东西发现。所以放在建的时候拦，而不是事后统计。
 /// ③ 全步骤无 `hint` —— **不拦**，只在 ③ 段提示代价（`PlannerPanel` 那条
 ///    「本方法无提示可给」）。
-void validateMethodRecipe(List<MethodStep> steps) {
+void validateMethodRecipe(List<EntryStep> steps) {
   if (steps.isEmpty) {
     throw ArgumentError('配方至少要有一个步骤');
   }
   final bool hasReview = steps.any(
-    (MethodStep step) => step.effectivePhase != StepPhase.first,
+    (EntryStep step) => step.effectivePhase != StepPhase.first,
   );
   if (!hasReview) {
     throw ArgumentError(
       '配方至少要有一个「忆 / 练 / 讲 / 做」步骤 —— 全是「读 / 例」会在不报错的'
-      '情况下绕过遗忘曲线（entity-fields §一.7 校验 ②）',
+      '情况下绕过遗忘曲线（entity-fields §9 校验 ②）',
     );
   }
 }
@@ -209,8 +224,8 @@ void validateMethodRecipe(List<MethodStep> steps) {
   final MethodProfile profile = MethodProfile(
     id: draft.id,
     name: trimmed,
-    steps: List<MethodStep>.unmodifiable(draft.steps),
-    // `appliesTo` 必填（`entity-fields` §7）：一份自建只覆盖一个类型，就写这一个。
+    steps: List<EntryStep>.unmodifiable(draft.steps),
+    // `appliesTo` 必填（`entity-fields` §12）：一份自建只覆盖一个类型，就写这一个。
     appliesTo: <String, Object?>{'type': draft.type.name},
     origin: CandidateOrigin.user,
   );
@@ -218,12 +233,12 @@ void validateMethodRecipe(List<MethodStep> steps) {
     id: userBundleIdOf(draft.id),
     name: trimmed,
     origin: CandidateOrigin.user,
-    byType: <ItemType, String>{draft.type: draft.id},
+    byType: <LearnableType, String>{draft.type: draft.id},
   );
   return (profile: profile, bundle: bundle);
 }
 
-/// 一份方法组合里**有没有任何 `hint`**（`entity-fields` §一.7 校验 ③）。
+/// 一份方法组合里**有没有任何 `hint`**（`entity-fields` §9 校验 ③）。
 ///
 /// 全无提示时不拦，但要能说出来。判断要落在**组合里所有被指到的分支**上：
 /// 只看某一个分支，「这套方法在另一个类型上其实有提示」就会漏。

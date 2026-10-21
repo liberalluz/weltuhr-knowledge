@@ -1,64 +1,77 @@
 /// Planner 面板骨架的 Widget 回归（`SPEC-PLAN-014` / `015` / `019`）。
 ///
-/// 夹具刻意做成「两条源各覆盖两项、两套体系一全一窄」：
+/// 夹具刻意做成「两条源各覆盖两项、两套体系一全一窄」，并**多挂一项在子树外**：
 ///
 /// ```
-/// i1 i2 ── src-a        sch-full : i1 i2 i3 i4
-/// i3 i4 ── src-b        sch-part : i1 i2
+/// root-a ── i1 i2 ── src-a        sch-full : i1 i2 i3 i4
+///       ├─ i3 i4 ── src-b        sch-part : i1 i2
+/// root-b ── i5（圈外，不参与任何读数）
 /// ```
 ///
-/// 这样「选源后体系不筛空」「选体系后源会收窄」「两者不相容时需重选」三件
-/// 都能在同一个包上验，不必各造一份夹具。
+/// 这样「选源后体系不筛空」「选体系后源会收窄」「两者不相容时需重选」
+/// 「分母只数圈内」四件都能在同一个包上验，不必各造一份夹具。
+///
+/// ## 笔 5c：`PlanTarget` 已废
+///
+/// 范围改由 `subtreeRoot` 表达（`ADR-0007` 决策 2：`inScope` 是派生值）。
+/// 面板因此多了四个必填参数（`spaceId` / `subtreeRoot` / `primaryAxis` /
+/// `packVersions`），`PlanDraft` 也不再有 `target` —— 旧用例把它换成了
+/// 「圈外项不进读数」（TC-PLAN-046）与「派生值不落 payload」（TC-PLAN-061）。
 library;
 
-import 'package:flutter/material.dart';
+// `Axis`（三条容器轴）与 flutter 的布局方向同名，本文件只用前者。
+import 'package:flutter/material.dart' hide Axis;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:project_knowledge/core/entities/plan.dart';
 import 'package:project_knowledge/core/enums.dart';
-import 'package:project_knowledge/core/pack/pack_parse.dart';
+import 'package:project_knowledge/core/pack/pack_reader.dart';
 import 'package:project_knowledge/core/plan/plan_events.dart';
 import 'package:project_knowledge/features/planner/planner_panel.dart';
 import 'package:project_knowledge/features/planner/user_draft_dialogs.dart';
 
 import '../../support/pack_fixture.dart';
 
-Map<String, Object?> _source(String id) => <String, Object?>{
-      'id': id,
-      'name': id,
-      'authorityLevel': 'L1',
-      'version': '1.0',
-      'segments': <Map<String, Object?>>[
-        <String, Object?>{
-          'text': '节选',
-          'locator': 'p.1',
-          'license': 'CC-BY-4.0',
-        },
-      ],
-      'appliesTo': <String, Object?>{},
-    };
+/// 计划范围的根：第一棵骨架（`system` 槽位）。
+const String _root = 'root-a';
 
-LoadedPack _pack() => fixturePack(
-      <FixtureItem>[
-        const FixtureItem('i1', '一', sourceRefs: <String>['src-a']),
-        const FixtureItem('i2', '二', sourceRefs: <String>['src-a']),
-        const FixtureItem('i3', '三', sourceRefs: <String>['src-b']),
-        const FixtureItem('i4', '四', sourceRefs: <String>['src-b']),
-      ],
-      schemes: <String, List<String>>{
-        'sch-full': <String>['i1', 'i2', 'i3', 'i4'],
-        'sch-part': <String>['i1', 'i2'],
-      },
-      excerpts: <Map<String, Object?>>[
-        _source('src-a'),
-        _source('src-b'),
-      ],
-    );
+/// 第二棵骨架：挂一项在它下面，用来造「包里有、圈内没有」。
+const String _otherRoot = 'root-b';
+
+/// 建计划那一刻的包版本快照（面板不解算，只透传）。
+const PackVersions _versions = PackVersions(
+  skeleton: '1.0.0',
+  payloads: <String, String>{'python': '0.1.0'},
+);
+
+/// 夹具包 **只解析一次**：`readPack` 走真解析器，每次 `_pump` 重解一遍
+/// 会让 widget test 的单测耗时翻几倍，而它是不变量的输入。
+final PackContent _fixture = _pack();
+
+PackContent _pack() => fixturePack(
+  const <FixtureNode>[
+    FixtureNode(_root, '甲', slot: LevelSlot.system),
+    FixtureNode(_otherRoot, '乙', slot: LevelSlot.system),
+    FixtureNode('i1', '一', parentId: _root, sourceRefs: <String>['src-a']),
+    FixtureNode('i2', '二', parentId: _root, sourceRefs: <String>['src-a']),
+    FixtureNode('i3', '三', parentId: _root, sourceRefs: <String>['src-b']),
+    FixtureNode('i4', '四', parentId: _root, sourceRefs: <String>['src-b']),
+    // 圈外项：父挂在另一棵骨架下，`subtreeRoot = root-a` 时它既不算项数也不算分母。
+    FixtureNode('i5', '五', parentId: _otherRoot, sourceRefs: <String>['src-b']),
+  ],
+  pluginId: 'python',
+  packName: 'Python 语法分层',
+  schemes: <String, List<String>>{
+    'sch-full': <String>['i1', 'i2', 'i3', 'i4'],
+    'sch-part': <String>['i1', 'i2'],
+  },
+  sources: <String, String>{'src-a': 'src-a', 'src-b': 'src-b'},
+);
 
 Future<void> _pump(
   WidgetTester tester, {
   String? source,
   String? scheme,
-  PlanTarget? target,
+  String subtreeRoot = _root,
   void Function(PlanDraft draft)? onCreate,
   Size size = const Size(1200, 2600),
 }) async {
@@ -72,8 +85,11 @@ Future<void> _pump(
     MaterialApp(
       home: Scaffold(
         body: PlannerPanel(
-          pack: _pack(),
-          target: target,
+          pack: _fixture,
+          spaceId: 'python',
+          subtreeRoot: subtreeRoot,
+          primaryAxis: Axis.major,
+          packVersions: _versions,
           initialSourceId: source,
           initialSchemeId: scheme,
           onCreate: onCreate,
@@ -217,44 +233,30 @@ void main() {
     expect(find.textContaining('记忆优先'), findsWidgets);
   });
 
-  testWidgets('TC-PLAN-046 面板把 target 接进预览：项数收窄、分母不动（SPEC-PLAN-015）', (
+  testWidgets('TC-PLAN-046 面板把 subtreeRoot 接进预览：圈外项既不进项数也不进分母（SPEC-PLAN-015）', (
     WidgetTester tester,
   ) async {
-    // `Z3` 圈定两项 i1 / i3 —— 空间圈内仍 4 项。
-    await _pump(
-      tester,
-      target: const PlanTarget(
-        selector: <String, Object?>{'kind': 'items'},
-        resolved: <String>['i1', 'i3'],
-      ),
-    );
+    // 包里有 5 项可学，`subtreeRoot = root-a` 只圈住其中 4 项。
+    expect(_fixture.learnableNodes.length, 5, reason: '前提：包规模比圈内大');
+
+    await _pump(tester);
 
     String textOf(String key) =>
         tester.widget<Text>(find.byKey(Key(key))).data!;
 
-    expect(textOf('preview-items'), '项数 2', reason: '只数 target 圈定的两项');
+    expect(textOf('preview-items'), '项数 4', reason: 'i5 在子树外，不参与这份计划');
     expect(
       textOf('preview-denominator'),
       '分母 4',
-      reason: '分母是空间规模，target 只收窄「这次走多少」',
+      reason: '分母同样是圈内 —— 它是范围规模，不是包规模',
     );
   });
 
-  testWidgets('TC-PLAN-061 点「建计划」把草稿交出去，target 透传且 resolved 按当前包重算（SPEC-PLAN-019）', (
+  testWidgets('TC-PLAN-061 点「建计划」把草稿交出去：子树根 · 包版本 · 派生值不落盘（SPEC-PLAN-019）', (
     WidgetTester tester,
   ) async {
     PlanDraft? captured;
-    await _pump(
-      tester,
-      target: const PlanTarget(
-        // 选择式取**合法**的一种（`PLAN-016` 的四 kind 之一）：`P-6` 时
-        // 结构未定、这里曾写 `{'kind': 'items'}`，那是当时编的假 schema。
-        selector: <String, Object?>{'kind': 'item', 'itemId': 'i1'},
-        // 旧 resolved 里混一个不存在的项：草稿必须按当前包重算，不能照抄。
-        resolved: <String>['i1', 'i3', 'ghost'],
-      ),
-      onCreate: (PlanDraft draft) => captured = draft,
-    );
+    await _pump(tester, onCreate: (PlanDraft draft) => captured = draft);
 
     await tester.tap(find.byKey(const Key('planner-source-src-a')));
     await tester.pumpAndSettle();
@@ -268,18 +270,27 @@ void main() {
 
     expect(captured, isNotNull, reason: '按钮可点就必须真的交出去');
     expect(captured!.spaceId, 'python');
+    expect(
+      captured!.subtreeRoot,
+      _root,
+      reason: '范围由子树根表达 —— 取代旧的 target{selector, resolved}',
+    );
+    expect(captured!.primaryAxis, Axis.major);
+    expect(
+      captured!.packVersions.toJson(),
+      <String, Object?>{
+        'skeleton': '1.0.0',
+        'payloads': <String, String>{'python': '0.1.0'},
+      },
+      reason: '换包之后旧计划仍要按建时的版本组合解释',
+    );
     expect(captured!.schemeId, 'sch-full');
     expect(captured!.methodProfileId, 'method-bundle-memory');
     expect(captured!.sourcePolicy, <String, Object?>{'primary': 'src-a'});
     expect(
-      captured!.target.selector,
-      <String, Object?>{'kind': 'item', 'itemId': 'i1'},
-      reason: '选择式原样保留 —— 它记录的是用户当时怎么圈的',
-    );
-    expect(
-      captured!.target.resolved,
-      <String>['i1', 'i3'],
-      reason: 'ghost 不在包里，必须被重算掉',
+      captured!.toPayload().containsKey('resolved'),
+      isFalse,
+      reason: '`resolved` 是派生值（ADR-0007 决策 2）：存下来就会指向已卸载的节点',
     );
   });
 
@@ -295,18 +306,18 @@ void main() {
 
     // 名字与出处在同一行（`· 平台内置` / `· 空间包` / `· 自建`）。
     expect(find.text('· 空间包'), findsWidgets);
-    // 适用范围：源看 `appliesTo`，空 map = 不限。
-    expect(textOf('planner-scope-source-src-a'), '适用 不限');
-    // 体系没有 `appliesTo`，由 `nodes` 里实际出现的 `Item.type` 说。
+    // 适用范围：源看 `appliesTo`（夹具声明了「专业轴 + 点名全部节点」）。
+    final String sourceScope = textOf('planner-scope-source-src-a');
+    expect(sourceScope, contains('专业'), reason: '轴按中文名渲染');
+    expect(sourceScope, contains('点名 5 个节点'));
+    // 体系没有 `appliesTo`，由 `nodes` 里实际出现的 `LearnableNode.type` 说。
     expect(textOf('planner-scope-scheme-sch-part'), '适用 陈述');
     // 方法由 `byType` 覆盖到的类型说（平台「记忆优先」四类全覆盖）。
     expect(
       textOf('planner-scope-method-method-bundle-memory'),
       '适用 陈述 / 流程 / 技能 / 默会',
     );
-    // 读数与版本仍在（第五元素「版本」）。
-    expect(textOf('planner-scope-method-method-bundle-memory'), isNotEmpty);
-    // 尾部「+ 自建」三段都有，且是**真按钮**。
+    // 读数与版本仍在（第五元素「版本」）。尾部「+ 自建」三段都有，且是**真按钮**。
     for (final String name in <String>['source', 'scheme', 'method']) {
       expect(
         find.byKey(Key('planner-create-$name')),
@@ -432,7 +443,8 @@ void main() {
       find.byKey(userMethodOpKey(0, ExecutionOperator.practice)),
     );
     await tester.pumpAndSettle();
-    await tester.enterText(find.byKey(userMethodCriteriaKey(0)), '连做三次不出错');
+    // 笔 5c：`criteria` 从 `EntryStep` 移到了 `NodeEntry`，输入框随之改名。
+    await tester.enterText(find.byKey(userMethodInstructionKey(0)), '连做三次不出错');
     await tester.tap(find.byKey(userDialogAddKey));
     await tester.pumpAndSettle();
 
@@ -499,7 +511,7 @@ void main() {
 
       // 先选一套体系：此后源候选按「覆盖 > 0」收窄 —— 包内的源正常筛掉，
       // **自建的源例外**（`B4-R`）：它的覆盖恒 0（客户端写不了
-      // `Item.sourceRefs`），筛掉就等于「建了看不见」。
+      // `NodeEntry.sourceRefs`），筛掉就等于「建了看不见」。
       await tester.tap(find.byKey(const Key('planner-scheme-sch-full')));
       await tester.pumpAndSettle();
 

@@ -24,28 +24,38 @@
 library;
 
 import '../entities/plan.dart';
+import '../enums.dart';
 import '../events/event.dart';
 import '../events/hlc_clock.dart';
 import '../events/id.dart';
 import '../json.dart';
 
 /// 建计划所需的全部输入。**只装「写进事件的东西」**，不装派生量。
+///
+/// [spaceId] 是例外：它**不进 payload**，只用来填事件信封（见文件头）。
+/// 其余六个字段与 `event-types.md` §二 B 的 `plan_created` 键一一对应。
 class PlanDraft {
   const PlanDraft({
     required this.spaceId,
-    required this.spaceVersion,
-    required this.target,
+    required this.subtreeRoot,
+    required this.primaryAxis,
+    required this.packVersions,
     required this.sourcePolicy,
     required this.schemeId,
     required this.methodProfileId,
   });
 
+  /// 信封字段，**不写进 payload**。
   final String spaceId;
 
-  /// 建计划那一刻的包版本。换包之后旧计划仍按旧版解释，故必须随事件落盘。
-  final String spaceVersion;
+  /// 计划范围的根节点 id。取代旧的 `target{selector, resolved}` ——
+  /// 子树根已足够表达范围，`resolved` 降为派生。
+  final String subtreeRoot;
 
-  final PlanTarget target;
+  final Axis primaryAxis;
+
+  /// 建计划那一刻的包版本组合。换包之后旧计划仍按旧版解释，故必须随事件落盘。
+  final PackVersions packVersions;
 
   /// 主源 + 按类型 + 例外，引用 `SourceRef.id`。
   ///
@@ -55,13 +65,14 @@ class PlanDraft {
 
   final String schemeId;
 
-  /// `MethodBundle.id`（`entity-fields` §7.2）。
+  /// `MethodBundle.id`（`entity-fields` §12）。
   final String methodProfileId;
 
   /// 写进 payload 的那一部分。
   JsonMap toPayload() => <String, Object?>{
-    'spaceVersion': spaceVersion,
-    'target': target.toJson(),
+    'subtreeRoot': subtreeRoot,
+    'primaryAxis': primaryAxis.name,
+    'packVersions': packVersions.toJson(),
     'sourcePolicy': sourcePolicy,
     'schemeId': schemeId,
     'methodProfileId': methodProfileId,

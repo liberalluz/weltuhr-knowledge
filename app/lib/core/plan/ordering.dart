@@ -6,7 +6,7 @@
 /// |---|---|---|
 /// | 源 | 出处等级 `L0 > L1 > L2 > L4` | 秩小者靠前 |
 /// | 体系 | 逆序数 `inversions` | 少者靠前 |
-/// | 方法 | `Item.type` 覆盖率 | 高者靠前 |
+/// | 方法 | `LearnableNode.type` 覆盖率 | 高者靠前 |
 ///
 /// 理由写在 `SPEC-PLAN-020`：方法**没有权威谱系**（`PLAN-009`），强给 L 级就是
 /// 编的；体系的好坏是「代价小」，不是「谁说的」；源的好坏恰恰是「谁说的」。
@@ -19,23 +19,40 @@
 /// 的「不禁止」改成了硬禁。本文件只**重排**：输入几个，输出几个。
 library;
 
-import '../entities/content.dart';
+import '../entities/edge.dart';
+import '../entities/method.dart';
+import '../entities/node.dart';
+import '../entities/scheme.dart';
 import '../enums.dart';
-import 'method_bundle.dart';
 
 // ────────────────────────────── 源 ──────────────────────────────
 
-/// 出处等级的正序。**`L3` 不在其中** —— `entity-fields` §一.6 的取值域就是
-/// `L0 / L1 / L2 / L4` 四个，不是笔误。
-const List<String> authorityLevelOrder = <String>['L0', 'L1', 'L2', 'L4'];
+/// 出处等级的正序（`entity-fields` §11 映射表）。
+///
+/// **`L0`–`L4` 编号已废**：`L` 前缀在项目内撞过三处名（节点层级 / 源等级 /
+/// 出处等级）。语义值本身即排序键，所以列表里放枚举而不是字符串。
+///
+/// 旧实现里 `L3` 不在本表（「未定义、数据中零出现」），新表**有** `reference`
+/// —— 枚举既然给了这一档，排序就必须认得它，否则一份 `reference` 级的材料会
+/// 被当成未知档排到最后，而它不是坏的，只是少见。
+const List<AuthorityLevel> authorityLevelOrder = <AuthorityLevel>[
+  AuthorityLevel.official,
+  AuthorityLevel.standard,
+  AuthorityLevel.textbook,
+  AuthorityLevel.reference,
+  AuthorityLevel.community,
+];
 
 /// 等级的秩：越小越靠前。
 ///
-/// **未知等级排最后，不抛错。** 与 `appliesTo` 的「未认键抛错」不是同一情形：
-/// 那里认错键会让一条约束静默失效（假通过），这里只是一个值不在册 ——
-/// Planner 得照常渲染，排到最后也不等于删掉。**排最后而不是最前**：不认识的
-/// 等级不配被推荐到第一位。
-int authorityRank(String level) {
+/// **`null` 与未知等级都排最后，不抛错。** 源那侧 `authority_level` 可空
+/// （`kind = catalog` 自带权威，不标等级），而枚举封闭后「未知」理论上不会
+/// 命中 —— 兜底留着是防「列表被误删一档」：宁可把那一档排到最后，也不要让它
+/// 因为 `-1` 静默跑到第一位去。
+int authorityRank(AuthorityLevel? level) {
+  if (level == null) {
+    return authorityLevelOrder.length;
+  }
   final int index = authorityLevelOrder.indexOf(level);
   return index < 0 ? authorityLevelOrder.length : index;
 }
@@ -80,12 +97,16 @@ class SchemeOrderCost {
 
 /// 算一套体系的逆序代价。
 ///
-/// [itemById] 只用来把卡住那一步的 id 换成名字；缺项时回落 id，不抛 ——
+/// [nodeById] 只用来把卡住那一步的 id 换成名字；缺项时回落 id，不抛 ——
 /// 名字取不到不影响「几处逆序」这个数。
+///
+/// **只数 `strength == required` 的边**：`recommended` 不构成「前置没学就卡住」
+/// —— 建议而已，跳过它不损失可达性。与 `kahnLevels` 同一口径（`⪯` 是
+/// `required` 的传递闭包）。
 SchemeOrderCost schemeOrderCost({
   required Scheme scheme,
-  required Iterable<Edge> edges,
-  required Map<String, Item> itemById,
+  required Iterable<PrerequisiteEdge> edges,
+  required Map<String, Node> nodeById,
 }) {
   final Map<String, int> position = <String, int>{
     for (int i = 0; i < scheme.nodes.length; i++) scheme.nodes[i]: i,
@@ -95,9 +116,12 @@ SchemeOrderCost schemeOrderCost({
   int? blockedAt;
   String? blockedId;
 
-  for (final Edge edge in edges) {
-    final int? fromPos = position[edge.from];
-    final int? toPos = position[edge.to];
+  for (final PrerequisiteEdge edge in edges) {
+    if (edge.strength != EdgeStrength.required) {
+      continue;
+    }
+    final int? fromPos = position[edge.fromId];
+    final int? toPos = position[edge.toId];
     if (fromPos == null || toPos == null) {
       continue;
     }
@@ -108,9 +132,9 @@ SchemeOrderCost schemeOrderCost({
     // 位置越小越早卡住；同位置时取 id 较小者，让同一份包每次算出的都是同一句。
     if (blockedAt == null ||
         toPos < blockedAt ||
-        (toPos == blockedAt && edge.to.compareTo(blockedId ?? '') < 0)) {
+        (toPos == blockedAt && edge.toId.compareTo(blockedId ?? '') < 0)) {
       blockedAt = toPos;
-      blockedId = edge.to;
+      blockedId = edge.toId;
     }
   }
 
@@ -119,7 +143,7 @@ SchemeOrderCost schemeOrderCost({
     firstBlockedStep: blockedAt == null ? null : blockedAt + 1,
     firstBlockedItemName: blockedId == null
         ? null
-        : (itemById[blockedId]?.title ?? blockedId),
+        : (nodeById[blockedId]?.name ?? blockedId),
   );
 }
 
@@ -134,7 +158,7 @@ class TypeCoverage {
   const TypeCoverage({required this.covered, required this.total});
 
   /// 本集合里出现、且该方法有分支的类型。
-  final Set<ItemType> covered;
+  final Set<LearnableType> covered;
 
   /// 本集合里出现过的类型总数。
   final int total;
@@ -146,15 +170,17 @@ class TypeCoverage {
   String get display => '覆盖 $coveredCount/$total 类';
 }
 
-/// 算一套方法对一组项的覆盖。
+/// 算一套方法对一组节点的覆盖。
 TypeCoverage methodTypeCoverage({
   required MethodBundle bundle,
-  required Iterable<Item> items,
+  required Iterable<LearnableNode> nodes,
 }) {
-  final Set<ItemType> present = <ItemType>{for (final Item item in items) item.type};
-  final Set<ItemType> covered = <ItemType>{
-    for (final ItemType type in present)
-      if (bundle.profileIdFor(type) != null) type,
+  final Set<LearnableType> present = <LearnableType>{
+    for (final LearnableNode node in nodes) node.type,
+  };
+  final Set<LearnableType> covered = <LearnableType>{
+    for (final LearnableType type in present)
+      if (bundle.profileOf(type) != null) type,
   };
   return TypeCoverage(covered: covered, total: present.length);
 }
