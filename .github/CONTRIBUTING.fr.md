@@ -44,6 +44,8 @@ Le critère de la « petite modification » : elle tient en un message de commit
 
 Une PR volumineuse jamais discutée sera fermée plutôt que relue — non par manque d'accueil, mais parce que **relire une modification de niveau A déjà terminée** revient à l'entériner après coup, ce qui coûte plus cher que d'en discuter dès le départ.
 
+> **À faire une fois avant de commencer** : `git config core.hooksPath .githooks` — sans cela le hook local ne s'exécute jamais, et un push direct sur `main` n'est détecté par la CI qu'**après** être arrivé. Commande et mode de défaillance : [git-conventions §2.1](../docs/guides/git-conventions.md).
+
 ## 3. Cinq choses avant d'ouvrir une PR
 
 | # | Élément | Critère |

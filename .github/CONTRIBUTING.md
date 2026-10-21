@@ -44,6 +44,8 @@ The test for "small change": it can be stated in one commit message, and it does
 
 A large PR that was never discussed will be closed rather than reviewed — not out of unfriendliness, but because **reviewing an A-level change that is already finished** amounts to rubber-stamping it after the fact, which costs more than discussing it from the start.
 
+> **Do this once before you start**: `git config core.hooksPath .githooks` — without it the local hook never fires, and a direct push to `main` is caught by CI only **after it has landed**. Command and failure mode: [git-conventions §2.1](../docs/guides/git-conventions.md).
+
 ## 3. Five things before you open a PR
 
 | # | Item | Criterion |

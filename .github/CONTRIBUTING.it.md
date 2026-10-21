@@ -44,6 +44,8 @@ Il criterio per «modifica piccola»: si spiega in un solo messaggio di commit e
 
 Una PR grande mai discussa viene chiusa anziché revisionata — non per scortesia, ma perché **revisionare una modifica di livello A già conclusa** equivale a ratificarla a posteriori, e costa più che discuterne fin dall'inizio.
 
+> **Da fare una volta prima di iniziare**: `git config core.hooksPath .githooks` — senza, l'hook locale non viene mai eseguito e un push diretto su `main` viene rilevato dalla CI solo **dopo** essere arrivato. Comando e modalità di guasto: [git-conventions §2.1](../docs/guides/git-conventions.md).
+
 ## 3. Cinque cose prima di aprire una PR
 
 | # | Voce | Criterio |

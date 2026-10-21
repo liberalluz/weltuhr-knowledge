@@ -44,6 +44,8 @@ Das Kriterium für „kleine Änderung": in einer Commit-Nachricht darstellbar u
 
 Ein großer PR ohne vorherige Diskussion wird geschlossen statt reviewt — nicht aus Unfreundlichkeit, sondern weil **das Review einer bereits fertigen Änderung der Stufe A** einer nachträglichen Absegnung gleichkommt und mehr kostet als eine Diskussion von Anfang an.
 
+> **Einmalig vor dem Start**: `git config core.hooksPath .githooks` — ohne dies greift der lokale Hook nie, und ein direkter Push auf `main` faellt der CI erst **nach dem Push** auf. Befehl und Fehlerbild: [git-conventions §2.1](../docs/guides/git-conventions.md).
+
 ## 3. Fünf Dinge vor dem PR
 
 | # | Punkt | Kriterium |
