@@ -32,10 +32,7 @@
       }
     ],
     "appliesTo": {
-      "spaceId": "english",
-      "sixAxis": {
-        "stack": "英语"
-      }
+      "spaceId": "english"
     }
   },
   {
@@ -56,10 +53,7 @@
       }
     ],
     "appliesTo": {
-      "spaceId": "english",
-      "sixAxis": {
-        "stack": "英语"
-      }
+      "spaceId": "english"
     }
   },
   {
@@ -85,10 +79,7 @@
       }
     ],
     "appliesTo": {
-      "spaceId": "english",
-      "sixAxis": {
-        "stack": "英语"
-      }
+      "spaceId": "english"
     }
   }
 ]

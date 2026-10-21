@@ -19,7 +19,7 @@ import '../constants.dart';
 import '../enums.dart';
 import '../errors.dart';
 import '../json.dart';
-import 'content.dart';
+import 'requirement.dart';
 
 /// 树节点基类。字段集以 `docs/reference/entity-fields.md` §2 为唯一权威处。
 ///
@@ -138,10 +138,10 @@ final class LearnableNode extends Node {
 
   /// 六要件 × 三态。**量化层 `d`（知识深度）的唯一来源**，`mastery = d × s` 依赖它。
   ///
-  /// ⚠️ 类型名仍叫 `ItemRequirements`（旧实体遗物）：`B13a` 笔 5 随 `Item` 删除
-  /// 一并改名为 `Requirements`。本笔不改 —— 改名会让 47 个引用点同时断，
-  /// 与「每笔各自可验证」的分笔口径冲突。
-  final ItemRequirements requirements;
+  /// 类型是 [`Requirements`](requirement.dart)（笔 5b 从 `content.dart` 的
+  /// `ItemRequirements` 改名搬出）—— 旧名把「属于 `Item`」写进了类型名，而
+  /// `ADR-0007` 之后要件只挂在可学节点上，与 `Item` 没有关系。
+  final Requirements requirements;
 }
 
 /// 按 `level_slot` 分派（**唯一入口**，`ADR-0007` 决策 3）。
@@ -181,7 +181,7 @@ Node nodeFromJson(JsonMap json) {
       // `requireX` 会让它当场报字段缺名，而不是塞一个默认值继续跑。
       type: LearnableType.fromWire(requireString(json, 'type')),
       layer: Layer.fromWire(requireString(json, 'layer')),
-      requirements: ItemRequirements.fromJson(requireMap(json, 'requirements')),
+      requirements: Requirements.fromJson(requireMap(json, 'requirements')),
     );
   }
 

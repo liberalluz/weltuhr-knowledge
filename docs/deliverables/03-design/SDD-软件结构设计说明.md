@@ -1,6 +1,6 @@
 # 软件结构设计说明（SDD）
 
-> **版号**：`v0.15.0` · **状态**：§二 §三 已写实，§四–§六 待填（§2.1 视图层为 **6 份**（实扫），`core/` 文件树按实扫补全至 **四十九份**（树内 38 条，`plan/` 11 份待笔 6 补登）；**`B13a` 笔 5a 删掉了六轴渲染层** —— `features/universe/` 20 份 · `core/frame/` 3 份 · `core/view/` 六份（`filter` · `fit` · `motion` · `navigation` · `tree` · `viewport`）· `graph/subtrees.dart` 整层退出，视图层 23 → 6、`core/` 59 → 49；容器树界面归 `B17a`、3D 归 `B17b`。以下为 `v0.14.0` 起的状态，保留以便回溯：定位层拆引擎与分诊，构图层拆绘制与拾取，视图层含导航记忆与**运动时钟**；`B3` 笔 10 起导航记忆带空间维度、`B12` 第六笔起带域维度；`B12` 的五档逐级下钻各档一对「几何 + 绘制」，视图层文件数 12 → 23 全部来自 `B12`）
+> **版号**：`v0.16.0` · **状态**：§二 §三 已写实，§四–§六 待填（§2.1 视图层为 **6 份**（实扫），`core/` 文件树按实扫补全至 **五十份**（树内 39 条，`plan/` 11 份待笔 6 补登）；**`B13a` 笔 5b 补 `entities/requirement.dart`** —— `Requirements` 从 `content.dart` 的 `ItemRequirements` 改名搬出、`node.dart` 改用新名（旧名把「属于 `Item`」写进了类型名，而 `ADR-0007` 之后要件只挂可学节点）；**`B13a` 笔 5a 删掉了六轴渲染层** —— `features/universe/` 20 份 · `core/frame/` 3 份 · `core/view/` 六份（`filter` · `fit` · `motion` · `navigation` · `tree` · `viewport`）· `graph/subtrees.dart` 整层退出，视图层 23 → 6、`core/` 59 → 49；容器树界面归 `B17a`、3D 归 `B17b`。以下为 `v0.14.0` 起的状态，保留以便回溯：定位层拆引擎与分诊，构图层拆绘制与拾取，视图层含导航记忆与**运动时钟**；`B3` 笔 10 起导航记忆带空间维度、`B12` 第六笔起带域维度；`B12` 的五档逐级下钻各档一对「几何 + 绘制」，视图层文件数 12 → 23 全部来自 `B12`）
 > 本文件是**软件结构**的设计视图。分章与 `design/` 主题文档对齐，实现细节**回指不复制**。当前已映射**八份**（`FND` / `VIEW` / `PACK` / `PLAN` / `STEP` / `QUANT` / `NOTE` / `GOV`）；`ACC` / `SYNC` 两域属 `v0.1.0` 服务端新增，**结构与机制待补**（见 `ACC` / `SYNC` 本身，本文件暂不映射）。
 > **追溯补录**：2026-10-17 · §二 §三 依据 `app/lib/` · `app/tool/lint/` · `content/tools/` 的既有代码反推，非当时所写。
 
@@ -12,6 +12,7 @@
 | `v0.2.0` | 2026-10-17 | **追溯补录** §二 分层与模块边界、§三 内容管线。据代码现状写实，并标明第三段（运行期加载）尚未实现 |
 | `v0.12.0` | 2026-10-18 | §2.1 `core/view/` 由 7 份 → **8 份**（增 `motion.dart`，`V-1i` 前半）：三个纯函数（`orbitPhase` 相位 · `spunRadians` 相位→弧度 · `governorFactor` 减速系数）+ 一个换算（`advanceClock` 累计时钟）。放 `core/view/` 而不是屏幕里的理由与 `navigation.dart` 同一套 —— 「时钟只增不回卷」「跨周期边界相位连续」「系数随距离单调」全是**可判定**的判据，留在 `_State` 里只能靠 widget test 隔着 24 s 的 `pump` 间接验。同版按**实扫**修两处：`core/` 总数 31 → **33**（`graph/subtrees.dart` 是 `V-1d` 新增却一直没进树 —— 那一笔只改了 §5 的份数没改本树），树内计数行「共 28 份」也早已与树自身条目数（31）不一致，一并校正。**注意这里刻意不放 `Ticker` / `AnimationController`** —— 那两个是 Flutter 类型，核心层禁 `dart:ui`（`R1` 规则），时钟只以「秒数」进出 |
 | `v0.13.0` | 2026-10-20 | §2.1 `core/` 树补登 **7 份**并新增 **`storage/` 一层**：`entities/node.dart` · `entities/edge.dart` · `events/id.dart` · `graph/parent_index.dart` · `pack/triple_validator.dart`（前五份是笔 1 / 笔 2 落下却没进树的）+ `storage/store_fs.dart` · `storage/store_layout.dart`（笔 3 新建）。计数按 `find` 实扫改为 **51 份**。⚠️ **树内只有 40 条** —— `plan/` 11 份（`P-6`–`P-8` 落地）从来没进过树，树下一段已显式列出，补登归 `B13a` 笔 6。这不是本笔新增的滞后，是攒了三批的；写明而非静默改。同时把 `pack_fs.dart` 的描述从「文件系统抽象」改为「内容包的只读接缝」—— 它现在零方法、三方法收口到 `StoreFs` |
+| `v0.16.0` | 2026-10-21 | §2.1 树补 **1 份**：`entities/requirement.dart` —— 笔 5b 把 `Requirements` 从 `content.dart` 的 `ItemRequirements` 改名搬出，`node.dart` 改用新名（旧名把「属于 `Item`」写进类型名，而 `ADR-0007` 之后要件只挂可学节点）；`content.dart` 那一行改为「旧实体件，删归笔 5c」。计数 `find` 实扫 49 → **50 份**、树内 38 → **39 条** |
 | `v0.15.0` | 2026-10-21 | §2.1 摘掉整层删除的 **10 条**：`frame/` 三份（`pick` · `projection` · `scene`）· `graph/subtrees.dart` · `view/` 六份（`filter` · `fit` · `motion` · `navigation` · `tree` · `viewport`）。计数按 `find` 实扫 59 → **49 份**、树内 48 → **38 条**；视图层 23 → **6 份**（`planner/` 3 · `locate/` 1 · `detail/` 1 · `palette.dart` 1）。**这不是登记遗漏，是 `ADR-0005` 的后果落地** —— 六轴五档渲染整层作废，`core/frame` 与 `core/view` 五份只服务它，`main.dart` 退回单一空态 |
 | `v0.14.0` | 2026-10-21 | §2.1 `core/` 树补登 **8 份**（笔 4 落下却未进树）：`entities/` 七份 —— `pack.dart` · `entry.dart` · `path_claims.dart` · `overlay_patch.dart` · `source.dart` · `scheme.dart` · `method.dart`，`pack/` 一份 —— `pack_reader.dart`。计数按 `find` 实扫 51 → **59 份**、树内 40 → **48 条**；`plan/` 11 份仍待笔 6 补登。⚠️ `source` / `scheme` / `method` 三份与 `entities/content.dart` 里的旧同名类型**并存** —— 旧件是 α 包链路（12 个用例仍在跑），删除归笔 5，树里已就地标注 |
 | `v0.11.0` | 2026-10-18 | §2.1 `features/` 增两个文件：`universe/star_closeup.dart`（`Z4` 恒星特写的几何）与 `universe/star_closeup_painter.dart`（绘制）。与 `Z3` 同为「几何 / 绘制」一对，理由也相同 —— 前者是纯函数（可断言轨道数、确定性、斑点分布），后者只负责把布局变成画布指令。⚠️ **顺带修一处长期滞后**：§2.1 视图层一行自 `v0.7.0` 起一直写「12 份」，而 `B12` 前四笔各增一对几何 / 绘制文件后再没人改它；本版按**实扫**改为 **23 份**（`universe/` 20 + `locate/` 1 + `detail/` 1 + `palette.dart` 1）。这不是本笔新增导致的，是四笔累计未同步 —— 写明而非静默改 |
@@ -62,7 +63,7 @@ app/lib/core/                    共 49 份（树内 38 条；`plan/` 11 份尚�
 ├── ids.dart                id 末段显示（域 / 缺口 id 共用一处）
 ├── json.dart               JSON 严格解析 helper
 ├── entities/
-│   ├── content.dart        Item · ItemRequirements · Edge · Scheme · SourceRef · MethodProfile
+│   ├── content.dart        **旧实体件**：`Item` · `Edge` · `Scheme` · `SourceRef` · `MethodProfile` 等，逐份由 `entities/` 新件替换，删归笔 5c
 │   ├── edge.dart           三类边 `sealed` 三分 + 按 `type` 判别符分派（唯一入口）
 │   ├── entry.dart          NodeEntry · Resource · EntryStep · Criterion · QuizItem（补裁 `source_refs[]`）
 │   ├── method.dart         新格式 MethodProfile · MethodBundle（旧件在 `content.dart`，笔 5 收口）
@@ -71,6 +72,7 @@ app/lib/core/                    共 49 份（树内 38 条；`plan/` 11 份尚�
 │   ├── pack.dart           Pack + 四类特化事实（`kinds[]` 与字段一一对应，违反抛 `IllegalPackKindError`）
 │   ├── path_claims.dart    PathClaim（`live` / `tombstone`）+ PathAlias（蛇形 wire）
 │   ├── plan.dart           Plan · Target
+│   ├── requirement.dart    Requirements（六要件 × 三态；笔 5b 从 `content.dart` 的 `ItemRequirements` 改名搬出 —— 旧名把「属于 `Item`」写进了类型名，而 `ADR-0007` 之后要件只挂可学节点）
 │   ├── scheme.dart         新格式 Scheme（带 `AuthorityLevel`；旧件在 `content.dart`，笔 5 收口）
 │   ├── source.dart         新格式 SourceRef · SourceSegment · SourceAppliesTo（同上，笔 5 收口）
 │   └── state.dart          SrsState · ViewState 等状态实体

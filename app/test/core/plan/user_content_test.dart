@@ -41,12 +41,15 @@ void main() {
       );
     });
 
-    test('TC-PLAN-080 空 appliesTo 读作「不限」，空列表与空 map 必须丢掉（SPEC-PLAN-007）', () {
+    test('TC-PLAN-080 空 appliesTo 读作「不限」，空列表与 null 必须丢掉（SPEC-PLAN-007）', () {
       // 表单里一个类型都没勾时给的是 `{'type': []}`。留着它，
       // `appliesToItem` 走「数组取任一命中」⇒ 空列表恒不命中 ⇒ 全部项被筛空。
+      //
+      // 笔 5b 起不再有「空 map」这个样本：`appliesTo` 的三个键（`spaceId` /
+      // `type` / `layer`）没有一个是对象类型，`sixAxis` 键随 `ADR-0005` 移除后，
+      // `normalizeAppliesTo` 里那条「空 Map 丢弃」分支永远进不去，已删。
       final JsonMap normalized = normalizeAppliesTo(<String, Object?>{
         'type': <String>[],
-        'sixAxis': <String, Object?>{},
         'layer': null,
       });
       expect(normalized, isEmpty);

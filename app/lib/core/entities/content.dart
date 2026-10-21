@@ -4,42 +4,7 @@ library;
 import '../constants.dart';
 import '../enums.dart';
 import '../json.dart';
-
-/// 六要件 × 三态。键集合固定为 [RequirementKey] 的六个，缺一即格式错误。
-class ItemRequirements {
-  const ItemRequirements(this.states);
-
-  factory ItemRequirements.fromJson(JsonMap json) {
-    final result = <RequirementKey, RequirementState>{};
-    for (final RequirementKey key in RequirementKey.values) {
-      final Object? raw = json[key.name];
-      if (raw is! String) {
-        throw FormatException('requirements.${key.name} 缺失或非字符串');
-      }
-      result[key] = RequirementState.fromWire(raw);
-    }
-    return ItemRequirements(
-      Map<RequirementKey, RequirementState>.unmodifiable(result),
-    );
-  }
-
-  final Map<RequirementKey, RequirementState> states;
-
-  /// 可外化格数 = 深度 `d` 的分母（`SPEC-QUANT-006`：不可外化不入分母）。
-  int get externalizableCount => states.values
-      .where((RequirementState s) => s != RequirementState.notExternalizable)
-      .length;
-
-  /// 齐备格数 = 深度 `d` 的分子。
-  int get completeCount => states.values
-      .where((RequirementState s) => s == RequirementState.present)
-      .length;
-
-  Map<String, Object?> toJson() => <String, Object?>{
-    for (final MapEntry<RequirementKey, RequirementState> e in states.entries)
-      e.key.name: e.value.wire,
-  };
-}
+import 'requirement.dart';
 
 /// 知识空间（容器）。三条边界判据全齐才是独立空间（`SPEC-PACK-001`）。
 class KnowledgeSpace {
@@ -120,7 +85,7 @@ class Item {
     sixAxis: requireStringMap(json, 'sixAxis'),
     layer: Layer.fromWire(requireString(json, 'layer')),
     type: ItemType.fromWire(requireString(json, 'type')),
-    requirements: ItemRequirements.fromJson(requireMap(json, 'requirements')),
+    requirements: Requirements.fromJson(requireMap(json, 'requirements')),
     sourceRefs: requireStringList(json, 'sourceRefs'),
     domainId: requireString(json, 'domainId'),
     inScope: requireBool(json, 'inScope'),
@@ -136,7 +101,7 @@ class Item {
   final Map<String, String> sixAxis;
   final Layer layer;
   final ItemType type;
-  final ItemRequirements requirements;
+  final Requirements requirements;
   final List<String> sourceRefs;
   final String domainId;
   final bool inScope;

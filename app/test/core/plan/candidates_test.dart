@@ -315,40 +315,23 @@ void main() {
       );
     });
 
-    test('六轴是软约束：项未标该轴时不据此否决（SPEC-PLAN-020）', () {
+    test('六轴键已不再被接受：传 sixAxis 直接抛，不静默忽略（SPEC-PLAN-020 修订，笔 5b）', () {
+      // 旧实现把 `sixAxis` 当**软约束**（项未标该轴则跳过）。`ADR-0005` 把六轴降为
+      // 「三条容器轴 + 四类标签」之后，项身上不再有「每轴单值」，那个软约束恒真 ——
+      // 留着它等于留一个永远返回 `true` 的分支，而读者会以为约束还在生效。
+      //
+      // 所以它现在落在「未认的键」那条判据上：**抛错，不静默放过**。这条用例验的
+      // 正是「移除真的生效了」—— 若哪天有人把键悄悄加回来，它会红。
       final LoadedPack pack = _pack();
-
-      // 项只标了 subject / ability，没标 stack；源声明 stack = Python。
-      // 按硬约束处理，α 包 4 条源会被自己的 appliesTo 全部筛掉。
       expect(
-        appliesToItem(
+        () => appliesToItem(
           <String, Object?>{
             'sixAxis': <String, Object?>{'stack': 'Python'},
           },
           space: pack.space,
           item: pack.itemOf('i-dec')!,
         ),
-        isTrue,
-      );
-      expect(
-        appliesToItem(
-          <String, Object?>{
-            'sixAxis': <String, Object?>{'ability': '基础语法'},
-          },
-          space: pack.space,
-          item: pack.itemOf('i-dec')!,
-        ),
-        isTrue,
-      );
-      expect(
-        appliesToItem(
-          <String, Object?>{
-            'sixAxis': <String, Object?>{'ability': '别的能力'},
-          },
-          space: pack.space,
-          item: pack.itemOf('i-dec')!,
-        ),
-        isFalse,
+        throwsA(isA<FormatException>()),
       );
     });
 
