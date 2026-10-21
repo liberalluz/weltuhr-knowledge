@@ -21,7 +21,12 @@ jobs:
     name: repo-hygiene
     runs-on: ubuntu-latest
     steps:
+      # `fetch-depth: 0` 是「提交信息」那一步需要的：它要按 `base..head` 算区间，
+      # 默认浅克隆（depth=1）里 `base` 根本不在对象库里，`git log` 会直接报错。
+      # 这个仓库总量不大，拉全历史的代价远小于「判据报一条与提交信息无关的错」。
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       # 判据只针对产物路径。原写法「全仓不得有未跟踪文件」有两处失真：
       #   过宽 —— 任何与产物无关的临时文件都会让它红，错误信息还指向 dist/；
@@ -71,3 +76,25 @@ jobs:
 
           if [ "$fail" -ne 0 ]; then exit 1; fi
           echo "产物未入库：dist/ 均被 .gitignore 覆盖"
+
+      # ── 提交信息格式 ────────────────────────────────────────────────
+      # 判据在 `.githooks/commit-msg`，与本地 `commit-msg` hook **同一个文件**。
+      # 分两份的后果很具体：本地放行、CI 红，人去改 CI 而不是改提交；反过来
+      # CI 放行、本地红，人会 `--no-verify`。判据一旦有两份，就等于没有判据。
+      #
+      # 为什么在这里而不在 `app-checks`：这条判据与改哪个目录无关，且只要 git
+      # 与 bash，约 1 秒。挂在需要装 Flutter 的 job 上，会让它随 SDK 安装排队。
+      #
+      # ⚠️ 区间按事件类型分别取。`pull_request` 用 base..head（PR 独有提交）；
+      #    `push` 用 before..after。新分支首推时 `before` 是全 0，脚本内部会
+      #    退化成「只看 after 这一条」—— 这个判断放在脚本里，不放在 YAML 里，
+      #    免得本地与 CI 各有一份区间逻辑。
+      - name: 提交信息
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            range="${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }}"
+          else
+            range="${{ github.event.before }}..${{ github.event.after }}"
+          fi
+          echo "区间：$range"
+          bash .githooks/commit-msg --range "$range"

@@ -24,6 +24,11 @@
 ```bash
 git clone git@github.com:liberalluz/weltuhr-knowledge.git && cd weltuhr-knowledge
 
+# enable repository-managed hooks (commit-message format guard).
+# One-time per clone; without it the same rule still runs in CI, but you only
+# find out after pushing.
+git config core.hooksPath .githooks
+
 # client dependencies
 cd app && flutter pub get
 
