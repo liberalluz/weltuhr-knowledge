@@ -382,4 +382,86 @@ void main() {
       expect(issues, isEmpty);
     });
   });
+
+  group('R10 事件区接口的方法面封闭', () {
+    test('往 AppendOnlyStoreFs 加 writeStringAtomic 被拦，并报出行号（R10）', () {
+      final issues = checkSource(
+        path: 'lib/core/storage/store_fs.dart',
+        source:
+            'abstract interface class AppendOnlyStoreFs {\n'
+            '  bool appendLine(String path, String line);\n'
+            '  bool writeStringAtomic(String path, String content);\n'
+            '}\n',
+      );
+      expect(
+        issues.map((LintIssue i) => i.ruleId),
+        contains(ruleAppendOnlySurface),
+      );
+      expect(issues.single.line, 3);
+    });
+
+    test('往 EventStore 加 purge 被拦 —— R3 的黑名单抓不到这个名字（R10）', () {
+      final issues = checkSource(
+        path: 'lib/core/events/event_store.dart',
+        source:
+            'abstract interface class EventStore {\n'
+            '  Future<void> append(Object event);\n'
+            '  void purge();\n'
+            '}\n',
+      );
+      expect(
+        issues.map((LintIssue i) => i.ruleId),
+        contains(ruleAppendOnlySurface),
+      );
+      // `purge` 不在 R3 的禁止名单里 —— 黑名单这一面是空的。
+      expect(
+        issues.map((LintIssue i) => i.ruleId),
+        isNot(contains(ruleEventAppendOnly)),
+      );
+    });
+
+    test('现有接口原样放行（R10：AppendOnlyStoreFs 只有 appendLine）', () {
+      final issues = checkSource(
+        path: 'lib/core/storage/store_fs.dart',
+        source:
+            'abstract interface class StoreFs {\n'
+            '  String? readString(String path);\n'
+            '}\n'
+            '\n'
+            'abstract interface class AppendOnlyStoreFs implements StoreFs {\n'
+            '  bool appendLine(String path, String line);\n'
+            '}\n',
+      );
+      expect(issues, isEmpty);
+    });
+
+    test('同时实现三个接口的实现类带写方法不报（R10：只查接口声明体）', () {
+      final issues = checkSource(
+        path: 'lib/core/pack/dart_io_pack_fs.dart',
+        source:
+            'class DartIoPackFs implements PackFs, WritableStoreFs, AppendOnlyStoreFs {\n'
+            '  @override\n'
+            '  bool writeStringAtomic(String path, String content) => true;\n'
+            '  @override\n'
+            '  bool appendLine(String path, String line) => true;\n'
+            '}\n',
+      );
+      expect(
+        issues.map((LintIssue i) => i.ruleId),
+        isNot(contains(ruleAppendOnlySurface)),
+      );
+    });
+
+    test('接口体里的私有方法放行（R10：不在调用面上）', () {
+      final issues = checkSource(
+        path: 'lib/core/storage/store_fs.dart',
+        source:
+            'abstract interface class AppendOnlyStoreFs {\n'
+            '  bool appendLine(String path, String line);\n'
+            '  void _compact();\n'
+            '}\n',
+      );
+      expect(issues, isEmpty);
+    });
+  });
 }
