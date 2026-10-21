@@ -1,78 +1,96 @@
 /// Planner 右栏预览的回归（`SPEC-PLAN-015`）。
 ///
 /// 三件事要分开验，因为它们的取值来源完全不同：
-/// - **项数** 随体系变（选了体系 = 节点数）
-/// - **分母** 不随体系变（圈内项数）—— 这条最容易被写成「跟项数一起动」
+/// - **项数** 随体系变（选了体系 = 体系节点 ∩ 圈内）
+/// - **分母** 不随体系变（圈内可学节点数）—— 这条最容易被写成「跟项数一起动」
 /// - **时长** 按类型派生后累加 —— 「先乘平均再乘项数」与「逐项派生」在
-///   单一类型的夹具上结果**相同**，所以夹具必须混类型，否则这条验不出来
+///   单一类型的夹具上结果**相同**，所以夹具必须能混类型，否则这条验不出来
+///
+/// 笔 5c：`PlanTarget` 没有了（`Plan.subtreeRoot` 取代 `spaceId` + `target`），
+/// 所以「按 `target` 收窄」那两条用例改成「按子树收窄」—— 后者会同时收窄分母，
+/// 这一点本身就是判据，写进 TC-PLAN-045。
 library;
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:project_knowledge/core/entities/content.dart';
-import 'package:project_knowledge/core/entities/plan.dart';
+import 'package:project_knowledge/core/entities/entry.dart';
+import 'package:project_knowledge/core/entities/method.dart';
 import 'package:project_knowledge/core/enums.dart';
-import 'package:project_knowledge/core/pack/pack_parse.dart';
-import 'package:project_knowledge/core/plan/method_bundle.dart';
+import 'package:project_knowledge/core/pack/pack_reader.dart';
 import 'package:project_knowledge/core/plan/platform_candidates.dart';
 import 'package:project_knowledge/core/plan/preview.dart';
 
 import '../../support/pack_fixture.dart';
 
+const String _scopeRoot = 'python:lex';
+
 /// 四项：两项陈述、两项程序。混类型是为了让「按类型派生」这件事可观测。
-LoadedPack _mixedPack({Map<String, List<String>>? schemes}) {
-  return fixturePack(
-    <FixtureItem>[
-      const FixtureItem('i1', '一', sourceRefs: <String>['src-a']),
-      const FixtureItem('i2', '二', sourceRefs: <String>['src-a']),
-      const FixtureItem('i3', '三', sourceRefs: <String>['src-b']),
-      const FixtureItem('i4', '四', sourceRefs: <String>['src-b']),
-    ],
-    schemes: schemes ??
-        <String, List<String>>{
-          'sch-full': <String>['i1', 'i2', 'i3', 'i4'],
-          'sch-part': <String>['i1', 'i2'],
-        },
-    excerpts: <Map<String, Object?>>[
-      _source('src-a'),
-      _source('src-b'),
-    ],
-  );
-}
+PackContent _mixedPack({Map<String, List<String>>? schemes}) => fixturePack(
+  <FixtureNode>[
+    const FixtureNode('python:root', '研究生目录', slot: LevelSlot.supercluster),
+    const FixtureNode(
+      'python:lex',
+      '词法',
+      slot: LevelSlot.group,
+      parentId: 'python:root',
+    ),
+    const FixtureNode('i1', '一', parentId: _scopeRoot),
+    const FixtureNode('i2', '二', parentId: _scopeRoot),
+    const FixtureNode(
+      'i3',
+      '三',
+      parentId: _scopeRoot,
+      type: LearnableType.procedural,
+    ),
+    const FixtureNode(
+      'i4',
+      '四',
+      parentId: _scopeRoot,
+      type: LearnableType.procedural,
+    ),
+  ],
+  schemes:
+      schemes ??
+      <String, List<String>>{
+        'sch-full': <String>['i1', 'i2', 'i3', 'i4'],
+        'sch-part': <String>['i1', 'i2'],
+      },
+  sources: const <String, String>{'src-a': 'A 材料', 'src-b': 'B 材料'},
+);
 
-Map<String, Object?> _source(String id) => <String, Object?>{
-      'id': id,
-      'name': id,
-      'authorityLevel': 'L1',
-      'version': '1.0',
-      'segments': <Map<String, Object?>>[
-        <String, Object?>{
-          'text': '节选',
-          'locator': 'p.1',
-          'license': 'CC-BY-4.0',
-        },
-      ],
-      'appliesTo': <String, Object?>{},
-    };
+/// 同类型的两项 —— 验「按类型派生」时，包里只能有一种类型，否则读不出差异。
+PackContent _packOfType(LearnableType type) => fixturePack(<FixtureNode>[
+  const FixtureNode('python:root', '研究生目录', slot: LevelSlot.supercluster),
+  const FixtureNode(
+    'python:lex',
+    '词法',
+    slot: LevelSlot.group,
+    parentId: 'python:root',
+  ),
+  FixtureNode('i1', '一', parentId: _scopeRoot, type: type),
+  FixtureNode('i2', '二', parentId: _scopeRoot, type: type),
+]);
 
-/// 程序类项要单独造一个包 —— 夹具的 `itemType` 是全包统一值。
-LoadedPack _packOfType(String type) => fixturePack(
-      <FixtureItem>[
-        const FixtureItem('i1', '一', sourceRefs: <String>['src-a']),
-        const FixtureItem('i2', '二', sourceRefs: <String>['src-a']),
-      ],
-      itemType: type,
-      excerpts: <Map<String, Object?>>[_source('src-a')],
-    );
+PlannerPreview _preview(
+  PackContent pack, {
+  String? schemeId,
+  MethodBundle? bundle,
+  List<MethodProfile>? profiles,
+}) => computePlannerPreview(
+  pack: pack,
+  subtreeRoot: _scopeRoot,
+  parents: pack.parents,
+  schemeId: schemeId,
+  bundle: bundle,
+  profiles: profiles ?? platformMethodProfiles,
+);
 
 void main() {
   test('TC-PLAN-032 项数随体系变，分母不变（SPEC-PLAN-015）', () {
-    final LoadedPack pack = _mixedPack();
+    final PackContent pack = _mixedPack();
 
-    final PlannerPreview full =
-        computePlannerPreview(pack: pack, schemeId: 'sch-full');
-    final PlannerPreview part =
-        computePlannerPreview(pack: pack, schemeId: 'sch-part');
-    final PlannerPreview none = computePlannerPreview(pack: pack);
+    final PlannerPreview full = _preview(pack, schemeId: 'sch-full');
+    final PlannerPreview part = _preview(pack, schemeId: 'sch-part');
+    final PlannerPreview none = _preview(pack);
 
     expect(full.itemCount, 4);
     expect(part.itemCount, 2);
@@ -80,22 +98,22 @@ void main() {
     expect(
       <int>[full.denominator, part.denominator, none.denominator],
       <int>[4, 4, 4],
-      reason: '分母是圈内项数，不随体系覆盖度变化',
+      reason: '分母是圈内可学节点数，不随体系覆盖度变化',
     );
   });
 
-  test('TC-PLAN-033 时长逐项按 Item.type 派生后累加（SPEC-PLAN-015）', () {
-    // 「理解优先」：陈述 → 费曼（读 3 + 忆 1 + 讲 5 = 9）；程序 → 刻意练习。
-    final PlannerPreview declarative = computePlannerPreview(
-      pack: _packOfType('declarative'),
+  test('TC-PLAN-033 时长逐项按 LearnableType 派生后累加（SPEC-PLAN-015）', () {
+    // 「理解优先」：陈述 → 费曼；程序 → 刻意练习。两者步骤数与算子都不同。
+    final PlannerPreview declarative = _preview(
+      _packOfType(LearnableType.declarative),
       bundle: platformMethodBundles.first,
     );
-    final PlannerPreview procedural = computePlannerPreview(
-      pack: _packOfType('procedural'),
+    final PlannerPreview procedural = _preview(
+      _packOfType(LearnableType.procedural),
       bundle: platformMethodBundles.first,
     );
 
-    expect(declarative.minutes, 18, reason: '2 项 × 9 分钟');
+    expect(declarative.minutes, 18, reason: '2 项 × 9 分钟（读 3 + 忆 1 + 讲 5）');
     expect(
       procedural.minutes,
       isNot(declarative.minutes),
@@ -104,7 +122,7 @@ void main() {
   });
 
   test('TC-PLAN-034 未选方法时按平台默认组合估，并标出来（SPEC-PLAN-015）', () {
-    final PlannerPreview preview = computePlannerPreview(pack: _mixedPack());
+    final PlannerPreview preview = _preview(_mixedPack());
 
     expect(preview.usingDefaultMethod, isTrue);
     expect(preview.minutes, greaterThan(0), reason: '没选方法也要给得出一版估算');
@@ -116,17 +134,13 @@ void main() {
       id: 'bundle-declarative-only',
       name: '只覆盖陈述',
       origin: CandidateOrigin.platform,
-      byType: <ItemType, String>{ItemType.declarative: 'method-feynman'},
+      byType: <LearnableType, String>{
+        LearnableType.declarative: 'method-feynman',
+      },
     );
 
-    final PlannerPreview preview = computePlannerPreview(
-      pack: fixturePack(
-        <FixtureItem>[
-          const FixtureItem('i1', '一'),
-          const FixtureItem('i2', '二'),
-        ],
-        itemType: 'procedural',
-      ),
+    final PlannerPreview preview = _preview(
+      _packOfType(LearnableType.procedural),
       bundle: declarativeOnly,
     );
 
@@ -142,11 +156,11 @@ void main() {
     const MethodProfile fourStep = MethodProfile(
       id: 'method-four-step',
       name: '读忆练讲',
-      steps: <MethodStep>[
-        MethodStep(operator: ExecutionOperator.read),
-        MethodStep(operator: ExecutionOperator.recall),
-        MethodStep(operator: ExecutionOperator.practice),
-        MethodStep(operator: ExecutionOperator.explain),
+      steps: <EntryStep>[
+        EntryStep(operator: ExecutionOperator.read, instruction: '读'),
+        EntryStep(operator: ExecutionOperator.recall, instruction: '忆'),
+        EntryStep(operator: ExecutionOperator.practice, instruction: '练'),
+        EntryStep(operator: ExecutionOperator.explain, instruction: '讲'),
       ],
       appliesTo: <String, Object?>{},
       origin: CandidateOrigin.platform,
@@ -155,13 +169,25 @@ void main() {
       id: 'bundle-four-step',
       name: '读忆练讲',
       origin: CandidateOrigin.platform,
-      byType: <ItemType, String>{ItemType.declarative: 'method-four-step'},
+      byType: <LearnableType, String>{
+        LearnableType.declarative: 'method-four-step',
+      },
     );
 
-    final PlannerPreview preview = computePlannerPreview(
-      pack: fixturePack(<FixtureItem>[
-        for (int i = 1; i <= 10; i++) FixtureItem('i$i', '第 $i 项'),
-      ]),
+    final PackContent pack = fixturePack(<FixtureNode>[
+      const FixtureNode('python:root', '研究生目录', slot: LevelSlot.supercluster),
+      const FixtureNode(
+        'python:lex',
+        '词法',
+        slot: LevelSlot.group,
+        parentId: 'python:root',
+      ),
+      for (int i = 1; i <= 10; i++)
+        FixtureNode('i$i', '第 $i 项', parentId: _scopeRoot),
+    ]);
+
+    final PlannerPreview preview = _preview(
+      pack,
       bundle: bundle,
       profiles: <MethodProfile>[fourStep],
     );
@@ -175,22 +201,33 @@ void main() {
   });
 
   test('TC-PLAN-043 圈外项既不计入分母，也不进项数（SPEC-PLAN-015）', () {
-    final LoadedPack pack = fixturePack(
-      <FixtureItem>[
-        const FixtureItem('i1', '一'),
-        const FixtureItem('i2', '二'),
-        const FixtureItem('out', '圈外邻项', inScope: false),
-      ],
-      schemes: <String, List<String>>{
-        'sch-all': <String>['i1', 'i2', 'out'],
-      },
-    );
+    final PackContent pack = fixturePack(<FixtureNode>[
+      const FixtureNode('python:root', '研究生目录', slot: LevelSlot.supercluster),
+      const FixtureNode(
+        'python:lex',
+        '词法',
+        slot: LevelSlot.group,
+        parentId: 'python:root',
+      ),
+      const FixtureNode(
+        'python:ctl',
+        '控制',
+        slot: LevelSlot.group,
+        parentId: 'python:root',
+      ),
+      const FixtureNode('i1', '一', parentId: _scopeRoot),
+      const FixtureNode('i2', '二', parentId: _scopeRoot),
+      // 挂在另一个域下 ⇒ 不在 `_scopeRoot` 的子树里。
+      const FixtureNode('out', '圈外邻项', parentId: 'python:ctl'),
+    ],
+    schemes: <String, List<String>>{
+      'sch-all': <String>['i1', 'i2', 'out'],
+    });
 
-    final PlannerPreview none = computePlannerPreview(pack: pack);
-    final PlannerPreview withScheme =
-        computePlannerPreview(pack: pack, schemeId: 'sch-all');
+    final PlannerPreview none = _preview(pack);
+    final PlannerPreview withScheme = _preview(pack, schemeId: 'sch-all');
 
-    expect(none.denominator, 2, reason: '分母只数圈内项');
+    expect(none.denominator, 2, reason: '分母只数圈内节点');
     expect(none.itemCount, 2);
     expect(
       withScheme.itemCount,
@@ -204,54 +241,20 @@ void main() {
     );
   });
 
-  test('TC-PLAN-044 target 收窄项数，分母不动（SPEC-PLAN-015）', () {
-    final LoadedPack pack = _mixedPack();
-    // `Z3` 圈定两项：i1 与 i3。
-    final PlanTarget target = PlanTarget(
-      selector: <String, Object?>{'kind': 'items', 'domainId': 'python/lexical'},
-      resolved: <String>['i1', 'i3'],
-    );
-
-    final PlannerPreview full =
-        computePlannerPreview(pack: pack, schemeId: 'sch-full');
-    final PlannerPreview narrowed = computePlannerPreview(
+  test('TC-PLAN-045 子树既是范围也是分母 —— 收窄它，两个读数一起收（ADR-0007 决策 2）', () {
+    // 旧版这里验的是 `PlanTarget` 收窄项数、分母不动。`PlanTarget` 已废：
+    // 范围由 `Plan.subtreeRoot` 唯一给定，而分母的定义就是「这个子树下的可学
+    // 节点数」—— 收窄子树必然同时收窄分母。两者仍不同源：分母不随**体系**变。
+    final PackContent pack = _mixedPack();
+    final PlannerPreview deep = computePlannerPreview(
       pack: pack,
-      schemeId: 'sch-full',
-      target: target,
+      subtreeRoot: 'i1',
+      parents: pack.parents,
     );
+    final PlannerPreview wide = _preview(pack);
 
-    expect(narrowed.itemCount, 2, reason: '只数 target 圈定的两项');
-    expect(
-      narrowed.denominator,
-      full.denominator,
-      reason: '分母是空间规模，不随 target 变 —— 缩了就看不出「空间还有多少没排」',
-    );
-    expect(
-      narrowed.minutes,
-      lessThan(full.minutes),
-      reason: '时长跟项数走，不跟分母走',
-    );
-  });
-
-  test('TC-PLAN-045 target 与体系取交集，两边都不放宽（SPEC-PLAN-015）', () {
-    final LoadedPack pack = _mixedPack();
-    // target 圈了 i1 / i3 / i4，而 `sch-part` 只含 i1 / i2 ⇒ 交集只有 i1。
-    final PlanTarget target = PlanTarget(
-      selector: <String, Object?>{},
-      resolved: <String>['i1', 'i3', 'i4'],
-    );
-
-    final PlannerPreview preview = computePlannerPreview(
-      pack: pack,
-      schemeId: 'sch-part',
-      target: target,
-    );
-
-    expect(
-      preview.itemCount,
-      1,
-      reason: 'i3 / i4 在 target 里但不在体系里；体系不会因为 target 变宽',
-    );
-    expect(preview.denominator, 4);
+    expect(deep.itemCount, 1, reason: '子树根自己算圈内');
+    expect(deep.denominator, 1);
+    expect(wide.denominator, 4);
   });
 }

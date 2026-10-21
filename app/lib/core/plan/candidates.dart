@@ -7,11 +7,11 @@
 /// `mergeByOrigin(platform, pack, user)`，优先级 `user > pack > platform`。
 /// 至于每一段当下有没有那三份数据，是内容供给问题，不是结构问题：
 ///
-/// | 段 | 平台内置 | 空间包默认 | 用户自建 |
+/// | 段 | 平台内置 | 包默认 | 用户自建 |
 /// |---|---|---|---|
-/// | 源 | **空**（`PLAN-006` 注记：平台档无法覆盖任何具体体系） | `excerpts` | `P-8` |
+/// | 源 | **空**（`PLAN-006` 注记：平台档无法覆盖任何具体体系） | `sources` | `P-8` |
 /// | 体系 | **空**（`⪯` 原序的「原序」尚未裁定，不在本笔凭空造） | `schemes` | `P-8` |
-/// | 方法 | 三套组合 + 五份分支（`platform_candidates.dart`） | **空**（`PACK` 五段无 `methods`，`SPEC-PACK-006` 明文「第三次扩 schema 应暂停」） | `P-8` |
+/// | 方法 | 三套组合 + 五份分支（`platform_candidates.dart`） | **空**（方法独立成包，载荷包不带 `methods`） | `P-8` |
 ///
 /// ## 源与体系是**双向**收窄，不是单向依赖
 ///
@@ -24,11 +24,12 @@
 /// 体系，都不给就是空间内全量。
 library;
 
-import '../entities/content.dart';
+import '../entities/method.dart';
+import '../entities/node.dart';
+import '../entities/scheme.dart';
+import '../entities/source.dart';
 import '../enums.dart';
-import '../json.dart';
-import '../pack/pack_parse.dart';
-import 'method_bundle.dart';
+import '../pack/pack_reader.dart';
 import 'ordering.dart';
 import 'platform_candidates.dart';
 import 'scope.dart';
@@ -88,11 +89,16 @@ class SourceCandidate implements PlanCandidate {
   /// 源自身的版本（如 `3.13`），不是包版本 —— 卡片「版本」一栏显示的是它。
   String get version => source.version;
 
-  /// 出处等级 `L0` / `L1` / `L2` / `L4`：源段唯一的排序键（`SPEC-PLAN-020`）。
-  String get authorityLevel => source.authorityLevel;
+  /// 出处等级（`entity-fields` §11 五档）：源段唯一的排序键（`SPEC-PLAN-020`）。
+  ///
+  /// **可空**：`kind = catalog` 的源本身就是权威，不标等级。`null` 排在
+  /// 有等级的后面（见 [authorityRank]），不当作 `community`。
+  AuthorityLevel? get authorityLevel => source.authorityLevel;
 
   /// 「为何推荐」—— 排序键本身就是理由（`SPEC-PLAN-021` 只做 A 级）。
-  String get reason => '出处等级 $authorityLevel';
+  String get reason => authorityLevel == null
+      ? '目录源（自带权威）'
+      : '出处等级 ${authorityLevel!.name}';
 }
 
 class SchemeCandidate implements PlanCandidate {
@@ -126,8 +132,11 @@ class SchemeCandidate implements PlanCandidate {
   @override
   String get name => scheme.name;
 
-  /// 出处等级（`L0` / `L1` / `L2` / `L4`），驱动候选卡的等级徽标。
-  String get authorityLevel => scheme.authorityLevel;
+  /// 出处等级（`entity-fields` §11 五档），驱动候选卡的等级徽标。
+  ///
+  /// **非可空**：`Scheme.authorityLevel` 是必填 —— 「这套次序凭什么是这个次序」
+  /// 必须交代，而源那侧可以因为 `catalog` 自带权威而不标。
+  AuthorityLevel get authorityLevel => scheme.authorityLevel;
 
   String get reason => orderCost.display;
 }
@@ -190,7 +199,7 @@ class CandidateSet {
 /// 「优先级 `user > pack > platform`」这条要等到 `P-8` 才第一次被走过，
 /// 届时才发现写错就是重做。
 CandidateSet loadCandidates(
-  LoadedPack pack, {
+  PackContent pack, {
   String? schemeId,
   String? sourceId,
   List<SourceRef> userSources = const <SourceRef>[],
@@ -198,9 +207,9 @@ CandidateSet loadCandidates(
   List<MethodBundle> userMethodBundles = const <MethodBundle>[],
 }) {
   final List<String> nodes = _referenceNodes(pack, schemeId, userSchemes);
-  final List<Item> refItems = <Item>[
+  final List<LearnableNode> refNodes = <LearnableNode>[
     for (final String id in nodes)
-      if (pack.itemOf(id) != null) pack.itemOf(id)!,
+      if (pack.learnableOf(id) != null) pack.learnableOf(id)!,
   ];
 
   return CandidateSet(
@@ -215,7 +224,7 @@ CandidateSet loadCandidates(
           a.orderCost.inversions - b.orderCost.inversions,
     ),
     methods: stableSorted<MethodCandidate>(
-      _methods(refItems, userMethodBundles),
+      _methods(refNodes, userMethodBundles),
       // 覆盖率高者靠前 ⇒ 反向比较。并列（如都覆盖 4/4）回落到声明顺序。
       (MethodCandidate a, MethodCandidate b) => b.typeCoverage.ratio
           .compareTo(a.typeCoverage.ratio),
@@ -223,7 +232,7 @@ CandidateSet loadCandidates(
   );
 }
 
-/// 参照集合：给了体系就是它的节点，没给就是空间内全部项。
+/// 参照集合：给了体系就是它的节点，没给就是空间内全部**可学**节点。
 ///
 /// 体系 id 不存在 ⇒ 抛 [ArgumentError]：那不是「没有候选」，是调用方拿错了 id，
 /// 静默返回空列表会让人以为这套体系一条源都不覆盖。
@@ -231,13 +240,16 @@ CandidateSet loadCandidates(
 /// 查找走 [schemeNodesOf]（自建优先），**不直接问 `pack`** —— 自建体系不在包里，
 /// 直接问包会在「刚建完、刚被选中」那一刻抛错，而那恰好是用户最不该看到报错的
 /// 时刻。
+///
+/// 不给体系时取 `learnableNodes` 而不是 `nodes`：结构节点没有 `NodeEntry`，
+/// 放进参照集合只会让每一个候选的分母都虚高。
 List<String> _referenceNodes(
-  LoadedPack pack,
+  PackContent pack,
   String? schemeId,
   List<Scheme> userSchemes,
 ) {
   if (schemeId == null) {
-    return <String>[for (final Item item in pack.items) item.id];
+    return <String>[for (final LearnableNode node in pack.learnableNodes) node.id];
   }
   final List<String>? nodes = schemeNodesOf(
     pack: pack,
@@ -251,14 +263,14 @@ List<String> _referenceNodes(
 }
 
 List<SourceCandidate> _sources(
-  LoadedPack pack,
+  PackContent pack,
   List<String> nodes,
   bool narrowed,
   List<SourceRef> userSources,
 ) {
   final List<Origined<SourceRef>> merged = mergeByOrigin<SourceRef>(
     platform: const <SourceRef>[],
-    pack: pack.excerpts,
+    pack: pack.sources,
     user: userSources,
     idOf: (SourceRef s) => s.id,
   );
@@ -266,13 +278,18 @@ List<SourceCandidate> _sources(
   final List<SourceCandidate> out = <SourceCandidate>[];
   for (final Origined<SourceRef> entry in merged) {
     final SourceRef source = entry.value;
-    if (!_spaceAllows(source.appliesTo, pack.space)) {
+    // `catalog` 不参与候选（`entity-fields` §11 注记）：它绑定 `Node.catalog_refs`，
+    // 回答「这个 `0812` 依据哪份文件」。混进候选卡会让「教育部目录」与
+    // 「Python Tutorial」并列，用户无从选择。
+    if (source.kind == SourceKind.catalog) {
       continue;
     }
     int covered = 0;
     for (final String nodeId in nodes) {
-      final Item? item = pack.itemOf(nodeId);
-      if (item != null && item.sourceRefs.contains(source.id)) {
+      // `sourceRefs` 落在内容侧（`NodeEntry.source_refs`），不在 `Node` 上 ——
+      // 结构节点没有 entry，所以这里天然只数到可学节点。
+      final List<String>? refs = pack.entryOf(nodeId)?.sourceRefs;
+      if (refs != null && refs.contains(source.id)) {
         covered++;
       }
     }
@@ -280,8 +297,8 @@ List<SourceCandidate> _sources(
       covered: covered,
       total: nodes.length,
     );
-    // 自建源不吃这一条（`B4-R`）。覆盖数 = `Item.sourceRefs` 里命中它自己的
-    // 项数，而客户端**写不了** `sourceRefs` ⇒ 自建源恒 0；`narrowed` 时直接
+    // 自建源不吃这一条（`B4-R`）。覆盖数 = `NodeEntry.source_refs` 里命中它自己
+    // 的项数，而客户端**写不了** `sourceRefs` ⇒ 自建源恒 0；`narrowed` 时直接
     // `continue` 会让「刚建的那个源」从列表里消失，用户以为没建成（走查实拍）。
     //
     // 平台 / 空间包源的旧选择失效**仍然筛掉** —— 那才是 `PLAN-014` 的「需重选」。
@@ -297,7 +314,7 @@ List<SourceCandidate> _sources(
 }
 
 List<SchemeCandidate> _schemes(
-  LoadedPack pack,
+  PackContent pack,
   String? sourceId,
   List<Scheme> userSchemes,
 ) {
@@ -315,8 +332,8 @@ List<SchemeCandidate> _schemes(
     if (sourceId != null) {
       int covered = 0;
       for (final String nodeId in scheme.nodes) {
-        final Item? item = pack.itemOf(nodeId);
-        if (item != null && item.sourceRefs.contains(sourceId)) {
+        final List<String>? refs = pack.entryOf(nodeId)?.sourceRefs;
+        if (refs != null && refs.contains(sourceId)) {
           covered++;
         }
       }
@@ -330,11 +347,11 @@ List<SchemeCandidate> _schemes(
         scheme: scheme,
         coverage: coverage,
         origin: entry.origin,
-        packVersion: pack.space.version,
+        packVersion: pack.pack.version,
         orderCost: schemeOrderCost(
           scheme: scheme,
-          edges: pack.edges,
-          itemById: pack.itemById,
+          edges: pack.prerequisites,
+          nodeById: pack.nodeById,
         ),
       ),
     );
@@ -346,7 +363,10 @@ List<SchemeCandidate> _schemes(
 ///
 /// 类型覆盖**按参照集合算**，所以「同一套方法在这个体系下覆盖 4/4、在那个体系下
 /// 覆盖 2/3」是正常的 —— 排序键就该是当前上下文里的读数。
-List<MethodCandidate> _methods(List<Item> refItems, List<MethodBundle> user) {
+List<MethodCandidate> _methods(
+  List<LearnableNode> refNodes,
+  List<MethodBundle> user,
+) {
   final List<Origined<MethodBundle>> merged = mergeByOrigin<MethodBundle>(
     platform: platformMethodBundles,
     pack: const <MethodBundle>[],
@@ -357,16 +377,9 @@ List<MethodCandidate> _methods(List<Item> refItems, List<MethodBundle> user) {
     for (final Origined<MethodBundle> entry in merged)
       MethodCandidate(
         bundle: entry.value,
-        typeCoverage: methodTypeCoverage(bundle: entry.value, items: refItems),
+        typeCoverage: methodTypeCoverage(bundle: entry.value, nodes: refNodes),
       ),
   ];
-}
-
-/// 源是否属于本空间。**只看 `spaceId`** —— `type` / `layer` / `sixAxis` 在源上
-/// 是「这条材料讲什么」的描述，不是准入条件（准入由覆盖决定）。
-bool _spaceAllows(JsonMap appliesTo, KnowledgeSpace space) {
-  final Object? spaceId = appliesTo['spaceId'];
-  return spaceId == null || spaceId == space.id;
 }
 
 // ────────────────────────────── 合并 ──────────────────────────────

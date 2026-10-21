@@ -32,10 +32,11 @@
 /// 就是第二份计数。面板这一层连版本号都不碰。
 library;
 
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Axis;
 
 import '../../core/entities/plan.dart';
-import '../../core/pack/pack_parse.dart';
+import '../../core/enums.dart';
+import '../../core/pack/pack_reader.dart';
 import '../../core/plan/plan_events.dart';
 import 'planner_panel.dart';
 
@@ -50,7 +51,10 @@ const Key plannerScreenBackKey = Key('planner-screen-back');
 class PlannerScreen extends StatelessWidget {
   const PlannerScreen({
     required this.pack,
-    this.target,
+    required this.spaceId,
+    required this.subtreeRoot,
+    required this.primaryAxis,
+    required this.packVersions,
     this.revising,
     this.initialSourceId,
     this.initialSchemeId,
@@ -58,16 +62,25 @@ class PlannerScreen extends StatelessWidget {
     super.key,
   });
 
-  final LoadedPack pack;
+  final PackContent pack;
 
-  /// 这份计划的范围（`PLAN-016` 三个入口各带各的）。
+  /// 事件信封上的空间 id。**不进 payload**，只用来填 `PlanDraft` 的信封。
+  final String spaceId;
+
+  /// 这份计划的范围根（`PLAN-016` 三个入口各带各的）。
   ///
-  /// 缺省 = 圈内全量。Z1「开始学习」也会显式传一份 `{kind: 'space'}` 的
-  /// —— 不传与传空 `selector` 在预览上等价，但落进事件的选择式不同：
-  /// 后者回看时说不清「当初是不是故意全选」。
-  final PlanTarget? target;
+  /// **必填**：`inScope` 已改成派生（`entity-fields` §2），没有根节点就没有
+  /// 「圈内」。旧的 `PlanTarget.selector` 四形态（`space` / `domain` / `item` /
+  /// `query`）随 `ADR-0005` 一并取消 —— 子树根已足够表达范围。
+  final String subtreeRoot;
 
-  /// 要重规划的那一份（`SPEC-PLAN-019`）。给了就按它预填三段与 `target`。
+  /// 主序轴的默认值（由模式给出，可被体系覆盖）。
+  final Axis primaryAxis;
+
+  /// 建计划那一刻的包版本组合。
+  final PackVersions packVersions;
+
+  /// 要重规划的那一份（`SPEC-PLAN-019`）。给了就按它预填三段与范围。
   final Plan? revising;
 
   /// 重规划写 `plan_revised` 时指回的那份计划。**与预填同源**，见文件头。
@@ -84,8 +97,11 @@ class PlannerScreen extends StatelessWidget {
   /// 「只有一处 `push`」。多写一处就会多出一套参数传递，两处迟早对不齐。
   static Future<PlanDraft?> open(
     BuildContext context, {
-    required LoadedPack pack,
-    PlanTarget? target,
+    required PackContent pack,
+    required String spaceId,
+    required String subtreeRoot,
+    required Axis primaryAxis,
+    required PackVersions packVersions,
     Plan? revising,
     String? initialSourceId,
     String? initialSchemeId,
@@ -95,7 +111,10 @@ class PlannerScreen extends StatelessWidget {
       MaterialPageRoute<PlanDraft>(
         builder: (BuildContext context) => PlannerScreen(
           pack: pack,
-          target: target,
+          spaceId: spaceId,
+          subtreeRoot: subtreeRoot,
+          primaryAxis: primaryAxis,
+          packVersions: packVersions,
           revising: revising,
           initialSourceId: initialSourceId,
           initialSchemeId: initialSchemeId,
@@ -107,9 +126,9 @@ class PlannerScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 重规划时 `target` 与三段都回落到 `revising` —— 只回填三段而把范围丢掉，
-    // 等于「重规划把范围悄悄放大成整个空间」，那正是 `PLAN-015` 反复强调不许的。
-    final PlanTarget? effectiveTarget = target ?? revising?.target;
+    // 重规划时范围回落到 `revising` —— 只回填三段而把范围丢掉，等于「重规划
+    // 把范围悄悄放大成整个空间」，那正是 `PLAN-015` 反复强调不许的。
+    final String effectiveRoot = revising?.subtreeRoot ?? subtreeRoot;
     final Object? primarySource = revising?.sourcePolicy['primary'];
 
     return Scaffold(
@@ -117,7 +136,7 @@ class PlannerScreen extends StatelessWidget {
       appBar: AppBar(
         // 标题写空间名：全屏之后「我在给哪个空间做计划」在页面上没有别的出处
         // 了（宇宙那边的诊断行已被盖住）。空名回落成「规划」而不是留一个空串。
-        title: Text(pack.space.name.isEmpty ? '规划' : '规划 · ${pack.space.name}'),
+        title: Text(pack.pack.name.isEmpty ? '规划' : '规划 · ${pack.pack.name}'),
         leading: IconButton(
           key: plannerScreenBackKey,
           icon: const Icon(Icons.arrow_back),
@@ -127,7 +146,10 @@ class PlannerScreen extends StatelessWidget {
       ),
       body: PlannerPanel(
         pack: pack,
-        target: effectiveTarget,
+        spaceId: spaceId,
+        subtreeRoot: effectiveRoot,
+        primaryAxis: revising?.primaryAxis ?? primaryAxis,
+        packVersions: revising?.packVersions ?? packVersions,
         initialSourceId:
             initialSourceId ?? (primarySource is String ? primarySource : null),
         initialSchemeId: initialSchemeId ?? revising?.schemeId,

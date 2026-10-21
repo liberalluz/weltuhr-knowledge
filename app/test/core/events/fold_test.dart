@@ -69,12 +69,14 @@ Event _note(String id, int physical, String text, {String? itemId = 'py-a', int?
       },
     );
 
+/// 笔 5c：`spaceVersion` + `target{selector, resolved}` 换成 `packVersions` +
+/// `subtreeRoot`（`event-types.md` §二 B 已同步）。
 Event _planCreated(
   String id,
   int physical, {
   String spaceId = 'python',
+  String subtreeRoot = 'python:fn',
   String schemeId = 'sch-full',
-  List<String> resolved = const <String>['py-a'],
 }) => _event(
   id: id,
   type: EventType.planCreated,
@@ -82,10 +84,11 @@ Event _planCreated(
   itemId: null,
   spaceId: spaceId,
   payload: <String, Object?>{
-    'spaceVersion': '0.1.0',
-    'target': <String, Object?>{
-      'selector': <String, Object?>{},
-      'resolved': resolved,
+    'subtreeRoot': subtreeRoot,
+    'primaryAxis': 'major',
+    'packVersions': <String, Object?>{
+      'skeleton': '1.0.0',
+      'payloads': <String, Object?>{'python': '0.1.0'},
     },
     'sourcePolicy': <String, Object?>{'primary': 'src-official'},
     'schemeId': schemeId,
@@ -97,8 +100,8 @@ Event _planRevised(
   String id,
   int physical, {
   required String planId,
+  String subtreeRoot = 'python:async',
   String schemeId = 'sch-narrow',
-  List<String> resolved = const <String>['py-a', 'py-b'],
 }) => _event(
   id: id,
   type: EventType.planRevised,
@@ -106,10 +109,11 @@ Event _planRevised(
   itemId: null,
   payload: <String, Object?>{
     'planId': planId,
-    'spaceVersion': '0.1.0',
-    'target': <String, Object?>{
-      'selector': <String, Object?>{},
-      'resolved': resolved,
+    'subtreeRoot': subtreeRoot,
+    'primaryAxis': 'major',
+    'packVersions': <String, Object?>{
+      'skeleton': '1.0.0',
+      'payloads': <String, Object?>{'python': '0.1.0'},
     },
     'sourcePolicy': <String, Object?>{'primary': 'src-official'},
     'schemeId': schemeId,
@@ -464,26 +468,36 @@ void main() {
       expect(state.plans.keys, <String>['e1'], reason: '身份 = 创建事件的 id');
       final Plan plan = state.plans['e1']!;
       expect(plan.id, 'e1');
-      expect(plan.spaceId, 'python');
-      expect(plan.spaceVersion, '0.1.0');
+      // 信封上的 `spaceId` **不折进 `Plan`**：`fold(spaceId:)` 已按它过滤，
+      // 实体再存一份就是第二份真相。
+      expect(plan.subtreeRoot, 'python:fn', reason: '范围由子树根表达');
+      expect(plan.primaryAxis, Axis.major);
+      expect(plan.packVersions.skeleton, '1.0.0');
+      expect(plan.packVersions.payloads, <String, String>{'python': '0.1.0'});
       expect(plan.schemeId, 'sch-full');
       expect(plan.methodProfileId, 'method-bundle-understand');
       expect(plan.sourcePolicy, <String, Object?>{'primary': 'src-official'});
-      expect(plan.target.resolved, <String>['py-a']);
+      expect(
+        plan.toJson().containsKey('target'),
+        isFalse,
+        reason: '`resolved` 是派生值，折的时候重算，不落盘',
+      );
       expect(plan.version, 1);
     });
 
-    test('TC-PLAN-056 同空间两份计划独立存在（SPEC-PLAN-003 验收向量）', () {
+    test('TC-PLAN-056 同一子树两份计划独立存在（SPEC-PLAN-003 验收向量）', () {
+      // 键是**创建事件的 id**。若有人把它改成 `subtreeRoot`，这两行会塌成一份 ——
+      // 而 `Plan` 头部明写「同一子树可并存多份」（「入门跑通」与「专攻异步」）。
       final FoldedState state = fold(<Event>[
-        _planCreated('e1', 1000, schemeId: 'sch-full', resolved: <String>['py-a']),
-        _planCreated('e2', 2000, schemeId: 'sch-narrow', resolved: <String>['py-a', 'py-b']),
+        _planCreated('e1', 1000, schemeId: 'sch-full'),
+        _planCreated('e2', 2000, schemeId: 'sch-narrow'),
       ]);
 
       expect(state.plans.length, 2);
-      expect(state.plansOf('python').length, 2);
       expect(state.plans['e1']!.schemeId, 'sch-full');
       expect(state.plans['e2']!.schemeId, 'sch-narrow');
-      // 两份各自的版本独立计数，不是「同空间共用一份」。
+      expect(state.plans['e1']!.subtreeRoot, state.plans['e2']!.subtreeRoot);
+      // 两份各自的版本独立计数，不是「同子树共用一份」。
       expect(state.plans['e1']!.version, 1);
       expect(state.plans['e2']!.version, 1);
     });
@@ -495,9 +509,17 @@ void main() {
       ]);
 
       final Plan plan = state.plans['e1']!;
-      expect(plan.version, 2);
+      expect(plan.version, 2, reason: '版本由 fold 数条数得出，payload 不写');
       expect(plan.schemeId, 'sch-narrow', reason: '重规划换了体系');
-      expect(plan.target.resolved, <String>['py-a', 'py-b']);
+      expect(plan.subtreeRoot, 'python:async', reason: '重规划也换了范围根');
+      expect(
+        plan.packVersions.toJson(),
+        <String, Object?>{
+          'skeleton': '1.0.0',
+          'payloads': <String, Object?>{'python': '0.1.0'},
+        },
+        reason: '版本快照整份覆盖，不逐字段合并',
+      );
       expect(state.plans.length, 1, reason: '重规划改的是同一份，不是新开一份');
     });
 
@@ -526,7 +548,7 @@ void main() {
       );
 
       expect(state.plans.keys, <String>['e1']);
-      expect(state.plansOf('german'), isEmpty);
+      // `plansOf(spaceId)` 已删：`Plan` 不持空间归属，上面那行 keys 就是全部证据。
     });
   });
 

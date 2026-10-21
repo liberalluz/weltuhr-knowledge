@@ -9,7 +9,7 @@
 ///   （[FoldedState.carries] / [FoldedState.merges]），折算规则在
 ///   `migration.dart` 一处。
 /// - `Plan` 的 `progress` / `sessions` —— 派生自判定与学过的项，归 `QUANT`；
-///   这里只折出**意图**（源 / 体系 / 方法 / `target` / 版本）。
+///   这里只折出**意图**（子树根 / 主序轴 / 包版本 / 源 / 体系 / 方法）。
 library;
 
 import '../enums.dart';
@@ -98,11 +98,9 @@ class FoldedState {
   /// 否则第二份会把第一份覆盖掉，而「两份独立存在」恰好是验收向量本身。
   final Map<String, Plan> plans;
 
-  /// 某空间下的全部计划，按创建顺序。
-  List<Plan> plansOf(String spaceId) => <Plan>[
-    for (final Plan plan in plans.values)
-      if (plan.spaceId == spaceId) plan,
-  ];
+  // `plansOf(spaceId)` 已删：`Plan` 不持有 `spaceId`（信封字段，payload 不写），
+  // 而 `fold(spaceId:)` 已经按信封过滤过 —— fold 之后再按空间筛，筛不出任何
+  // 新东西，只会让人以为「计划自带空间归属」。
 
   /// 下一步步骤序号；没学过返回 `0`（= 第一步）。
   int cursorOf(String itemId) => cursors[itemId] ?? 0;
@@ -280,11 +278,13 @@ FoldedState fold(
 /// **payload 里没有这两个字段**，它们不是事件携带的事实，是重放的副产物。
 Plan _planFromEvent(Event event, {required String id, required int version}) => Plan(
   id: id,
-  // 取信封上的 `spaceId`：它是 `fold(spaceId:)` 的过滤维度，payload 再写一份
-  // 会造出「过滤时按信封、还原时按 payload」的分裂。
-  spaceId: event.spaceId,
-  spaceVersion: requireString(event.payload, 'spaceVersion'),
-  target: PlanTarget.fromJson(requireMap(event.payload, 'target')),
+  // ⚠️ **不取信封的 `spaceId`**：`Plan` 已经没有这个字段了。计划的范围由
+  // `subtreeRoot` 表达，而「属于哪个空间」是信封的事 —— `fold(spaceId:)` 已经
+  // 按它过滤过，实体再存一份就是第二份真相（`event-types.md` §二 B：`spaceId`
+  // 不进 payload）。
+  subtreeRoot: requireString(event.payload, 'subtreeRoot'),
+  primaryAxis: Axis.fromWire(requireString(event.payload, 'primaryAxis')),
+  packVersions: PackVersions.fromJson(requireMap(event.payload, 'packVersions')),
   sourcePolicy: requireMap(event.payload, 'sourcePolicy'),
   schemeId: requireString(event.payload, 'schemeId'),
   methodProfileId: requireString(event.payload, 'methodProfileId'),
