@@ -114,11 +114,11 @@ target   → 范围（随视距：Z1≈150 / Z3≈12 / Z4=1）
 
 | 段 | 来源 |
 |---|---|
-| 源 | `SourceRef.appliesTo`（`entity-fields` §7.1 的四键） |
-| 体系 | `Scheme` **没有 `appliesTo`** ⇒ 改由 `nodes` 里实际出现的 `Item.type` 说 |
+| 源 | `SourceRef.appliesTo` —— `entity-fields` §11 的 `{axes[], node_scope[]}`，两键必填 |
+| 体系 | `Scheme` **没有 `appliesTo`** ⇒ 改由 `nodes` 里实际出现的 `LearnableNode.type` 说 |
 | 方法 | `MethodBundle.byType` 覆盖到的类型 |
 
-**显示成人话，不显示 JSON 键值**：`{type: declarative}` 是给作者看的机器口径，用户要看的是「这套东西管哪些项」。空 `appliesTo` 读作「不限」—— 那是**声明过的不限**（匹配器对空 map 恒真），不是「没填」。
+**显示成人话，不显示 JSON 键值**：`{type: declarative}` 是给作者看的机器口径，用户要看的是「这套东西管哪些项」。空 `appliesTo` 读作「不限」—— 那是**声明过的不限**（匹配器对空 map 恒真），不是「没填」。⚠️ 只对**方法**那侧成立：源的 `appliesTo` 两键必填，空 map 在解析层就不过（`B13a` 笔 5c-1 分清的两个形状）。
 
 ### SPEC-PLAN-009 方法不标权威等级
 **裁定**：源有 L0–L4、体系有 L 层标级，但**方法没有权威谱系** —— CEFR 是标准、PEP 是官方文档，而「费曼学习法」没有等级可标。**给方法编一个权威等级，等于把「谁说的」当成「对不对」。**
