@@ -25,9 +25,11 @@ Map<String, String> _docs() => <String, String>{
 | `v0.1.0` | 1 | `STD`（x） |
 | `v0.1.0` | 1 | `STP`（x） |
 | `v0.1.0` | 1 | `STR`（x） |
+| `v0.1.0` | 1 | `SDP`（x） |
+| `v0.1.0` | 1 | `SDD`（x） |
 ''',
       stdFile: '''
-> **版号**：`v0.1.0` · **状态**：§三 用例表 **2 条** · `flutter test` **2**
+> **版号**：`v0.1.0` · **状态**：§三 用例表 **2 条** · 读数不在此复制（归 `STR`）
 
 | 版号 | 日期 | 修订摘要 |
 |---|---|---|
@@ -67,6 +69,23 @@ Map<String, String> _docs() => <String, String>{
 | 版号 | 日期 | 修订摘要 |
 |---|---|---|
 | `v0.1.0` | 2026-10-17 | 首建。`flutter test` **2 passed** |
+''',
+      // `SDP` / `SDD` 不参与读数口径，只参与版号自洽（`versionDocFiles`）。
+      // 夹具必须给，否则 `D2` 会对两份报「文件不存在」—— 那正是「覆盖了却没读盘」
+      // 的形态，与本条要抓的错是同一类。
+      sdpFile: '''
+> **版号**：`v0.1.0` · **状态**：ok
+
+| 版号 | 日期 | 修订摘要 |
+|---|---|---|
+| `v0.1.0` | 2026-10-17 | 首建 |
+''',
+      sddFile: '''
+> **版号**：`v0.1.0` · **状态**：ok
+
+| 版号 | 日期 | 修订摘要 |
+|---|---|---|
+| `v0.1.0` | 2026-10-17 | 首建 |
 ''',
     };
 
@@ -182,11 +201,15 @@ void main() {
       expect(issues.where((DocIssue i) => i.ruleId == 'D2'), isEmpty);
     });
 
-    test('TC-DOC-006 头部与修订历史最大版号不符就报（无 SPEC：检查器规则）', () {
+    test('TC-DOC-006 头部与修订历史最大版号不符就报，SDP / SDD 同样在检查范围内（无 SPEC：检查器规则）', () {
+      // 夹具刻意用 `SDD` 而不是 `STD`：`D2` 扩到 `versionDocFiles` 六份之后，
+      // 若实现漏掉 `SDP` / `SDD`，这条会零红。而原实现（只有四份）正是笔 4
+      // 那次 `SDD` 头部停在 `v0.13.0`、树里缺八份新文件却没人报的原因 ——
+      // 用「被漏掉的那一份」当夹具，这条才验得出覆盖面。
       final List<DocIssue> issues = _run(
         _patch(
           _docs(),
-          stdFile,
+          sddFile,
           '> **版号**：`v0.1.0`',
           '> **版号**：`v0.9.0`',
         ),
@@ -194,7 +217,12 @@ void main() {
       final List<DocIssue> d2 =
           issues.where((DocIssue i) => i.ruleId == 'D2').toList();
       expect(d2, hasLength(2), reason: '头部 → 修订历史 1 处，SCMP §5.1 登记 1 处');
-      expect(d2.first.message, contains('v0.9.0'));
+      expect(
+        d2.map((DocIssue i) => i.file).toSet(),
+        <String>{sddFile, scmpFile},
+        reason: '两处都应落在 SDD 与 SCMP 上，说明 SDD 确实在检查范围内',
+      );
+      expect(d2.map((DocIssue i) => i.message).join('\n'), contains('v0.9.0'));
     });
 
     test('TC-DOC-007 SCMP §5.1 登记的版号必须等于对方头部（无 SPEC：检查器规则）', () {
@@ -253,36 +281,43 @@ void main() {
     });
   });
 
-  group('D5 头部读数', () {
-    test('TC-DOC-012 头部 flutter test 读数落后于 STR 最新轮次就报（无 SPEC：检查器规则）', () {
+  group('D5 读数单点', () {
+    test('TC-DOC-012 头部再写 flutter test 读数就报重复登记（无 SPEC：检查器规则）', () {
+      // 夹具的 `STD` 头部本来不带读数（正确形态），这里注射一个 —— 它现在是
+      // 明确的错，因为读数只登记在 `STR` 轮次里。
       final List<DocIssue> issues = _run(
-        _patch(_docs(), stdFile, '`flutter test` **2**', '`flutter test` **1**'),
+        _patch(
+          _docs(),
+          stdFile,
+          '§三 用例表 **2 条**',
+          '§三 用例表 **2 条** · `flutter test` **2**',
+        ),
       );
       final List<DocIssue> d5 =
           issues.where((DocIssue i) => i.ruleId == 'D5').toList();
       expect(d5, hasLength(1));
-      expect(d5.single.message, contains('头部写 `flutter test` 1 条'));
-      expect(d5.single.message, contains('实跑 2 条'));
+      expect(d5.single.message, contains('读数只登记在'));
+      expect(d5.single.message, contains('**2**'));
     });
 
     test('TC-DOC-013 权威轮次取语义最大版号，不取最后一行（无 SPEC：检查器规则）', () {
-      // 新轮次排在**前面**、旧轮次排在**后面**，且两者读数不同（4 / 2）。
-      // 头部写 2 —— 若实现是「取最后一行」，会拿到 2 而误判为一致（零红）；
-      // 只有「取语义最大」才会拿到 `v0.3.0` 的 4 并报出来。
+      // 新轮次排在**前面且没登记读数**、旧轮次排在**后面且登记了读数**。
+      // 若实现是「取最后一行」，会拿到 v0.1.0 的有读数 ⇒ 零红；
+      // 只有「取语义最大」才会拿到 v0.3.0 并报「唯一来源缺读数」。
       final List<DocIssue> issues = _run(
         _patch(
           _docs(),
           strFile,
           '| `v0.1.0` | 2026-10-17 | 首建。`flutter test` **2 passed** |',
-          '| `v0.3.0` | 2026-10-19 | 又一轮。`flutter test` **4 passed** |\n'
+          '| `v0.3.0` | 2026-10-19 | 又一轮（本行故意不写读数） |\n'
               '| `v0.1.0` | 2026-10-17 | 首建。`flutter test` **2 passed** |',
         ),
       );
       final List<DocIssue> d5 =
           issues.where((DocIssue i) => i.ruleId == 'D5').toList();
-      expect(d5, hasLength(1), reason: '取最后一行会得 2，与头部一致 ⇒ 零红，就验不出这条');
+      expect(d5, hasLength(1), reason: '取最后一行会拿到 v0.1.0 的有读数 ⇒ 零红，就验不出这条');
       expect(d5.single.message, contains('v0.3.0'));
-      expect(d5.single.message, contains('实跑 4 条'));
+      expect(d5.single.isWarning, isTrue);
     });
 
     test('TC-DOC-014 最新轮次没登记读数只警告，不阻断（无 SPEC：检查器规则）', () {
@@ -293,20 +328,27 @@ void main() {
           issues.where((DocIssue i) => i.ruleId == 'D5').toList();
       expect(d5, hasLength(1));
       expect(d5.single.isWarning, isTrue, reason: '读数缺失是信息损失，不是两个数打架');
-      expect(d5.single.message, contains('无从核对'));
+      expect(d5.single.message, contains('唯一的读数来源'));
     });
 
-    test('TC-DOC-015 头部没写读数只警告，不去猜（无 SPEC：检查器规则）', () {
+    test('TC-DOC-015 箭头形态的变化叙述不判成读数（无 SPEC：检查器规则）', () {
+      // 「748 → 414」是历史叙述，不是当前读数声明。它不含闭合的 `**N**`，
+      // 所以天然不命中 —— 但这条必须有用例钉住：一旦有人把正则放宽成「`flutter test`
+      // 后面第一个数字」，每一份修订摘要都会变红灯，而误报比漏报更快毁掉规则。
       final List<DocIssue> issues = _run(
-        _patch(_docs(), stdFile, ' · `flutter test` **2**', ''),
+        _patch(
+          _docs(),
+          stdFile,
+          '§三 用例表 **2 条**',
+          '§三 用例表 **2 条**（本笔 `flutter test` **4 → 2**）',
+        ),
       );
       final List<DocIssue> d5 =
           issues.where((DocIssue i) => i.ruleId == 'D5').toList();
-      expect(d5, hasLength(1));
-      expect(d5.single.isWarning, isTrue);
-      expect(d5.single.message, contains('唯一登记处'));
+      expect(d5, isEmpty, reason: '箭头形态不是读数声明，不应报');
     });
   });
+
 
   group('D6 相对链接', () {
     test('TC-DOC-016 指向存在的文件或目录都不报（无 SPEC：检查器规则）', () {
