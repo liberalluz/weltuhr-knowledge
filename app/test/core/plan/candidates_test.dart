@@ -9,6 +9,8 @@ import 'package:project_knowledge/core/plan/candidates.dart';
 import 'package:project_knowledge/core/plan/method_bundle.dart';
 import 'package:project_knowledge/core/plan/platform_candidates.dart';
 
+import '../../support/node_fixture.dart';
+
 /// 四类各一项：让「按 `Item.type` 派生」有四种对象可指。
 ///
 /// `sourceRefs` 刻意做成**不全**：`i-skill` / `i-tacit` 不引用任何源 ——
@@ -244,9 +246,15 @@ void main() {
           final MethodProfile? profile = index[profileId];
           expect(profile, isNotNull, reason: '组合 `${bundle.id}` 指向了不存在的方法 `$profileId`');
           final Item? item = _firstItemOfType(pack, type);
-          expect(item, isNotNull);
+          expect(item, isNotNull, reason: 'α 包里没有 `$type` 的项，这条分支就无从验证');
+          // 匹配器收 `Node`（笔 5c-1），不再收 `Item` —— 平台方法的 `appliesTo`
+          // 只声明 `type`，故节点取哪个轴不影响本条结论。α 包的 `Item` 只用来
+          // 断言「这个类型在包里存在」。
           expect(
-            appliesToItem(profile!.appliesTo, space: pack.space, item: item!),
+            appliesToNode(
+              profile!.appliesTo,
+              node: learnableNode(type: LearnableType.fromWire(type.name)),
+            ),
             isTrue,
             reason: '方法 `$profileId` 的 appliesTo 声明不覆盖 `$type`',
           );
@@ -272,93 +280,6 @@ void main() {
       expect(understand.profileIdFor(ItemType.declarative), 'method-feynman');
       expect(understand.profileIdFor(ItemType.procedural), 'method-deliberate');
       expect(understand.profileIdFor(ItemType.skill), 'method-shadowing');
-    });
-  });
-
-  group('appliesTo 匹配', () {
-    test('未给的键不构成限制，给了的键逐项相符才通过（SPEC-PLAN-020）', () {
-      final LoadedPack pack = _pack();
-      final Item declarative = pack.itemOf('i-dec')!;
-      final Item procedural = pack.itemOf('i-proc')!;
-
-      expect(appliesToItem(<String, Object?>{}, space: pack.space, item: declarative), isTrue);
-      expect(
-        appliesToItem(
-          <String, Object?>{'type': 'declarative'},
-          space: pack.space,
-          item: declarative,
-        ),
-        isTrue,
-      );
-      expect(
-        appliesToItem(
-          <String, Object?>{'type': 'declarative'},
-          space: pack.space,
-          item: procedural,
-        ),
-        isFalse,
-      );
-    });
-
-    test('数组取任一命中，单值需相符（SPEC-PLAN-020）', () {
-      final LoadedPack pack = _pack();
-
-      expect(
-        appliesToItem(
-          <String, Object?>{
-            'type': <String>['declarative', 'procedural'],
-          },
-          space: pack.space,
-          item: pack.itemOf('i-proc')!,
-        ),
-        isTrue,
-      );
-    });
-
-    test('六轴键已不再被接受：传 sixAxis 直接抛，不静默忽略（SPEC-PLAN-020 修订，笔 5b）', () {
-      // 旧实现把 `sixAxis` 当**软约束**（项未标该轴则跳过）。`ADR-0005` 把六轴降为
-      // 「三条容器轴 + 四类标签」之后，项身上不再有「每轴单值」，那个软约束恒真 ——
-      // 留着它等于留一个永远返回 `true` 的分支，而读者会以为约束还在生效。
-      //
-      // 所以它现在落在「未认的键」那条判据上：**抛错，不静默放过**。这条用例验的
-      // 正是「移除真的生效了」—— 若哪天有人把键悄悄加回来，它会红。
-      final LoadedPack pack = _pack();
-      expect(
-        () => appliesToItem(
-          <String, Object?>{
-            'sixAxis': <String, Object?>{'stack': 'Python'},
-          },
-          space: pack.space,
-          item: pack.itemOf('i-dec')!,
-        ),
-        throwsA(isA<FormatException>()),
-      );
-    });
-
-    test('别的空间直接不适用（SPEC-PLAN-006）', () {
-      final LoadedPack pack = _pack();
-
-      expect(
-        appliesToItem(
-          <String, Object?>{'spaceId': 'java'},
-          space: pack.space,
-          item: pack.itemOf('i-dec')!,
-        ),
-        isFalse,
-      );
-    });
-
-    test('未认的键报错，不静默忽略（无 SPEC：`entity-fields` 未列可用键，本笔补在附注里）', () {
-      final LoadedPack pack = _pack();
-
-      expect(
-        () => appliesToItem(
-          <String, Object?>{'relevance': 'high'},
-          space: pack.space,
-          item: pack.itemOf('i-dec')!,
-        ),
-        throwsFormatException,
-      );
     });
   });
 }

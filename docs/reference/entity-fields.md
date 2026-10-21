@@ -309,7 +309,7 @@
 |---|---|---|
 | `id` / `name` | string | — |
 | `steps` | object[] | 与 §9.1 同一算子集（`operator` / `phase` / `instruction`） |
-| `appliesTo` | object | 必填：`Item.type` / 轴 / 层 |
+| `appliesTo` | object | **必填**：`{type, axes, layer}` —— 三键**均可省**，省 = 不限 |
 | `origin` | enum | `platform` / `pack` / `user`，合并优先级 `user > pack > platform` |
 
 | `MethodBundle` 字段 | 类型 | 说明 |
@@ -321,6 +321,8 @@
 > `Plan.method_profile_id` 存 **bundle 的 id**，字段名与类型不变。
 > **校验三条**：算子必须在册 · 至少一个 `review` 步骤 · 全步骤无 `hint` 时 Planner ③ 须提示「本方法无提示可给，熟练档不受约束」（不禁止，显式标代价）。
 > **`V1` 只内置三套，不对外开放提交** —— 教学法设计门槛高，配方审核判据不在 `V1` 范围。
+> **`appliesTo` 三个键的含义**（`B13a` 笔 5c-1 定；此前只写「`Item.type` / 轴 / 层」，键名一直没定）：`type` 对 `LearnableNode.type`、`layer` 对 `LearnableNode.layer`、`axes` 对 `Node.axis`，三个都是「单值或数组，数组取任一命中」。**空数组恒不命中**（`type: []` 读作「任何类型都不适用」），与「未给该键 = 不限」不是一回事 —— 写入口负责先丢空容器，读侧不再兜。`type` / `layer` 只对可学节点有意义：结构节点上声明了它们 ⇒ 不命中，那**不是**缺字段（`ADR-0007` 决策 1）。旧的 `spaceId`（一空间一包已废）与 `sixAxis`（六轴已废）**落进「未认的键 ⇒ 抛」**，不静默忽略。
+> ⚠️ **与 §11 的 `appliesTo` 不是同一个形状**：源那侧是 `{axes[], node_scope[]}`、两键**必填**、过滤依据是「`node_scope` ∩ 子树」；方法这侧三键均可省、过滤依据是「节点自己的三个取值」。同名不同结构 —— 按一处写完直接拿到另一处用，会得到一份永远为真的过滤。
 
 ---
 
