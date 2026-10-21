@@ -84,9 +84,6 @@ JsonMap normalizeAppliesTo(JsonMap raw) {
     if (value is List && value.isEmpty) {
       continue;
     }
-    if (value is Map && value.isEmpty) {
-      continue;
-    }
     out[entry.key] = value;
   }
   return out;
