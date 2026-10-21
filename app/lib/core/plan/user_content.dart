@@ -68,8 +68,8 @@ String uniqueContentId(String prefix, Iterable<String> taken) {
 
 /// 规整 `appliesTo`：**丢掉空值**，并拒绝未认的键。
 ///
-/// 空容器必须丢，不是洁癖：`appliesTo.type = []` 在 [appliesToItem] 里走
-/// 「数组取任一命中」，空数组恒不命中 —— 用户在表单里**一个类型都没勾**，本该
+/// 空容器必须丢，不是洁癖：`appliesTo.type = []` 在 [appliesToNode] 里走
+/// 「名单逐项比对」，空数组恒不命中 —— 用户在表单里**一个类型都没勾**，本该
 /// 读成「不限」，留着空列表会读成「任何类型都不适用」，把全部项筛空。
 JsonMap normalizeAppliesTo(JsonMap raw) {
   final JsonMap out = <String, Object?>{};

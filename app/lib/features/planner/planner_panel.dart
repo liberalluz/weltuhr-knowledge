@@ -73,8 +73,13 @@ String originLabel(CandidateOrigin origin) => originLabels[origin]!;
 /// 「适用范围」那一行的人话（`SPEC-PLAN-008` 五元素之一）。
 ///
 /// **不显示 `appliesTo` 的 JSON 键值**：那一段是给作者看的机器口径（`type` /
-/// `sixAxis`），用户要看的是「这套东西管哪些项」。空 `appliesTo` 读作「不限」——
-/// 不是「没填」，是**声明过的不限**（`appliesToItem` 对空 map 恒真）。
+/// `axes` / `layer`），用户要看的是「这套东西管哪些项」。空 `appliesTo` 读作
+/// 「不限」—— 不是「没填」，是**声明过的不限**（`appliesToNode` 对空 map 恒真）。
+///
+/// 笔 5c-1：`sixAxis` 与 `spaceId` 两个渲染分支删掉了。前者随 `ADR-0005`
+/// 失效、后者随「一空间一包已废」失效，而 `appliesToNode` 已把它们判成
+/// **未认的键直接抛错** —— 渲染层还认它们，等于界面承认一对匹配器不承认的键。
+/// 命中的轴改由 `axes` 分支渲染。
 String appliesToText(JsonMap appliesTo) {
   if (appliesTo.isEmpty) {
     return '不限';
@@ -88,16 +93,9 @@ String appliesToText(JsonMap appliesTo) {
   if (layer != null) {
     parts.add(_namesOf(layer, _layerNameLabels));
   }
-  final Object? sixAxis = appliesTo['sixAxis'];
-  if (sixAxis is Map) {
-    for (final MapEntry<Object?, Object?> entry in sixAxis.entries) {
-      final String axis = sixAxisLabels['${entry.key}'] ?? '${entry.key}';
-      parts.add('$axis=${entry.value}');
-    }
-  }
-  final Object? spaceId = appliesTo['spaceId'];
-  if (spaceId != null) {
-    parts.add('空间 $spaceId');
+  final Object? axes = appliesTo['axes'];
+  if (axes != null) {
+    parts.add(_namesOf(axes, _axisNameLabels));
   }
   return parts.isEmpty ? '不限' : parts.join(' · ');
 }
@@ -113,6 +111,13 @@ final Map<String, String> _layerNameLabels = <String, String>{
   for (final MapEntry<Layer, String> entry in layerLabels.entries)
     entry.key.name: entry.value,
 };
+
+// ⚠️ 不写 `MapEntry<Axis, String>`：`Axis` 与 `flutter/material.dart` 导出的
+// `Axis`（布局方向）同名，在视图层逐个点名会撞成 `ambiguous_import`。
+// 走 `.map()` 让键类型由 `axisLabels` 推出来 —— 这里只需要键的**名字**。
+final Map<String, String> _axisNameLabels = axisLabels.map(
+  (k, String label) => MapEntry<String, String>(k.name, label),
+);
 
 String _namesOf(Object raw, Map<String, String> labels) {
   if (raw is List) {
@@ -620,7 +625,7 @@ class PlannerPanelState extends State<PlannerPanel> {
 
   /// 卡片的「适用范围」—— 三段各由**自己的字段**派生，没有一个是编的：
   ///
-  /// - 源：`SourceRef.appliesTo`（`entity-fields` §7.1 的四键）
+  /// - 源：`SourceRef.appliesTo`（`entity-fields` §11 的 `{axes[], node_scope[]}`）
   /// - 体系：`Scheme` 没有 `appliesTo`，改由 `nodes` 里实际出现的 `Item.type` 说
   /// - 方法：`MethodBundle.byType` 覆盖到的类型
   String _scope(PlanSegment segment, PlanCandidate candidate) {

@@ -13,7 +13,7 @@ import 'package:project_knowledge/core/plan/applies_to.dart';
 import 'package:project_knowledge/core/plan/method_bundle.dart';
 import 'package:project_knowledge/core/plan/user_content.dart';
 
-import '../../support/pack_fixture.dart';
+import '../../support/node_fixture.dart';
 
 MethodStep _step(ExecutionOperator op, {StepPhase? phase, String? criteria}) =>
     MethodStep(operator: op, phase: phase, criteria: criteria);
@@ -43,26 +43,18 @@ void main() {
 
     test('TC-PLAN-080 空 appliesTo 读作「不限」，空列表与 null 必须丢掉（SPEC-PLAN-007）', () {
       // 表单里一个类型都没勾时给的是 `{'type': []}`。留着它，
-      // `appliesToItem` 走「数组取任一命中」⇒ 空列表恒不命中 ⇒ 全部项被筛空。
+      // `appliesToNode` 走「名单逐项比对」⇒ 空列表恒不命中 ⇒ 全部项被筛空。
       //
-      // 笔 5b 起不再有「空 map」这个样本：`appliesTo` 的三个键（`spaceId` /
-      // `type` / `layer`）没有一个是对象类型，`sixAxis` 键随 `ADR-0005` 移除后，
-      // `normalizeAppliesTo` 里那条「空 Map 丢弃」分支永远进不去，已删。
+      // 笔 5b 起不再有「空 map」这个样本：`appliesTo` 的三个键（笔 5c-1 起是
+      // `type` / `axes` / `layer`）没有一个是对象类型，`sixAxis` 键随 `ADR-0005`
+      // 移除后，`normalizeAppliesTo` 里那条「空 Map 丢弃」分支永远进不去，已删。
       final JsonMap normalized = normalizeAppliesTo(<String, Object?>{
         'type': <String>[],
         'layer': null,
       });
       expect(normalized, isEmpty);
       expect(
-        appliesToItem(
-          normalized,
-          space: fixturePack(
-            <FixtureItem>[const FixtureItem('i1', '一')],
-          ).space,
-          item: fixturePack(
-            <FixtureItem>[const FixtureItem('i1', '一')],
-          ).items.first,
-        ),
+        appliesToNode(normalized, node: learnableNode()),
         isTrue,
         reason: '归一后应读成「不限」，不是「任何类型都不适用」',
       );
