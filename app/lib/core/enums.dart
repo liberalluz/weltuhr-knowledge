@@ -83,10 +83,61 @@ enum RequirementKey {
 }
 
 /// 六类执行算子（`SPEC-STEP-012`）。**不得自创第七类。**
-enum ExecutionOperator { read, example, recall, practice, teach, build }
+///
+/// ⚠️ ⑤⑥ 的标识符**已裁定为 `explain` / `do`**（`2026-10-20`，原 `OD-03`）：
+/// `teach` / `build` 案被否 —— `build` 与 `content/tools/build.py`、`build/` 目录、
+/// CI 的 `build` 步骤**同词异义**。代码曾与裁定脱节（写 `teach`/`build`），
+/// `B13a` 笔 4 改齐；M1 夹具的 `steps[].operator` 一直是裁定值，改前拿它解析会抛
+/// 「取值不在册」。
+///
+/// ⚠️ **成员名是 `doStep` 而不是 `do`**：`do` 是 Dart 的**保留字**，不能作标识符
+/// （`enum X { do }` 直接编译不过）。这是本项目**第二处**「枚举名 ≠ JSON 取值」
+/// （第一处是 `RequirementState` 的蛇形）—— 与它同构：**线上取值由 [wire] 给出**，
+/// 序列化与反序列化都必须走 `wire` / `fromWire`，不得用 `name` / `values.byName`。
+/// 判据的精神（「差一个字母就解析不了」）在这里反而更硬：用 `name` 序列化会把
+/// `doStep` 写进数据，那份数据没有任何一方能读回。
+enum ExecutionOperator {
+  read,
+  example,
+  recall,
+  practice,
+  explain,
+  doStep;
 
-/// 步骤相位：默认由算子派生，作者可覆盖（`entity-fields` §6）。
-enum StepPhase { first, review, both }
+  /// 线上取值：`doStep` → `do`，其余与枚举名同形。
+  String get wire => this == doStep ? _doWire : name;
+
+  static ExecutionOperator fromWire(String raw) {
+    for (final ExecutionOperator value in values) {
+      if (value.wire == raw) {
+        return value;
+      }
+    }
+    _unknownWire(
+      'ExecutionOperator',
+      raw,
+      values.map((ExecutionOperator v) => v.wire),
+    );
+  }
+}
+
+const String _doWire = 'do';
+
+/// 步骤相位：默认由算子派生，作者可覆盖（`entity-fields` §9.1）。
+enum StepPhase {
+  first,
+  review,
+  both;
+
+  static StepPhase fromWire(String raw) {
+    for (final StepPhase value in values) {
+      if (value.name == raw) {
+        return value;
+      }
+    }
+    _unknownWire('StepPhase', raw, values.map((StepPhase v) => v.name));
+  }
+}
 
 /// 三档刻度（`SPEC-STEP-018`）。JSON 取值 `fail` / `pass` / `proficient`
 /// （`item_graded.score`，见 `docs/reference/event-types.md` §二 A）。
@@ -139,7 +190,24 @@ enum SubmissionVerdict { approved, rejected, mergedAsAlias, demotedOutOfScope }
 /// 值域相同。原名为 `MethodOrigin`：名字把共用的东西说成了方法专用，`B4` `P-2`
 /// 要给源与体系的候选挂同一个标签时才暴露。改名不改值，也不改
 /// `MethodProfile.origin` 的字段名。
-enum CandidateOrigin { platform, pack, user }
+enum CandidateOrigin {
+  platform,
+  pack,
+  user;
+
+  static CandidateOrigin fromWire(String raw) {
+    for (final CandidateOrigin value in values) {
+      if (value.name == raw) {
+        return value;
+      }
+    }
+    _unknownWire(
+      'CandidateOrigin',
+      raw,
+      values.map((CandidateOrigin v) => v.name),
+    );
+  }
+}
 
 /// 视图模式：底部导航是视距刻度，不是功能标签栏（`N-11`）。
 enum ViewMode { universe, tree, detail, locateResult, progress, practice }
@@ -343,4 +411,182 @@ enum StoreZone {
 
   /// 学 / 评 / 复习 / 访问 —— 只 append。
   event,
+}
+
+/// 包的类别（`entity-fields` §1）。
+///
+/// `kinds[]` **可多值**：一个分发单元既可以提供载荷也能提供地形。所以它不是
+/// 判别符 —— 判别符是「这段数据是什么」（边有 `type`、节点有 `level_slot`），
+/// 而 `kind` 描述的是「这个包干几件事」。四类各自的特化字段见 [Pack]。
+enum PackKind {
+  payload,
+  overlay,
+  terrain,
+  method;
+
+  static PackKind fromWire(String raw) {
+    for (final PackKind value in values) {
+      if (value.name == raw) {
+        return value;
+      }
+    }
+    _unknownWire('PackKind', raw, values.map((PackKind v) => v.name));
+  }
+}
+
+/// 审核状态（`entity-fields` §1）。
+///
+/// `revoked` 只**停止分发**，不远程删除已装副本 —— 卸载与否归用户。
+enum ReviewState {
+  pending,
+  approved,
+  rejected,
+  revoked;
+
+  static ReviewState fromWire(String raw) {
+    for (final ReviewState value in values) {
+      if (value.name == raw) {
+        return value;
+      }
+    }
+    _unknownWire('ReviewState', raw, values.map((ReviewState v) => v.name));
+  }
+}
+
+/// 源的种类（`entity-fields` §11）。
+///
+/// `catalog` 绑 `Node.catalog_refs[]`，回答「这个 `0812` 依据哪份文件」；
+/// `material` 才是「去哪学」。两者混进同一张候选卡会让「教育部目录」与
+/// 「Python Tutorial」并列，用户无从选择。
+enum SourceKind {
+  catalog,
+  material;
+
+  static SourceKind fromWire(String raw) {
+    for (final SourceKind value in values) {
+      if (value.name == raw) {
+        return value;
+      }
+    }
+    _unknownWire('SourceKind', raw, values.map((SourceKind v) => v.name));
+  }
+}
+
+/// 源的权威度（`entity-fields` §11）。
+///
+/// **废除 `L` 编号**：`L` 前缀在项目内已三处撞名（节点层级 / 源等级 / 出处等级）。
+/// 语义值本身即排序键，未知档排最后的逻辑不变。
+enum AuthorityLevel {
+  official,
+  standard,
+  textbook,
+  reference,
+  community;
+
+  static AuthorityLevel fromWire(String raw) {
+    for (final AuthorityLevel value in values) {
+      if (value.name == raw) {
+        return value;
+      }
+    }
+    _unknownWire('AuthorityLevel', raw, values.map((AuthorityLevel v) => v.name));
+  }
+}
+
+/// 题型（`entity-fields` §9.3）。前四类可机器判定。
+enum QuizType {
+  choice,
+  fill,
+  code,
+  audio,
+  freeform;
+
+  static QuizType fromWire(String raw) {
+    for (final QuizType value in values) {
+      if (value.name == raw) {
+        return value;
+      }
+    }
+    _unknownWire('QuizType', raw, values.map((QuizType v) => v.name));
+  }
+}
+
+/// 判定方（`entity-fields` §9.3）。
+///
+/// `progressKind`（`verified` / `checked`）**不入库**，由这里派生；`criteria`
+/// 也不再设 `judge_type`，同由此处派生 —— 1:1 关系下留两个同义字段，
+/// 等于给不一致留一条合法路径。
+enum QuizJudge {
+  auto,
+  self;
+
+  static QuizJudge fromWire(String raw) {
+    for (final QuizJudge value in values) {
+      if (value.name == raw) {
+        return value;
+      }
+    }
+    _unknownWire('QuizJudge', raw, values.map((QuizJudge v) => v.name));
+  }
+}
+
+/// 路径重定向的原因（`entity-fields` §7）。线上取值为蛇形。
+enum PathAliasReason {
+  parentChange,
+  slugChange;
+
+  /// 线上取值：`parentChange` → `parent_change`，`slugChange` → `slug_change`。
+  String get wire => switch (this) {
+    PathAliasReason.parentChange => 'parent_change',
+    PathAliasReason.slugChange => 'slug_change',
+  };
+
+  static PathAliasReason fromWire(String raw) {
+    for (final PathAliasReason value in values) {
+      if (value.wire == raw) {
+        return value;
+      }
+    }
+    _unknownWire(
+      'PathAliasReason',
+      raw,
+      values.map((PathAliasReason v) => v.wire),
+    );
+  }
+}
+
+/// path 占用状态（`entity-fields` §6）。
+///
+/// **墓碑必须留在可写内容区**：卸载插件只删节点、不删 claim —— 否则
+/// 「A 卸载 → B 装上 → A 再装回」时 A 会以为自己是首次占用。
+enum ClaimState {
+  live,
+  tombstone;
+
+  static ClaimState fromWire(String raw) {
+    for (final ClaimState value in values) {
+      if (value.name == raw) {
+        return value;
+      }
+    }
+    _unknownWire('ClaimState', raw, values.map((ClaimState v) => v.name));
+  }
+}
+
+/// 补丁状态（`entity-fields` §8）。
+///
+/// `stale` = `base_hash` 与目标现值失配，**不自动应用** —— 自动应用等于让
+/// 一次静默的数据漂移改写作者的表述。
+enum PatchState {
+  applied,
+  stale;
+
+  static PatchState fromWire(String raw) {
+    for (final PatchState value in values) {
+      if (value.name == raw) {
+        return value;
+      }
+    }
+    _unknownWire('PatchState', raw, values.map((PatchState v) => v.name));
+  }
 }

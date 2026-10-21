@@ -21,9 +21,17 @@ enum _Color { unvisited, onStack, done }
 ///
 /// 只沿「两端都是字符串且非自环」的边遍历 —— 自环（`from == to`）不是环，
 /// 是**数据错误**，由构建期以各自错误码报出，加载器不为它编一条环。
-List<List<String>> findCycles(List<Edge> edges) {
+///
+/// ⚠️ 旧 `Edge` 版的入口保留（`pack_parse.dart` 在用），新格式走
+/// [findCyclesFrom] —— 两套边模型只有「提取端点」这一步不同，算法不复制。
+List<List<String>> findCycles(List<Edge> edges) => findCyclesFrom(<({String from, String to})>[
+  for (final Edge edge in edges) (from: edge.from, to: edge.to),
+]);
+
+/// 端点对版本的入口（新格式的 [PrerequisiteEdge] 没有 `id`，只有两端）。
+List<List<String>> findCyclesFrom(List<({String from, String to})> edges) {
   final Map<String, Set<String>> adjacency = <String, Set<String>>{};
-  for (final Edge edge in edges) {
+  for (final ({String from, String to}) edge in edges) {
     if (edge.from != edge.to) {
       (adjacency[edge.from] ??= <String>{}).add(edge.to);
     }
