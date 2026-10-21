@@ -21,16 +21,12 @@
 /// 「读」，需要知道为什么不让存。
 library;
 
-import 'package:flutter/material.dart' hide Axis;
+import 'package:flutter/material.dart';
 
 import '../../core/constants.dart';
-import '../../core/entities/entry.dart';
-import '../../core/entities/node.dart';
-import '../../core/entities/scheme.dart';
-import '../../core/entities/source.dart';
+import '../../core/entities/content.dart';
 import '../../core/enums.dart';
-import '../../core/graph/in_scope.dart';
-import '../../core/pack/pack_reader.dart';
+import '../../core/pack/pack_parse.dart';
 import '../../core/plan/user_content.dart';
 
 const Key userDialogCancelKey = Key('user-dialog-cancel');
@@ -43,9 +39,7 @@ const Key userSourceNameKey = Key('user-source-name');
 const Key userSourceVersionKey = Key('user-source-version');
 const Key userSourceLevelKey = Key('user-source-level');
 
-/// 源表单的轴多选。**不是类型多选**：源侧 `appliesTo` 的键集是
-/// `{axes[], node_scope[]}`，没有 `type`（`entity-fields` §11）。
-Key userSourceAxisKey(Axis axis) => Key('user-source-axis-${axis.name}');
+Key userSourceTypeKey(ItemType type) => Key('user-source-type-${type.name}');
 
 /// 自建的源。返回 `null` = 取消。
 Future<SourceRef?> showUserSourceDialog(
@@ -71,10 +65,8 @@ class _SourceForm extends StatefulWidget {
 class _SourceFormState extends State<_SourceForm> {
   final TextEditingController _name = TextEditingController();
   final TextEditingController _version = TextEditingController(text: '1');
-
-  /// 默认「教材」—— 对应旧编号的 `L2`（`entity-fields` §11 映射表）。
-  AuthorityLevel _level = AuthorityLevel.textbook;
-  final Set<Axis> _axes = <Axis>{};
+  String _level = 'L2';
+  final Set<ItemType> _types = <ItemType>{};
   String? _error;
 
   @override
@@ -91,11 +83,10 @@ class _SourceFormState extends State<_SourceForm> {
         name: _name.text,
         authorityLevel: _level,
         version: _version.text,
-        // 没勾任何轴 = 不限（两键皆空，`sourceAppliesToText` 读作「不限」）。
-        appliesTo: SourceAppliesTo(
-          axes: List<Axis>.unmodifiable(_axes),
-          nodeScope: const <String>[],
-        ),
+        // 没勾任何类型 = 不限（`normalizeAppliesTo` 会把空集丢掉）。
+        appliesTo: <String, Object?>{
+          'type': <String>[for (final ItemType t in _types) t.name],
+        },
       );
       Navigator.of(context).pop(source);
     } on ArgumentError catch (e) {
@@ -127,34 +118,30 @@ class _SourceFormState extends State<_SourceForm> {
                 controller: _version,
                 decoration: const InputDecoration(labelText: '版本'),
               ),
-              DropdownButton<AuthorityLevel>(
+              DropdownButton<String>(
                 key: userSourceLevelKey,
                 value: _level,
-                items: <DropdownMenuItem<AuthorityLevel>>[
-                  for (final AuthorityLevel level in AuthorityLevel.values)
-                    DropdownMenuItem<AuthorityLevel>(
-                      value: level,
-                      child: Text('出处等级 ${authorityLabels[level]!}'),
-                    ),
+                items: <DropdownMenuItem<String>>[
+                  for (final String level in const <String>['L0', 'L1', 'L2', 'L4'])
+                    DropdownMenuItem<String>(value: level, child: Text('出处等级 $level')),
                 ],
-                onChanged: (AuthorityLevel? v) =>
-                    setState(() => _level = v ?? _level),
+                onChanged: (String? v) => setState(() => _level = v ?? _level),
               ),
               const SizedBox(height: 8),
-              const Text('适用轴（不勾 = 不限）', style: TextStyle(fontSize: 12)),
+              const Text('适用类型（不勾 = 不限）', style: TextStyle(fontSize: 12)),
               Wrap(
                 spacing: 6,
                 children: <Widget>[
-                  for (final Axis axis in Axis.values)
+                  for (final ItemType type in ItemType.values)
                     FilterChip(
-                      key: userSourceAxisKey(axis),
-                      label: Text(axisLabels[axis]!),
-                      selected: _axes.contains(axis),
+                      key: userSourceTypeKey(type),
+                      label: Text(itemTypeLabels[type]!),
+                      selected: _types.contains(type),
                       onSelected: (bool on) => setState(() {
                         if (on) {
-                          _axes.add(axis);
+                          _types.add(type);
                         } else {
-                          _axes.remove(axis);
+                          _types.remove(type);
                         }
                       }),
                     ),
@@ -208,31 +195,22 @@ Key userSchemeDownKey(String itemId) => Key('user-scheme-down-$itemId');
 Key userSchemeRemoveKey(String itemId) => Key('user-scheme-remove-$itemId');
 
 /// 自建的体系。返回 `null` = 取消。
-///
-/// [subtreeRoot] 必须有：圈内项是**算出来的**（`inScopeOf`），不让调用方指定
-/// 根节点就没有「圈内」可言 —— 旧实现靠包里预存的 `Item.inScope` 布尔值。
 Future<Scheme?> showUserSchemeDialog(
   BuildContext context, {
-  required PackContent pack,
-  required String subtreeRoot,
+  required LoadedPack pack,
   required List<String> takenIds,
 }) {
   return showDialog<Scheme>(
     context: context,
     builder: (BuildContext context) =>
-        _SchemeForm(pack: pack, subtreeRoot: subtreeRoot, takenIds: takenIds),
+        _SchemeForm(pack: pack, takenIds: takenIds),
   );
 }
 
 class _SchemeForm extends StatefulWidget {
-  const _SchemeForm({
-    required this.pack,
-    required this.subtreeRoot,
-    required this.takenIds,
-  });
+  const _SchemeForm({required this.pack, required this.takenIds});
 
-  final PackContent pack;
-  final String subtreeRoot;
+  final LoadedPack pack;
   final List<String> takenIds;
 
   @override
@@ -241,9 +219,7 @@ class _SchemeForm extends StatefulWidget {
 
 class _SchemeFormState extends State<_SchemeForm> {
   final TextEditingController _name = TextEditingController();
-
-  /// 默认「教材」—— 对应旧编号的 `L2`。
-  AuthorityLevel _level = AuthorityLevel.textbook;
+  String _level = 'L2';
 
   /// **顺序即学习次序** —— 挑选的先后就是 `nodes` 的次序。
   final List<String> _picked = <String>[];
@@ -283,14 +259,9 @@ class _SchemeFormState extends State<_SchemeForm> {
 
   @override
   Widget build(BuildContext context) {
-    final List<LearnableNode> nodes = <LearnableNode>[
-      for (final LearnableNode node in widget.pack.learnableNodes)
-        if (inScopeOf(
-          node,
-          subtreeRoot: widget.subtreeRoot,
-          parents: widget.pack.parents,
-        ))
-          node,
+    final List<Item> items = <Item>[
+      for (final Item item in widget.pack.items)
+        if (item.inScope) item,
     ];
     return AlertDialog(
       title: const Text('+ 自建 · 体系'),
@@ -306,18 +277,14 @@ class _SchemeFormState extends State<_SchemeForm> {
                 controller: _name,
                 decoration: const InputDecoration(labelText: '名字'),
               ),
-              DropdownButton<AuthorityLevel>(
+              DropdownButton<String>(
                 key: userSchemeLevelKey,
                 value: _level,
-                items: <DropdownMenuItem<AuthorityLevel>>[
-                  for (final AuthorityLevel level in AuthorityLevel.values)
-                    DropdownMenuItem<AuthorityLevel>(
-                      value: level,
-                      child: Text('出处等级 ${authorityLabels[level]!}'),
-                    ),
+                items: <DropdownMenuItem<String>>[
+                  for (final String level in const <String>['L0', 'L1', 'L2', 'L4'])
+                    DropdownMenuItem<String>(value: level, child: Text('出处等级 $level')),
                 ],
-                onChanged: (AuthorityLevel? v) =>
-                    setState(() => _level = v ?? _level),
+                onChanged: (String? v) => setState(() => _level = v ?? _level),
               ),
               const SizedBox(height: 8),
               Text('已选 ${_picked.length} 项（次序即学习次序）',
@@ -329,12 +296,12 @@ class _SchemeFormState extends State<_SchemeForm> {
                 spacing: 6,
                 runSpacing: 4,
                 children: <Widget>[
-                  for (final LearnableNode node in nodes)
-                    if (!_picked.contains(node.id))
+                  for (final Item item in items)
+                    if (!_picked.contains(item.id))
                       ActionChip(
-                        key: userSchemePickKey(node.id),
-                        label: Text(node.name),
-                        onPressed: () => setState(() => _picked.add(node.id)),
+                        key: userSchemePickKey(item.id),
+                        label: Text(item.title),
+                        onPressed: () => setState(() => _picked.add(item.id)),
                       ),
                 ],
               ),
@@ -370,12 +337,12 @@ class _SchemeFormState extends State<_SchemeForm> {
   }
 
   Widget _pickedRow(String itemId) {
-    final LearnableNode? node = widget.pack.learnableOf(itemId);
+    final Item? item = widget.pack.itemOf(itemId);
     return Row(
       key: Key('user-scheme-picked-$itemId'),
       children: <Widget>[
         Expanded(
-          child: Text(node?.name ?? itemId, style: const TextStyle(fontSize: 12)),
+          child: Text(item?.title ?? itemId, style: const TextStyle(fontSize: 12)),
         ),
         IconButton(
           key: userSchemeUpKey(itemId),
@@ -402,11 +369,10 @@ class _SchemeFormState extends State<_SchemeForm> {
 const Key userMethodNameKey = Key('user-method-name');
 const Key userMethodAddStepKey = Key('user-method-add-step');
 
-Key userMethodTypeKey(LearnableType type) => Key('user-method-type-${type.name}');
+Key userMethodTypeKey(ItemType type) => Key('user-method-type-${type.name}');
 Key userMethodOpKey(int index, ExecutionOperator op) =>
     Key('user-method-step-$index-op-${op.name}');
-Key userMethodInstructionKey(int index) =>
-    Key('user-method-step-$index-instruction');
+Key userMethodCriteriaKey(int index) => Key('user-method-step-$index-criteria');
 Key userMethodHintKey(int index) => Key('user-method-step-$index-hint');
 Key userMethodPhaseKey(int index) => Key('user-method-step-$index-phase');
 Key userMethodRemoveStepKey(int index) => Key('user-method-step-$index-remove');
@@ -432,33 +398,25 @@ Future<UserMethodDraft?> showUserMethodDialog(
   );
 }
 
-/// 表单里的一步。**不直接建 [EntryStep]**：`phase` 需要「未覆盖（派生）」这个
-/// 第三态，而 `EntryStep.phase` 的 `null` 已经表示它 —— 用一个可空字段表达即可。
-///
-/// ⚠️ **没有「判据」输入框**：`entity-fields` §9.2 之后验收判据归内容侧
-/// `NodeEntry.criteria[]`（与 `quiz` 1:1），方法步骤只描述**怎么做**。
-/// 旧表单里的 `criteria` 一栏随 `criteria` 字段一并去掉。
+/// 表单里的一步。**不直接建 [MethodStep]**：`phase` 需要「未覆盖（派生）」这个
+/// 第三态，而 `MethodStep.phase` 的 `null` 已经表示它 —— 用一个可空字段表达即可。
 class _StepForm {
   _StepForm(this.operator);
 
   ExecutionOperator operator;
   StepPhase? phase;
-  final TextEditingController instruction = TextEditingController();
+  final TextEditingController criteria = TextEditingController();
   final TextEditingController hint = TextEditingController();
 
-  EntryStep toStep() => EntryStep(
+  MethodStep toStep() => MethodStep(
     operator: operator,
-    // `instruction` 是新必填字段（`entity-fields` §9.1）。空着就写算子名 ——
-    // 宁可留一句占位，也不让 `EntryStep` 收一个空串（那是坏数据，不是省略）。
-    instruction: instruction.text.trim().isEmpty
-        ? operator.wire
-        : instruction.text.trim(),
     phase: phase,
+    criteria: criteria.text.trim().isEmpty ? null : criteria.text.trim(),
     hint: hint.text.trim().isEmpty ? null : hint.text.trim(),
   );
 
   void dispose() {
-    instruction.dispose();
+    criteria.dispose();
     hint.dispose();
   }
 }
@@ -474,7 +432,7 @@ class _MethodForm extends StatefulWidget {
 
 class _MethodFormState extends State<_MethodForm> {
   final TextEditingController _name = TextEditingController();
-  LearnableType _type = LearnableType.declarative;
+  ItemType _type = ItemType.declarative;
 
   /// 起手就是「读」—— 它是最常见的第一步，但**单独一步不够**：校验 ② 会拦。
   final List<_StepForm> _steps = <_StepForm>[ _StepForm(ExecutionOperator.read) ];
@@ -495,7 +453,7 @@ class _MethodFormState extends State<_MethodForm> {
         id: uniqueContentId('$userMethodIdPrefix${_name.text.trim()}', widget.takenIds),
         name: _name.text,
         type: _type,
-        steps: <EntryStep>[for (final _StepForm s in _steps) s.toStep()],
+        steps: <MethodStep>[for (final _StepForm s in _steps) s.toStep()],
       );
       // 校验在校验函数里，不在这里：建的时候拦一次，等于规则只有一处。
       buildUserMethod(draft);
@@ -527,10 +485,10 @@ class _MethodFormState extends State<_MethodForm> {
               Wrap(
                 spacing: 6,
                 children: <Widget>[
-                  for (final LearnableType type in LearnableType.values)
+                  for (final ItemType type in ItemType.values)
                     ChoiceChip(
                       key: userMethodTypeKey(type),
-                      label: Text(learnableTypeLabels[type]!),
+                      label: Text(itemTypeLabels[type]!),
                       selected: _type == type,
                       onSelected: (bool on) {
                         if (on) {
@@ -625,10 +583,10 @@ class _MethodFormState extends State<_MethodForm> {
             children: <Widget>[
               Expanded(
                 child: TextField(
-                  key: userMethodInstructionKey(index),
-                  controller: step.instruction,
+                  key: userMethodCriteriaKey(index),
+                  controller: step.criteria,
                   decoration: const InputDecoration(
-                    labelText: '这一步做什么（如「合上材料复述一遍」）',
+                    labelText: '判据（留空 = 打卡式）',
                     isDense: true,
                   ),
                 ),

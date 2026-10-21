@@ -1,48 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:project_knowledge/core/enums.dart';
-import 'package:project_knowledge/core/pack/pack_reader.dart';
+import 'package:project_knowledge/core/entities/content.dart';
+import 'package:project_knowledge/core/pack/pack_parse.dart';
 import 'package:project_knowledge/core/view/detail.dart';
 import 'package:project_knowledge/features/detail/detail_panel.dart';
 
-import '../../support/pack_fixture.dart';
-
-/// 笔 5c：`loadAlphaPack()` 随 α 包夹具一起删了，这里改成**自己搭一个形状可控
-/// 的小包**。旧版靠 `_firstWhere` 在 α 包里翻「哪一项有可点关系 / 哪一项有缺口」
-/// —— 那是拿真数据碰运气；形状由本文件给定之后，直接点名 `py-a` 就够。
-const String _scopeRoot = 'python:lex';
-
-/// 三区要能同时渲染，夹具就必须同时具备三件事：
-/// - `sourceRefs` 指向一个**带 `segments`** 的源（否则来源区是空的）
-/// - 一条两端都在包内的先修边（可点）
-/// - 一条指向包外节点的先修边（缺口，点不动）
-PackContent _pack() => fixturePack(
-  <FixtureNode>[
-    const FixtureNode('python:root', '研究生目录', slot: LevelSlot.supercluster),
-    const FixtureNode(
-      _scopeRoot,
-      '词法',
-      slot: LevelSlot.group,
-      parentId: 'python:root',
-    ),
-    const FixtureNode(
-      'py-a',
-      'Lambda 表达式',
-      parentId: _scopeRoot,
-      sourceRefs: <String>['src-official'],
-    ),
-    const FixtureNode(
-      'py-b',
-      '闭包',
-      parentId: _scopeRoot,
-      sourceRefs: <String>['src-official'],
-    ),
-    const FixtureNode('py-c', '装饰器', parentId: _scopeRoot),
-  ],
-  // (前置, 后继)：`py-b → py-a` 两端都在册 ⇒ 可点；`py-a → py-gone` ⇒ 缺口。
-  prerequisites: <(String, String)>[('py-b', 'py-a'), ('py-a', 'py-gone')],
-  sources: const <String, String>{'src-official': '官方文档'},
-);
+import '../../support/alpha_pack.dart';
 
 /// 三区分区 + 笔记区的显示顺序（按屏幕 y 坐标）。
 List<Key> _sectionOrder(WidgetTester tester) {
@@ -93,19 +56,28 @@ Future<void> _pump(
   await tester.pump();
 }
 
+/// 找第一个满足条件的项详情。
+ItemDetail? _firstWhere(LoadedPack pack, bool Function(ItemDetail) test) {
+  for (final Item item in pack.items) {
+    final ItemDetail? detail = buildItemDetail(pack, item.id);
+    if (detail != null && test(detail)) {
+      return detail;
+    }
+  }
+  return null;
+}
+
 void main() {
-  final PackContent pack = _pack();
-  final ItemDetail detail = buildItemDetail(
-    pack,
-    'py-a',
-    subtreeRoot: _scopeRoot,
-  )!;
+  final LoadedPack pack = loadAlphaPack();
 
   group('详情面板（VIEW-012 / 014 / 017）', () {
     testWidgets('三区 + 笔记区齐，顺序为 关系 → 要件 → 来源 → 笔记（SPEC-VIEW-017）', (
       WidgetTester tester,
     ) async {
-      await _pump(tester, detail: detail);
+      final Item item = pack.items.firstWhere(
+        (Item i) => i.sourceRefs.isNotEmpty,
+      );
+      await _pump(tester, detail: buildItemDetail(pack, item.id));
 
       expect(find.byKey(detailPanelKey), findsOneWidget);
       expect(_sectionOrder(tester), <Key>[
@@ -131,6 +103,11 @@ void main() {
     });
 
     testWidgets('窄壳与宽壳的字段顺序完全一致（SPEC-VIEW-017）', (WidgetTester tester) async {
+      final Item item = pack.items.firstWhere(
+        (Item i) => i.sourceRefs.isNotEmpty,
+      );
+      final ItemDetail detail = buildItemDetail(pack, item.id)!;
+
       await _pump(tester, detail: detail);
       final List<Key> wide = _sectionOrder(tester);
 
@@ -143,24 +120,40 @@ void main() {
     testWidgets('关系行点击回调对方 itemId，缺口行点不动（SPEC-VIEW-014）', (
       WidgetTester tester,
     ) async {
-      final RelationRow tappable = detail.relations.firstWhere(
+      final ItemDetail? jumpable = _firstWhere(
+        pack,
+        (ItemDetail d) => d.relations.any((RelationRow r) => r.tappable),
+      );
+      final ItemDetail? withGap = _firstWhere(
+        pack,
+        (ItemDetail d) =>
+            d.relations.any((RelationRow r) => r.kind == RelationKind.gap),
+      );
+      expect(jumpable, isNotNull, reason: 'α 包必有多条实边');
+      expect(withGap, isNotNull, reason: 'α 包 3 条边指向未知');
+
+      final RelationRow tappable = jumpable!.relations.firstWhere(
         (RelationRow r) => r.tappable,
       );
-      final RelationRow gap = detail.relations.firstWhere(
-        (RelationRow r) => r.kind == RelationKind.gap,
-      );
-
       String? picked;
       await _pump(
         tester,
-        detail: detail,
+        detail: jumpable,
         onSelectItem: (String id) => picked = id,
       );
       await tester.tap(find.byKey(detailRelationRowKey(tappable)));
       await tester.pump();
       expect(picked, tappable.itemId);
 
+      final RelationRow gap = withGap!.relations.firstWhere(
+        (RelationRow r) => r.kind == RelationKind.gap,
+      );
       picked = null;
+      await _pump(
+        tester,
+        detail: withGap,
+        onSelectItem: (String id) => picked = id,
+      );
       await tester.tap(find.byKey(detailRelationRowKey(gap)));
       await tester.pump();
       expect(picked, isNull, reason: '缺口没有实体，点了不该跳');
@@ -170,7 +163,8 @@ void main() {
     testWidgets('笔记区是可识别的空壳，不是能写字的输入框（SPEC-NOTE-007）', (
       WidgetTester tester,
     ) async {
-      await _pump(tester, detail: detail);
+      final Item item = pack.items.first;
+      await _pump(tester, detail: buildItemDetail(pack, item.id));
 
       expect(find.byKey(detailNotesSectionKey), findsOneWidget);
       expect(
@@ -186,16 +180,21 @@ void main() {
     testWidgets('返回按钮：给了回调才渲染，点了就原样交出去（SPEC-VIEW-015）', (
       WidgetTester tester,
     ) async {
+      final Item item = pack.items.first;
       int taps = 0;
 
-      await _pump(tester, detail: detail);
+      await _pump(tester, detail: buildItemDetail(pack, item.id));
       expect(
         find.byKey(detailBackKey),
         findsNothing,
         reason: '没有可退的地方 ⇒ 按下去什么也不会变，所以不渲染',
       );
 
-      await _pump(tester, detail: detail, onBack: () => taps++);
+      await _pump(
+        tester,
+        detail: buildItemDetail(pack, item.id),
+        onBack: () => taps++,
+      );
       expect(find.byKey(detailBackKey), findsOneWidget);
       expect(find.text(detailBackLabel), findsOneWidget);
 
@@ -207,10 +206,15 @@ void main() {
     testWidgets('返回按钮在标题之上，不挤动三区的顺序（SPEC-VIEW-015 / 017）', (
       WidgetTester tester,
     ) async {
-      await _pump(tester, detail: detail, onBack: () {});
+      final Item item = pack.items.first;
+      await _pump(
+        tester,
+        detail: buildItemDetail(pack, item.id),
+        onBack: () {},
+      );
 
       final double backY = tester.getTopLeft(find.byKey(detailBackKey)).dy;
-      final double titleY = tester.getTopLeft(find.text('Lambda 表达式')).dy;
+      final double titleY = tester.getTopLeft(find.text(item.title)).dy;
       expect(backY, lessThan(titleY), reason: '返回是出口，放在标题上面才有「往出退」的方位感');
       expect(_sectionOrder(tester), <Key>[
         detailRelationsSectionKey,

@@ -39,21 +39,15 @@
 /// 事件流（`B4` 的数据层）。所以按钮照出，按下去如实说「没有写入任何数据」——
 /// 比藏起来强（藏起来会被读成「这个功能不存在」），比假装成功更必需。
 ///
-/// ## 跨包：命中集可跨，落点归调用方
+/// ## 跨空间：命中集可跨，落点归调用方
 ///
 /// `VIEW-031` 要求作用域跟随视图，`VIEW-033` 要求同名项带空间前缀。两条都只
 /// 关乎命中集与展示 —— **换不换根是行为，在 `universe_screen` 的 `_applyHit`
 /// 里**，浮层不拦。此前这里会拦下跨空间命中并说明「本笔只有一个根」，那是
 /// 单根时代的过渡态；多根之后拦下来反而成了 bug（搜得到却点不动）。
 ///
-/// ⚠️ **「空间」这个词在这里已经是 `Pack`**（`ADR-0005` §影响一：`KnowledgeSpace`
-/// → `Pack`）。标识符已换成 `otherPacks` / `scopePluginId`，但
-/// [locateSpaceSeparator] 与界面文案「在全部空间中搜索」**保持原文** —— 它们
-/// 逐字对应 `VIEW-031` / `VIEW-033`，`SPEC-VIEW-*` 整片待重写（`ADR-0005`
-/// §影响二），词要跟着 spec 一起改，不在这里先改一半。
-///
-/// 前缀同理**不做成入参**：要不要写是命中集自身的事实（同一名字出现在两个
-/// 以上包里），由 [_LocateOverlayState._ambiguousLabels] 从 `hits` 里算出来。
+/// 空间前缀同理**不做成入参**：要不要写是命中集自身的事实（同一标题出现在两个
+/// 以上空间），由 [_LocateOverlayState._ambiguousLabels] 从 `hits` 里算出来。
 /// 交给调用方注入的话，调用方得先知道「会不会撞名」才能传对 —— 而它手里的信息
 /// 并不比这里多。
 library;
@@ -63,7 +57,7 @@ import 'package:flutter/services.dart';
 
 import '../../core/locate/diagnose.dart';
 import '../../core/locate/locator.dart';
-import '../../core/pack/pack_reader.dart';
+import '../../core/pack/pack_parse.dart';
 import '../palette.dart';
 
 /// 浮层根节点。
@@ -103,9 +97,6 @@ const Key locateSearchAllKey = Key('locate-search-all');
 const Key locatePlanHereKey = Key('locate-plan-here');
 
 /// 空间前缀与标题之间的分隔符。抽出来是因为测试要断言「没有它」。
-///
-/// 名字里的「空间」保持原样：它对应 `VIEW-033` 的原文措辞（`SPEC-VIEW-*` 待
-/// 重写，见文件头），不是「忘了改成 pack」。
 const String locateSpaceSeparator = ' › ';
 
 /// 邻近候选最多列几条。
@@ -117,55 +108,44 @@ const int _nearLimit = 5;
 /// 某一命中行的 `Key`。
 ///
 /// 带 `kind` 而不只带 `target`：同一个词可能同时命中域与项（域 id 末段 =
-/// 项名），两条都出现在列表里时 `Key` 撞车会让 widget test 里
-/// `findsOneWidget` 假红。**带 `packId`** 同理 —— 跨包命中集里两个包
+/// 项标题），两条都出现在列表里时 `Key` 撞车会让 widget test 里
+/// `findsOneWidget` 假红。**带 `spaceId`** 同理 —— 跨空间命中集里两个空间
 /// 可以有同一个 `target`。
 Key locateRowKey(LocateHit hit) => Key(
-  'locate-row-${hit.packId}-${hit.kind.name}-${hit.axisKey ?? ''}-${hit.target}',
+  'locate-row-${hit.spaceId}-${hit.kind.name}-${hit.axisKey ?? ''}-${hit.target}',
 );
 
 /// 某条邻近候选行的 `Key`。
-Key locateNearRowKey(String nodeId) => Key('locate-near-$nodeId');
+Key locateNearRowKey(String itemId) => Key('locate-near-$itemId');
 
 class LocateOverlay extends StatefulWidget {
   const LocateOverlay({
     required this.pack,
-    required this.subtreeRoot,
     required this.onPick,
     required this.onPickNear,
     required this.onDismiss,
     this.onPlanHere,
-    this.otherPacks = const <PackContent>[],
-    this.scopePluginId,
+    this.otherSpaces = const <LoadedPack>[],
+    this.scopeSpaceId,
     this.domainId,
     this.initialQuery = '',
     super.key,
   });
 
-  /// 本包的包内容 —— 也就是宇宙与树此刻的根。`null` = 合成回落，没有可搜的东西。
+  /// 本空间的包 —— 也就是宇宙与树此刻的根。`null` = 合成回落，没有可搜的东西。
   /// 浮层仍然打开并说明原因 —— 不给入口比给了不响应好，但两者都比「静默无反应」好。
-  final PackContent? pack;
+  final LoadedPack? pack;
 
-  /// 除本包外、也能被搜到的其它包（`SPEC-VIEW-031`）。
+  /// 除本空间外、也能被搜到的其它空间（`SPEC-VIEW-031`）。
   ///
-  /// 多出来的包参与命中集与展示，**落点也照常交给调用方** —— 换根是屏幕层的
-  /// 事，浮层只管「用户选了哪条」。给不出来时留空：空列表等于「只有一个包」，
+  /// 多出来的空间参与命中集与展示，**落点也照常交给调用方** —— 换根是屏幕层的
+  /// 事，浮层只管「用户选了哪条」。给不出来时留空：空列表等于「只有一个空间」，
   /// 那一行「在全部空间中搜索」也就不会出现。
-  final List<PackContent> otherPacks;
+  final List<LoadedPack> otherSpaces;
 
-  /// 当前视图的作用域（`SPEC-VIEW-031`）：`null` = 全部（`Z0` 本就是跨包
-  /// 视角）；非 `null` = 默认只搜本包，结果区顶部给一行「在全部空间中搜索」。
-  final String? scopePluginId;
-
-  /// 当前视图圈定范围的根（`Plan.subtree_root`）。
-  ///
-  /// 必填：判「圈外」的唯一依据就是它（`inScopeOf`），不给的话类 ① 永远不会
-  /// 出现 —— 那会让「库里有、只是不在圈内」和「库里根本没有」在界面上长得
-  /// 一模一样，而它们的正确出口是两件事（申请纳入 vs 记个需求）。
-  ///
-  /// 只对**本包**生效：宽到全部包时由 [_LocateOverlayState._scopeRoot] 置空，
-  /// 否则别的包的命中会被一律判成圈外。
-  final String subtreeRoot;
+  /// 当前视图的作用域（`SPEC-VIEW-031`）：`null` = 全部空间（`Z0` 本就是跨空间
+  /// 视角）；非 `null` = 默认只搜本空间，结果区顶部给一行「在全部空间中搜索」。
+  final String? scopeSpaceId;
 
   /// 选中一条命中。第二个参数是**这次定位的完整结果** —— 路由要它来判断
   /// 是不是「唯一命中」。
@@ -175,7 +155,7 @@ class LocateOverlay extends StatefulWidget {
   ///
   /// 单独一个回调而不是包进 [LocateHit]：邻近候选没有「强度」，而跳转又是
   /// 真跳转 —— 两条语义拼在一条类型里，下次读代码的人会以为它也是命中。
-  final void Function(String nodeId) onPickNear;
+  final void Function(String itemId) onPickNear;
 
   final VoidCallback onDismiss;
 
@@ -251,59 +231,47 @@ class _LocateOverlayState extends State<LocateOverlay> {
     super.dispose();
   }
 
-  /// 这一轮查哪些包（`SPEC-VIEW-031`）。
+  /// 这一轮查哪些空间（`SPEC-VIEW-031`）。
   ///
-  /// 作用域宽 = `Z0`（`scopePluginId == null`）**或**用户点了那一行。两者都宽时
-  /// 不必再分，因为「全部」只有一种含义。
-  List<PackContent> get _searchedPacks {
-    final PackContent? pack = widget.pack;
+  /// 作用域宽 = `Z0`（`scopeSpaceId == null`）**或**用户点了那一行。两者都宽时
+  /// 不必再分，因为「全部空间」只有一种含义。
+  List<LoadedPack> get _searchedPacks {
+    final LoadedPack? pack = widget.pack;
     if (pack == null) {
-      return const <PackContent>[];
+      return const <LoadedPack>[];
     }
-    final bool wide = widget.scopePluginId == null || _searchAll;
+    final bool wide = widget.scopeSpaceId == null || _searchAll;
     return wide
-        ? <PackContent>[pack, ...widget.otherPacks]
-        : <PackContent>[pack];
+        ? <LoadedPack>[pack, ...widget.otherSpaces]
+        : <LoadedPack>[pack];
   }
-
-  /// 传给引擎的圈定根：**只在单包时给**。
-  ///
-  /// 宽到全部包时置空（= 不判圈内）：别的包的树根不可能出现在这个子树下，
-  /// 硬传会让每一条跨包命中都被判成「圈外」，于是「搜得到」变成「点不动」。
-  /// 这条规则归调用方（也就是这里）决定，引擎不替它猜。
-  String? get _scopeRoot =>
-      _searchedPacks.length == 1 ? widget.subtreeRoot : null;
 
   /// 作用域是否还窄着 —— 也就是那一行「在全部空间中搜索」该不该出现。
   bool get _canWiden =>
-      widget.scopePluginId != null &&
+      widget.scopeSpaceId != null &&
       !_searchAll &&
       widget.pack != null &&
-      widget.otherPacks.isNotEmpty;
+      widget.otherSpaces.isNotEmpty;
 
   /// 按 [query] 重算命中与分诊。
   ///
   /// 不碰「展开的表单」「留着的说明」—— 那两样是**改输入**这件事的连带后果，
   /// 由 `_onChanged` 清。预填路径没有「上一轮」，清它们没有意义。
   void _compute(String query) {
-    final PackContent? pack = widget.pack;
+    final LoadedPack? pack = widget.pack;
     if (pack == null) {
       _result = null;
       _diagnosis = null;
       return;
     }
-    final LocateResult result = Locator(
-      _searchedPacks,
-      subtreeRoot: _scopeRoot,
-    ).locate(query);
+    final LocateResult result = Locator(_searchedPacks).locate(query);
     _result = result;
-    // 分诊仍读**本包**：类 ② 的邻近候选是「换词」出口，跨包换词没有意义
-    // （用户要的是本包的叫法），而类 ③ 的新增更是只能落在本包的域里。
+    // 分诊仍读**本空间**：类 ② 的邻近候选是「换词」出口，跨空间换词没有意义
+    // （用户要的是本空间的叫法），而类 ③ 的新增更是只能落在本空间的域里。
     _diagnosis = diagnose(
       pack: pack,
       result: result,
       domainId: widget.domainId,
-      subtreeRoot: widget.subtreeRoot,
     );
   }
 
@@ -327,25 +295,17 @@ class _LocateOverlayState extends State<LocateOverlay> {
     widget.onPick(result, hit);
   }
 
-  /// 把作用域放宽到全部包，并**立刻用当前输入重查**。
+  /// 把作用域放宽到全部空间，并**立刻用当前输入重查**。
   void _widenToAllSpaces() {
     final String query = _controller.text;
     setState(() {
       _searchAll = true;
-      final LocateResult result = Locator(
-        _searchedPacks,
-        subtreeRoot: _scopeRoot,
-      ).locate(query);
+      final LocateResult result = Locator(_searchedPacks).locate(query);
       _result = result;
-      final PackContent? pack = widget.pack;
+      final LoadedPack? pack = widget.pack;
       _diagnosis = pack == null
           ? null
-          : diagnose(
-              pack: pack,
-              result: result,
-              domainId: widget.domainId,
-              subtreeRoot: widget.subtreeRoot,
-            );
+          : diagnose(pack: pack, result: result, domainId: widget.domainId);
     });
   }
 
@@ -551,13 +511,13 @@ class _LocateOverlayState extends State<LocateOverlay> {
 
   /// 「在全部空间中搜索」那一行（`SPEC-VIEW-031`）。
   ///
-  /// 只在**还有别的包可搜**时出现：只有一个包时它按下去什么也不会变，
+  /// 只在**还有别的空间可搜**时出现：只有一个空间时它按下去什么也不会变，
   /// 而「按了没反应」的按钮比没有这个按钮更糟。
   ///
   /// [flush] 用于分诊面板 —— 那里外层已经有一圈 14 的留白，再叠一层左边距
   /// 会让这一行看起来比下面的正文缩进更多。
   Widget _widenRow({bool flush = false}) {
-    final int others = widget.otherPacks.length;
+    final int others = widget.otherSpaces.length;
     return InkWell(
       key: locateSearchAllKey,
       onTap: _widenToAllSpaces,
@@ -577,7 +537,7 @@ class _LocateOverlayState extends State<LocateOverlay> {
               child: Text(
                 '在全部空间中搜索'
                 '（另有 $others 个空间，共 '
-                '${widget.otherPacks.length + 1} 个）',
+                '${widget.otherSpaces.length + 1} 个）',
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
@@ -600,18 +560,18 @@ class _LocateOverlayState extends State<LocateOverlay> {
     ),
   );
 
-  /// 需要写包名的那些标签（`SPEC-VIEW-033`）。
+  /// 需要写空间名的那些标签（`SPEC-VIEW-033`）。
   ///
-  /// 判据是「**同一名字出现在两个以上包**」—— 不是「有没有两个包」。
-  /// 每行都写一遍包名是噪音，而它要解决的问题只在同名时存在；反过来，只搜
-  /// 一个包时这个集合恒为空，也就不需要任何开关来控制前缀。
+  /// 判据是「**同一标题出现在两个以上空间**」—— 不是「有没有两个空间」。
+  /// 每行都写一遍空间名是噪音，而它要解决的问题只在同名时存在；反过来，只搜
+  /// 一个空间时这个集合恒为空，也就不需要任何开关来控制前缀。
   Set<String> _ambiguousLabels(List<LocateHit> hits) {
-    final Map<String, Set<String>> packsByLabel = <String, Set<String>>{};
+    final Map<String, Set<String>> spacesByLabel = <String, Set<String>>{};
     for (final LocateHit hit in hits) {
-      packsByLabel.putIfAbsent(hit.label, () => <String>{}).add(hit.packId);
+      spacesByLabel.putIfAbsent(hit.label, () => <String>{}).add(hit.spaceId);
     }
     return <String>{
-      for (final MapEntry<String, Set<String>> entry in packsByLabel.entries)
+      for (final MapEntry<String, Set<String>> entry in spacesByLabel.entries)
         if (entry.value.length > 1) entry.key,
     };
   }
@@ -629,9 +589,9 @@ class _LocateOverlayState extends State<LocateOverlay> {
             const SizedBox(width: 8),
             Expanded(
               child: Text(
-                // `VIEW-033`：同名项跨包时带前缀，否则只写原文。
+                // `VIEW-033`：同名项跨空间时带前缀，否则只写原文。
                 prefix
-                    ? '${hit.packName}$locateSpaceSeparator${hit.label}'
+                    ? '${hit.spaceName}$locateSpaceSeparator${hit.label}'
                     : hit.label,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -711,8 +671,8 @@ class _LocateOverlayState extends State<LocateOverlay> {
             for (final NearItem near
                 in diagnosis.near.take(_nearLimit).toList(growable: false))
               InkWell(
-                key: locateNearRowKey(near.nodeId),
-                onTap: () => widget.onPickNear(near.nodeId),
+                key: locateNearRowKey(near.itemId),
+                onTap: () => widget.onPickNear(near.itemId),
                 child: Padding(
                   padding: const EdgeInsets.only(bottom: 6),
                   child: Row(
@@ -721,7 +681,7 @@ class _LocateOverlayState extends State<LocateOverlay> {
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          near.name,
+                          near.title,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(

@@ -1,9 +1,10 @@
 /// 新格式解析层：**单文件** `pack.json` → 强类型实体。
 ///
-/// ⚠️ **`B13a` 笔 4 新增，笔 5c 成为唯一解析器**：旧的
-/// [`pack_parse.dart`](pack_parse.dart)（六轴五段：`items` / `edges` / `schemes` /
-/// `questions` / `excerpts`）与它服务的那批实体已在本笔删除 —— 两套解析器并存
-/// 期间的同名类（`Scheme` / `SourceRef` / `MethodProfile`）也一并只剩这一份。
+/// ⚠️ **`B13a` 笔 4 新增，笔 5 接线**：旧 [`pack_parse.dart`](pack_parse.dart)
+/// 解析的是六轴五段（`items` / `edges` / `schemes` / `questions` / `excerpts`），
+/// 它的消费点（三视图 / 定位 / Planner 共 31 个文件）在笔 5 才切过来。
+/// 两个解析器**并存而不互相 import**，因此同名类（`Scheme` / `SourceRef` /
+/// `MethodProfile`）各在各的库里，不会撞；笔 5 删旧文件后撞名自动消失。
 ///
 /// ## 形态：单文件，不是「清单 + 产物」两份
 ///
@@ -36,7 +37,6 @@ import '../entities/pack.dart';
 import '../entities/scheme.dart';
 import '../entities/source.dart';
 import '../enums.dart';
-import '../graph/parent_index.dart';
 import '../json.dart';
 import 'cycle_check.dart';
 
@@ -85,21 +85,7 @@ class PackContent {
        }),
        sourceById = Map<String, SourceRef>.unmodifiable(<String, SourceRef>{
          for (final SourceRef source in sources) source.id: source,
-       }),
-       parents = ParentIndex(
-         // 只收 `main` 边：`secondary` 是附加归属，同一节点可有 0..N 条，
-         // 拿它算父链会让 `path` 与「在谁子树下」产生多解。
-         mainParentOf: <String, String>{
-           for (final ParentEdge edge in edges.whereType<ParentEdge>())
-             if (edge.isMain) edge.childId: edge.parentId,
-         },
-         slugOf: <String, String>{
-           for (final Node node in nodes) node.id: node.slug,
-         },
-         // 骨架 `path` 由外部注入（`minimal-pack.md` §4.2）。载荷包自己不知道
-         // 骨架长什么样，也不该内置一份假骨架 —— 那是第二份骨架数据。
-         skeletonPaths: const <String, String>{},
-       );
+       });
 
   final Pack pack;
   final List<Node> nodes;
@@ -118,39 +104,12 @@ class PackContent {
 
   final Map<String, SourceRef> sourceById;
 
-  /// 主父索引与派生 `path`（`path-rules` `P-01` / `P-02`）。
-  ///
-  /// **在装载时建一次**，不交给各消费点自建：`inScope`、面包屑、`Plan.subtree_root`
-  /// 判定全要走父链，各写一遍就是「同一棵树有几份索引」，而它们不一致时没有任何
-  /// 断言会红。骨架 `path` 未注入（见构造体注释），故跨包场景下 `pathOf` 对骨架
-  /// 之上的部分返回 `null` —— 那是装载层的事，`B13b` 落地后由骨架包补。
-  final ParentIndex parents;
-
   Node? nodeOf(String id) => nodeById[id];
-
-  /// 收窄到可学节点 —— 旧的 `LoadedPack.itemOf` 语义正是它（行星层）。
-  ///
-  /// **不与 [nodeOf] 合并**：`Item` 时代「按 id 取一项」从不担心取到的是不是
-  /// 可学的；换成两型之后，结构节点上取不到东西这件事必须由调用方显式看见。
-  /// 合并成一个返回 `Node` 的方法，那些调用点就会拿到 `StructuralNode` 再各自
-  /// 判类型 —— 判断散出去正是 `ADR-0007` 决策 1 要堵的口子。
-  LearnableNode? learnableOf(String id) {
-    final Node? node = nodeById[id];
-    return node is LearnableNode ? node : null;
-  }
 
   NodeEntry? entryOf(String id) => entryByNodeId[id];
 
   /// 只取可学节点 —— 七步、排程、掌握度只对它们有意义。
   Iterable<LearnableNode> get learnableNodes => nodes.whereType<LearnableNode>();
-
-  /// 本包里实际出现过的可学类型（方法覆盖率与候选排序的原料）。
-  ///
-  /// 由 [learnableNodes] 现算而不缓存：缓存会在装/卸载荷后与 `nodes` 分叉，
-  /// 而调用点全都是一次性遍历，算一遍不比查表贵。
-  Set<LearnableType> get presentTypes => <LearnableType>{
-    for (final LearnableNode node in learnableNodes) node.type,
-  };
 
   /// 只取先修边 —— `⪯` 的唯一来源。
   Iterable<PrerequisiteEdge> get prerequisites =>
