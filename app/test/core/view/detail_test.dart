@@ -219,7 +219,7 @@ void main() {
       expect(row.missing, isTrue);
     });
 
-    test('有源但没标等级（`catalog`）⇒ 写「目录」，不写空串', () {
+    test('有源但没标等级（`catalog`）⇒ 写「目录」，不写空串（无 SPEC：entity-fields §11）', () {
       const ProvenanceRow row = ProvenanceRow(
         name: '研究生目录',
         authorityLevel: null,

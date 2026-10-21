@@ -144,7 +144,7 @@ void main() {
   });
 
   group('三类边按判别符分派', () {
-    test('同一个 from_id / to_id，靠 type 一个字分开虫洞与先修（entity-fields §3–§5）', () {
+    test('同一个 from_id / to_id，靠 type 一个字分开虫洞与先修（无 SPEC：entity-fields §3–§5）', () {
       // 两条边字段名完全一样 —— 靠字段名猜必然分不清，所以判别符必须显式读。
       final NodeEdge wormhole = nodeEdgeFromJson(<String, Object?>{
         'type': 'wormhole',
@@ -169,7 +169,7 @@ void main() {
       );
     });
 
-    test('父子边区分主父与附加归属（entity-fields §3）', () {
+    test('父子边区分主父与附加归属（无 SPEC：entity-fields §3）', () {
       final ParentEdge main = nodeEdgeFromJson(<String, Object?>{
         'type': 'parent',
         'child_id': 'python:lambda',
@@ -181,7 +181,7 @@ void main() {
       expect(main.type, edgeTypeParent);
     });
 
-    test('未知判别符直接抛 —— 打错字的边不该凭空消失（entity-fields §3–§5）', () {
+    test('未知判别符直接抛 —— 打错字的边不该凭空消失（无 SPEC：entity-fields §3–§5）', () {
       // 旧版这里有 `EdgeType.unknown` 这个合法取值，于是「写错类型名」与
       // 「作者明确声明一条未知边」压成同一个结果。新模型没有 unknown 档：
       // 图里少一条边的表象与「数据本来就没有」完全相同，没有断言会红。
@@ -219,7 +219,7 @@ void main() {
       expect(step.effectivePhase, StepPhase.review);
     });
 
-    test('步骤上没有 criteria —— 判据归 NodeEntry.criteria[]（entity-fields §9.1 / §9.2）', () {
+    test('步骤上没有 criteria —— 判据归 NodeEntry.criteria[]（无 SPEC：entity-fields §9.1 / §9.2）', () {
       // 两处各写一个「判据」字段，就会出现「步骤说做到了、项末验收说没做到」。
       final EntryStep step = EntryStep.fromJson(<String, Object?>{
         'operator': 'practice',
@@ -283,7 +283,7 @@ void main() {
       expect(withHint.hasAnyHint, isTrue);
     });
 
-    test('一份组合允许缺分支 —— 缺 = 不覆盖该类型（entity-fields §12）', () {
+    test('一份组合允许缺分支 —— 缺 = 不覆盖该类型（无 SPEC：entity-fields §12）', () {
       const MethodBundle bundle = MethodBundle(
         id: 'b1',
         name: '只覆盖陈述',
@@ -298,7 +298,7 @@ void main() {
   });
 
   group('NodeEntry', () {
-    test('没有 criteria 即打卡式 —— 它是学习痕迹，不通往出口（entity-fields §9.2）', () {
+    test('没有 criteria 即打卡式 —— 它是学习痕迹，不通往出口（无 SPEC：entity-fields §9.2）', () {
       final NodeEntry entry = NodeEntry.fromJson(_entryJson());
       expect(entry.isCheckin, isTrue);
       expect(entry.sourceRefs, <String>['src-official']);
@@ -338,7 +338,7 @@ void main() {
       'version': 1,
     };
 
-    test('范围只落 subtreeRoot —— 不存 resolved / target / count（entity-fields §13）', () {
+    test('范围只落 subtreeRoot —— 不存 resolved / target / count（无 SPEC：entity-fields §13）', () {
       // 旧版存的 `target{selector, resolved}` 里，`resolved` 是派生值：载荷变化
       // 时必须重算，存下来就会出现「参照集合指向已卸载的节点」而没有任何一处
       // 会报错。键换成 `subtreeRoot` 之后，这件事从「不该做」变成「做不到」。
@@ -354,7 +354,7 @@ void main() {
       }
     });
 
-    test('packVersions 是复合值：骨架单列、载荷按 plugin_id 记（entity-fields §13）', () {
+    test('packVersions 是复合值：骨架单列、载荷按 plugin_id 记（无 SPEC：entity-fields §13）', () {
       final Plan plan = Plan.fromJson(planJson());
       expect(plan.packVersions.skeleton, '1.0.0');
       expect(plan.packVersions.payloads, <String, String>{'python': '1.2.0'});
