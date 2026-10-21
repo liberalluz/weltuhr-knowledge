@@ -214,6 +214,17 @@ const Map<Layer, String> layerLabels = <Layer, String>{
   Layer.ephemeral: '瞬时',
 };
 
+/// 三条容器轴的中文名（`entity-fields` §2 `Node.axis`）。理由同 [itemTypeLabels]。
+///
+/// 笔 5c-1 新增：`appliesTo.axes` 取代 `spaceId` 之后，候选卡的「适用范围」
+/// 那一行要写「学科」而不是 `discipline`。旧表 [sixAxisLabels] 是六轴时代的
+/// 键 → 名映射，键集与新 `Axis` 枚举不是一回事，不能拿来顶替。
+const Map<Axis, String> axisLabels = <Axis, String>{
+  Axis.discipline: '学科',
+  Axis.major: '专业',
+  Axis.occupation: '角色',
+};
+
 /// `C-34` 虚实通道判据：六要件里「不可外化」格 **≥ 3** 即判「虚」（默会类）。
 ///
 /// 阈值由 α 包分布决定，不是调手感（`ADR-0003` §决策 2）：不可外化只有
