@@ -1,0 +1,558 @@
+{
+  "plugin_id": "m2-demo",
+  "name": "M2 覆盖示例包",
+  "version": "2.1.0",
+  "kinds": ["payload", "method"],
+  "namespace": "m2-demo",
+  "schema_version": 1,
+  "skeleton_requires": ">=1.0.0 <2.0.0",
+  "deps": [{ "plugin_id": "m2-terrain", "range": ">=1.0.0 <2.0.0" }],
+  "license": "MIT",
+  "author": "weltuhr",
+  "origin": "fixture",
+  "review_state": "approved",
+  "signature": null,
+  "axes": ["major"],
+  "payload": {
+    "attach_to": "skeleton:major/080901",
+    "subtree_root": "system",
+    "level_range": ["system", "planet"],
+    "counts": { "star": 0, "system": 1, "planet": 8 },
+    "official_code_coverage": false,
+    "path_reservations": [{ "parent_id": "skeleton:major/080901", "slug": "lang-core" }],
+    "sources": ["m2-catalog", "m2-tutorial"],
+    "schemes": ["m2-official", "m2-short"],
+    "has_steps": true,
+    "has_criteria": true,
+    "has_quiz": true,
+    "quiz_types": ["choice", "fill"],
+    "est_minutes_coverage": 0.75
+  },
+  "method": {
+    "methods": [
+      {
+        "id": "m2-recipe",
+        "name": "四步配方",
+        "item_types": ["declarative", "procedural", "skill"],
+        "step_count": 4,
+        "has_review_step": true,
+        "phase_distribution": { "first": "1", "review": "0", "both": "3" }
+      }
+    ]
+  },
+  "nodes": [
+    {
+      "id": "m2-demo:lang-core",
+      "axis": "major",
+      "level_slot": "system",
+      "official_code": null,
+      "name": "语言核心",
+      "slug": "lang-core",
+      "scope": "S1",
+      "pack_id": "m2-demo",
+      "status": "live",
+      "tags": [],
+      "catalog_refs": ["m2-catalog"]
+    },
+    {
+      "id": "m2-demo:var",
+      "axis": "major",
+      "level_slot": "planet",
+      "official_code": null,
+      "name": "变量与绑定",
+      "slug": "var",
+      "scope": "S1",
+      "pack_id": "m2-demo",
+      "status": "live",
+      "tags": [],
+      "catalog_refs": [],
+      "type": "declarative",
+      "layer": "persistent",
+      "requirements": {
+        "boundary": "present",
+        "justification": "present",
+        "proposition": "present",
+        "relation": "present",
+        "how": "present",
+        "tacit": "missing"
+      }
+    },
+    {
+      "id": "m2-demo:func",
+      "axis": "major",
+      "level_slot": "planet",
+      "official_code": null,
+      "name": "函数",
+      "slug": "func",
+      "scope": "S1",
+      "pack_id": "m2-demo",
+      "status": "live",
+      "tags": [],
+      "catalog_refs": [],
+      "type": "procedural",
+      "layer": "persistent",
+      "requirements": {
+        "boundary": "present",
+        "justification": "present",
+        "proposition": "present",
+        "relation": "present",
+        "how": "present",
+        "tacit": "missing"
+      }
+    },
+    {
+      "id": "m2-demo:closure",
+      "axis": "major",
+      "level_slot": "planet",
+      "official_code": null,
+      "name": "闭包",
+      "slug": "closure",
+      "scope": "S1",
+      "pack_id": "m2-demo",
+      "status": "live",
+      "tags": [],
+      "catalog_refs": [],
+      "type": "declarative",
+      "layer": "persistent",
+      "requirements": {
+        "boundary": "present",
+        "justification": "present",
+        "proposition": "present",
+        "relation": "present",
+        "how": "present",
+        "tacit": "present"
+      }
+    },
+    {
+      "id": "m2-demo:module",
+      "axis": "major",
+      "level_slot": "planet",
+      "official_code": null,
+      "name": "模块与导入",
+      "slug": "module",
+      "scope": "S1",
+      "pack_id": "m2-demo",
+      "status": "live",
+      "tags": [],
+      "catalog_refs": [],
+      "type": "procedural",
+      "layer": "view",
+      "requirements": {
+        "boundary": "present",
+        "justification": "present",
+        "proposition": "present",
+        "relation": "missing",
+        "how": "present",
+        "tacit": "missing"
+      }
+    },
+    {
+      "id": "m2-demo:typing",
+      "axis": "major",
+      "level_slot": "planet",
+      "official_code": null,
+      "name": "读错误信息",
+      "slug": "typing",
+      "scope": "S1",
+      "pack_id": "m2-demo",
+      "status": "live",
+      "tags": [],
+      "catalog_refs": [],
+      "type": "skill",
+      "layer": "view",
+      "requirements": {
+        "boundary": "present",
+        "justification": "not_externalizable",
+        "proposition": "present",
+        "relation": "missing",
+        "how": "present",
+        "tacit": "not_externalizable"
+      }
+    },
+    {
+      "id": "m2-demo:debug",
+      "axis": "major",
+      "level_slot": "planet",
+      "official_code": null,
+      "name": "断点调试",
+      "slug": "debug",
+      "scope": "S1",
+      "pack_id": "m2-demo",
+      "status": "live",
+      "tags": [],
+      "catalog_refs": [],
+      "type": "skill",
+      "layer": "ephemeral",
+      "requirements": {
+        "boundary": "present",
+        "justification": "missing",
+        "proposition": "present",
+        "relation": "missing",
+        "how": "present",
+        "tacit": "not_externalizable"
+      }
+    },
+    {
+      "id": "m2-demo:idiom",
+      "axis": "major",
+      "level_slot": "planet",
+      "official_code": null,
+      "name": "地道的写法",
+      "slug": "idiom",
+      "scope": "S1",
+      "pack_id": "m2-demo",
+      "status": "live",
+      "tags": [],
+      "catalog_refs": [],
+      "type": "tacit",
+      "layer": "ephemeral",
+      "requirements": {
+        "boundary": "missing",
+        "justification": "not_externalizable",
+        "proposition": "missing",
+        "relation": "missing",
+        "how": "missing",
+        "tacit": "not_externalizable"
+      }
+    },
+    {
+      "id": "m2-demo:refactor",
+      "axis": "major",
+      "level_slot": "planet",
+      "official_code": null,
+      "name": "重构的节奏",
+      "slug": "refactor",
+      "scope": "S1",
+      "pack_id": "m2-demo",
+      "status": "live",
+      "tags": [],
+      "catalog_refs": [],
+      "type": "tacit",
+      "layer": "persistent",
+      "requirements": {
+        "boundary": "present",
+        "justification": "present",
+        "proposition": "missing",
+        "relation": "present",
+        "how": "present",
+        "tacit": "present"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "type": "parent",
+      "child_id": "m2-demo:lang-core",
+      "parent_id": "skeleton:major/080901",
+      "kind": "main"
+    },
+    {
+      "type": "parent",
+      "child_id": "m2-demo:var",
+      "parent_id": "m2-demo:lang-core",
+      "kind": "main"
+    },
+    {
+      "type": "parent",
+      "child_id": "m2-demo:func",
+      "parent_id": "m2-demo:lang-core",
+      "kind": "main"
+    },
+    {
+      "type": "parent",
+      "child_id": "m2-demo:closure",
+      "parent_id": "m2-demo:lang-core",
+      "kind": "main"
+    },
+    {
+      "type": "parent",
+      "child_id": "m2-demo:module",
+      "parent_id": "m2-demo:lang-core",
+      "kind": "main"
+    },
+    {
+      "type": "parent",
+      "child_id": "m2-demo:typing",
+      "parent_id": "m2-demo:lang-core",
+      "kind": "main"
+    },
+    {
+      "type": "parent",
+      "child_id": "m2-demo:debug",
+      "parent_id": "m2-demo:lang-core",
+      "kind": "main"
+    },
+    {
+      "type": "parent",
+      "child_id": "m2-demo:idiom",
+      "parent_id": "m2-demo:lang-core",
+      "kind": "main"
+    },
+    {
+      "type": "parent",
+      "child_id": "m2-demo:refactor",
+      "parent_id": "m2-demo:lang-core",
+      "kind": "main"
+    },
+    {
+      "type": "parent",
+      "child_id": "m2-demo:idiom",
+      "parent_id": "m2-demo:refactor",
+      "kind": "secondary"
+    },
+    {
+      "type": "prerequisite",
+      "from_id": "m2-demo:var",
+      "to_id": "m2-demo:func",
+      "strength": "required"
+    },
+    {
+      "type": "prerequisite",
+      "from_id": "m2-demo:func",
+      "to_id": "m2-demo:closure",
+      "strength": "required"
+    },
+    {
+      "type": "prerequisite",
+      "from_id": "m2-demo:closure",
+      "to_id": "m2-demo:module",
+      "strength": "recommended"
+    },
+    {
+      "type": "prerequisite",
+      "from_id": "m2-demo:module",
+      "to_id": "m2-demo:refactor",
+      "strength": "recommended"
+    },
+    {
+      "type": "wormhole",
+      "from_id": "m2-demo:debug",
+      "to_id": "m2-demo:typing",
+      "kind": "granularity",
+      "note": "读错误信息与断点调试是同一件事的两个入口"
+    }
+  ],
+  "entries": [
+    {
+      "node_id": "m2-demo:var",
+      "summary": "把名字绑到值上，并在需要时重新绑定。",
+      "outcomes": ["能说明赋值语句做了什么", "能区分名字与对象"],
+      "resources": [
+        {
+          "kind": "规范",
+          "title": "The Python Tutorial §7.2",
+          "url": "https://docs.python.org/3/tutorial/introduction.html",
+          "license": "PSF-2.0",
+          "lang": "en"
+        }
+      ],
+      "aliases": ["变量"],
+      "keywords": ["assignment", "binding"],
+      "body": "赋值语句把名字重新绑定到值。名字不是容器，只是指向对象。",
+      "steps": [
+        { "operator": "read", "instruction": "读完 §7.2，留意「重新绑定」这个词。", "phase": "first" },
+        { "operator": "recall", "instruction": "不看材料，说出名字与对象的关系。", "phase": "both" }
+      ],
+      "selfCheck": ["能说出名字不是容器"],
+      "criteria": [{ "id": "c1", "statement": "能独立解释重新绑定后两个名字为何看到同一份修改" }],
+      "quiz": [
+        {
+          "id": "q1",
+          "criterion_id": "c1",
+          "type": "choice",
+          "prompt": "`a = [1]; b = a; b.append(2)` 之后 `a` 的值是？",
+          "answer": "[1, 2]",
+          "judge": "auto"
+        }
+      ],
+      "source_refs": ["m2-tutorial"],
+      "estMinutes": 12,
+      "methodId": null
+    },
+    {
+      "node_id": "m2-demo:func",
+      "summary": "把一段逻辑收成可复用的、带名字的调用单元。",
+      "outcomes": ["能定义并调用一个函数", "能说明参数与返回值的传递"],
+      "resources": [
+        {
+          "kind": "规范",
+          "title": "The Python Tutorial §4.8",
+          "url": "https://docs.python.org/3/tutorial/controlflow.html#defining-functions",
+          "license": "PSF-2.0",
+          "lang": "en"
+        }
+      ],
+      "aliases": ["函数"],
+      "keywords": ["function", "argument"],
+      "body": "`def` 创建一个函数对象并绑定名字。",
+      "steps": [
+        { "operator": "example", "instruction": "看 §4.8 的 `fib` 例子，标出形参与实参。", "phase": "first" },
+        { "operator": "practice", "instruction": "写一个把列表元素加倍的函数并调用它。", "phase": "both" },
+        { "operator": "explain", "instruction": "向别人解释参数是怎么传进函数的。", "phase": "both" }
+      ],
+      "selfCheck": ["能说清形参与实参的对应"],
+      "criteria": [{ "id": "c1", "statement": "能独立写出带返回值且有参数的函数，并说明调用时的绑定过程" }],
+      "quiz": [
+        {
+          "id": "q1",
+          "criterion_id": "c1",
+          "type": "fill",
+          "prompt": "`def f(x): return x * 2` 之后 `f(3)` 得到 ____",
+          "answer": "6",
+          "judge": "auto"
+        }
+      ],
+      "source_refs": ["m2-tutorial"],
+      "estMinutes": 15
+    },
+    {
+      "node_id": "m2-demo:closure",
+      "summary": "函数记住它被定义时所在的作用域。",
+      "outcomes": ["能构造一个计数器闭包"],
+      "resources": [],
+      "aliases": ["闭包"],
+      "keywords": ["closure", "scope"],
+      "body": "闭包是函数与其词法环境的组合。",
+      "steps": [
+        { "operator": "read", "instruction": "读闭包一节。", "phase": "first" },
+        { "operator": "do", "instruction": "写一个返回计数器函数的工厂。", "phase": "both" }
+      ],
+      "selfCheck": ["能说明为什么内层函数看得到外层变量"],
+      "criteria": [{ "id": "c1", "statement": "能手写一个计数器闭包并解释其状态保存在哪" }],
+      "quiz": [
+        {
+          "id": "q1",
+          "criterion_id": "c1",
+          "type": "code",
+          "prompt": "实现 `make_counter()`，每次调用返回的值递增 1",
+          "answer": "def make_counter():\n    n = 0\n    def step():\n        nonlocal n\n        n += 1\n        return n\n    return step",
+          "judge": "auto"
+        }
+      ],
+      "source_refs": ["m2-tutorial"],
+      "estMinutes": 25
+    },
+    {
+      "node_id": "m2-demo:typing",
+      "summary": "从报错文本里读出「谁、在哪、为什么」。",
+      "outcomes": ["能定位报错指的行", "能区分语法错与运行错"],
+      "resources": [],
+      "aliases": ["读栈"],
+      "keywords": ["traceback", "error"],
+      "body": "从下往上读栈：最后一行是错误类型与消息，往上是调用链。",
+      "steps": [{ "operator": "practice", "instruction": "拿一个真实报错，逐行标出含义。", "phase": "both" }],
+      "selfCheck": ["能说出 traceback 最后一行是什么"],
+      "criteria": [],
+      "quiz": [],
+      "source_refs": [],
+      "estMinutes": 10
+    },
+    {
+      "node_id": "m2-demo:debug",
+      "summary": "让程序停在你关心的那一行。",
+      "outcomes": ["能下断点并查看局部变量"],
+      "resources": [],
+      "aliases": ["断点"],
+      "keywords": ["breakpoint", "debugger"],
+      "body": "断点的价值是「停住之后能改看什么」，不是「停住」本身。",
+      "steps": [{ "operator": "do", "instruction": "在循环里下一次断点，观察每轮变量。", "phase": "both" }],
+      "selfCheck": ["能用条件断点跳过前 99 次"],
+      "criteria": [{ "id": "c1", "statement": "能用条件断点定位第 100 次迭代才出现的错误" }],
+      "quiz": [
+        {
+          "id": "q1",
+          "criterion_id": "c1",
+          "type": "freeform",
+          "prompt": "说明你会把断点下在哪一行、条件写什么",
+          "answer": "下在循环体内可疑语句，条件写 i == 99",
+          "judge": "self"
+        }
+      ],
+      "source_refs": [],
+      "estMinutes": 20
+    },
+    {
+      "node_id": "m2-demo:refactor",
+      "summary": "在不改变行为的前提下改善结构。",
+      "outcomes": ["能识别一次重构的边界"],
+      "resources": [],
+      "aliases": ["重构"],
+      "keywords": ["refactor"],
+      "body": "重构的前提是有一张能告诉你「行为没变」的网。",
+      "steps": [
+        { "operator": "example", "instruction": "读一个「提取函数」的前后对比。", "phase": "first" },
+        { "operator": "explain", "instruction": "讲清这次重构为什么不改变行为。", "phase": "both" }
+      ],
+      "selfCheck": ["能指出哪一行是这次重构的边界"],
+      "criteria": [{ "id": "c1", "statement": "能在有测试的前提下完成一次提取函数重构" }],
+      "quiz": [
+        {
+          "id": "q1",
+          "criterion_id": "c1",
+          "type": "choice",
+          "prompt": "重构前最先要确认的是？",
+          "answer": "有能覆盖该行为的测试",
+          "judge": "auto"
+        }
+      ],
+      "source_refs": ["m2-tutorial"],
+      "estMinutes": 40,
+      "methodId": "m2-recipe"
+    }
+  ],
+  "sources": [
+    {
+      "id": "m2-catalog",
+      "name": "普通高等学校本科专业目录（2025）",
+      "kind": "catalog",
+      "version": "2025",
+      "appliesTo": { "axes": ["major"], "node_scope": ["m2-demo:lang-core"] }
+    },
+    {
+      "id": "m2-tutorial",
+      "name": "The Python Tutorial",
+      "kind": "material",
+      "authority_level": "official",
+      "version": "3.13",
+      "segments": [
+        {
+          "text": "Assignment statements are used to (re)bind names to values.",
+          "locator": "§7.2",
+          "license": "PSF-2.0"
+        }
+      ],
+      "appliesTo": {
+        "axes": ["major"],
+        "node_scope": ["m2-demo:var", "m2-demo:func", "m2-demo:closure", "m2-demo:refactor"]
+      }
+    }
+  ],
+  "schemes": [
+    {
+      "id": "m2-official",
+      "name": "官方教程顺序",
+      "nodes": ["m2-demo:var", "m2-demo:func", "m2-demo:closure", "m2-demo:module"],
+      "authority_level": "official"
+    },
+    {
+      "id": "m2-short",
+      "name": "先跑起来再说",
+      "nodes": ["m2-demo:var", "m2-demo:func", "m2-demo:debug"],
+      "authority_level": "community"
+    }
+  ],
+  "methods": [
+    {
+      "id": "m2-recipe",
+      "name": "四步配方：读 → 例 → 练 → 讲",
+      "steps": [
+        { "operator": "read", "instruction": "先读完材料，不改任何东西。", "phase": "first" },
+        { "operator": "example", "instruction": "抄一个最小例子并跑通。", "phase": "first" },
+        { "operator": "practice", "instruction": "换一个输入，写自己的版本。", "phase": "both", "hint": "卡住时回到例子里改一个字符" },
+        { "operator": "explain", "instruction": "用自己的话讲给一个不懂的人。", "phase": "both" }
+      ],
+      "appliesTo": { "types": ["declarative", "procedural", "skill"], "axes": ["major"] },
+      "origin": "pack"
+    }
+  ]
+}

@@ -31,7 +31,7 @@ const List<MethodProfile> platformMethodProfiles = <MethodProfile>[
       MethodStep(operator: ExecutionOperator.read),
       MethodStep(operator: ExecutionOperator.recall),
       MethodStep(
-        operator: ExecutionOperator.teach,
+        operator: ExecutionOperator.explain,
         criteria: '不看材料讲清该项',
       ),
     ],
@@ -88,8 +88,8 @@ const List<MethodProfile> platformMethodProfiles = <MethodProfile>[
     },
     steps: <MethodStep>[
       MethodStep(operator: ExecutionOperator.read),
-      MethodStep(operator: ExecutionOperator.build, criteria: '产出可运行交付物'),
-      MethodStep(operator: ExecutionOperator.teach),
+      MethodStep(operator: ExecutionOperator.doStep, criteria: '产出可运行交付物'),
+      MethodStep(operator: ExecutionOperator.explain),
     ],
   ),
 ];

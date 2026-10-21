@@ -77,8 +77,8 @@ const Map<ExecutionOperator, int> operatorMinutes = <ExecutionOperator, int>{
   ExecutionOperator.example: 2, // C-15
   ExecutionOperator.recall: 1, // C-16
   ExecutionOperator.practice: 5, // C-17
-  ExecutionOperator.teach: 5, // C-18
-  ExecutionOperator.build: 30, // C-19
+  ExecutionOperator.explain: 5, // C-18
+  ExecutionOperator.doStep: 30, // C-19
 };
 
 // ────────────────────────────── 六、界面阈值 ──────────────────────────────

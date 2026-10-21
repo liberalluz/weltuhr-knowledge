@@ -35,8 +35,8 @@ void main() {
       expect(operatorMinutes[ExecutionOperator.example], 2);
       expect(operatorMinutes[ExecutionOperator.recall], 1);
       expect(operatorMinutes[ExecutionOperator.practice], 5);
-      expect(operatorMinutes[ExecutionOperator.teach], 5);
-      expect(operatorMinutes[ExecutionOperator.build], 30);
+      expect(operatorMinutes[ExecutionOperator.explain], 5);
+      expect(operatorMinutes[ExecutionOperator.doStep], 30);
     });
 
     test('C-20…C-23 界面阈值', () {
