@@ -78,6 +78,8 @@ class DocContext {
 /// 只有这四份：它们之间**互相登记对方的版号与读数**（`SCMP` §5.1 登三份的版号，
 /// `STD` 声明用例数、`STP` 汇总同一个数）。其余交付物单向来引，不构成环，没有
 /// 「两处写同一个数」的问题。
+///
+/// ⚠️ 「版号自洽」不适用这条限制 —— 见 [versionDocFiles]。
 const List<String> docFiles = <String>[
   'docs/deliverables/01-plan/SCMP-软件配置管理计划.md',
   'docs/deliverables/04-test/STD-软件测试说明.md',
@@ -89,6 +91,25 @@ const String scmpFile = 'docs/deliverables/01-plan/SCMP-软件配置管理计划
 const String stdFile = 'docs/deliverables/04-test/STD-软件测试说明.md';
 const String stpFile = 'docs/deliverables/04-test/STP-软件测试计划.md';
 const String strFile = 'docs/deliverables/04-test/STR-软件测试报告.md';
+const String sdpFile = 'docs/deliverables/01-plan/SDP-软件开发计划.md';
+const String sddFile = 'docs/deliverables/03-design/SDD-软件结构设计说明.md';
+
+/// 参与**版号自洽**的六份 = [docFiles] 四份 + `SDP` + `SDD`。
+///
+/// 为什么必须与 [docFiles] 分开：那条「只有四份」的理由是**它们互相登记读数**
+/// （用例数、`flutter test` 读数），`SDP` / `SDD` 不参与读数口径，加进去会让
+/// `D3` / `D4` / `D5` 去它们身上找用例表。但**版号自洽**是另一回事 ——
+/// `SDP` / `SDD` 同样「头部写一个版号 + 修订历史表列一串版号」，同样会脱节，
+/// 而 `SCMP` §5.1 早就逐行登记了它们（六行）。
+///
+/// 漏了这两份的代价是实测过的：`B13a` 笔 4 的摘要写「`SDD` 升 `v0.14.0`」，
+/// 而 `SDD` 头部实际停在 `v0.13.0`、树里也缺本笔落下的八份新文件 ——
+/// **两处一起没跟，`D2` 全程没报**，靠人工翻文件才发现。
+const List<String> versionDocFiles = <String>[
+  ...docFiles,
+  sdpFile,
+  sddFile,
+];
 
 /// 配置项标识 → 文件。`SCMP` §5.1 第三列以此开头。
 const Map<String, String> itemIdToFile = <String, String>{
@@ -96,6 +117,8 @@ const Map<String, String> itemIdToFile = <String, String>{
   'STD': stdFile,
   'STP': stpFile,
   'STR': strFile,
+  'SDP': sdpFile,
+  'SDD': sddFile,
 };
 
 final RegExp _versionRe = RegExp(r'^v(\d+)\.(\d+)\.(\d+)$');
@@ -248,22 +271,26 @@ bool _hasTestName(Map<String, String> tests, String name) {
 // D2 · 版号
 // ---------------------------------------------------------------------------
 
-/// `D2`：四份文件的版号必须自洽。
+/// `D2`：六份文件的版号必须自洽。
 ///
 /// 两个方向：
 ///
 /// 1. **各自内部**：头部 `> **版号**：`vX.Y.Z`` 必须是修订历史表里的**最大值**。
-///    取最大值而不是「最后一行」—— 四份表的排序方向并不统一（`STD` / `STP` 升序、
+///    取最大值而不是「最后一行」—— 表的排序方向并不统一（`STD` / `STP` 升序、
 ///    `SCMP` 前段降序后段升序、`STR` 中间还夹着 `v0.18.0` 在 `v0.17.0` 前面），
 ///    依赖位置就得先修表；而修表是另一件事，不该挡住这条检查。
-/// 2. **`SCMP` §5.1 对三份**：表里 `SCMP` / `STD` / `STP` / `STR` 四行的版号，
-///    必须等于对应文件头部的版号。这是**唯一一处**跨文件登记版号的地方，
-///    它一旦滞后，读者按 §5.1 找基线就会找错。
+/// 2. **`SCMP` §5.1 对六份**：表里 `SCMP` / `STD` / `STP` / `STR` / `SDP` / `SDD`
+///    六行的版号，必须等于对应文件头部的版号。这是**唯一一处**跨文件登记版号的
+///    地方，它一旦滞后，读者按 §5.1 找基线就会找错。
+///
+/// 覆盖范围是 [versionDocFiles] 六份而不是 [docFiles] 四份 —— `SDP` / `SDD`
+/// 同样会「头部与历史脱节」，而它们恰恰是最长、最少被翻的两份（详见
+/// [versionDocFiles] 的注释：笔 4 那次就是它们一起没跟而 `D2` 不报）。
 List<DocIssue> checkD2Versions(DocContext c) {
   final List<DocIssue> out = <DocIssue>[];
   final Map<String, String> head = <String, String>{};
 
-  for (final String f in docFiles) {
+  for (final String f in versionDocFiles) {
     final String? text = c.docs[f];
     if (text == null) {
       out.add(DocIssue(ruleId: 'D2', file: f, line: 0, message: '文件不存在'));
@@ -818,20 +845,34 @@ List<DocIssue> checkD4SpecCoverage(DocContext c) {
 }
 
 // ---------------------------------------------------------------------------
-// D5 · STD 头部读数
+// D5 · 读数单点
 // ---------------------------------------------------------------------------
 
-/// `D5`：`STD` 头部声明的 `flutter test` 读数必须等于**最新一轮实跑**。
+/// `D5`：`flutter test` 读数**只登记一处** —— `STR` 的最新轮次。
 ///
-/// 为什么不归 `D3`：`D3` 对的是「用例表有多少行」，那个数**在文档内部可复算**；
-/// `flutter test` 是**执行读数**，四份文档里唯一提供它的是 `STR` 的轮次记录。
-/// 两个口径本来就不同（608 行用例 ≠ 572 条 Dart 测试），不能互相校验，只能各找
-/// 各的权威源 —— 硬拉在一起只会让两条规则一起说谎。
+/// **这条规则原来长什么样、为什么改**：先前判的是「`STD` 头部读数 == `STR` 最新
+/// 轮次」，本意是补 `D1`–`D4` 都不管头部的那一类漏改（实测 `v0.44.0` 的 561、
+/// `v0.45.0` 的 572 连续两版没写进头部）。但它有一个**结构性盲区**：两处一起
+/// 过期时两边相等，规则全绿。`B13a` 笔 2 正是如此 —— `STD` 头部与轮次 `R15a`
+/// 双双停在 `668`，真实读数 `679`，一次都没报（见 `STR` `R15a` 的「顺带修掉
+/// 一处漏登」）。
 ///
-/// 这条规则是补前四条漏掉的那一类：**头部读数不跟正文**。实测连续两版漏改
-/// （`v0.44.0` 的 561、`v0.45.0` 的 572 都没写进去，头部一直停在 `v0.43.0` 的
-/// 548），而 `D1`–`D4` 一条都不管头部。修的时候刻意**删掉**头部另一处重复的
-/// 读数（`SPEC` 覆盖数只在 §4.1 写一份）：能不复制就不需要对账。
+/// **为什么不是「把规则写得更聪明」**：判据的可靠性取决于有没有**第三方锚**。
+/// `flutter test` 是执行读数，在文档内部无法复算 —— `D3` 数的是用例表行数，
+/// 而 608 行用例 ≠ 572 条 Dart 测试（两个口径本来就不同），硬拉在一起只会让
+/// 两条规则一起说谎。只要同一个数写两处，就存在「一起错」的窗口；窗口里任何
+/// 规则都看不见，包括更聪明的规则。
+///
+/// **所以改成结构消灭**：读数只写在 `STR` 的轮次记录里，`STD` 头部再出现同形态
+/// 读数就报。这与本仓已有的先例同源 —— `STD` 头部的覆盖缺口读数早就「只在 §4.1
+/// 一处维护，本行不复制」，理由就写在同一行里：能不对账就不需要对账。
+///
+/// ⚠️ **允许的写法**：变化叙述「748 → 414」。它不含闭合的 `**N**`，
+/// `_stdTestCountRe` 天然不命中 —— 这不是巧合，`TC-DOC-015` 专门守这个负例。
+/// 防误报比防漏报更要紧：一条会误报的规则活不过三次改动。
+///
+/// 保留另一半判据：「`STR` 最新轮次必须登记 `… passed`」。它现在是**唯一**来源，
+/// 缺了就等于整份文档集没人能说出当前读数 —— 报 warning（信息损失，不是两数打架）。
 ///
 /// 权威源取 `STR` 修订历史里**语义最大版号**那一行，不取最后一行 —— 与 `D2`
 /// 同一个理由：`STR` 的历史当下是乱序的（`v0.18.0` 排在 `v0.2.0` 之后），依赖
@@ -845,15 +886,14 @@ List<DocIssue> checkD5TestCount(DocContext c) {
     ];
   }
 
+  // 1) `STD` 头部不得再出现读数 —— 它只该在 `STR` 的轮次里。
   final List<String> stdLines = stdText.split('\n');
   int headLine = 0;
-  String? claimed;
   for (int i = 0; i < stdLines.length; i++) {
     if (_headVersionRe.firstMatch(stdLines[i]) == null) {
       continue;
     }
     headLine = i + 1;
-    claimed = _stdTestCountRe.firstMatch(stdLines[i])?.group(1);
     break;
   }
   if (headLine == 0) {
@@ -862,24 +902,26 @@ List<DocIssue> checkD5TestCount(DocContext c) {
         ruleId: 'D5',
         file: stdFile,
         line: 0,
-        message: '找不到头部版号行，无从核对 `flutter test` 读数',
+        message: '找不到头部版号行，无从检查读数是否只登记一处',
       ),
     ];
   }
-  if (claimed == null) {
+  final RegExpMatch? dup = _stdTestCountRe.firstMatch(stdLines[headLine - 1]);
+  if (dup != null) {
     out.add(
       DocIssue(
         ruleId: 'D5',
         file: stdFile,
         line: headLine,
-        message: '头部未声明 `flutter test` 读数 —— 这是「本版实跑多少条」的唯一登记处，'
-            '删掉就再也对不上 `STR`',
-        isWarning: true,
+        message: '头部仍写 `flutter test` **${dup.group(1)}** —— 读数只登记在 `STR` '
+            '最新轮次一处。同一个数写两处就有「一起过期」的窗口，窗口里这条规则'
+            '看不见（`STR` `R15a` 实证：头部与轮次双双停在 668，真实 679）。'
+            '删掉本处即可；变化叙述写「748 → 414」不会被判成读数',
       ),
     );
-    return out;
   }
 
+  // 2) `STR` 最新轮次必须登记读数 —— 它现在是唯一来源。
   final String? strText = c.docs[strFile];
   if (strText == null) {
     return <DocIssue>[
@@ -944,27 +986,17 @@ List<DocIssue> checkD5TestCount(DocContext c) {
         ruleId: 'D5',
         file: strFile,
         line: maxLine,
-        message: '`STR` 最新轮次（$maxVer）未登记 `… passed` 读数，'
-            '`D5` 无从核对 —— 补一行「`flutter test` **N passed**」即可',
+        message: '`STR` 最新轮次（$maxVer）未登记 `… passed` 读数 —— 它现在是全仓'
+            '唯一的读数来源，缺了就没有任何一处能说出当前是多少。补一行'
+            '「`flutter test` **N passed**」即可',
         isWarning: true,
-      ),
-    );
-    return out;
-  }
-  if (actual != claimed) {
-    out.add(
-      DocIssue(
-        ruleId: 'D5',
-        file: stdFile,
-        line: headLine,
-        message: '头部写 `flutter test` $claimed 条，而 `STR` 最新轮次 $maxVer '
-            '（$strFile:$maxLine）实跑 $actual 条',
       ),
     );
   }
 
   return out;
 }
+
 
 // ---------------------------------------------------------------------------
 // D6 · 相对链接
