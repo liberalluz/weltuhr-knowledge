@@ -21,7 +21,7 @@ import '../errors.dart';
 import '../json.dart';
 import 'requirement.dart';
 
-/// 树节点基类。字段集以 `docs/reference/entity-fields.md` §2 为唯一权威处。
+/// 树节点基类。字段集以 `docs/specs/entity-fields.md` §2 为唯一权威处。
 ///
 /// `sealed`：子类只能在同一库里出现（本例即本文件），「一共有几种节点」
 /// 因此在编译期封闭，`switch` 也不必写 `default`。

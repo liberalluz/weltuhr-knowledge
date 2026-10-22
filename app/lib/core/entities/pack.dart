@@ -294,7 +294,7 @@ class MethodSummary {
   };
 }
 
-/// 插件包。字段集以 `docs/reference/entity-fields.md` §1 为唯一权威处。
+/// 插件包。字段集以 `docs/specs/entity-fields.md` §1 为唯一权威处。
 class Pack {
   Pack({
     required this.pluginId,

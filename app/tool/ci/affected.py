@@ -219,7 +219,7 @@ def self_test(scopes):
         ("app", ["app/tool/ci/affected.py"], True, "判据自身在 app/ 下"),
         ("app", ["docs/deliverables/04-test/STD-软件测试说明.md"], True,
          "交付物口径由 tool/docs 对账，改了就重跑"),
-        ("app", ["docs/guides/git-conventions.md"], False, "指南不参与任何检查"),
+        ("app", ["docs/specs/git-conventions.md"], False, "指南不参与任何检查"),
         ("app", [".github/workflows/app-checks.yml"], True, "自身 workflow"),
         (
             "app",
@@ -231,8 +231,8 @@ def self_test(scopes):
         ("content", ["app/lib/main.dart"], False, "客户端改动不收进内容面"),
         ("content", ["content/tools/build.py"], True, "内容脚本"),
         ("content", ["app/tool/ci/affected.py"], True, "判据改动触发一次回归"),
-        ("content", ["docs/guides/environment.md"], False, "文档不触发"),
-        ("app", ["docs/reference/术语表.md"], False, "参考层中文名不进口径对账"),
+        ("content", ["docs/runbooks/environment.md"], False, "文档不触发"),
+        ("app", ["docs/specs/术语表.md"], False, "参考层中文名不进口径对账"),
     ]
 
     failed = 0

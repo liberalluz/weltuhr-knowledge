@@ -178,7 +178,7 @@ class QuizItem {
   };
 }
 
-/// 载荷内容。字段集以 `docs/reference/entity-fields.md` §9 为唯一权威处。
+/// 载荷内容。字段集以 `docs/specs/entity-fields.md` §9 为唯一权威处。
 class NodeEntry {
   const NodeEntry({
     required this.nodeId,

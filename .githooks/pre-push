@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # 推到 main 的提交必须带 PR 编号 —— 本地 hook 与 CI **共用同一份逻辑**。
 #
-# 判据取 docs/guides/git-conventions.md §二 / §4.1：
+# 判据取 docs/specs/git-conventions.md §二 / §4.1：
 #   `main` 只接受 PR 合入；唯一例外 = 仓库初始化首提。
 #
 # ── 为什么判「带 (#NNN)」而不是「拒绝一切 push main」────────────────
@@ -176,11 +176,11 @@ if [ "$FAIL" -ne 0 ]; then
     echo '推 main 的提交必须是 PR squash 合并的产物（标题带 `(#PR号)`）。' >&2
     echo '走法：git switch -c <type>/<topic> → commit → git push origin <branch> →' >&2
     echo '      gh pr create → gh pr merge --squash --delete-branch' >&2
-    echo '判据出处：docs/guides/git-conventions.md §二 / §3.4 / §4.1。' >&2
+    echo '判据出处：docs/specs/git-conventions.md §二 / §3.4 / §4.1。' >&2
   fi
   if [ "$FAIL_REF" -ne 0 ]; then
     echo '远端只收分支与 §五 命名的 tag；其余引用类型一律不推。' >&2
-    echo '判据出处：docs/guides/git-conventions.md §五 / §3.5。' >&2
+    echo '判据出处：docs/specs/git-conventions.md §五 / §3.5。' >&2
   fi
   exit 1
 fi

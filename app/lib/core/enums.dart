@@ -1,4 +1,4 @@
-/// 核心层共用的枚举。取值与 `docs/reference/entity-fields.md` 逐项对应。
+/// 核心层共用的枚举。取值与 `docs/specs/entity-fields.md` 逐项对应。
 ///
 /// ⚠️ **枚举名就是 JSON 取值**（`RequirementState` 是唯一例外，走蛇形
 /// `not_externalizable`）。这不是风格问题：`values.byName` 与数据取值域
@@ -123,7 +123,7 @@ enum StepPhase {
 }
 
 /// 三档刻度（`SPEC-STEP-018`）。JSON 取值 `fail` / `pass` / `proficient`
-/// （`item_graded.score`，见 `docs/reference/event-types.md` §二 A）。
+/// （`item_graded.score`，见 `docs/specs/event-types.md` §二 A）。
 enum Grade {
   fail,
   pass,

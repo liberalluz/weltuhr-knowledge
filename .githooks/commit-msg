@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # 提交信息格式判据 —— 本地 hook 与 CI **共用同一份逻辑**。
 #
-# 只认 docs/guides/git-conventions.md §3：
+# 只认 docs/specs/git-conventions.md §3：
 #   §3.1 type 11 值（必填）
 #   §3.2 scope 6 值（可省略；给了就必须是这六个，且**子维度不进 scope**）
 #   §3.3 subject ≤72 字符、句尾不加句号；有 body 时 header 与 body 之间空一行
@@ -227,7 +227,7 @@ fi
 
 if [ "$FAIL" -ne 0 ]; then
   echo '' >&2
-  echo '提交信息不符合 docs/guides/git-conventions.md §3。改正后无需重跑测试。' >&2
+  echo '提交信息不符合 docs/specs/git-conventions.md §3。改正后无需重跑测试。' >&2
   exit 1
 fi
 exit 0

@@ -1,4 +1,4 @@
-/// 全部数值常量。**唯一权威处** = `docs/reference/constants.md`。
+/// 全部数值常量。**唯一权威处** = `docs/specs/constants.md`。
 ///
 /// 两条纪律（违反即为缺陷）：
 /// 1. 代码中**禁止字面量散落** —— 由 `tool/lint` 的 R2 规则检查
@@ -107,7 +107,7 @@ const int lodBrightnessFar = 3;
 /// `C-23` 亮度通道近档灰阶层数。
 const int lodBrightnessNear = 7;
 
-// `C-24` 备注：该行不是常量，见 `docs/reference/channel-table.md` §一。
+// `C-24` 备注：该行不是常量，见 `docs/specs/channel-table.md` §一。
 
 // ──────────────────────────── 七、可信度封顶 ────────────────────────────
 
@@ -376,7 +376,7 @@ const double galaxyMinTapDiameter = 24;
 /// ⚠️ 因子是 `tan` 不是 `1/tan`：螺距角定义为「切线与**切向**的夹角」α，
 /// 沿曲线 `dr/dθ = b·r` ⇒ `tan α = b`。原表写 `1/tan(15°) = 3.73`，在盘半径比
 /// 12.5 下旋臂只转 39°（几根近乎笔直的径向短刺）；改回 `tan(15°) = 0.268`
-/// 同一盘转约 1.5 圈。勘误记在 `docs/reference/constants.md`。
+/// 同一盘转约 1.5 圈。勘误记在 `docs/specs/constants.md`。
 const double spiralPitchDeg = 15;
 
 /// `C-61` 旋臂条数。真实旋涡星系多为两条（密度波 `m = 2` 模），也是 `VIEW-037` 的写法。
