@@ -1,6 +1,6 @@
 # ADR-0008 · 文档目录换轨：六目录并为五目录，`deliverables` 原位
 
-- **状态**：已接受
+- **状态**：已接受（**执行中**：批 2 已完成 —— `adr/` 9 份并入 `decisions/`；下文「背景」描述的六目录是 **2026-10-22 决策时**的状态，按 ADR 惯例不回改历史）
 - **日期**：2026-10-22
 - **决策人**：liberal
 - **覆盖范围**：`docs/` 下 `deliverables/` **以外**的全部活文档（5 个目录、**40 份**，含本 ADR 自身）的落点；[`.swe-init.json`](../../.swe-init.json) 的 `docsProfile.dirs`。**不影响**交付物的位置、命名与版号规则
@@ -98,7 +98,7 @@
 | 相对链接 **约 620 条** | 全部要按新布局重算 | `check.dart` 的 D6（全仓相对链接检查）。**每批必须跑到 0 违规才提交**；四批预演分别需改写 52 / 66 / 118 / 111 条（**不可相加** —— 见下「预演只模拟单批」） |
 | [`docs/README.md`](../README.md) | 目录分工表、判据段、reference 明细表全部重写 | 批 6 |
 | [`AGENTS.md`](../AGENTS.md) | `:11` `:18`–`:20` `:28` `:29` `:42` `:49` 的目录名与「数值只在 `reference/`」类表述 | 与所涉批次同步改 |
-| [`adr/README.md`](../adr/README.md) | 索引搬到 `decisions/` 后，表内描述里的 `../design/` `../reference/` 要改 | 批 2 |
+| [`decisions/README.md`](README.md) | **批 2 实测无需改**：里面 `../design/` `../reference/` 都在**行内代码**里，且指向的目录仍在原位 —— 提前改反而断。等批 3/4 搬完 `design/` `reference/` 再改文本 | 批 3–4 |
 | 根 `README.md` 语言条 | 指向 `docs/readme/README.xx.md` 的 5 条要改 | 批 5 |
 | [`check.dart`](../../app/tool/docs/check.dart) | D1–D5 只读 `deliverables/` 与 `test/`，**不受影响**；D6 扫全仓，自动适配 | 批 6 复核 |
 

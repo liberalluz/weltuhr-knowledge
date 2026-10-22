@@ -9,7 +9,7 @@
 | **KST 三元组** | 知识项 `Q` · 学习者状态 `K` · 前提偏序 `⪯`。全案的理论地基 |
 | **知识空间（`space`）** | ⛔ **已作废** —— 「一空间一包」被四类包取代（`ADR-0005` 决策 2）。容器子树的新形态见 [`entity-fields`](entity-fields.md) §1.2 八槽位表 |
 | **域（`domain`）** | ⛔ **已作废** —— 「域」是五档径向投影的中间容器层。新本体改由**槽位**表达，见 [`skeleton-catalog`](skeleton-catalog.md) |
-| **知识项** | 可学的最小单元，KST 中的 `Q`。实现上是 `Node` 的两分之一 —— **`LearnableNode`**（恒在 `planet` 槽位），另一分是 `StructuralNode`。见 [`ADR-0007`](../adr/0007-node-type-shape.md) |
+| **知识项** | 可学的最小单元，KST 中的 `Q`。实现上是 `Node` 的两分之一 —— **`LearnableNode`**（恒在 `planet` 槽位），另一分是 `StructuralNode`。见 [`ADR-0007`](../decisions/0007-node-type-shape.md) |
 | **结构节点** | 只承载树形位置、不可学的容器，五槽位（`axis` / `group` / `galaxy` / `cluster` / `star`）之一。与「可学节点」**互斥且穷尽** |
 | **前提偏序（`⪯`）** | 项之间的 DAG 依赖。⚠️ **现在挂在独立的地形层**：`PrerequisiteEdge`，`strength ∈ required / recommended`；`⪯` 定义为 **`required` 边的传递闭包**，不再从「体系」或「层深」推出（`ADR-0005` 决策 4） |
 | **体系（`Scheme`）** | ⚠️ **不再是「`⪯` 的线性扩展」** —— 改为**跨轴 route**：一串有序节点，相邻两跳之间必须有树边或虫洞边，且不得违反 `required` 偏序。三条机器校验见 `ADR-0005` §二 `PLAN` 行 |
