@@ -12,24 +12,32 @@ library;
 import '../../tool/docs/rules.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-/// 一份**自洽**的迷你四件套。每个用例只改其中一处，让红点唯一。
+/// 一份**自洽**的迷你五件套。每个用例只改其中一处，让红点唯一。
+///
+/// ⚠️ 形态跟着 `S7-1` 走：迁入 `specs/` 的四份（`SCMP` / `STD` / `STP` / `SDD`）
+/// **头部不再有版号**、版号只在末尾「历史（迁移前版号序列）」节里；`STR` 仍是
+/// `deliverables/` 的形态（头部版号 + 「修订历史」）。**两种形态都要有夹具** ——
+/// `D2` 的分支恰好落在它们之间，只留一种就测不到另一半。
 Map<String, String> _docs() => <String, String>{
       scmpFile: '''
-> **版号**：`v0.1.0` · **状态**：ok
-
-| 版号 | 日期 | 修订摘要 |
-|---|---|---|
-| `v0.1.0` | 2026-10-17 | 首建 |
+> **状态**：ok
 
 | `v0.1.0` | 1 | `SCMP`（x） |
 | `v0.1.0` | 1 | `STD`（x） |
 | `v0.1.0` | 1 | `STP`（x） |
 | `v0.1.0` | 1 | `STR`（x） |
-| `v0.1.0` | 1 | `SDP`（x） |
 | `v0.1.0` | 1 | `SDD`（x） |
+
+## 历史（迁移前版号序列）
+
+| 版号 | 日期 | 修订摘要 |
+|---|---|---|
+| `v0.1.0` | 2026-10-17 | 首建 |
 ''',
       stdFile: '''
-> **版号**：`v0.1.0` · **状态**：§三 用例表 **2 条** · 读数不在此复制（归 `STR`）
+> **状态**：§三 用例表 **2 条** · 读数不在此复制（归 `STR`）
+
+## 历史（迁移前版号序列）
 
 | 版号 | 日期 | 修订摘要 |
 |---|---|---|
@@ -52,7 +60,9 @@ Map<String, String> _docs() => <String, String>{
 | **合计** | **2** | **1** | **1** |
 ''',
       stpFile: '''
-> **版号**：`v0.1.0` · **状态**：§五 用例 **2** 条
+> **状态**：§五 用例 **2** 条
+
+## 历史（迁移前版号序列）
 
 | 版号 | 日期 | 修订摘要 |
 |---|---|---|
@@ -63,25 +73,24 @@ Map<String, String> _docs() => <String, String>{
 | 单元 | 2 | `TC-FND-001`–`002` | `flutter test` |
 | **合计** | **2** | — | — |
 ''',
+      // `STR` 仍在 `deliverables/`（`S7-2` 才出仓）⇒ **头部版号照旧**，
+      // 历史节也还是旧标题「修订历史」。这一份是 `D2` 第 4 步的唯一活样本。
       strFile: '''
 > **版号**：`v0.1.0` · **记录类**：追加
+
+## 修订历史
 
 | 版号 | 日期 | 修订摘要 |
 |---|---|---|
 | `v0.1.0` | 2026-10-17 | 首建。`flutter test` **2 passed** |
 ''',
-      // `SDP` / `SDD` 不参与读数口径，只参与版号自洽（`versionDocFiles`）。
-      // 夹具必须给，否则 `D2` 会对两份报「文件不存在」—— 那正是「覆盖了却没读盘」
+      // `SDD` 已迁入 `specs/` 且剥了头部版号，只参与版号自洽（`versionDocFiles`）。
+      // 夹具必须给，否则 `D2` 会对它报「文件不存在」—— 那正是「覆盖了却没读盘」
       // 的形态，与本条要抓的错是同一类。
-      sdpFile: '''
-> **版号**：`v0.1.0` · **状态**：ok
-
-| 版号 | 日期 | 修订摘要 |
-|---|---|---|
-| `v0.1.0` | 2026-10-17 | 首建 |
-''',
       sddFile: '''
-> **版号**：`v0.1.0` · **状态**：ok
+> **状态**：ok
+
+## 历史（迁移前版号序列）
 
 | 版号 | 日期 | 修订摘要 |
 |---|---|---|
@@ -136,7 +145,7 @@ Map<String, String> _patch(Map<String, String> docs, String file, String old, St
 
 void main() {
   group('D1 落点列', () {
-    test('TC-DOC-001 自洽的四件套应当零违规（无 SPEC：检查器自身的基线，设计规格里尚无对应条目）', () {
+    test('TC-DOC-001 自洽的五件套应当零违规（无 SPEC：检查器自身的基线，设计规格里尚无对应条目）', () {
       expect(_run(_docs()), isEmpty);
     });
 
@@ -185,53 +194,52 @@ void main() {
   });
 
   group('D2 版号', () {
-    test('TC-DOC-005 头部版号取修订历史的语义最大，不依赖行的位置（无 SPEC：检查器规则）', () {
+    test('TC-DOC-005 历史节取语义最大版号，不依赖行的位置（无 SPEC：检查器规则）', () {
       Map<String, String> d = _patch(
         _docs(),
-        stdFile,
-        '`v0.1.0` | 2026-10-17 | 首建',
+        strFile,
+        '| `v0.1.0` | 2026-10-17 | 首建。`flutter test` **2 passed** |',
         // 故意**倒序**：最大的排前面、最小的排最后。若实现是「取最后一行」，
-        // 会得到 v0.2.0 而误报；只有「取语义最大」才对。顺带证明检查不依赖位置。
-        '`v0.3.0` | 2026-10-19 | 又加\n| `v0.2.0` | 2026-10-18 | 加',
+        // 会得到 v0.1.0 而误报；只有「取语义最大」才对。顺带证明检查不依赖位置。
+        '| `v0.3.0` | 2026-10-19 | 又加。`flutter test` **2 passed** |\n'
+            '| `v0.1.0` | 2026-10-17 | 首建。`flutter test` **2 passed** |',
       );
-      d = _patch(d, stdFile, '> **版号**：`v0.1.0`', '> **版号**：`v0.3.0`');
-      d = _patch(d, scmpFile, '| `v0.1.0` | 1 | `STD`（x） |', '| `v0.3.0` | 1 | `STD`（x） |');
+      d = _patch(d, strFile, '> **版号**：`v0.1.0`', '> **版号**：`v0.3.0`');
+      d = _patch(d, scmpFile, '| `v0.1.0` | 1 | `STR`（x） |', '| `v0.3.0` | 1 | `STR`（x） |');
       final List<DocIssue> issues = _run(d);
       // 表内乱序但最大值对得上 ⇒ 不报。
       expect(issues.where((DocIssue i) => i.ruleId == 'D2'), isEmpty);
     });
 
-    test('TC-DOC-006 头部与修订历史最大版号不符就报，SDP / SDD 同样在检查范围内（无 SPEC：检查器规则）', () {
-      // 夹具刻意用 `SDD` 而不是 `STD`：`D2` 扩到 `versionDocFiles` 六份之后，
-      // 若实现漏掉 `SDP` / `SDD`，这条会零红。而原实现（只有四份）正是笔 4
-      // 那次 `SDD` 头部停在 `v0.13.0`、树里缺八份新文件却没人报的原因 ——
-      // 用「被漏掉的那一份」当夹具，这条才验得出覆盖面。
+    test('TC-DOC-006 历史节最大版号与 §5.1 登记不符就报，SDD 仍在检查范围内（无 SPEC：检查器规则）', () {
+      // 夹具刻意用 `SDD`：它剥了头部版号、只剩历史节。若实现漏掉 `SDD` 这一份，
+      // 这条会零红 —— 而原实现（只有四份）正是笔 4 那次 `SDD` 头部停在
+      // `v0.13.0`、树里缺八份新文件却没人报的原因。用「被漏掉的那一份」当夹具，
+      // 这条才验得出覆盖面。
       final List<DocIssue> issues = _run(
         _patch(
           _docs(),
           sddFile,
-          '> **版号**：`v0.1.0`',
-          '> **版号**：`v0.9.0`',
+          '| `v0.1.0` | 2026-10-17 | 首建 |',
+          '| `v0.9.0` | 2026-10-21 | 后加 |',
         ),
       );
       final List<DocIssue> d2 =
           issues.where((DocIssue i) => i.ruleId == 'D2').toList();
-      expect(d2, hasLength(2), reason: '头部 → 修订历史 1 处，SCMP §5.1 登记 1 处');
-      expect(
-        d2.map((DocIssue i) => i.file).toSet(),
-        <String>{sddFile, scmpFile},
-        reason: '两处都应落在 SDD 与 SCMP 上，说明 SDD 确实在检查范围内',
-      );
-      expect(d2.map((DocIssue i) => i.message).join('\n'), contains('v0.9.0'));
+      expect(d2, hasLength(1), reason: '只有 §5.1 那一处；SDD 已无头部版号可比');
+      expect(d2.single.file, scmpFile, reason: '红点应落在 SCMP §5.1 的登记行上');
+      expect(d2.single.isWarning, isTrue, reason: '本批该支降为 warning（`S7-2` 恢复 error）');
+      expect(d2.single.message, contains('v0.9.0'));
     });
 
-    test('TC-DOC-007 SCMP §5.1 登记的版号必须等于对方头部（无 SPEC：检查器规则）', () {
+    test('TC-DOC-007 SCMP §5.1 登记的版号必须等于对方历史节最大版号（无 SPEC：检查器规则）', () {
       final List<DocIssue> issues = _run(
         _patch(_docs(), scmpFile, '| `v0.1.0` | 1 | `STD`（x） |', '| `v0.0.9` | 1 | `STD`（x） |'),
       );
       final List<DocIssue> d2 =
           issues.where((DocIssue i) => i.ruleId == 'D2').toList();
       expect(d2, hasLength(1));
+      expect(d2.single.isWarning, isTrue);
       expect(d2.single.message, contains('§5.1 登记 STD 为 v0.0.9'));
     });
   });

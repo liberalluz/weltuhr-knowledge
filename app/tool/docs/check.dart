@@ -4,11 +4,11 @@
 /// 退出码：0 无问题（警告不算）· 1 有违规 · 2 参数 / 目录错误。
 ///
 /// 与 `tool/lint/check.dart` 分工：那支管**代码**的架构不变量（`R1`–`R5`），这支管
-/// **四份交付物之间的口径**（`D1`–`D5`）与**全仓 Markdown 的相对链接**（`D6`）。
+/// **受控文档之间的口径**（`D1`–`D5`）与**全仓 Markdown 的相对链接**（`D6`）。
 /// 两支都要跑 —— `analyze` 与 `lint` 都看不见「`STD` 说 597 条、`STP` 分段展开 592 条」
 /// 这类错，也看不见「链接指到不存在的文件」。
 ///
-/// `D6` 的输入与 `D1`–`D5` 不同源：`D1`–`D5` 只读四份交付物与 `test/`，`D6` 要
+/// `D6` 的输入与 `D1`–`D5` 不同源：`D1`–`D5` 只读 `versionDocFiles` 那几份与 `test/`，`D6` 要
 /// **全仓**的 Markdown 与路径清单。两趟分开走，互不影响 —— 前者读不到的缺文件由
 /// `D2` 报「文件不存在」，后者读不到的目录直接跳过。
 ///
@@ -45,8 +45,8 @@ void main(List<String> args) {
   }
 
   final Map<String, String> docs = <String, String>{};
-  // 按 `versionDocFiles`（六份）读盘：它是 `docFiles` 的超集，`D2` 要查 `SDP` /
-  // `SDD` 的版号自洽，其余规则仍只认 `docFiles` —— 多读不影响它们，少读就是
+  // 按 `versionDocFiles`（五份）读盘：它是 `docFiles` 的超集，`D2` 要查 `SDD` 的
+  // 版号自洽，其余规则仍只认 `docFiles` —— 多读不影响它们，少读就是
   // 「文件不存在」错报。
   for (final String rel in versionDocFiles) {
     final File f = File('$repoRoot/$rel');

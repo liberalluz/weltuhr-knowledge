@@ -109,6 +109,17 @@ const Map<int, Map<String, String>> batches = <int, Map<String, String>>{
     'docs/readme/README.it.md': 'README.it.md',
     'docs/readme/README.ja.md': 'README.ja.md',
   },
+  // 批 7 = ADR-0009 的 `S7-1`：交付物解散的第一刀，五份受控文档迁入 `specs/`。
+  // 只列**本次真搬**的五份；`STR` / `DPMR` / `SDP` 是出仓（`S7-2`，目标在仓外），
+  // 17 份空壳是删除（`S7-3`），三者都不在 `batches` 里 —— 本表只描述仓内改名。
+  7: <String, String>{
+    'docs/deliverables/01-plan/SCMP-软件配置管理计划.md': 'docs/specs/scmp.md',
+    'docs/deliverables/02-requirements/SRS-软件需求规格说明.md':
+        'docs/specs/srs.md',
+    'docs/deliverables/03-design/SDD-软件结构设计说明.md': 'docs/specs/sdd.md',
+    'docs/deliverables/04-test/STP-软件测试计划.md': 'docs/specs/stp.md',
+    'docs/deliverables/04-test/STD-软件测试说明.md': 'docs/specs/std.md',
+  },
 };
 
 /// 遍历时整棵跳过的目录 —— 与 [`check.dart`](check.dart) 的 `linkSkipDirs` 一致。

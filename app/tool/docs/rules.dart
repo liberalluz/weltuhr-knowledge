@@ -77,54 +77,76 @@ class DocContext {
 
 /// 参与口径检查的四份文件。顺序即报错顺序。
 ///
-/// 只有这四份：它们之间**互相登记对方的版号与读数**（`SCMP` §5.1 登三份的版号，
+/// 只有这四份：它们之间**互相登记对方的版号与读数**（`SCMP` §5.1 登五份的版号，
 /// `STD` 声明用例数、`STP` 汇总同一个数）。其余交付物单向来引，不构成环，没有
 /// 「两处写同一个数」的问题。
 ///
 /// ⚠️ 「版号自洽」不适用这条限制 —— 见 [versionDocFiles]。
+///
+/// ⚠️ **2026-10-22 `S7-1`（`ADR-0009`）后路径三分**：`scmp` / `std` / `stp` 已迁入
+/// `docs/specs/`，`str` 仍在 `docs/deliverables/`（`S7-2` 才出仓）。四份都在仓内，
+/// 只是不再同目录 —— 所以路径只能逐条写死，不能按目录拼。
 const List<String> docFiles = <String>[
-  'docs/deliverables/01-plan/SCMP-软件配置管理计划.md',
-  'docs/deliverables/04-test/STD-软件测试说明.md',
-  'docs/deliverables/04-test/STP-软件测试计划.md',
+  'docs/specs/scmp.md',
+  'docs/specs/std.md',
+  'docs/specs/stp.md',
   'docs/deliverables/04-test/STR-软件测试报告.md',
 ];
 
-const String scmpFile = 'docs/deliverables/01-plan/SCMP-软件配置管理计划.md';
-const String stdFile = 'docs/deliverables/04-test/STD-软件测试说明.md';
-const String stpFile = 'docs/deliverables/04-test/STP-软件测试计划.md';
+const String scmpFile = 'docs/specs/scmp.md';
+const String stdFile = 'docs/specs/std.md';
+const String stpFile = 'docs/specs/stp.md';
 const String strFile = 'docs/deliverables/04-test/STR-软件测试报告.md';
-const String sdpFile = 'docs/deliverables/01-plan/SDP-软件开发计划.md';
-const String sddFile = 'docs/deliverables/03-design/SDD-软件结构设计说明.md';
 
-/// 参与**版号自洽**的六份 = [docFiles] 四份 + `SDP` + `SDD`。
+/// `SDP` 仍留在 `deliverables/`（`S7-2` 出仓），但**已退出 `D2` 的对账范围** ——
+/// 它讲里程碑与资源，与代码内容零耦合，没有「改代码时必须同时改」的读数。
+const String sdpFile = 'docs/deliverables/01-plan/SDP-软件开发计划.md';
+const String sddFile = 'docs/specs/sdd.md';
+
+/// 参与**版号自洽**的五份 = [docFiles] 四份 + `SDD`。
 ///
 /// 为什么必须与 [docFiles] 分开：那条「只有四份」的理由是**它们互相登记读数**
-/// （用例数、`flutter test` 读数），`SDP` / `SDD` 不参与读数口径，加进去会让
-/// `D3` / `D4` / `D5` 去它们身上找用例表。但**版号自洽**是另一回事 ——
-/// `SDP` / `SDD` 同样「头部写一个版号 + 修订历史表列一串版号」，同样会脱节，
-/// 而 `SCMP` §5.1 早就逐行登记了它们（六行）。
+/// （用例数、`flutter test` 读数），`SDD` 不参与读数口径，加进去会让
+/// `D3` / `D4` / `D5` 去它身上找用例表。但**版号自洽**是另一回事 ——
+/// `SDD` 同样「历史节里列一串版号」，同样会脱节，
+/// 而 `SCMP` §5.1 早就逐行登记了它。
 ///
-/// 漏了这两份的代价是实测过的：`B13a` 笔 4 的摘要写「`SDD` 升 `v0.14.0`」，
+/// 漏了它的代价是实测过的：`B13a` 笔 4 的摘要写「`SDD` 升 `v0.14.0`」，
 /// 而 `SDD` 头部实际停在 `v0.13.0`、树里也缺本笔落下的八份新文件 ——
 /// **两处一起没跟，`D2` 全程没报**，靠人工翻文件才发现。
+///
+/// ⚠️ **`S7-1` 起是五份不是六份**：`SDP` 出仓在即（`S7-2`），本批先把它移出对账
+/// 范围 —— 否则「已经不算受控」的文件仍在报红，等于用旧口径卡新结构。
 const List<String> versionDocFiles = <String>[
   ...docFiles,
-  sdpFile,
   sddFile,
 ];
 
 /// 配置项标识 → 文件。`SCMP` §5.1 第三列以此开头。
+///
+/// `SDP` 不在表内：它已退出 [versionDocFiles]，§5.1 里那一行不再对账
+/// （仍留在表里会给「登记了却没人查」的假保障）。
 const Map<String, String> itemIdToFile = <String, String>{
   'SCMP': scmpFile,
   'STD': stdFile,
   'STP': stpFile,
   'STR': strFile,
-  'SDP': sdpFile,
   'SDD': sddFile,
 };
 
 final RegExp _versionRe = RegExp(r'^v(\d+)\.(\d+)\.(\d+)$');
 final RegExp _headVersionRe = RegExp(r'^> \*\*版号\*\*：`(v\d+\.\d+\.\d+)`');
+
+/// `D5` 的锚点：头部**状态行**。
+///
+/// ⚠️ `S7-1` 剥掉五份头部版号片段后，`_headVersionRe` 在五份里一律不命中 ——
+/// `D2` 的处置是换取值来源（改读历史节），`D5` 的处置是换锚点（改读状态行），
+/// 两条规则吃同一个正则却是**两种失效方式**（取值来源没了 vs 定位锚点没了）。
+final RegExp _headStateRe = RegExp(r'^> \*\*状态\*\*：');
+
+/// 历史节标题的两种写法：迁入 `specs/` 的用新名，仍在 `deliverables/` 的用旧名。
+final RegExp _historyHeadRe =
+    RegExp(r'^## (?:历史（迁移前版号序列）|修订历史)\s*$');
 final RegExp _caseRowRe = RegExp(r'^\|\s*(?:~~)?`TC-[A-Z]+-\d+`');
 final RegExp _ticketRe = RegExp(r'`(TC-[A-Z]+-\d+)`');
 final RegExp _specRe = RegExp(r'([A-Z]{3,6})-\d{3}');
@@ -273,24 +295,34 @@ bool _hasTestName(Map<String, String> tests, String name) {
 // D2 · 版号
 // ---------------------------------------------------------------------------
 
-/// `D2`：六份文件的版号必须自洽。
+/// `D2`：五份文件的版号必须自洽。
+///
+/// ⚠️ **`S7-1` 起取值来源换了**（`ADR-0009` 决策 §2 ③）：四份已迁入 `docs/specs/`
+/// 并剥掉头部版号，「读头部那一行」不再成立。取值统一改为**读历史节的语义最大
+/// 版号** —— 判据语义不变（仍是「同一个版号不能两处不一致」），只是被比的两端
+/// 从「头部 vs 历史」改成「历史 vs `SCMP` §5.1」。
 ///
 /// 两个方向：
 ///
-/// 1. **各自内部**：头部 `> **版号**：`vX.Y.Z`` 必须是修订历史表里的**最大值**。
+/// 1. **各自内部**：历史节必须存在、版号表必须非空；**仍带头部版号的那份**
+///    （`str`，`S7-2` 才出仓）头部必须等于历史节的最大版号。
 ///    取最大值而不是「最后一行」—— 表的排序方向并不统一（`STD` / `STP` 升序、
 ///    `SCMP` 前段降序后段升序、`STR` 中间还夹着 `v0.18.0` 在 `v0.17.0` 前面），
 ///    依赖位置就得先修表；而修表是另一件事，不该挡住这条检查。
-/// 2. **`SCMP` §5.1 对六份**：表里 `SCMP` / `STD` / `STP` / `STR` / `SDP` / `SDD`
-///    六行的版号，必须等于对应文件头部的版号。这是**唯一一处**跨文件登记版号的
-///    地方，它一旦滞后，读者按 §5.1 找基线就会找错。
+/// 2. **`SCMP` §5.1 对五份**：表里 `SCMP` / `STD` / `STP` / `STR` / `SDD` 五行的
+///    版号，必须等于对应文件历史节的语义最大版号。这是**唯一一处**跨文件登记版号
+///    的地方，它一旦滞后，读者按 §5.1 找基线就会找错。
 ///
-/// 覆盖范围是 [versionDocFiles] 六份而不是 [docFiles] 四份 —— `SDP` / `SDD`
-/// 同样会「头部与历史脱节」，而它们恰恰是最长、最少被翻的两份（详见
-/// [versionDocFiles] 的注释：笔 4 那次就是它们一起没跟而 `D2` 不报）。
+/// ⚠️ **本批（`S7-1`）第 2 条降为 warning**：§5.1 的六行要按新口径重算，降级是
+/// 为了不让「表还没重排完」把整条链拦红（`ADR-0009` 决策记录第三批第 3 项）。
+/// **`S7-2` 恢复 `error`** —— 恢复时删掉那处 `isWarning: true` 即可，判据本身不要再改。
+///
+/// 覆盖范围是 [versionDocFiles] 五份而不是 [docFiles] 四份 —— `SDD` 同样会
+/// 「历史与登记脱节」，而它恰恰是最长、最少被翻的一份（详见 [versionDocFiles]）。
 List<DocIssue> checkD2Versions(DocContext c) {
   final List<DocIssue> out = <DocIssue>[];
-  final Map<String, String> head = <String, String>{};
+  // 文件 → 历史节的语义最大版号。§5.1 的对账用它，不再用头部。
+  final Map<String, String> latest = <String, String>{};
 
   for (final String f in versionDocFiles) {
     final String? text = c.docs[f];
@@ -300,6 +332,93 @@ List<DocIssue> checkD2Versions(DocContext c) {
     }
     final List<String> lines = text.split('\n');
 
+    // 1) 历史节。迁入 `specs/` 的五份叫「历史（迁移前版号序列）」，
+    //    仍在 `deliverables/` 的（`str`）还叫「修订历史」—— 两种都收。
+    int section = -1;
+    for (int i = 0; i < lines.length; i++) {
+      if (_historyHeadRe.hasMatch(lines[i])) {
+        section = i;
+        break;
+      }
+    }
+    if (section < 0) {
+      out.add(
+        DocIssue(
+          ruleId: 'D2',
+          file: f,
+          line: 0,
+          message: '找不到历史节（应为 `## 历史（迁移前版号序列）` 或 `## 修订历史`）',
+        ),
+      );
+      continue;
+    }
+    // 节的范围 = 标题之后，到下一个二级标题或文件末尾。
+    int sectionEnd = lines.length;
+    for (int i = section + 1; i < lines.length; i++) {
+      if (lines[i].startsWith('## ')) {
+        sectionEnd = i;
+        break;
+      }
+    }
+
+    // 2) 节内的版号表（表头首列是「版号」的那张）。
+    int start = -1;
+    for (int i = section + 1; i < sectionEnd; i++) {
+      final List<String> cells = _splitRow(lines[i]);
+      if (cells.isNotEmpty && cells.first == '版号') {
+        start = i;
+        break;
+      }
+    }
+    if (start < 0) {
+      out.add(
+        DocIssue(
+          ruleId: 'D2',
+          file: f,
+          line: section + 1,
+          message: '历史节里找不到版号表（表头首列应为「版号」）',
+        ),
+      );
+      continue;
+    }
+
+    // 3) 语义最大版号。
+    String? maxVer;
+    int maxLine = 0;
+    int rows = 0;
+    for (int i = start + 1; i < sectionEnd; i++) {
+      if (!lines[i].trim().startsWith('|')) {
+        break;
+      }
+      final List<String> cells = _splitRow(lines[i]);
+      if (cells.isEmpty) {
+        continue;
+      }
+      final String v = cells.first.replaceAll('`', '');
+      if (_versionRe.firstMatch(v) == null) {
+        continue;
+      }
+      rows++;
+      if (maxVer == null || _compareVersion(v, maxVer) > 0) {
+        maxVer = v;
+        maxLine = i + 1;
+      }
+    }
+    if (maxVer == null || rows == 0) {
+      out.add(
+        DocIssue(
+          ruleId: 'D2',
+          file: f,
+          line: start + 1,
+          message: '历史节的版号表为空',
+        ),
+      );
+      continue;
+    }
+    latest[f] = maxVer;
+
+    // 4) 头部仍带版号的文件（`str`）：两者必须一致。剥掉版号的那几份没有头部左值，
+    //    这一步自然跳过 —— 不是「放行」，而是「比的两端只剩历史与 §5.1」。
     String? headVer;
     int headLine = 0;
     for (int i = 0; i < lines.length; i++) {
@@ -310,88 +429,21 @@ List<DocIssue> checkD2Versions(DocContext c) {
         break;
       }
     }
-    if (headVer == null) {
-      out.add(
-        DocIssue(
-          ruleId: 'D2',
-          file: f,
-          line: 0,
-          message: '找不到头部版号行（应为 `> **版号**：`vX.Y.Z``）',
-        ),
-      );
-      continue;
-    }
-    head[f] = headVer;
-
-    // 修订历史表：表头含「版号」的那张。
-    final int start = _findTableStart(lines, (String l) => _splitRow(l).isNotEmpty && _splitRow(l).first == '版号');
-    if (start < 0) {
+    if (headVer != null && headVer != maxVer) {
       out.add(
         DocIssue(
           ruleId: 'D2',
           file: f,
           line: headLine,
-          message: '找不到修订历史表（表头首列应为「版号」）',
-        ),
-      );
-      continue;
-    }
-    String? maxVer;
-    int maxLine = 0;
-    int rows = 0;
-    for (int i = start + 1; i < lines.length; i++) {
-      if (!lines[i].trim().startsWith('|')) {
-        break;
-      }
-      final List<String> cells = _splitRow(lines[i]);
-      if (cells.isEmpty) {
-        continue;
-      }
-      final RegExpMatch? m = _versionRe.firstMatch(cells.first.replaceAll('`', ''));
-      if (m == null) {
-        continue;
-      }
-      rows++;
-      final String v = cells.first.replaceAll('`', '');
-      if (maxVer == null || _compareVersion(v, maxVer) > 0) {
-        maxVer = v;
-        maxLine = i + 1;
-      }
-    }
-    if (maxVer == null) {
-      out.add(
-        DocIssue(
-          ruleId: 'D2',
-          file: f,
-          line: start + 1,
-          message: '修订历史表里没有任何版号行',
-        ),
-      );
-      continue;
-    }
-    if (maxVer != headVer) {
-      out.add(
-        DocIssue(
-          ruleId: 'D2',
-          file: f,
-          line: headLine,
-          message: '头部版号 $headVer 与修订历史最大版号 $maxVer 不一致（后者在 $f:$maxLine）',
-        ),
-      );
-    }
-    if (rows == 0) {
-      out.add(
-        DocIssue(
-          ruleId: 'D2',
-          file: f,
-          line: start + 1,
-          message: '修订历史表为空',
+          message: '头部版号 $headVer 与历史节最大版号 $maxVer 不一致'
+              '（后者在 $f:$maxLine）',
         ),
       );
     }
   }
 
-  // SCMP §5.1：`| `vX.Y.Z` | 1 | `SCMP`（…` |
+  // 5) SCMP §5.1：`| `vX.Y.Z` | 1 | `SCMP`（…` |
+  //    ⚠️ 本批降为 warning；`S7-2` 恢复 error（删 isWarning 即可）。
   final String? scmp = c.docs[scmpFile];
   if (scmp != null) {
     final List<String> lines = scmp.split('\n');
@@ -417,14 +469,16 @@ List<DocIssue> checkD2Versions(DocContext c) {
       if (target == null) {
         continue;
       }
-      final String? actual = head[target];
+      final String? actual = latest[target];
       if (actual != null && actual != ver) {
         out.add(
           DocIssue(
             ruleId: 'D2',
             file: scmpFile,
             line: i + 1,
-            message: '§5.1 登记 $id 为 $ver，而 ${target.split('/').last} 头部是 $actual',
+            message: '§5.1 登记 $id 为 $ver，而 ${target.split('/').last} '
+                '历史节最大版号是 $actual（本批降为 warning，`S7-2` 恢复 error）',
+            isWarning: true,
           ),
         );
       }
@@ -889,10 +943,16 @@ List<DocIssue> checkD5TestCount(DocContext c) {
   }
 
   // 1) `STD` 头部不得再出现读数 —— 它只该在 `STR` 的轮次里。
+  //
+  // ⚠️ 锚点 `S7-1` 换过一次：原先靠「头部版号行」定位这一行，剥掉版号片段后
+  // 该正则不再命中（`D2` 与 `D5` 吃同一个正则，失效方式却不同 —— 前者是取值
+  // 来源没了、后者是定位锚点没了）。这里改用头部**状态行**，检查范围仍是
+  // 「头部那一行」。真正的判据重写（把读数收进 `STD` 的「当前读数」节）属
+  // `S7-2`，与 `STR` 出仓同批 —— 本批只换锚点，语义一字未动。
   final List<String> stdLines = stdText.split('\n');
   int headLine = 0;
   for (int i = 0; i < stdLines.length; i++) {
-    if (_headVersionRe.firstMatch(stdLines[i]) == null) {
+    if (!_headStateRe.hasMatch(stdLines[i])) {
       continue;
     }
     headLine = i + 1;
@@ -904,7 +964,7 @@ List<DocIssue> checkD5TestCount(DocContext c) {
         ruleId: 'D5',
         file: stdFile,
         line: 0,
-        message: '找不到头部版号行，无从检查读数是否只登记一处',
+        message: '找不到头部状态行（应为 `> **状态**：…`），无从检查读数是否只登记一处',
       ),
     ];
   }

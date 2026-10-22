@@ -26,7 +26,7 @@
 |---|---|
 | 交付物清单与命名（六段 25 种） | [`deliverables/README.md`](deliverables/README.md) §一 |
 | 排期、批次、阶段与目标版本 | [`deliverables/01-plan/SDP-软件开发计划.md`](deliverables/01-plan/SDP-软件开发计划.md) §四 |
-| 基线与配置项 | [`deliverables/01-plan/SCMP-软件配置管理计划.md`](deliverables/01-plan/SCMP-软件配置管理计划.md) §三 |
+| 基线与配置项 | [`specs/scmp.md`](specs/scmp.md) §三 |
 
 目录级约定与红线见 [`AGENTS.md`](AGENTS.md)。
 
