@@ -24,7 +24,7 @@ set -u
 
 # ⚠️ 这里是 ERE（`grep -E`），分隔符必须是裸 `|`。写成 `\|` 是 BRE 的「或」，
 # 在 ERE 里它只是字面竖线 —— 结果是一条**永远不匹配**的正则，全仓提交全被判红。
-TYPES='feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert'
+TYPES='build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test'
 SCOPES='app|server|pack|docs|infra|repo'
 MAX=72
 

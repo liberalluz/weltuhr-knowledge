@@ -116,6 +116,27 @@ git config --get core.hooksPath       # 自查：应回显 .githooks
 
 > Git 没有「仓库自带钩子自动启用」的机制（`core.hooksPath` 只能靠本地或全局配置），这是 Git 的限制，不是本仓的疏漏。要彻底免设只能靠平台侧分支保护，而当前账号类型不提供（见上）。入口处的一句话指向见 [`.github/CONTRIBUTING.md`](../../.github/CONTRIBUTING.md) §二。
 
+### 2.2 一批的固定动作
+
+每批（1 批 = 1 PR）固定走这八步，**顺序不可换**。本节只记**序列与命令**，每步的判据在各自章节，不在此复述。
+
+| #  | 动作                          | 命令                                                                                    | 判据                   |
+| -- | --------------------------- | ------------------------------------------------------------------------------------- | -------------------- |
+| 0  | 确认钩子已生效                     | `git config --get core.hooksPath` → 应回显 `.githooks`                                     | §2.1                 |
+| 1  | 从 `main` 最新点切分支，**记下起始 sha** | `git switch main` → `git fetch origin` → `git merge --ff-only origin/main` → `git switch -c <type>/<topic>` | §二；起始 sha 填 PR「分支基线」 |
+| 2  | 改文件                         | —                                                                                     | —                    |
+| 3  | 只暂存**显式路径**                 | `git add <path> …`                                                                     | ⚠️ 禁用 `git add -A` / `git add .` |
+| 4  | 提交                          | `git commit`                                                                           | §三 · `.githooks/commit-msg` |
+| 5  | 推分支                         | `git push -u origin <type>/<topic>`                                                    | 第 0 步没做 ⇒ 钩子不触发      |
+| 6  | 开 PR，**正文照骨架手填**            | `gh pr create --title … --body …`                                                      | §4.1 · 骨架见模板        |
+| 7  | squash 合入 → 合后收口            | 见 §4.2                                                                                 | §4.2（四步）            |
+
+以下三处最容易漏，单独强调：
+
+- **第 3 步**：`git add -A --dry-run`（§七）只用来**检查**有无意外文件，**不是提交方式**。暂存一律列显式路径 —— `-A` 会把 `tmp/`、本地配置、半成品一起带进去，且事后从 diff 里看不出来是「顺手带上的」还是「本来就该改」。
+- **第 5 步**：`core.hooksPath` 没设，钩子一行也不跑。拦直推 `main`、引用类型判据、`(#NNN)` 校验**三条全挂在同一个开关上**，一起失效（§2.1）。
+- **第 6 步**：`gh pr create` **不读** `.github/PULL_REQUEST_TEMPLATE.md` —— 模板只对 Web UI 生效。用 CLI 开 PR 时正文必须照骨架手填，且这一环**没有任何装置兜底**（CI 不校验正文），漏填只能事后在评论里追补。
+
 ---
 
 ## 三、提交信息
@@ -130,19 +151,22 @@ git config --get core.hooksPath       # 自查：应回显 .githooks
 
 ### 3.1 type（必填，11 种）
 
+> **值域出处**：集合与 [`@commitlint/config-conventional`](https://github.com/conventional-changelog/commitlint/tree/master/%40commitlint/config-conventional) 的 `type-enum` **完全相同**，故按字母序排列，便于与出处逐行核对。该配置被 Conventional Commits 1.0.0 正文（§4）列为推荐示例（该规范自身只 MUST 规定 `feat` / `fix` 两个）；比 Angular 现行 8 值多 `chore` / `revert` / `style`。
+> **排序不承载语义** —— 判定只看值是否在集合内，顺序不影响 `.githooks/commit-msg` 的正则匹配（11 值两两无前缀关系）。
+
 | type       | 说明             |
 | ---------- | -------------- |
+| `build`    | 构建系统或外部依赖变更    |
+| `chore`    | 其他杂项           |
+| `ci`       | CI 配置 / 脚本变更   |
+| `docs`     | 仅文档变更          |
 | `feat`     | 新功能            |
 | `fix`      | 修复 bug         |
-| `docs`     | 仅文档变更          |
-| `style`    | 不影响语义的格式调整     |
-| `refactor` | 重构，非新功能也非修 bug |
 | `perf`     | 性能优化           |
-| `test`     | 新增或修改测试        |
-| `build`    | 构建系统或外部依赖变更    |
-| `ci`       | CI 配置 / 脚本变更   |
-| `chore`    | 其他杂项           |
+| `refactor` | 重构，非新功能也非修 bug |
 | `revert`   | 回滚             |
+| `style`    | 不影响语义的格式调整     |
+| `test`     | 新增或修改测试        |
 
 ### 3.2 scope（6 值，与顶层目录一一对应）
 
@@ -156,6 +180,7 @@ git config --get core.hooksPath       # 自查：应回显 .githooks
 | `repo`   | 仓库级配置（`.gitignore` · 模板 · hook） |
 
 > **子维度不进 scope**：写成 `feat(pack/python)` 会破坏 Conventional Commits 解析；空间 / 语种等子维度放 subject 或 body。
+> **一笔只落一个 scope**：确实同时动两个顶层单元时（如改规范 + 同步钩子），取**主改动方**作 scope，另一处写进 body —— 不写 `docs(repo,docs):`，Conventional Commits 不支持多 scope。
 
 ### 3.3 subject / body / footer
 
@@ -258,11 +283,12 @@ git config --get core.hooksPath       # 自查：应回显 .githooks
 
 > 「要留历史」的正解是 **B** 不是 C：A 与 B 都**不改写**历史（护住 approval 与已拉取分支的人），**C 会**。
 
-**合后**（三步，缺一不算收口）：
+**合后**（四步，缺一不算收口）：
 
 1. **删源分支** —— 远端与本地**都要删**。远端由仓库开关自动删除（开关现状见 §4.3）；**本地不自动**。
 2. **`git fetch --prune origin`** —— 只清 `origin/*` 跟踪引用、给本地分支打上 `[gone]` 标记，**不删本地分支**，故须另跑 `git branch -D <branch>`。
-3. **收尾判据** —— `git branch` 只剩 `main`。**`[gone]` 不等于已删除。**
+3. **本地 `main` 前进** —— `git switch main` → `git merge --ff-only origin/main`。**`fetch` 只更新 `origin/main` 引用，本地 `main` 不会自己走**；漏这步，下一次从 `main` 切分支就切到合并前的旧点，PR 里的「分支基线」sha 随之失真。
+4. **收尾判据** —— `git branch` 只剩 `main`，且 `git log --oneline -1` 的标题带 `(#NNN)`。**`[gone]` 不等于已删除。**
 
 评审意见落 PR 正文 / 评论，`main` 只留里程碑结论。
 
@@ -373,8 +399,10 @@ flutter analyze                      # 零 issue
 dart run tool/lint/check.dart        # 架构规则（R1 跨层依赖 · R2 字面量常量）零违规
 flutter test                         # 全绿
 cd ..
-git add -A --dry-run                 # 确认无意外文件（不用 check-ignore 查目录，它对目录误报）
+git add -A --dry-run                 # 只看不暂存：确认无意外文件（不用 check-ignore 查目录，它对目录误报）
 ```
+
+- **`--dry-run` 是检查，不是提交方式**：实际暂存只 `git add <显式路径>`，禁 `git add -A` / `git add .`（见 §2.2 第 3 步）。两者命令长得像，容易混用 —— `-A` 在 `--dry-run` 下无害，去掉 `--dry-run` 就是把 `tmp/` 与本地配置一起推上去的那一步。
 
 - 涉及内容包时另跑 `python content/tools/build.py`，确认包能构建。
 - 涉及文档时跑相对链接校验，确认无悬空。
