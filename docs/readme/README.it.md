@@ -47,12 +47,12 @@ cd ../app && flutter run -d windows
 | [docs/](../../docs/README.md) | Documenti di consegna, documenti vivi, ADR e specifiche di progetto |
 | [infra/](../../infra/README.md) | Build / firma / aggiornamento / mirror / CI |
 
-Inoltre: [docs/reference/knowledge-system-learning-methodology.md](../../docs/reference/knowledge-system-learning-methodology.md) — la **base metodologica** di questo progetto (metodologia dell'apprendimento a sistema di conoscenza); per la specifica di progetto software vedi [docs/design/](../../docs/design/00-index.md).
+Inoltre: [docs/reference/knowledge-system-learning-methodology.md](../../docs/reference/knowledge-system-learning-methodology.md) — la **base metodologica** di questo progetto (metodologia dell'apprendimento a sistema di conoscenza); per la specifica di progetto software vedi [docs/specs/](../specs/00-index.md).
 
 ## Documentazione
 
 - [docs/README.md](../../docs/README.md) — indice della documentazione (documenti di consegna / documenti vivi / ADR)
-- [docs/design/00-index.md](../../docs/design/00-index.md) — **indice delle specifiche di progetto** (FND / VIEW / PACK / PLAN / STEP / QUANT / NOTE / GOV + tabelle trasversali)
+- [docs/specs/00-index.md](../specs/00-index.md) — **indice delle specifiche di progetto** (FND / VIEW / PACK / PLAN / STEP / QUANT / NOTE / GOV + tabelle trasversali)
 
 ## Licenza e attribuzione
 

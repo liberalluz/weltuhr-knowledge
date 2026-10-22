@@ -52,12 +52,12 @@ cd ../app && flutter run -d windows
 | [docs/](docs/README.md) | Deliverable documents, living docs, ADRs and design specs |
 | [infra/](infra/README.md) | Build / signing / updater / mirror / CI |
 
-Also: [docs/reference/knowledge-system-learning-methodology.md](docs/reference/knowledge-system-learning-methodology.md) — the **methodological basis** of this project (knowledge-system learning methodology); for the software design specification see [docs/design/](docs/design/00-index.md).
+Also: [docs/reference/knowledge-system-learning-methodology.md](docs/reference/knowledge-system-learning-methodology.md) — the **methodological basis** of this project (knowledge-system learning methodology); for the software design specification see [docs/specs/](docs/specs/00-index.md).
 
 ## Documentation
 
 - [docs/README.md](docs/README.md) — documentation index (deliverables / living docs / ADRs)
-- [docs/design/00-index.md](docs/design/00-index.md) — **design specification index** (FND / VIEW / PACK / PLAN / STEP / QUANT / NOTE / GOV + cross-cutting tables)
+- [docs/specs/00-index.md](docs/specs/00-index.md) — **design specification index** (FND / VIEW / PACK / PLAN / STEP / QUANT / NOTE / GOV + cross-cutting tables)
 
 ## Licence and attribution
 

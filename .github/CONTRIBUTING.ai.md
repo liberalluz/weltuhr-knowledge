@@ -18,7 +18,7 @@ None of these is model-specific. They are what happens when a plausible sentence
 | # | Rule | Basis |
 |---|---|---|
 | 1 | **The submitter owns the change.** Whoever opens the pull request answers for it, whatever drafted it. | "the model said so" is not evidence |
-| 2 | **Verification output is pasted from a real terminal.** No paraphrase, no reconstruction, no screenshot of a summary. | `X-05` observable assertion — [design/00-index §4](../docs/design/00-index.md) |
+| 2 | **Verification output is pasted from a real terminal.** No paraphrase, no reconstruction, no screenshot of a summary. | `X-05` observable assertion — [specs/00-index §4](../docs/specs/00-index.md) |
 | 3 | **Decisions stay human.** A-, B- and D-level items and every `TBD` value are changed by people only, never by an assistant on its own initiative. | [`CONTRIBUTING.md`](CONTRIBUTING.md) §1 |
 | 4 | **Cite, do not restate.** If a rule already exists somewhere, link it; a second copy will drift from the first. | [`docs/README.md`](../docs/README.md) §5 |
 | 5 | **Declare the scope of the participation.** The `AI participation` line of the pull request body states what was drafted, what was edited, and what a human actually checked. | PR body fields — [git-conventions §4.1](../docs/guides/git-conventions.md) |

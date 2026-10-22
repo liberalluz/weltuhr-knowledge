@@ -31,11 +31,11 @@
 
 | 本章 | 对应设计文档 | 本文件写什么 | 不写什么 |
 |---|---|---|---|
-| §二 分层与模块边界 | [FND](../../design/FND-foundation.md) · [SSDD](SSDD-系统结构设计说明.md) | 分层、模块划分、依赖方向 | 领域模型定义（回指 FND） |
-| §三 内容管线 | [PACK](../../design/PACK-content-pack.md) | 源数据 → 构建 → 加载三段的结构 | pack schema 字段（回指 PACK 与 `reference/entity-fields.md`） |
-| §四 事件内核 | [FND](../../design/FND-foundation.md) | 事件表、折叠、持久化的结构 | 事件类型全集（回指 `reference/event-types.md`） |
-| §五 视图投影 | [VIEW](../../design/VIEW-views.md) | 投影管线与渲染入口 | 通道映射（回指 `reference/channel-table.md`） |
-| §六 关键机制 | [QUANT](../../design/QUANT-quantification.md) · [GOV](../../design/GOV-governance.md) | 掌握度计算、同步与合并的落点 | 参数数值（回指 `reference/constants.md`） |
+| §二 分层与模块边界 | [FND](../../specs/FND-foundation.md) · [SSDD](SSDD-系统结构设计说明.md) | 分层、模块划分、依赖方向 | 领域模型定义（回指 FND） |
+| §三 内容管线 | [PACK](../../specs/PACK-content-pack.md) | 源数据 → 构建 → 加载三段的结构 | pack schema 字段（回指 PACK 与 `reference/entity-fields.md`） |
+| §四 事件内核 | [FND](../../specs/FND-foundation.md) | 事件表、折叠、持久化的结构 | 事件类型全集（回指 `reference/event-types.md`） |
+| §五 视图投影 | [VIEW](../../specs/VIEW-views.md) | 投影管线与渲染入口 | 通道映射（回指 `reference/channel-table.md`） |
+| §六 关键机制 | [QUANT](../../specs/QUANT-quantification.md) · [GOV](../../specs/GOV-governance.md) | 掌握度计算、同步与合并的落点 | 参数数值（回指 `reference/constants.md`） |
 
 **为什么这样分**：`design/` 是活文档（不设版号、随讨论演进），本文件按版号冻结。若复制设计正文，必然出现「设计改了交付物没改」。
 

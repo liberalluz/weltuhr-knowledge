@@ -18,7 +18,7 @@
 | `app/`     | Flutter 客户端（Windows / macOS / iOS 一套代码）                         | 产品版本 `vX.Y.Z`（§五）          |
 | `server/`  | Serverpod 服务端（事件同步 · HLC 合并 · 鉴权）                               | 与客户端**同一产品版本** `vX.Y.Z`（§五） |
 | `content/` | 内容包源数据与构建管线（每空间一目录 + `tools/build.py`）                          | 独立内容包版本（§五）                |
-| `docs/`    | 软件工程文档（`design/` `reference/` `guides/` `decisions/` `deliverables/`） | 活文档不设版号；交付物另计（§六）          |
+| `docs/`    | 软件工程文档（`specs/` `reference/` `guides/` `decisions/` `deliverables/`） | 活文档不设版号；交付物另计（§六）          |
 | `infra/`   | 构建 / 打包 / 签名 / 更新器 / CI                                         | 随产品版本                      |
 
 **入库判据**：源数据（json / md / 脚本）入库；**构建产物不入库**。
@@ -342,7 +342,7 @@ git config --get core.hooksPath       # 自查：应回显 .githooks
 | --- | --------------------------------------------- | -------------------------------------------------------------------------------------------------------- | ----------- |
 | 客户端 | `vX.Y.Z`（SemVer 2.0.0，`+N` 为构建号）              | `app/pubspec.yaml` 的 `version`（当前 `0.1.0+1`，**开发期基线，未发布**）                                               | `vX.Y.Z`    |
 | 服务端 | 与客户端**同一产品版本** `vX.Y.Z`                     | `server/pubspec.yaml` 的 `version`，须与 `app/pubspec.yaml` **逐字相同**（含 `+N` 构建号；字段名在脚手架生成后核对）                   | 与客户端**共用** `vX.Y.Z` |
-| 内容包 | 单包 semver；合成版本 `pack@vX + overlay@N`（两个版本号独立） | `pack.json` 的 `meta.version`，见 `docs/design/PACK-content-pack.md` §二 · `docs/reference/entity-fields.md` | `pack/<space>/vX.Y.Z` |
+| 内容包 | 单包 semver；合成版本 `pack@vX + overlay@N`（两个版本号独立） | `pack.json` 的 `meta.version`，见 `docs/specs/PACK-content-pack.md` §二 · `docs/reference/entity-fields.md` | `pack/<space>/vX.Y.Z` |
 
 - **两端同版本**（`app/` 与 `server/`）：共用一个产品版本 `vX.Y.Z`，**一个 tag 覆盖双端**，不设 `server/` 或 `app/` 前缀。两端 `pubspec.yaml` 的 `version` 须**逐字相同**（含 `+N` 构建号）；不一致**视为构建错误**，由 CI 比对拦截（`server/` 脚手架落地时接入）。**理由**：两端靠事件 schema 通信，版本错配本身就是兼容问题；共用版本让「这个客户端能不能连这个服务端」一眼可判，不必再维护兼容矩阵。
 - **协议变更的发布顺序**：**服务端先发，且向后兼容至少一个版本** —— 新服务端先上线并接受旧客户端写入（新字段缺省、未知字段不报错），客户端随后放量；摘除兼容层须在确认旧版本客户端无活跃设备后进行，并记 ADR。**禁止客户端先发**：新客户端会调用尚未存在的端点，属必然故障而非灰度风险。**依据**：iOS 审核周期不可控，若要求两端同批，服务端会被审核窗口阻塞数天到数周。事件 schema 变更属 **B 级**（§4.4），PR 须写明兼容策略，不写的不予合入。
@@ -383,7 +383,7 @@ git push origin pack/python/v1.2.0
 
 ## 六、交付物版号
 
-**版号口径的权威处 = [`docs/README.md`](../README.md) §一**：`docs/deliverables/**` 用 `vX.Y.Z` **独立递增**；`design/` `reference/` `guides/` `decisions/` 属活文档，**不设版号**，更新时间以 `git log` 为准（**不要求手写「最后更新」头** —— 手写头会变成第二份会过期的记录）。本节只补 **git 侧**的约束，不复述那套规则。
+**版号口径的权威处 = [`docs/README.md`](../README.md) §一**：`docs/deliverables/**` 用 `vX.Y.Z` **独立递增**；`specs/` `reference/` `guides/` `decisions/` 属活文档，**不设版号**，更新时间以 `git log` 为准（**不要求手写「最后更新」头** —— 手写头会变成第二份会过期的记录）。本节只补 **git 侧**的约束，不复述那套规则。
 
 | 约束       | 内容                                                                                |
 | -------- | --------------------------------------------------------------------------------- |

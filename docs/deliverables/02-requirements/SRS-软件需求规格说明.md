@@ -19,20 +19,20 @@
 
 ## 一、需求来源与编号
 
-需求条目全集 = [`../../design/00-index.md`](../../design/00-index.md) 的 **203 条**，格式 `SPEC-<域>-<NNN>`：
+需求条目全集 = [`../../design/00-index.md`](../../specs/00-index.md) 的 **203 条**，格式 `SPEC-<域>-<NNN>`：
 
 | 域 | 对应设计文档 | 条数 | `v0.1.0` | `v0.2.0` | `v1.0.0` | `v1.1.0` |
 |---|---|---|---|---|---|---|
-| `FND` | [FND-foundation](../../design/FND-foundation.md) | 16 | 16 | 0 | 0 | 0 |
-| `VIEW` | [VIEW-views](../../design/VIEW-views.md) | 35 | 34 | 0 | 1 | 0 |
-| `PACK` | [PACK-content-pack](../../design/PACK-content-pack.md) | 18 | 11 | 7 | 0 | 0 |
-| `PLAN` | [PLAN-planning](../../design/PLAN-planning.md) | 21 | 19 | 2 | 0 | 0 |
-| `STEP` | [STEP-learning-steps](../../design/STEP-learning-steps.md) | 34 | 34 | 0 | 0 | 0 |
-| `QUANT` | [QUANT-quantification](../../design/QUANT-quantification.md) | 15 | 15 | 0 | 0 | 0 |
-| `NOTE` | [NOTE-notes](../../design/NOTE-notes.md) | 19 | 0 | 19 | 0 | 0 |
-| `GOV` | [GOV-governance](../../design/GOV-governance.md) | 14 | 0 | 11 | 1 | 2 |
-| `ACC` | [ACC-accounts](../../design/ACC-accounts.md) | 15 | 12 | 3 | 0 | 0 |
-| `SYNC` | [SYNC-sync](../../design/SYNC-sync.md) | 16 | 0 | 16 | 0 | 0 |
+| `FND` | [FND-foundation](../../specs/FND-foundation.md) | 16 | 16 | 0 | 0 | 0 |
+| `VIEW` | [VIEW-views](../../specs/VIEW-views.md) | 35 | 34 | 0 | 1 | 0 |
+| `PACK` | [PACK-content-pack](../../specs/PACK-content-pack.md) | 18 | 11 | 7 | 0 | 0 |
+| `PLAN` | [PLAN-planning](../../specs/PLAN-planning.md) | 21 | 19 | 2 | 0 | 0 |
+| `STEP` | [STEP-learning-steps](../../specs/STEP-learning-steps.md) | 34 | 34 | 0 | 0 | 0 |
+| `QUANT` | [QUANT-quantification](../../specs/QUANT-quantification.md) | 15 | 15 | 0 | 0 | 0 |
+| `NOTE` | [NOTE-notes](../../specs/NOTE-notes.md) | 19 | 0 | 19 | 0 | 0 |
+| `GOV` | [GOV-governance](../../specs/GOV-governance.md) | 14 | 0 | 11 | 1 | 2 |
+| `ACC` | [ACC-accounts](../../specs/ACC-accounts.md) | 15 | 12 | 3 | 0 | 0 |
+| `SYNC` | [SYNC-sync](../../specs/SYNC-sync.md) | 16 | 0 | 16 | 0 | 0 |
 | **合计** | — | **203** | **141** | **58** | **2** | **2** |
 
 **`ACC` 12 条进 `v0.1.0` 的理由**：账号被裁定为**使用前提**（`ACC-001`），不登录进不了主界面 ⇒ 这条链在 `v0.1.0` 就必须成立。剩 3 条（`ACC-008` 强制可验证渠道 · `ACC-012` 多设备会话 · `ACC-014` 旧数据认领）依赖验证渠道与多设备，随 `v0.2.0`。
@@ -42,7 +42,7 @@
 
 ## 二、跨文档约束
 
-另有 **9 条跨文档约束** `X-01`–`X-09` 同时约束多份设计文档（见 [`00-index.md`](../../design/00-index.md) §四）。它们不单独成条，**落在具体 `SPEC` 上**，此处只登记落点与归属版本：
+另有 **9 条跨文档约束** `X-01`–`X-09` 同时约束多份设计文档（见 [`00-index.md`](../../specs/00-index.md) §四）。它们不单独成条，**落在具体 `SPEC` 上**，此处只登记落点与归属版本：
 
 | 约束 | 落点 | 归属 |
 |---|---|---|
@@ -85,7 +85,7 @@
 
 ### 3.3 `FND` 域（16 条，全部 `v0.1.0`）
 
-> 「验收指向」里的 `FND 验收表` 指 [`FND-foundation.md`](../../design/FND-foundation.md) 末尾的验收表（其余域同理），文档链接见 §一。
+> 「验收指向」里的 `FND 验收表` 指 [`FND-foundation.md`](../../specs/FND-foundation.md) 末尾的验收表（其余域同理），文档链接见 §一。
 > `⚠ 无验收行` = 该条在验收表里没有任何对应断言 —— 清单汇总与原因见 §五 ①。
 
 | 编号 | 需求陈述 | 验收指向 |

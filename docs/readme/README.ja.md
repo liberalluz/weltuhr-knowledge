@@ -47,12 +47,12 @@ cd ../app && flutter run -d windows
 | [docs/](../../docs/README.md) | 成果物ドキュメント、生きたドキュメント、ADR、設計仕様 |
 | [infra/](../../infra/README.md) | ビルド / 署名 / アップデータ / ミラー / CI |
 
-そのほか：[docs/reference/knowledge-system-learning-methodology.md](../../docs/reference/knowledge-system-learning-methodology.md) — 本プロジェクトの**方法論的な根拠**（知識体系学習の方法論）。ソフトウェア設計仕様は [docs/design/](../../docs/design/00-index.md) を参照してください。
+そのほか：[docs/reference/knowledge-system-learning-methodology.md](../../docs/reference/knowledge-system-learning-methodology.md) — 本プロジェクトの**方法論的な根拠**（知識体系学習の方法論）。ソフトウェア設計仕様は [docs/specs/](../specs/00-index.md) を参照してください。
 
 ## ドキュメント
 
 - [docs/README.md](../../docs/README.md) — ドキュメント体系の索引（成果物 / 生きたドキュメント / ADR）
-- [docs/design/00-index.md](../../docs/design/00-index.md) — **設計仕様の索引**（FND / VIEW / PACK / PLAN / STEP / QUANT / NOTE / GOV + 横断表）
+- [docs/specs/00-index.md](../specs/00-index.md) — **設計仕様の索引**（FND / VIEW / PACK / PLAN / STEP / QUANT / NOTE / GOV + 横断表）
 
 ## ライセンスとクレジット
 
