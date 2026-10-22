@@ -19,5 +19,5 @@ serverpod start --no-docker   # 内嵌 PostgreSQL；测试库用 serverpod datab
 ## 相关文档
 
 - 交付文档与活文档：[../docs/README.md](../docs/README.md)
-- 跨设备合并与治理：[../docs/specs/GOV-governance.md](../docs/specs/GOV-governance.md) · [../docs/reference/event-types.md](../docs/reference/event-types.md)
+- 跨设备合并与治理：[../docs/specs/GOV-governance.md](../docs/specs/GOV-governance.md) · [../docs/specs/event-types.md](../docs/specs/event-types.md)
 - 实现约定与边界：见 [AGENTS.md](AGENTS.md)；规则细则以 `docs/` 为准（**不复制**）

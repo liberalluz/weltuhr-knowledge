@@ -3,7 +3,7 @@
 - **状态**：已接受
 - **日期**：2026-10-20
 - **决策人**：liberal
-- **覆盖范围**：[`entity-fields.md`](../reference/entity-fields.md) §1.2 `Node` 的**字段集不变**，本 ADR 只定「这些字段在 Dart 里如何组织成类型」；`B13a` 出口判据的可观测形式
+- **覆盖范围**：[`entity-fields.md`](../specs/entity-fields.md) §1.2 `Node` 的**字段集不变**，本 ADR 只定「这些字段在 Dart 里如何组织成类型」；`B13a` 出口判据的可观测形式
 
 ## 背景
 
@@ -187,5 +187,5 @@ class Node { ... final LearnableType? type; final Layer? layer; final Requiremen
 ## 后续
 
 - **`B13a` 的范围由本 ADR 确定**：实体层 + `ParentIndex` + `id`/`path`/URI 三元校验 + JSON 原子写 + 三区物理分离。不依赖三份目录数据。
-- **`B13b` 才需要数据**：3,323 个骨架节点、`slug` 生成、`official_code` 回填。见 [`skeleton-catalog.md`](../reference/skeleton-catalog.md)。
+- **`B13b` 才需要数据**：3,323 个骨架节点、`slug` 生成、`official_code` 回填。见 [`skeleton-catalog.md`](../specs/skeleton-catalog.md)。
 - 旧实体的**字段去向**（映射 / 合并 / 丢弃）是本 ADR 之外的施工清单，随 `B13a` 首笔写入 PR 描述，不另立文档 —— 它是一次性的，不是规范。

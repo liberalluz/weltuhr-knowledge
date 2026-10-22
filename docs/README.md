@@ -8,7 +8,7 @@
 | 目录 | 内容 | 版号 |
 |---|---|---|
 | [specs/](specs/00-index.md) | **设计规格** —— 产品与系统的「是什么」 | 活文档，不设版号 |
-| [reference/](reference/channel-table.md) | **参考层** —— 横切七表（通道 / 常量 / 事件类型 / 实体字段 / 术语 / path 规则 / NOT 清单）+ 未决台账 + 两份规格（骨架数据 / 最小示例包）+ 两份方法论长文，**共 12 份** | 活文档，不设版号 |
+| [reference/](specs/channel-table.md) | **参考层** —— 横切七表（通道 / 常量 / 事件类型 / 实体字段 / 术语 / path 规则 / NOT 清单）+ 未决台账 + 两份规格（骨架数据 / 最小示例包）+ 两份方法论长文，**共 12 份** | 活文档，不设版号 |
 | [deliverables/](deliverables/README.md) | **交付物** —— 按 GB/T 8567 组织的**六段 25 种**（计划 / 需求 / 设计 / 测试 / 交付 / 总结） | `vX.Y.Z` 独立递增 |
 | [guides/](guides/) | **操作指南** —— 怎么做（环境、Git、依赖许可…） | 活文档，不设版号 |
 | [decisions/](decisions/) | **架构决策记录** —— 为什么这么选，含被否方案与代价 | 活文档，不设版号 |
@@ -51,18 +51,18 @@
 
 | 文件 | 内容 | 类型 |
 |---|---|---|
-| [channel-table.md](reference/channel-table.md) | 视觉通道 ↔ 语义维度映射（含唯一豁免） | 表 |
-| [constants.md](reference/constants.md) | 全部数值常量（`S₀`、配额、系数、`carry`…） | 表 |
-| [event-types.md](reference/event-types.md) | 事件类型全集与字段 | 表 |
-| [entity-fields.md](reference/entity-fields.md) | 实体字段表 | 表 |
-| [glossary.md](reference/glossary.md) | 术语表（含八对易混辨析） | 表 |
-| [path-rules.md](reference/path-rules.md) | `path` 的 **16 条规则** + 与三元校验器的对应 | 规则表 |
-| [not-list.md](reference/not-list.md) | **明确不做**的事 + 理由 | 表 |
-| [open-decisions.md](reference/open-decisions.md) | **尚未裁定**的口径 + 备选 + 阻挡的批次 | 台账 |
-| [minimal-pack.md](reference/minimal-pack.md) | **M1 最小示例包** —— `B13a` 笔 2–6 的验收样本 + 6 个错误码 | 规格 |
-| [skeleton-catalog.md](reference/skeleton-catalog.md) | **骨架数据规格** —— 三轴取哪份目录、槽位映射、编号定位、体积预算（`B13b` 的输入） | 规格 |
-| [knowledge-system-learning-methodology.md](reference/knowledge-system-learning-methodology.md) | **知识体系学习方法论** —— 全案的上游理论依据 | 长文 |
-| [knowledge-space-navigation-methodology.md](reference/knowledge-space-navigation-methodology.md) | **知识空间导航方法论** —— 为什么三轴、为什么七级、锚点质量（`ADR-0005` 的论证依据） | 长文 |
+| [channel-table.md](specs/channel-table.md) | 视觉通道 ↔ 语义维度映射（含唯一豁免） | 表 |
+| [constants.md](specs/constants.md) | 全部数值常量（`S₀`、配额、系数、`carry`…） | 表 |
+| [event-types.md](specs/event-types.md) | 事件类型全集与字段 | 表 |
+| [entity-fields.md](specs/entity-fields.md) | 实体字段表 | 表 |
+| [glossary.md](specs/glossary.md) | 术语表（含八对易混辨析） | 表 |
+| [path-rules.md](specs/path-rules.md) | `path` 的 **16 条规则** + 与三元校验器的对应 | 规则表 |
+| [not-list.md](decisions/not-list.md) | **明确不做**的事 + 理由 | 表 |
+| [open-decisions.md](decisions/open-decisions.md) | **尚未裁定**的口径 + 备选 + 阻挡的批次 | 台账 |
+| [minimal-pack.md](specs/minimal-pack.md) | **M1 最小示例包** —— `B13a` 笔 2–6 的验收样本 + 6 个错误码 | 规格 |
+| [skeleton-catalog.md](specs/skeleton-catalog.md) | **骨架数据规格** —— 三轴取哪份目录、槽位映射、编号定位、体积预算（`B13b` 的输入） | 规格 |
+| [knowledge-system-learning-methodology.md](intent/knowledge-system-learning-methodology.md) | **知识体系学习方法论** —— 全案的上游理论依据 | 长文 |
+| [knowledge-space-navigation-methodology.md](intent/knowledge-space-navigation-methodology.md) | **知识空间导航方法论** —— 为什么三轴、为什么七级、锚点质量（`ADR-0005` 的论证依据） | 长文 |
 
 **`not-list` 与 `open-decisions` 是同一根轴的两端**：一个记「已裁不做」，一个记「未裁待定」。**裁定后条目从台账迁出**（进 ADR / 规格 / `not-list`），台账删行不留尸。两者都不得互相抄写内容。
 
@@ -70,7 +70,7 @@
 
 ## 四、方法论依据
 
-[reference/knowledge-system-learning-methodology.md](reference/knowledge-system-learning-methodology.md) —— KST 三元组、定位算子全景（五族 17 个）、习得七步的理论推导。本项目的设计规格是其软件化落地；**方法论讲「人怎么学」，规格讲「软件怎么设计」**，两者不同层，冲突时以方法论的理论结论为准、以规格的实现取舍为落地。
+[reference/knowledge-system-learning-methodology.md](intent/knowledge-system-learning-methodology.md) —— KST 三元组、定位算子全景（五族 17 个）、习得七步的理论推导。本项目的设计规格是其软件化落地；**方法论讲「人怎么学」，规格讲「软件怎么设计」**，两者不同层，冲突时以方法论的理论结论为准、以规格的实现取舍为落地。
 
 ## 五、写作纪律
 

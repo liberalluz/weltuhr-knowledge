@@ -6,7 +6,7 @@
 
 ## 背景
 
-本项目（Weltuhr）需要把一份已完成的知识体系学习方法论落地为软件：桌面（Windows / macOS）+ iOS 的客户端，加服务端同步与治理。方法论本身见 [`../reference/knowledge-system-learning-methodology.md`](../reference/knowledge-system-learning-methodology.md)，产品与系统的设计规范已完成（140 条裁定），需要一份可实施的基线。
+本项目（Weltuhr）需要把一份已完成的知识体系学习方法论落地为软件：桌面（Windows / macOS）+ iOS 的客户端，加服务端同步与治理。方法论本身见 [`../reference/knowledge-system-learning-methodology.md`](../intent/knowledge-system-learning-methodology.md)，产品与系统的设计规范已完成（140 条裁定），需要一份可实施的基线。
 
 ## 决策
 

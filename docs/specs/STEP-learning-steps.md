@@ -1,6 +1,6 @@
 # STEP · 习得
 
-> **前置阅读**：[FND](FND-foundation.md) · [PLAN](PLAN-planning.md)。SRS 参数见 [`../reference/constants.md`](../reference/constants.md)，事件见 [`../reference/event-types.md`](../reference/event-types.md)。
+> **前置阅读**：[FND](FND-foundation.md) · [PLAN](PLAN-planning.md)。SRS 参数见 [`../reference/constants.md`](constants.md)，事件见 [`../reference/event-types.md`](event-types.md)。
 > **明确不管**：FSRS 公式与掌握度合成（→ [QUANT](QUANT-quantification.md)）· 笔记（→ [NOTE](NOTE-notes.md)）。
 
 ---

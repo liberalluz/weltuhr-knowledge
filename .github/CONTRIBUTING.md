@@ -13,7 +13,7 @@ The design baseline of this repository is a set of **adjudicated, numbered speci
 | **C-level docs** | wording, examples, dead links | any contributor | one sentence in the PR |
 | **B-level** | constant values, field nullability, new event types | maintainer sign-off | PR + change note + backfill the cross-cutting table |
 | **A-level** | six axes, `⪯`, event model, channel table, protocol | **maintainers only** | issue first → ADR → then change the specification |
-| **D-level** | conflict with the [NOT list](../docs/reference/not-list.md) | **only a maintainer may overrule a NOT item** | don't; if you must, leave a record |
+| **D-level** | conflict with the [NOT list](../docs/decisions/not-list.md) | **only a maintainer may overrule a NOT item** | don't; if you must, leave a record |
 | **TBD values** | `C-28` search fuzziness threshold, etc. | **maintainers only** | do not fill in, do not supply a default |
 | **External commitments** | licence, supported version window, response times, brand name | **maintainers only** | change requires an explicit announcement and a written record |
 
@@ -69,7 +69,7 @@ Why rule 5 exists: the docs and code in this repository follow fixed conventions
 | 1 | is the observable assertion there | `X-05` |
 | 2 | are rules **cited** or copied into a second source | [docs/README §5](../docs/README.md) |
 | 3 | does the interface quietly draw a field the model never declared | `X-01` |
-| 4 | is the NOT list touched | [not-list](../docs/reference/not-list.md) |
+| 4 | is the NOT list touched | [not-list](../docs/decisions/not-list.md) |
 
 ⚠️ **Current state**: branch protection is not enabled on `main` (private repositories on free GitHub accounts cannot use it), so the constraints above **rest on discipline** rather than on system enforcement — see [git-conventions §4.3 remote state](../docs/guides/git-conventions.md). "Technically nothing stops it" does not make it allowed.
 

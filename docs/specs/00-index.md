@@ -1,13 +1,13 @@
 # Weltuhr 设计规格 · 索引
 
-> **本目录是什么**：产品与系统的**设计基线**，回答「是什么」。理论依据在 [`../reference/knowledge-system-learning-methodology.md`](../reference/knowledge-system-learning-methodology.md)（回答「人怎么学」）。
+> **本目录是什么**：产品与系统的**设计基线**，回答「是什么」。理论依据在 [`../reference/knowledge-system-learning-methodology.md`](../intent/knowledge-system-learning-methodology.md)（回答「人怎么学」）。
 > **本文件是导航与裁决规则，不承载具体设计内容。**
 
 ## 一、怎么读
 
 - **第 0 步永远是 [FND](FND-foundation.md)** —— 其余九份都引用其中的术语与判据。
 - 每份开头都有「前置阅读」与「明确不管」两行。**「明确不管」是防重复的手段，不是可选项** —— 它指定了该内容归谁管。
-- 数值一律不写在正文里，只写表项 id（如「见 `C-01`」），去 [`../reference/constants.md`](../reference/constants.md) 查。
+- 数值一律不写在正文里，只写表项 id（如「见 `C-01`」），去 [`../reference/constants.md`](constants.md) 查。
 
 ## 二、十份主题文档
 
@@ -17,10 +17,10 @@
 |---|---|---|---|---|---|
 | [FND](FND-foundation.md) | KST 三元组 · **三轴七级容器树** · 六要件三态 · `⪯`（挂地形层）· 身份与地址之辨 · 事件折叠底座 | 16 | 局部待修订 | — | 视图与档位（VIEW）· 包格式（PACK） |
 | [VIEW](VIEW-views.md) | 容器树 + 3D 宇宙双视图 · 档位与换根 · 虫洞过渡 · 详情面板 · 搜索四类落点 | 40 | **整体作废** | FND | 掌握度公式（QUANT）· 笔记内容（NOTE） |
-| [PACK](PACK-content-pack.md) | **四类包**（`skeleton` / `payload` / `overlay` / `terrain` / `method`）· manifest 三组 · 载荷子树 · path 16 条规则 | 18 | 局部待修订 | FND | 事件字段（reference/event-types）· 审核裁定（GOV） |
+| [PACK](PACK-content-pack.md) | **四类包**（`skeleton` / `payload` / `overlay` / `terrain` / `method`）· manifest 三组 · 载荷子树 · path 16 条规则 | 18 | 局部待修订 | FND | 事件字段（`event-types`）· 审核裁定（GOV） |
 | [PLAN](PLAN-planning.md) | 源=材料 · 体系=**跨轴 route** · 方法=动作+判据 · 三段自建 · `Plan` 实体 · 实时预览 · 候选排序 | 22 | 局部待修订 | FND · PACK | 方法与判据的执行（STEP） |
 | [STEP](STEP-learning-steps.md) | 七步行为 · Runner 三入队源 · 会话边界 · 步骤游标 · 六类执行算子 · 检验两出口（前置挂 `terrain`） | 34 | 局部待修订 | FND · PLAN | SRS 参数与公式（QUANT） |
-| [QUANT](QUANT-quantification.md) | 掌握度两维 · 进度离散 · 三层单调状态 · **`requirements` 只挂行星层** · FSRS 参数落位 | 15 | 局部待修订 | FND · STEP | 视觉表达（VIEW）· 常量数值（reference/constants） |
+| [QUANT](QUANT-quantification.md) | 掌握度两维 · 进度离散 · 三层单调状态 · **`requirements` 只挂行星层** · FSRS 参数落位 | 15 | 局部待修订 | FND · STEP | 视觉表达（VIEW）· 常量数值（`constants`） |
 | [NOTE](NOTE-notes.md) | `Note` 实体 · 三层内容 · 两套切换 · 单向导出三戳 · 按节版本 · 与判定的隔离 | 19 | 术语待同步 | FND · PACK · STEP | 模板排版（平台声明）· 笔记内容正确性（内容作者） |
 | [GOV](GOV-governance.md) | 提交四裁定 · `OverlayPatch` · `PathClaim` 墓碑 · 跨设备 HLC 合并 · 孤儿项 · 降级五档 | 14 | 局部待修订 | FND · PACK | 包格式（PACK） |
 | [ACC](ACC-accounts.md) | 账号为**云能力**前提 · 账号/登录方式分层 · 三渠道 · 注册五步 · 会话双令牌 · `userId` 接缝 | 15 | **现行** | FND · event-types | 事件搬运（SYNC）· 包格式（PACK）· 治理裁定权（GOV） |
@@ -61,8 +61,8 @@
 | 交付物 | 作废形态 | 残余价值怎么保 | 主要引用点 | 清偿 |
 |---|---|---|---|---|
 | [`VIEW-views.md`](VIEW-views.md)（40 条） | **整卷封存**：头部横幅 + 正文整体包进 HTML 注释 | 「§树的四类行」与 `VIEW-014`「点星 ⇒ 详情」的分派原则 → 交给 `B17a`，**重新裁定、不继承编号** | `STD` 里 `VIEW-*` 的用例挂靠（**押后**，见 §二.1 清偿顺序） | `B17a` 落地后重写 |
-| [`channel-table.md`](../reference/channel-table.md) | **整卷封存**：同上 | ① 一通道一维度（`X-02`）② §三 的豁免论证**方法** ③ §五 的排除清单 | `entity-fields` · `VIEW` · `SDP` · 本文件 §三 | `B17b` 建新表后删 |
-| [`constants.md`](../reference/constants.md)（90 条） | **分层标废**：§〇 登记 51 作废 / 1 待重定 / 4 暂留 / 34 现行，正文各节按状态读 | 34 条**现行**仍被代码引用，整卷封存会误伤 | 全仓（数值常量的唯一处） | 逐节清理，随 `B13a`–`B17b` |
+| [`channel-table.md`](channel-table.md) | **整卷封存**：同上 | ① 一通道一维度（`X-02`）② §三 的豁免论证**方法** ③ §五 的排除清单 | `entity-fields` · `VIEW` · `SDP` · 本文件 §三 | `B17b` 建新表后删 |
+| [`constants.md`](constants.md)（90 条） | **分层标废**：§〇 登记 51 作废 / 1 待重定 / 4 暂留 / 34 现行，正文各节按状态读 | 34 条**现行**仍被代码引用，整卷封存会误伤 | 全仓（数值常量的唯一处） | 逐节清理，随 `B13a`–`B17b` |
 
 > **形态不同，判据是同一条**：残余价值是**条目级**还是**整表级**。`constants` 90 条里 34 条还在跑 ⇒ 只能分层；`VIEW` / `channel-table` 的地基整块不存在、逐条改等于重写（`VIEW` 里 `Z0`–`Z4` 出现 **258 处**）⇒ 只能整卷封存。
 > **⚠️ 三份里只有一份带运行期风险**：`C-55` / `C-56` **仍在代码里跑**（接 `GalaxyLayout.spun()` 与 `StarSystemLayout.advanced()`）。**文档标废不等于代码停了** —— 随 `B13a` 删 `features/universe/` 时一并停用，**不得只删文档留代码**。其余两份是纯文档，标废即生效。
@@ -73,16 +73,16 @@
 
 | 表 | 内容 | 主要引用方 | 状态 |
 |---|---|---|---|
-| [channel-table](../reference/channel-table.md) | 视觉通道 ↔ 语义维度（含唯一豁免） | ~~VIEW · QUANT~~ | **整体作废** —— 六通道随 `ADR-0005` 决策 3 与 `ADR-0006` 失效 |
-| [constants](../reference/constants.md) | 全部数值常量 | 全部 | 部分作废 —— 见该文件头的作废登记 |
-| [event-types](../reference/event-types.md) | 事件类型全集 | PACK · STEP · NOTE · GOV | **现行**（已补 `navigate`） |
-| [entity-fields](../reference/entity-fields.md) | 实体字段表 | 全部 | **现行**（已按 `ADR-0005` / `0007` 重写） |
-| [glossary](../reference/glossary.md) | 术语与八对辨析 | 全部 | 待修订 —— 五条术语与一处二分建在旧本体上 |
-| [not-list](../reference/not-list.md) | 明确不做 + 理由 | 全部（实施者必读） | 待修订 —— `N-01` / `N-11` / `N-13` 的**理由**引旧机制（结论仍成立） |
+| [channel-table](channel-table.md) | 视觉通道 ↔ 语义维度（含唯一豁免） | ~~VIEW · QUANT~~ | **整体作废** —— 六通道随 `ADR-0005` 决策 3 与 `ADR-0006` 失效 |
+| [constants](constants.md) | 全部数值常量 | 全部 | 部分作废 —— 见该文件头的作废登记 |
+| [event-types](event-types.md) | 事件类型全集 | PACK · STEP · NOTE · GOV | **现行**（已补 `navigate`） |
+| [entity-fields](entity-fields.md) | 实体字段表 | 全部 | **现行**（已按 `ADR-0005` / `0007` 重写） |
+| [glossary](glossary.md) | 术语与八对辨析 | 全部 | 待修订 —— 五条术语与一处二分建在旧本体上 |
+| [not-list](../decisions/not-list.md) | 明确不做 + 理由 | 全部（实施者必读） | 待修订 —— `N-01` / `N-11` / `N-13` 的**理由**引旧机制（结论仍成立） |
 
-> 另有**上游理论长文** [`../reference/knowledge-system-learning-methodology.md`](../reference/knowledge-system-learning-methodology.md) —— 全案的理论依据。它是 `specs/` 的**上游**（specs 全部引用它，它不引用 specs），改动频率远低于 specs，故归入参考层而非设计基线。
+> 另有**上游理论长文** [`../reference/knowledge-system-learning-methodology.md`](../intent/knowledge-system-learning-methodology.md) —— 全案的理论依据。它是 `specs/` 的**上游**（specs 全部引用它，它不引用 specs），改动频率远低于 specs，故归入参考层而非设计基线。
 >
-> 同层的第二篇是 [`../reference/knowledge-space-navigation-methodology.md`](../reference/knowledge-space-navigation-methodology.md) —— **三轴容器树的论证依据**（16 个维度的取舍 · 三轴锚点质量 · 七级同构逐级映射）。它同样只作上游：**结论以 [`ADR-0005`](../decisions/0005-three-axis-tree-replaces-six-axis.md) / [`0006`](../decisions/0006-3d-rendering-stack-and-visual-style.md) / [`0007`](../decisions/0007-node-type-shape.md) 为准**，方法论本身可继续演进。
+> 同层的第二篇是 [`../reference/knowledge-space-navigation-methodology.md`](../intent/knowledge-space-navigation-methodology.md) —— **三轴容器树的论证依据**（16 个维度的取舍 · 三轴锚点质量 · 七级同构逐级映射）。它同样只作上游：**结论以 [`ADR-0005`](../decisions/0005-three-axis-tree-replaces-six-axis.md) / [`0006`](../decisions/0006-3d-rendering-stack-and-visual-style.md) / [`0007`](../decisions/0007-node-type-shape.md) 为准**，方法论本身可继续演进。
 
 ## 四、跨文档约束清单
 
@@ -120,7 +120,7 @@
 | TBD-4 | 导出的打包形态（目录树 / 单文件 / zip） | NOTE |
 | TBD-5 | 空间级自由笔记的排序与归档位置 | NOTE |
 | TBD-6 | 能力清单的排序键（按空间 / 掌握度 / 毕业时间）与「适用场景」来源 | QUANT |
-| TBD-9 | ~~搜索模糊匹配阈值（`C-28`），须实测标定~~ —— **已裁定**（2026-10-18）：`C-28` 判「v0.1 不适用」，模糊档 = 子串包含，不做相似度阈值。理由与边界见 [`../reference/constants.md`](../reference/constants.md) §八注 | VIEW · ✅ 已关闭 |
+| TBD-9 | ~~搜索模糊匹配阈值（`C-28`），须实测标定~~ —— **已裁定**（2026-10-18）：`C-28` 判「v0.1 不适用」，模糊档 = 子串包含，不做相似度阈值。理由与边界见 [`../reference/constants.md`](constants.md) §八注 | VIEW · ✅ 已关闭 |
 | TBD-10 | 候选卡的元素排布细节（三段一致的三段卡片） | PLAN |
 | TBD-11 | 总览链的具体形态（分段来自 `methodProfile`，但视觉待定） | QUANT |
 | TBD-12 | 事件累计量（复习次数 / 累计时长 / 学习天数）是否进首屏，以及多设备重合时的呈现口径 | VIEW |
@@ -131,13 +131,13 @@
 | TBD-17 | 条款与隐私政策勾选的时点（注册时 / 首次启动） | ACC |
 | TBD-18 | 账号删除的具体形态与冷却期（`v1.0.0` 上架硬性要求） | ACC |
 
-> **已裁定（2026-10-17）**：TBD-7 → `C-25` = **0.5**（[QUANT-008](QUANT-quantification.md)）· TBD-8 → `C-03` = **0.90**。**已裁定（2026-10-18）**：TBD-9 → `C-28` 判 **v0.1 不适用**（模糊档 = 子串包含，不做阈值；见 [`../reference/constants.md`](../reference/constants.md) §八注）。编号保留不复用、不重排，以免既有引用失效。
+> **已裁定（2026-10-17）**：TBD-7 → `C-25` = **0.5**（[QUANT-008](QUANT-quantification.md)）· TBD-8 → `C-03` = **0.90**。**已裁定（2026-10-18）**：TBD-9 → `C-28` 判 **v0.1 不适用**（模糊档 = 子串包含，不做阈值；见 [`../reference/constants.md`](constants.md) §八注）。编号保留不复用、不重排，以免既有引用失效。
 
 > **TBD-12 / TBD-13 为什么现在挂而不现在定**：跨设备同步尚未开工（`GOV-011` 只裁了「不去重、都重放」，没裁呈现）。而当前 [VIEW-018](VIEW-views.md) 的 HUD 七区块与 [QUANT-011](QUANT-quantification.md) 的两个分区**本来就不含任何事件计数**，所以这两条在 `v0.1.0` 无实现压力。挂 TBD 的目的是：将来真要加统计卡片时，**先定口径再加**，而不是先加一个会随设备数翻倍的裸数字。详见 [VIEW](VIEW-views.md) 的 `VIEW-035`（`VIEW-018` 末尾有指针）。
 
 > **TBD-14–TBD-18 为什么不阻塞**：前四条是外部服务商与平台回调方式，[`ACC-006`](ACC-accounts.md) 已按批次把它们各自隔离在一个版本里，选型晚定只影响该批开工，不影响条目结构；`TBD-18` 属 `v1.0.0` 上架要求，届时随审核材料一并定。**五条都不阻塞 `v0.1.0`。**
 
-> TBD 与「未提出的需求」不同：TBD 是**已知要定、暂不必定**；未提出的需求（如推荐引擎一键生成、跨空间统一队列）已在 [NOT 清单](../reference/not-list.md) 中明确排除或挂待办。
+> TBD 与「未提出的需求」不同：TBD 是**已知要定、暂不必定**；未提出的需求（如推荐引擎一键生成、跨空间统一队列）已在 [NOT 清单](../decisions/not-list.md) 中明确排除或挂待办。
 
 ## 七、变更纪律
 

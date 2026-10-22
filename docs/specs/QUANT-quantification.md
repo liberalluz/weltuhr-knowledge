@@ -1,6 +1,6 @@
 # QUANT · 量化
 
-> **前置阅读**：[FND](FND-foundation.md) · [STEP](STEP-learning-steps.md)。所有数值见 [`../reference/constants.md`](../reference/constants.md)。
+> **前置阅读**：[FND](FND-foundation.md) · [STEP](STEP-learning-steps.md)。所有数值见 [`../reference/constants.md`](constants.md)。
 > **明确不管**：掌握度在界面上怎么画（→ [VIEW](VIEW-views.md) 的轨道环）· FSRS 参数的标定过程（→ `guides/`）。
 
 ---
@@ -92,7 +92,7 @@ mastery = d × s
 
 ### SPEC-QUANT-010 毕业的视觉表达：轨道环加线型
 **裁定**：轨道环**填充比例 = 掌握度**，**线型 = 毕业状态**（实线闭合 = 已毕业 / 虚线开口 = 未毕业）。
-**这是全案唯一一次对「一通道一维度」的显式豁免**，理由与限制见 [`channel-table.md`](../reference/channel-table.md) §三。**不得作为先例。**
+**这是全案唯一一次对「一通道一维度」的显式豁免**，理由与限制见 [`channel-table.md`](channel-table.md) §三。**不得作为先例。**
 `src:` Y1
 
 ### SPEC-QUANT-011 能力清单是进展视图的一个分区

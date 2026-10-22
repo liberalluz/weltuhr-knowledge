@@ -30,5 +30,5 @@ flutter run -d windows        # 必须在 app/ 目录内运行（内容包按运
 ## 相关文档
 
 - 交付文档与活文档：[../docs/README.md](../docs/README.md)
-- 设计规格（视图与通道细节）：[../docs/specs/VIEW-views.md](../docs/specs/VIEW-views.md) · [../docs/reference/channel-table.md](../docs/reference/channel-table.md)
+- 设计规格（视图与通道细节）：[../docs/specs/VIEW-views.md](../docs/specs/VIEW-views.md) · [../docs/specs/channel-table.md](../docs/specs/channel-table.md)
 - 实现约定与边界：见 [AGENTS.md](AGENTS.md)；规则细则以 `docs/` 为准（**不复制**）

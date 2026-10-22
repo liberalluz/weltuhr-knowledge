@@ -24,7 +24,7 @@ python content/tools/verify.py --suite              # 全部 fixtures（源层 +
 
 ## 取值域
 
-**唯一权威处是 [`docs/reference/entity-fields.md`](../../docs/reference/entity-fields.md)**。本表只做索引，不重述取值 —— 同一批字面量若在这里再写一遍，就成了第二份事实源。要改取值，先改那份，再改代码。
+**唯一权威处是 [`docs/specs/entity-fields.md`](../../docs/specs/entity-fields.md)**。本表只做索引，不重述取值 —— 同一批字面量若在这里再写一遍，就成了第二份事实源。要改取值，先改那份，再改代码。
 
 | 用到的地方 | 权威处 |
 |---|---|
