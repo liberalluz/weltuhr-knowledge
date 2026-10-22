@@ -1,7 +1,7 @@
 # Contributing
 
 > **What this file covers**: **governance** — who may change which level of decision · who is eligible to review · what a review looks at · roles · behavioural expectations · response times · licensing and DCO.
-> **What it does not cover**: **process and format** — repository layout · branching · commit format · PR granularity · **approval count** · merge strategy · versions and tags · deliverable version numbers. All of that is authoritative in [`docs/guides/git-conventions.md`](../docs/guides/git-conventions.md) and is not duplicated here. Design content → [`docs/design/00-index.md`](../docs/design/00-index.md); security vulnerabilities → [`SECURITY.md`](SECURITY.md).
+> **What it does not cover**: **process and format** — repository layout · branching · commit format · PR granularity · **approval count** · merge strategy · versions and tags · deliverable version numbers. All of that is authoritative in [`docs/guides/git-conventions.md`](../docs/guides/git-conventions.md) and is not duplicated here. Design content → [`docs/design/00-index.md`](../docs/design/00-index.md); security vulnerabilities → [`SECURITY.md`](SECURITY.md); AI-assisted contributions → [`CONTRIBUTING.ai.md`](CONTRIBUTING.ai.md).
 
 ## 1. Authority boundaries
 
@@ -48,13 +48,13 @@ A large PR that was never discussed will be closed rather than reviewed — not 
 |---|---|---|
 | 1 | Local self-verification | run everything in [git-conventions §7 pre-commit self-check](../docs/guides/git-conventions.md); paste the **commands actually executed and their output** into the PR body |
 | 2 | Observable assertion | new behaviour needs a test vector; "it's implemented in the code" is not acceptance (`X-05`, see [00-index §4](../docs/design/00-index.md)) |
-| 3 | DCO sign-off | `git commit -s`, every commit carries `Signed-off-by` (see §8) |
+| 3 | DCO sign-off | every commit carries `Signed-off-by`; what counts as signed, and the check that rejects a commit without it: [git-conventions §3.3](../docs/guides/git-conventions.md) |
 | 4 | One thing per PR | refactors and behaviour changes are not mixed; code and docs are not mixed in one commit |
 | 5 | No stowaways | change only what you described; an unrelated problem you spot gets **its own issue**, not a drive-by reorder / rename / beautification |
 
 Why rule 5 exists: the docs and code in this repository follow fixed conventions (tables first, cite rather than duplicate, nothing is rendered that the model does not declare). The cost of "tidying up along the way" is that the reviewer must work out line by line which parts are the real change, and reverting such a PR costs far more than it was worth.
 
-**Using an AI assistant to write code is subject to all of these rules**, plus one more: a model saying "it passes" is not evidence — paste the output from your own terminal. Platform and runtime semantics are settled by official documentation and results on real hardware, not by a local build.
+**Using an AI assistant to write code is subject to all of these rules**, plus one more: a model saying "it passes" is not evidence — paste the output from your own terminal. Platform and runtime semantics are settled by official documentation and results on real hardware, not by a local build. The AI-specific obligations are in [`CONTRIBUTING.ai.md`](CONTRIBUTING.ai.md).
 
 ## 4. Review
 
@@ -83,6 +83,18 @@ Why rule 5 exists: the docs and code in this repository follow fixed conventions
 
 Current maintainer: [@liberalluz](https://github.com/liberalluz)
 
+### Collaboration tiers
+
+The rules above are written for every size at once, but **what actually has to change is triggered by who is collaborating**, not by a date. These are trigger conditions only; the approval count and merge mechanics stay in [git-conventions §4](../docs/guides/git-conventions.md).
+
+| Tier | Trigger | What changes on entering it |
+|---|---|---|
+| **1 · Solo + AI** | one maintainer, changes drafted with AI assistants (current) | the `AI participation` line is the only record of what a human checked; the self-review conclusion stands in for approval |
+| **2 · Two or more maintainers** | a second maintainer is added (§5) | the self-review conclusion stops counting as approval; A- and B-level changes need a maintainer who did not write them |
+| **3 · External contributors** | the first pull request from outside the maintainer list | contributors must state their AI participation scope in the PR body; provenance of AI-assisted content is checked before merge |
+
+Entering a tier is a governance change, not a setting: the trigger is a fact (a second maintainer exists, an outside PR arrived), and the obligations of that tier take effect from the next pull request. The AI-specific obligations, which apply in every tier, are in [`CONTRIBUTING.ai.md`](CONTRIBUTING.ai.md).
+
 ## 6. Expected behaviour
 
 This repository does not yet have a separate `CODE_OF_CONDUCT.md`; these four rules apply in the meantime:
@@ -107,7 +119,7 @@ Handling of violations: a maintainer may lock a discussion, close a PR, or refus
 ## 8. Licence and attribution
 
 - By submitting, you agree that your contribution is distributed under **Apache-2.0** (see [`../LICENSE`](../LICENSE), [`../NOTICE`](../NOTICE)).
-- **DCO**: commits must use `git commit -s` and carry `Signed-off-by: Your Name <email>`, certifying that you have the right to submit the content (text at [developercertificate.org](https://developercertificate.org/)). This is not a copyright assignment; you keep the copyright.
+- **DCO**: every commit carries `Signed-off-by: Your Name <email>`, certifying that you have the right to submit the content (text at [developercertificate.org](https://developercertificate.org/)); how to produce the line, and the check that rejects a commit without it, are in [git-conventions §3.3](../docs/guides/git-conventions.md). This is not a copyright assignment; you keep the copyright.
 - Knowledge content in a **content pack** (`content/`) must be original, or come from sources whose licence is compatible with this project; **do not introduce** text or media from CC-BY-NC, GPL or AGPL sources (criteria in [dependency-licenses §2](../docs/guides/dependency-licenses.md)). A content erratum does not change the original author's attribution.
 - Third-party code or media must be registered **in the same PR** in [`../NOTICE`](../NOTICE) and the [dependency licence list](../docs/guides/dependency-licenses.md).
 
