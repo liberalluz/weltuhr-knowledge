@@ -1,6 +1,6 @@
 # PACK · 空间与内容包
 
-> **前置阅读**：[FND](FND-foundation.md)。字段定义见 [`../reference/entity-fields.md`](../reference/entity-fields.md)，事件见 [`../reference/event-types.md`](../reference/event-types.md)。
+> **前置阅读**：[FND](FND-foundation.md)。字段定义见 [`../reference/entity-fields.md`](entity-fields.md)，事件见 [`../reference/event-types.md`](event-types.md)。
 > **明确不管**：提交审核的四裁定（→ [GOV](GOV-governance.md)）· 体系怎么选（→ [PLAN](PLAN-planning.md)）· 笔记模板（→ [NOTE](NOTE-notes.md)）。
 
 ---

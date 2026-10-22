@@ -14,9 +14,9 @@
 
 | ID | 裁定 | 落点 | 日期 |
 |---|---|---|---|
-| `OD-01` | `path` 16 条规则**成文**于新建的 `path-rules.md`，由既有已裁文档推导、逐条标 `src:`；不引外部「插件标准」（该文档不存在），不靠 M1 样本反推 | [`path-rules.md`](path-rules.md) | 2026-10-20 |
-| `OD-02` | **删掉** `criteria.judge_type`，改由 `quiz[].judge` 派生（1:1 关系下二者同义；与 `progressKind` 不入库同构） | [`entity-fields.md`](entity-fields.md) §9.2 注 · §9.3 注 | 2026-10-20 |
-| `OD-03` | ⑤⑥ 标识符**保持** `explain` / `do`；`teach` / `build` 案被否（`build` 与打包脚本同词异义） | [`entity-fields.md`](entity-fields.md) §9.1 · [`../specs/STEP-learning-steps.md`](../specs/STEP-learning-steps.md) §SPEC-STEP-012 注 | 2026-10-20 |
+| `OD-01` | `path` 16 条规则**成文**于新建的 `path-rules.md`，由既有已裁文档推导、逐条标 `src:`；不引外部「插件标准」（该文档不存在），不靠 M1 样本反推 | [`path-rules.md`](../specs/path-rules.md) | 2026-10-20 |
+| `OD-02` | **删掉** `criteria.judge_type`，改由 `quiz[].judge` 派生（1:1 关系下二者同义；与 `progressKind` 不入库同构） | [`entity-fields.md`](../specs/entity-fields.md) §9.2 注 · §9.3 注 | 2026-10-20 |
+| `OD-03` | ⑤⑥ 标识符**保持** `explain` / `do`；`teach` / `build` 案被否（`build` 与打包脚本同词异义） | [`entity-fields.md`](../specs/entity-fields.md) §9.1 · [`../specs/STEP-learning-steps.md`](../specs/STEP-learning-steps.md) §SPEC-STEP-012 注 | 2026-10-20 |
 
 > **`OD-01` 的裁定附带一条约束**：本文件头部原写「4 处引用」，实测为 **3 处**（`ADR-0005:43` · `SDP:86` · `skeleton-catalog` 两行）—— 「4 处」把 `00-index` 的 PACK 行也算进去了，但那行写的是「path 16 条规则」而非「见插件标准」。数量不影响结论，记此以免下一个人对不上账。
 
@@ -27,7 +27,7 @@
 | # | 已裁内容 | 落点 | 状态 |
 |---|---|---|---|
 | 1 | 本文件（未决口径台账）本身 | 本文件 | ✅ 已落（`2026-10-20`） |
-| 2 | M1「最小示例包」—— 作为 `B13a` 笔 2–6 的验收样本 | [`minimal-pack.md`](minimal-pack.md) 规格 + `app/test/fixtures/m1/` 数据 | ✅ **已落**（`2026-10-20`，7 组 fixture：1 正例 + 6 反例） |
+| 2 | M1「最小示例包」—— 作为 `B13a` 笔 2–6 的验收样本 | [`minimal-pack.md`](../specs/minimal-pack.md) 规格 + `app/test/fixtures/m1/` 数据 | ✅ **已落**（`2026-10-20`，7 组 fixture：1 正例 + 6 反例） |
 | 3 | 三包作废登记（`B3` / `B12` 相关交付物的作废形态） | [`00-index`](../specs/00-index.md) §二.2 | ✅ **已落**（`2026-10-20`）—— 不另开文件，落在 §二.1「作废登记」的同一区：两者是同一件事的两个粒度（§二.1 记**每一卷**的状态，§二.2 记**三份已废交付物**采用哪种手法封存） |
 | 4 | 310 条 `items` 的 `id` 迁移口径 | `T15`（310 条 `items` 迁移映射，未开工） | ✅ **已探**（`2026-10-20`）—— 实测结论见本文件下方注；**落点未写**，随 `T15` 成表 |
 

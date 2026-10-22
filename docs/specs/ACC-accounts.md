@@ -1,6 +1,6 @@
 # ACC · 账号
 
-> **前置阅读**：[FND](FND-foundation.md) · [`../reference/event-types.md`](../reference/event-types.md)。所有数值见 [`../reference/constants.md`](../reference/constants.md)。
+> **前置阅读**：[FND](FND-foundation.md) · [`../reference/event-types.md`](event-types.md)。所有数值见 [`../reference/constants.md`](constants.md)。
 > **明确不管**：事件的搬运与游标（→ [SYNC](SYNC-sync.md)）· 内容包格式（→ [PACK](PACK-content-pack.md)）· 治理裁定权（→ [GOV](GOV-governance.md)）。
 
 ---
@@ -124,7 +124,7 @@
 ## 五、与事件模型的接缝
 
 ### SPEC-ACC-013 `userId` 进事件顶层，不进 `hlc`
-**裁定**：事件公共信封加 `userId`（见 [`event-types.md`](../reference/event-types.md) §一）。**不放进 `hlc`**。
+**裁定**：事件公共信封加 `userId`（见 [`event-types.md`](event-types.md) §一）。**不放进 `hlc`**。
 
 **两条不能混**：`hlc` 定「谁先谁后」，`userId` 定「这条属于谁」。合并成一个字段，会出现「用户 A 的迟到事件被排成用户 B 的更早事件」这类无法排查的错。
 
@@ -150,7 +150,7 @@
 | 微信等第三方登录 | 本次范围为 `email` / `phone` / `apple` 三渠道；第三方登录还会触发 Apple 指南 4.8 |
 | 内建 RBAC / 组织 / 权限矩阵 | 每个账号权限完全相同，数据隔离靠 `userId` 过滤，不需要角色 |
 
-详见 [`../reference/not-list.md`](../reference/not-list.md) `N-15`–`N-17`。
+详见 [`../reference/not-list.md`](../decisions/not-list.md) `N-15`–`N-17`。
 `src:` 2026-10-18 用户裁定
 
 ---

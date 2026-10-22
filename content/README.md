@@ -56,5 +56,5 @@ content/
 ## 相关文档
 
 - 包格式与边界判据：[../docs/specs/PACK-content-pack.md](../docs/specs/PACK-content-pack.md)
-- 实体字段与事件类型：[../docs/reference/entity-fields.md](../docs/reference/entity-fields.md) · [../docs/reference/event-types.md](../docs/reference/event-types.md)
+- 实体字段与事件类型：[../docs/specs/entity-fields.md](../docs/specs/entity-fields.md) · [../docs/specs/event-types.md](../docs/specs/event-types.md)
 - 实现约定与边界：见 [AGENTS.md](AGENTS.md)；规则细则以 `docs/` 为准（**不复制**）

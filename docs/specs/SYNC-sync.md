@@ -1,7 +1,7 @@
 # SYNC · 跨设备同步
 
-> **前置阅读**：[FND](FND-foundation.md) · [GOV](GOV-governance.md)（`GOV-010` / `GOV-011`）· [ACC](ACC-accounts.md) · [`../reference/event-types.md`](../reference/event-types.md)。所有数值见 [`../reference/constants.md`](../reference/constants.md)。
-> **明确不管**：事件类型与字段（→ [`event-types.md`](../reference/event-types.md)）· 合并后语义（→ `GOV-010` / `GOV-011`）· 账号与会话（→ [ACC](ACC-accounts.md)）· 内容包格式（→ [PACK](PACK-content-pack.md)）。
+> **前置阅读**：[FND](FND-foundation.md) · [GOV](GOV-governance.md)（`GOV-010` / `GOV-011`）· [ACC](ACC-accounts.md) · [`../reference/event-types.md`](event-types.md)。所有数值见 [`../reference/constants.md`](constants.md)。
+> **明确不管**：事件类型与字段（→ [`event-types.md`](event-types.md)）· 合并后语义（→ `GOV-010` / `GOV-011`）· 账号与会话（→ [ACC](ACC-accounts.md)）· 内容包格式（→ [PACK](PACK-content-pack.md)）。
 
 ---
 
@@ -163,7 +163,7 @@
 | 服务端计算掌握度 / 进度 | 会使服务端成为第二判定点（`SYNC-002`） |
 | 跨空间原子同步 | 空间是独立故障域（`SYNC-012`），原子性会把一个空间的包问题扩散成全部失败 |
 
-详见 [`../reference/not-list.md`](../reference/not-list.md) `N-18`。
+详见 [`../reference/not-list.md`](../decisions/not-list.md) `N-18`。
 `src:` 2026-10-18 传输层草案
 
 ---

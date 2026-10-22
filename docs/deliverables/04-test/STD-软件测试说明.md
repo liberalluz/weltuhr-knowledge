@@ -164,7 +164,7 @@
 | `TC-PACK-040` | `PACK-005` | 语义 | `pack-meta-version-mismatch`：`meta.version=0.1.1`，源为 `0.1.0` | 同上 | 退出码 1，含 `E-META-VERSION` | 管线 | `fixtures/pack/pack-meta-version-mismatch/expect.json` |
 | `TC-PACK-041` | `PACK-005` | 语义 | `pack-meta-version-format`：`meta.version=0.1`（两段式） | 同上 | 退出码 1，含 `E-META-VERSION`（非三段 semver） | 管线 | `fixtures/pack/pack-meta-version-format/expect.json` |
 
-> **`TC-PACK-011`–`041` 的「对应 `SPEC`」多为 `—`，这是有意的**：这 31 条测的是**字段级判据**，其权威处是 [`docs/reference/entity-fields.md`](../../reference/entity-fields.md) 的各节，不是 `SPEC-*`。硬凑一个编号会让追溯表看起来完整、实际指错地方 —— 那正是 `R-09` 要防的形态。能确定对应的（`PACK-005` 五段与 `meta`、`PACK-007` 段集合、`FND-002` 六轴、`FND-003` 三层、`FND-013` 稳定 id）已如实填。
+> **`TC-PACK-011`–`041` 的「对应 `SPEC`」多为 `—`，这是有意的**：这 31 条测的是**字段级判据**，其权威处是 [`docs/reference/entity-fields.md`](../../specs/entity-fields.md) 的各节，不是 `SPEC-*`。硬凑一个编号会让追溯表看起来完整、实际指错地方 —— 那正是 `R-09` 要防的形态。能确定对应的（`PACK-005` 五段与 `meta`、`PACK-007` 段集合、`FND-002` 六轴、`FND-003` 三层、`FND-013` 稳定 id）已如实填。
 
 > ⚠️ **`TC-PACK-010` 的标号待核**：fixture 的 note 写「`SPEC-PACK-005`：逆序不禁止，但必须算出 inversions」，而 `PACK-005` 标题是「pack 五段 + `meta` 信封」；逆序语义更贴近 `SPEC-PLAN-012`「逆序不禁止，但必须算清并显示」。此处按 **note 原文**登记（不擅自改源码），并列入 §五 待核项。
 
@@ -1776,7 +1776,7 @@
 
 > ⚠️ **补登说明**：笔 2（`#91`）的这 11 条用例落地时**没有登记进本节**，`STD` 头部读数因此从 704 直接跳到 709（`D6` 那笔加的 5 条），中间 11 条一直是空的。`D5` 查的是「头部读数 vs `STR` 最新轮次」，两处一起过期时它不报 —— 这是同一个盲区的第二面。本节补齐，用例编号一次给足（`001`–`011`），不重排既有段。
 >
-> 判据来自 [`minimal-pack.md`](../../reference/minimal-pack.md) §4.3（6 个错误码 + **固定 fail-fast 顺序**）与 [`path-rules.md`](../../reference/path-rules.md) §六（七面对应表）。**与解析层口径刻意相反**：那一层一次报全部问题（服务构建期修包的人），这一层遇错即停（服务「恰好一个码」的验收判据）。
+> 判据来自 [`minimal-pack.md`](../../specs/minimal-pack.md) §4.3（6 个错误码 + **固定 fail-fast 顺序**）与 [`path-rules.md`](../../specs/path-rules.md) §六（七面对应表）。**与解析层口径刻意相反**：那一层一次报全部问题（服务构建期修包的人），这一层遇错即停（服务「恰好一个码」的验收判据）。
 
 | 编号 | `SPEC` | 显式/语义 | 夹具 | 操作 | 预期 | 层级 | 落点 / 测试名 |
 |---|---|---|---|---|---|---|---|

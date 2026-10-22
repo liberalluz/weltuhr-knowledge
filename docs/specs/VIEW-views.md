@@ -10,11 +10,11 @@
 >
 > **唯一可抢救的部分**：§树的四类行（`VIEW-006` 附近的树缩进与行类型）与 `VIEW-014`「点星 ⇒ 详情」的分派原则，可给 `B17a`（容器树七级）作输入。抢救时**重新裁定，不继承编号**。
 >
-> **现在该读哪儿**：字段与实体 → [`../reference/entity-fields.md`](../reference/entity-fields.md)；容器轴与深度 → [`../reference/skeleton-catalog.md`](../reference/skeleton-catalog.md)；为什么换 → `ADR-0005` / `0006`。
+> **现在该读哪儿**：字段与实体 → [`../reference/entity-fields.md`](entity-fields.md)；容器轴与深度 → [`../reference/skeleton-catalog.md`](skeleton-catalog.md)；为什么换 → `ADR-0005` / `0006`。
 >
 > **清偿状态**：见 [`00-index`](00-index.md) §二.1。
 
-> **前置阅读**：[FND](FND-foundation.md)。通道编码的数值一律见 [`../reference/channel-table.md`](../reference/channel-table.md)。
+> **前置阅读**：[FND](FND-foundation.md)。通道编码的数值一律见 [`../reference/channel-table.md`](channel-table.md)。
 > **明确不管**：掌握度怎么算（→ [QUANT](QUANT-quantification.md)）· 笔记内容与版本（→ [NOTE](NOTE-notes.md)）· 定位后的规划（→ [PLAN](PLAN-planning.md)）。
 
 ---
@@ -51,7 +51,7 @@
 | `θ` | 六轴扇区（含轴内递归区间分割）；扇区由 `Item.primaryAxis` 决定 |
 | `φ` | `⪯` 上的 Kahn 层号（越深越靠外）；**轴向**位置按累计项数分位映射，见下 |
 
-**3D 力导向布局永久排除**，见 [`../reference/not-list.md`](../reference/not-list.md) N-01。
+**3D 力导向布局永久排除**，见 [`../reference/not-list.md`](../decisions/not-list.md) N-01。
 `src:` 第 6–10 轮
 
 > **2026-10-17 修订**（[`ADR-0003`](../decisions/0003-view-radial-axis-and-channel-thresholds.md)）：`r` 由「复合轴（7 段径向分层）」改为 **域带**，`θ` / `φ` 的取值来源同时写明。
@@ -80,7 +80,7 @@
 ⚠️ **代价**：弧长等分 ⇒ 半径上内密外疏，`pick` 的最近邻要按弧长参数算，不能按半径差。
 
 ### SPEC-VIEW-003 六通道 + 两叠加，容量已满
-**裁定**：视觉通道严格按 [`channel-table.md`](../reference/channel-table.md) 执行。基础六通道与两个叠加通道**均已占满**。新语义优先考虑「并入已有通道的自由度」或「下放到二维 HUD / 详情页」，**不得默认新开通道**。
+**裁定**：视觉通道严格按 [`channel-table.md`](channel-table.md) 执行。基础六通道与两个叠加通道**均已占满**。新语义优先考虑「并入已有通道的自由度」或「下放到二维 HUD / 详情页」，**不得默认新开通道**。
 **唯一豁免**：轨道环同时承载掌握（填充比例）与毕业（线型），且不得作为先例。
 `src:` 第 11–13 轮 · Y1
 
@@ -457,7 +457,7 @@
 ③ 与 ④ 的分野**不是「搜了多大范围」**（一次定位永远查整个包），而是**知不知道新项该挂到哪个域**：域上下文来自当前选中项，有它才给表单，没有就只记需求信号 —— 替用户挑一个域，比不挑更糟。
 `src:` 笔 4b 实施
 
-> **更新（2026-10-18）**：② 那段末句已失效 —— `C-28` 裁定为 **v0.1 不适用**（模糊档 = 子串包含，不做相似度阈值），命中档本身不设线，② 更不需要。原句留着是因为它记的是当时的依赖关系：「别让 ② 跟着命中档一起等」。见 [`../reference/constants.md`](../reference/constants.md) §八注。
+> **更新（2026-10-18）**：② 那段末句已失效 —— `C-28` 裁定为 **v0.1 不适用**（模糊档 = 子串包含，不做相似度阈值），命中档本身不设线，② 更不需要。原句留着是因为它记的是当时的依赖关系：「别让 ② 跟着命中档一起等」。见 [`../reference/constants.md`](constants.md) §八注。
 
 ### SPEC-VIEW-031 作用域跟随当前视图
 **裁定**：Z0 下搜**全部空间**（本就是跨空间视角）；Z1 内默认只搜**本空间**，结果区顶部给一行「在全部空间中搜索」。返回时按 `returnTo` 还原，不因跨空间命中打断换根上下文。
@@ -507,7 +507,7 @@
 `src:` 笔 7 实施
 
 ### SPEC-VIEW-034 概念层不可视化清单
-**裁定**：以下语义**不进视觉通道**，各有正确落点：难度 `D`（→ 进展视图，学过后）、进度百分比（→ 进展视图）、`progressKind`（→ 详情 / 进展）、源 L 级（→ Planner 候选卡 / 详情来源区）。详见 [`channel-table.md`](../reference/channel-table.md) §五。
+**裁定**：以下语义**不进视觉通道**，各有正确落点：难度 `D`（→ 进展视图，学过后）、进度百分比（→ 进展视图）、`progressKind`（→ 详情 / 进展）、源 L 级（→ Planner 候选卡 / 详情来源区）。详见 [`channel-table.md`](channel-table.md) §五。
 `src:` 第 13 轮 · X-02
 
 ---
