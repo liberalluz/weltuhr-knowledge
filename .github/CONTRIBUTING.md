@@ -1,7 +1,7 @@
 # Contributing
 
 > **What this file covers**: **governance** — who may change which level of decision · who is eligible to review · what a review looks at · roles · behavioural expectations · response times · licensing and DCO.
-> **What it does not cover**: **process and format** — repository layout · branching · commit format · PR granularity · **approval count** · merge strategy · versions and tags · deliverable version numbers. All of that is authoritative in [`docs/guides/git-conventions.md`](../docs/specs/git-conventions.md) and is not duplicated here. Design content → [`docs/specs/00-index.md`](../docs/specs/00-index.md); security vulnerabilities → [`SECURITY.md`](SECURITY.md); AI-assisted contributions → [`CONTRIBUTING.ai.md`](CONTRIBUTING.ai.md).
+> **What it does not cover**: **process and format** — repository layout · branching · commit format · PR granularity · **approval count** · merge strategy · versions and tags · deliverable version numbers. All of that is authoritative in [`docs/specs/git-conventions.md`](../docs/specs/git-conventions.md) and is not duplicated here. Design content → [`docs/specs/00-index.md`](../docs/specs/00-index.md); security vulnerabilities → [`SECURITY.md`](SECURITY.md); AI-assisted contributions → [`CONTRIBUTING.ai.md`](CONTRIBUTING.ai.md).
 
 ## 1. Authority boundaries
 
@@ -125,4 +125,4 @@ Handling of violations: a maintainer may lock a discussion, close a PR, or refus
 
 ## Appendix: local environment
 
-Flutter / Dart / Serverpod versions are pinned in `app/pubspec.yaml` and `server/pubspec.yaml` and **do not track the latest**. Environment setup and the known pitfalls of a first Windows build (symlinks, developer mode) are in [`docs/guides/environment.md`](../docs/runbooks/environment.md).
+Flutter / Dart / Serverpod versions are pinned in `app/pubspec.yaml` and `server/pubspec.yaml` and **do not track the latest**. Environment setup and the known pitfalls of a first Windows build (symlinks, developer mode) are in [`docs/runbooks/environment.md`](../docs/runbooks/environment.md).

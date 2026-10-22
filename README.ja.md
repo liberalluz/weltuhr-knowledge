@@ -44,15 +44,15 @@ cd ../app && flutter run -d windows
 | [app/](app/README.md) | Flutter クライアント（Windows / macOS / iOS を一つのコードで） |
 | [server/](server/README.md) | Serverpod サーバー：同期、イベント統合、ガバナンスと審査 |
 | [content/](content/README.md) | コンテンツパックの元データとビルドパイプライン |
-| [docs/](docs/README.md) | 成果物ドキュメント、生きたドキュメント、ADR、設計仕様 |
+| [docs/](docs/README.md) | 技術ドキュメント：設計仕様 · 意思決定記録 · 上流の方法論 · アイデア · ランブック · バージョン付き成果物 |
 | [infra/](infra/README.md) | ビルド / 署名 / アップデータ / ミラー / CI |
 
 そのほか：[docs/intent/knowledge-system-learning-methodology.md](docs/intent/knowledge-system-learning-methodology.md) — 本プロジェクトの**方法論的な根拠**（知識体系学習の方法論）。ソフトウェア設計仕様は [docs/specs/](docs/specs/00-index.md) を参照してください。
 
 ## ドキュメント
 
-- [docs/README.md](docs/README.md) — ドキュメント体系の索引（成果物 / 生きたドキュメント / ADR）
-- [docs/specs/00-index.md](docs/specs/00-index.md) — **設計仕様の索引**（FND / VIEW / PACK / PLAN / STEP / QUANT / NOTE / GOV + 横断表）
+- [docs/README.md](docs/README.md) — ドキュメント体系の索引：5 つの内容ディレクトリ（`specs` / `decisions` / `intent` / `ideas` / `runbooks`）とバージョン付き `deliverables`
+- [docs/specs/00-index.md](docs/specs/00-index.md) — **設計仕様の索引**（FND / VIEW / PACK / PLAN / STEP / QUANT / NOTE / GOV / ACC / SYNC + 横断表）
 
 ## ライセンスとクレジット
 

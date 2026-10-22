@@ -1,6 +1,6 @@
 # FND · 地基
 
-> **前置阅读**：无（本文是入口）。理论依据：[`../reference/knowledge-system-learning-methodology.md`](../intent/knowledge-system-learning-methodology.md)。
+> **前置阅读**：无（本文是入口）。理论依据：[`../intent/knowledge-system-learning-methodology.md`](../intent/knowledge-system-learning-methodology.md)。
 > **明确不管**：视距与视觉通道（→ [VIEW](VIEW-views.md)）· 包格式与 schema（→ [PACK](PACK-content-pack.md)）· 掌握度公式（→ [QUANT](QUANT-quantification.md)）。
 
 ---

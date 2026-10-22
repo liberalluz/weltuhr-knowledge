@@ -12,5 +12,5 @@
 ## 相关文档
 
 - 交付文档与活文档：[../docs/README.md](../docs/README.md)
-- 环境与工具链约束：[../docs/guides/environment.md](../docs/runbooks/environment.md)
+- 环境与工具链约束：[`../docs/runbooks/environment.md`](../docs/runbooks/environment.md)
 - 实现约定与边界：见 [AGENTS.md](AGENTS.md)；规则细则以 `docs/` 为准（**不复制**）

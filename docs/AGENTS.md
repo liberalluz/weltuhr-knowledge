@@ -8,7 +8,7 @@
 
 ## 职责边界
 
-- **负责**：设计规格与横切表（`specs/`）· 上游论证（`intent/`）· 交付物（`deliverables/`）· 操作手册（`runbooks/`）· 架构决策（`decisions/`）
+- **负责**：设计规格与横切表（`specs/`）· 上游论证（`intent/`）· 未认定的候选（`ideas/`）· 交付物（`deliverables/`）· 操作手册（`runbooks/`）· 架构决策（`decisions/`）
 - **不负责**：客户端实现约定（→ `app/AGENTS.md`）· 服务端实现约定（→ `server/AGENTS.md`）· 内容包与构建（→ `content/AGENTS.md`）· 部署与 CI（→ `infra/AGENTS.md`）
 
 ## 落点判据
@@ -17,6 +17,7 @@
 |---|---|
 | 是什么 / 为什么 | `specs/` 或 `decisions/` |
 | 多少次 / 哪些值 | `specs/` |
+| 还没认定的想做什么 | `ideas/`（**不得作为实施依据**，见该目录 `README.md`） |
 | 怎么操作 | `runbooks/` |
 | 对外交付、需签字、需版号 | `deliverables/` |
 
@@ -25,7 +26,7 @@
 - **交付物先建文件，再写内容**。不得「某份还没建，先写进 `deliverables/README.md`」—— 那个降级会在补齐时留下两份事实源。正文可以是「待填」。
 - **记录类不追溯补录**。`DPMR` / `STR` 记录的是「当时确实如此」，事后补写会让证据退化为叙述。判据：这份文档在**记录一次已发生的事**，还是在**描述当前应当如此**？前者不补，后者可补。
 - **基线只在 `SCMP` 登记**。`deliverables/README.md` 只保留编号与日期速览，完整内容只此一处。
-- **活文档不设版号**。`specs/` `intent/` `runbooks/` `decisions/` 的更新时间以 `git log` 为准，**不手写「最后更新」头** —— 手写头会变成第二份会过期的记录。
+- **活文档不设版号**。`specs/` `intent/` `ideas/` `runbooks/` `decisions/` 的更新时间以 `git log` 为准，**不手写「最后更新」头** —— 手写头会变成第二份会过期的记录。
 - **引用不复制**。同一规则只在唯一权威处展开，其余位置写「见 XX」。数值只在 `specs/` 维护。
 - **骨架文件的填充时点写在文件头**，不得因为「顺手能写」就提前填 —— 时点没到之前写出来的内容只是猜测，而且会被下游当成已定事实。
 - **验收必须可观测**。写不出可观测断言的条目，说明该条没想清楚；不得以「实现里写了」充当验收。
@@ -46,7 +47,7 @@
 | 不译 | `AGENTS.md`（两套语言 = 两套规则源）· `LICENSE` · `NOTICE`（法律文本） |
 | 完整性 | **中文原文不得删除，译本不得单独存在** —— `check_s0` 只判前缀存在，删了中文会静默通过 |
 
-**已落译本**：仓根 `README.de.md` / `README.fr.md` / `README.it.md` / `README.ja.md` / `README.zh-CN.md` 五份（中文原文为 `README.zh-CN.md`）；**`.github/` 三份不出译文**（见上「对外四份」）。其余 57 份文档的译本**等首个版本发布后统一做**。
+**已落译本**：仓根 `README.de.md` / `README.fr.md` / `README.it.md` / `README.ja.md` / `README.zh-CN.md` 五份（中文原文为 `README.zh-CN.md`）；**`.github/` 三份不出译文**（见上「对外四份」）。`docs/` 下 **63 份**（`find docs -name '*.md'` 共 64 份，减 1 份不译的 `AGENTS.md`）的译本**等首个版本发布后统一做**。
 
 ## 交付物导航
 

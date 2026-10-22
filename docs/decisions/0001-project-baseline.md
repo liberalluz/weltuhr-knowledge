@@ -6,7 +6,7 @@
 
 ## 背景
 
-本项目（Weltuhr）需要把一份已完成的知识体系学习方法论落地为软件：桌面（Windows / macOS）+ iOS 的客户端，加服务端同步与治理。方法论本身见 [`../reference/knowledge-system-learning-methodology.md`](../intent/knowledge-system-learning-methodology.md)，产品与系统的设计规范已完成（140 条裁定），需要一份可实施的基线。
+本项目（Weltuhr）需要把一份已完成的知识体系学习方法论落地为软件：桌面（Windows / macOS）+ iOS 的客户端，加服务端同步与治理。方法论本身见 [`../intent/knowledge-system-learning-methodology.md`](../intent/knowledge-system-learning-methodology.md)，产品与系统的设计规范已完成（140 条裁定），需要一份可实施的基线。
 
 ## 决策
 
@@ -68,12 +68,12 @@
 
 - `LICENSE` = Apache-2.0 全文 + `NOTICE` 随首提入库。
 - `.github/SECURITY.md` 随首提落盘（承诺：仅最新 minor · 7 个工作日内首次回复 · GitHub 私密报告）。
-- 依赖许可须逐项核查，**强传染（GPL / AGPL）依赖禁止引入**（见 `../guides/dependency-licenses.md`）。
+- 依赖许可须逐项核查，**强传染（GPL / AGPL）依赖禁止引入**（见 `../specs/dependency-licenses.md`）。
 - 事件 schema 的新增字段一律可空，`fold` 必须有默认语义 —— 这是事件溯源上线后的兼容性约束。
 
 ## 后续
 
 - 待补：`app/` `server/` `content/` 的脚手架生成（须单独变更）。
-- 待补：搜索模糊匹配阈值（`C-28`）—— 三个 TBD 常量中余此一项，须实测标定。FSRS 目标保留率（`C-03` = 0.90）与打卡封顶系数（`C-25` = 0.5）已于 2026-10-17 裁定（见 `../reference/constants.md`）。
+- 待补：搜索模糊匹配阈值（`C-28`）—— 三个 TBD 常量中余此一项，须实测标定。FSRS 目标保留率（`C-03` = 0.90）与打卡封顶系数（`C-25` = 0.5）已于 2026-10-17 裁定（见 `../specs/constants.md`）。
 
-> **更新（2026-10-18）**：本条已失效。`C-28` 已裁定 —— **v0.1 不适用**（模糊档 = 子串包含，不做相似度阈值）。至此三个 `TBD` 常量全部有结论，**常量表当前无 `TBD` 项**。理由与边界见 `../reference/constants.md` §八注。
+> **更新（2026-10-18）**：本条已失效。`C-28` 已裁定 —— **v0.1 不适用**（模糊档 = 子串包含，不做相似度阈值）。至此三个 `TBD` 常量全部有结论，**常量表当前无 `TBD` 项**。理由与边界见 `../specs/constants.md` §八注。

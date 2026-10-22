@@ -1,13 +1,13 @@
 # Weltuhr 设计规格 · 索引
 
-> **本目录是什么**：产品与系统的**设计基线**，回答「是什么」。理论依据在 [`../reference/knowledge-system-learning-methodology.md`](../intent/knowledge-system-learning-methodology.md)（回答「人怎么学」）。
+> **本目录是什么**：产品与系统的**设计基线**，回答「是什么」。理论依据在 [`../intent/knowledge-system-learning-methodology.md`](../intent/knowledge-system-learning-methodology.md)（回答「人怎么学」）。
 > **本文件是导航与裁决规则，不承载具体设计内容。**
 
 ## 一、怎么读
 
 - **第 0 步永远是 [FND](FND-foundation.md)** —— 其余九份都引用其中的术语与判据。
 - 每份开头都有「前置阅读」与「明确不管」两行。**「明确不管」是防重复的手段，不是可选项** —— 它指定了该内容归谁管。
-- 数值一律不写在正文里，只写表项 id（如「见 `C-01`」），去 [`../reference/constants.md`](constants.md) 查。
+- 数值一律不写在正文里，只写表项 id（如「见 `C-01`」），去 [`constants.md`](constants.md) 查。
 
 ## 二、十份主题文档
 
@@ -67,9 +67,9 @@
 > **形态不同，判据是同一条**：残余价值是**条目级**还是**整表级**。`constants` 90 条里 34 条还在跑 ⇒ 只能分层；`VIEW` / `channel-table` 的地基整块不存在、逐条改等于重写（`VIEW` 里 `Z0`–`Z4` 出现 **258 处**）⇒ 只能整卷封存。
 > **⚠️ 三份里只有一份带运行期风险**：`C-55` / `C-56` **仍在代码里跑**（接 `GalaxyLayout.spun()` 与 `StarSystemLayout.advanced()`）。**文档标废不等于代码停了** —— 随 `B13a` 删 `features/universe/` 时一并停用，**不得只删文档留代码**。其余两份是纯文档，标废即生效。
 
-## 三、参考层（`../reference/`）
+## 三、横切表（本目录）
 
-被多份文档引用，**只在 `../reference/` 维护**。六张横切表：
+被多份文档引用，**只在 `specs/` 维护**。六张横切表：
 
 | 表 | 内容 | 主要引用方 | 状态 |
 |---|---|---|---|
@@ -80,9 +80,9 @@
 | [glossary](glossary.md) | 术语与八对辨析 | 全部 | 待修订 —— 五条术语与一处二分建在旧本体上 |
 | [not-list](../decisions/not-list.md) | 明确不做 + 理由 | 全部（实施者必读） | 待修订 —— `N-01` / `N-11` / `N-13` 的**理由**引旧机制（结论仍成立） |
 
-> 另有**上游理论长文** [`../reference/knowledge-system-learning-methodology.md`](../intent/knowledge-system-learning-methodology.md) —— 全案的理论依据。它是 `specs/` 的**上游**（specs 全部引用它，它不引用 specs），改动频率远低于 specs，故归入参考层而非设计基线。
+> 另有**上游理论长文** [`../intent/knowledge-system-learning-methodology.md`](../intent/knowledge-system-learning-methodology.md) —— 全案的理论依据。它是 `specs/` 的**上游**（specs 全部引用它，它不引用 specs），改动频率远低于 specs，故独立成 `intent/` 层而非并入设计基线。
 >
-> 同层的第二篇是 [`../reference/knowledge-space-navigation-methodology.md`](../intent/knowledge-space-navigation-methodology.md) —— **三轴容器树的论证依据**（16 个维度的取舍 · 三轴锚点质量 · 七级同构逐级映射）。它同样只作上游：**结论以 [`ADR-0005`](../decisions/0005-three-axis-tree-replaces-six-axis.md) / [`0006`](../decisions/0006-3d-rendering-stack-and-visual-style.md) / [`0007`](../decisions/0007-node-type-shape.md) 为准**，方法论本身可继续演进。
+> 同层的第二篇是 [`../intent/knowledge-space-navigation-methodology.md`](../intent/knowledge-space-navigation-methodology.md) —— **三轴容器树的论证依据**（16 个维度的取舍 · 三轴锚点质量 · 七级同构逐级映射）。它同样只作上游：**结论以 [`ADR-0005`](../decisions/0005-three-axis-tree-replaces-six-axis.md) / [`0006`](../decisions/0006-3d-rendering-stack-and-visual-style.md) / [`0007`](../decisions/0007-node-type-shape.md) 为准**，方法论本身可继续演进。
 
 ## 四、跨文档约束清单
 
@@ -120,7 +120,7 @@
 | TBD-4 | 导出的打包形态（目录树 / 单文件 / zip） | NOTE |
 | TBD-5 | 空间级自由笔记的排序与归档位置 | NOTE |
 | TBD-6 | 能力清单的排序键（按空间 / 掌握度 / 毕业时间）与「适用场景」来源 | QUANT |
-| TBD-9 | ~~搜索模糊匹配阈值（`C-28`），须实测标定~~ —— **已裁定**（2026-10-18）：`C-28` 判「v0.1 不适用」，模糊档 = 子串包含，不做相似度阈值。理由与边界见 [`../reference/constants.md`](constants.md) §八注 | VIEW · ✅ 已关闭 |
+| TBD-9 | ~~搜索模糊匹配阈值（`C-28`），须实测标定~~ —— **已裁定**（2026-10-18）：`C-28` 判「v0.1 不适用」，模糊档 = 子串包含，不做相似度阈值。理由与边界见 [`constants.md`](constants.md) §八注 | VIEW · ✅ 已关闭 |
 | TBD-10 | 候选卡的元素排布细节（三段一致的三段卡片） | PLAN |
 | TBD-11 | 总览链的具体形态（分段来自 `methodProfile`，但视觉待定） | QUANT |
 | TBD-12 | 事件累计量（复习次数 / 累计时长 / 学习天数）是否进首屏，以及多设备重合时的呈现口径 | VIEW |
@@ -131,7 +131,7 @@
 | TBD-17 | 条款与隐私政策勾选的时点（注册时 / 首次启动） | ACC |
 | TBD-18 | 账号删除的具体形态与冷却期（`v1.0.0` 上架硬性要求） | ACC |
 
-> **已裁定（2026-10-17）**：TBD-7 → `C-25` = **0.5**（[QUANT-008](QUANT-quantification.md)）· TBD-8 → `C-03` = **0.90**。**已裁定（2026-10-18）**：TBD-9 → `C-28` 判 **v0.1 不适用**（模糊档 = 子串包含，不做阈值；见 [`../reference/constants.md`](constants.md) §八注）。编号保留不复用、不重排，以免既有引用失效。
+> **已裁定（2026-10-17）**：TBD-7 → `C-25` = **0.5**（[QUANT-008](QUANT-quantification.md)）· TBD-8 → `C-03` = **0.90**。**已裁定（2026-10-18）**：TBD-9 → `C-28` 判 **v0.1 不适用**（模糊档 = 子串包含，不做阈值；见 [`constants.md`](constants.md) §八注）。编号保留不复用、不重排，以免既有引用失效。
 
 > **TBD-12 / TBD-13 为什么现在挂而不现在定**：跨设备同步尚未开工（`GOV-011` 只裁了「不去重、都重放」，没裁呈现）。而当前 [VIEW-018](VIEW-views.md) 的 HUD 七区块与 [QUANT-011](QUANT-quantification.md) 的两个分区**本来就不含任何事件计数**，所以这两条在 `v0.1.0` 无实现压力。挂 TBD 的目的是：将来真要加统计卡片时，**先定口径再加**，而不是先加一个会随设备数翻倍的裸数字。详见 [VIEW](VIEW-views.md) 的 `VIEW-035`（`VIEW-018` 末尾有指针）。
 

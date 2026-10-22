@@ -1,6 +1,6 @@
 # ACC · 账号
 
-> **前置阅读**：[FND](FND-foundation.md) · [`../reference/event-types.md`](event-types.md)。所有数值见 [`../reference/constants.md`](constants.md)。
+> **前置阅读**：[FND](FND-foundation.md) · [`event-types.md`](event-types.md)。所有数值见 [`constants.md`](constants.md)。
 > **明确不管**：事件的搬运与游标（→ [SYNC](SYNC-sync.md)）· 内容包格式（→ [PACK](PACK-content-pack.md)）· 治理裁定权（→ [GOV](GOV-governance.md)）。
 
 ---
@@ -150,7 +150,7 @@
 | 微信等第三方登录 | 本次范围为 `email` / `phone` / `apple` 三渠道；第三方登录还会触发 Apple 指南 4.8 |
 | 内建 RBAC / 组织 / 权限矩阵 | 每个账号权限完全相同，数据隔离靠 `userId` 过滤，不需要角色 |
 
-详见 [`../reference/not-list.md`](../decisions/not-list.md) `N-15`–`N-17`。
+详见 [`../decisions/not-list.md`](../decisions/not-list.md) `N-15`–`N-17`。
 `src:` 2026-10-18 用户裁定
 
 ---

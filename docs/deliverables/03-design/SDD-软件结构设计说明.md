@@ -1,13 +1,14 @@
 # 软件结构设计说明（SDD）
 
-> **版号**：`v0.16.0` · **状态**：§二 §三 已写实，§四–§六 待填（§2.1 视图层为 **6 份**（实扫），`core/` 文件树按实扫补全至 **五十份**（树内 39 条，`plan/` 11 份待笔 6 补登）；**`B13a` 笔 5b 补 `entities/requirement.dart`** —— `Requirements` 从 `content.dart` 的 `ItemRequirements` 改名搬出、`node.dart` 改用新名（旧名把「属于 `Item`」写进了类型名，而 `ADR-0007` 之后要件只挂可学节点）；**`B13a` 笔 5a 删掉了六轴渲染层** —— `features/universe/` 20 份 · `core/frame/` 3 份 · `core/view/` 六份（`filter` · `fit` · `motion` · `navigation` · `tree` · `viewport`）· `graph/subtrees.dart` 整层退出，视图层 23 → 6、`core/` 59 → 49；容器树界面归 `B17a`、3D 归 `B17b`。以下为 `v0.14.0` 起的状态，保留以便回溯：定位层拆引擎与分诊，构图层拆绘制与拾取，视图层含导航记忆与**运动时钟**；`B3` 笔 10 起导航记忆带空间维度、`B12` 第六笔起带域维度；`B12` 的五档逐级下钻各档一对「几何 + 绘制」，视图层文件数 12 → 23 全部来自 `B12`）
-> 本文件是**软件结构**的设计视图。分章与 `design/` 主题文档对齐，实现细节**回指不复制**。当前已映射**八份**（`FND` / `VIEW` / `PACK` / `PLAN` / `STEP` / `QUANT` / `NOTE` / `GOV`）；`ACC` / `SYNC` 两域属 `v0.1.0` 服务端新增，**结构与机制待补**（见 `ACC` / `SYNC` 本身，本文件暂不映射）。
+> **版号**：`v0.16.1` · **状态**：§二 §三 已写实，§四–§六 待填（§2.1 视图层为 **6 份**（实扫），`core/` 文件树按实扫补全至 **五十份**（树内 39 条，`plan/` 11 份待笔 6 补登）；**`B13a` 笔 5b 补 `entities/requirement.dart`** —— `Requirements` 从 `content.dart` 的 `ItemRequirements` 改名搬出、`node.dart` 改用新名（旧名把「属于 `Item`」写进了类型名，而 `ADR-0007` 之后要件只挂可学节点）；**`B13a` 笔 5a 删掉了六轴渲染层** —— `features/universe/` 20 份 · `core/frame/` 3 份 · `core/view/` 六份（`filter` · `fit` · `motion` · `navigation` · `tree` · `viewport`）· `graph/subtrees.dart` 整层退出，视图层 23 → 6、`core/` 59 → 49；容器树界面归 `B17a`、3D 归 `B17b`。以下为 `v0.14.0` 起的状态，保留以便回溯：定位层拆引擎与分诊，构图层拆绘制与拾取，视图层含导航记忆与**运动时钟**；`B3` 笔 10 起导航记忆带空间维度、`B12` 第六笔起带域维度；`B12` 的五档逐级下钻各档一对「几何 + 绘制」，视图层文件数 12 → 23 全部来自 `B12`）
+> 本文件是**软件结构**的设计视图。分章与 `specs/` 主题文档对齐，实现细节**回指不复制**。当前已映射**八份**（`FND` / `VIEW` / `PACK` / `PLAN` / `STEP` / `QUANT` / `NOTE` / `GOV`）；`ACC` / `SYNC` 两域属 `v0.1.0` 服务端新增，**结构与机制待补**（见 `ACC` / `SYNC` 本身，本文件暂不映射）。
 > **追溯补录**：2026-10-17 · §二 §三 依据 `app/lib/` · `app/tool/lint/` · `content/tools/` 的既有代码反推，非当时所写。
 
 ## 修订历史
 
 | 版号 | 日期 | 修订摘要 |
 |---|---|---|
+| `v0.16.1` | 2026-10-22 | **勘误**：`ADR-0008` 换轨后目录名过时 —— 分章映射表述 + §三–§六 四处回指 + 文件树里的常量表出处。只改路径指向，**分层、映射与文件计数零改动**。 |
 | `v0.1.0` | 2026-10-17 | 首建。确立与 `design/` 的分章映射；结构与机制待补 |
 | `v0.2.0` | 2026-10-17 | **追溯补录** §二 分层与模块边界、§三 内容管线。据代码现状写实，并标明第三段（运行期加载）尚未实现 |
 | `v0.12.0` | 2026-10-18 | §2.1 `core/view/` 由 7 份 → **8 份**（增 `motion.dart`，`V-1i` 前半）：三个纯函数（`orbitPhase` 相位 · `spunRadians` 相位→弧度 · `governorFactor` 减速系数）+ 一个换算（`advanceClock` 累计时钟）。放 `core/view/` 而不是屏幕里的理由与 `navigation.dart` 同一套 —— 「时钟只增不回卷」「跨周期边界相位连续」「系数随距离单调」全是**可判定**的判据，留在 `_State` 里只能靠 widget test 隔着 24 s 的 `pump` 间接验。同版按**实扫**修两处：`core/` 总数 31 → **33**（`graph/subtrees.dart` 是 `V-1d` 新增却一直没进树 —— 那一笔只改了 §5 的份数没改本树），树内计数行「共 28 份」也早已与树自身条目数（31）不一致，一并校正。**注意这里刻意不放 `Ticker` / `AnimationController`** —— 那两个是 Flutter 类型，核心层禁 `dart:ui`（`R1` 规则），时钟只以「秒数」进出 |
@@ -32,12 +33,12 @@
 | 本章 | 对应设计文档 | 本文件写什么 | 不写什么 |
 |---|---|---|---|
 | §二 分层与模块边界 | [FND](../../specs/FND-foundation.md) · [SSDD](SSDD-系统结构设计说明.md) | 分层、模块划分、依赖方向 | 领域模型定义（回指 FND） |
-| §三 内容管线 | [PACK](../../specs/PACK-content-pack.md) | 源数据 → 构建 → 加载三段的结构 | pack schema 字段（回指 PACK 与 `reference/entity-fields.md`） |
-| §四 事件内核 | [FND](../../specs/FND-foundation.md) | 事件表、折叠、持久化的结构 | 事件类型全集（回指 `reference/event-types.md`） |
-| §五 视图投影 | [VIEW](../../specs/VIEW-views.md) | 投影管线与渲染入口 | 通道映射（回指 `reference/channel-table.md`） |
-| §六 关键机制 | [QUANT](../../specs/QUANT-quantification.md) · [GOV](../../specs/GOV-governance.md) | 掌握度计算、同步与合并的落点 | 参数数值（回指 `reference/constants.md`） |
+| §三 内容管线 | [PACK](../../specs/PACK-content-pack.md) | 源数据 → 构建 → 加载三段的结构 | pack schema 字段（回指 PACK 与 `entity-fields.md`） |
+| §四 事件内核 | [FND](../../specs/FND-foundation.md) | 事件表、折叠、持久化的结构 | 事件类型全集（回指 `event-types.md`） |
+| §五 视图投影 | [VIEW](../../specs/VIEW-views.md) | 投影管线与渲染入口 | 通道映射（回指 `channel-table.md`） |
+| §六 关键机制 | [QUANT](../../specs/QUANT-quantification.md) · [GOV](../../specs/GOV-governance.md) | 掌握度计算、同步与合并的落点 | 参数数值（回指 `constants.md`） |
 
-**为什么这样分**：`design/` 是活文档（不设版号、随讨论演进），本文件按版号冻结。若复制设计正文，必然出现「设计改了交付物没改」。
+**为什么这样分**：`specs/` 是活文档（不设版号、随讨论演进），本文件按版号冻结。若复制设计正文，必然出现「设计改了交付物没改」。
 
 ## 二、分层与模块边界
 
@@ -57,7 +58,7 @@
 
 ```
 app/lib/core/                    共 49 份（树内 38 条；`plan/` 11 份尚未补登，见下）
-├── constants.dart          常量表（docs/reference/constants.md 的代码投影）
+├── constants.dart          常量表（docs/specs/constants.md 的代码投影）
 ├── enums.dart              枚举全集（含 wire 名映射）
 ├── errors.dart             错误类型（含 TbdConstantError）
 ├── ids.dart                id 末段显示（域 / 缺口 id 共用一处）
@@ -121,7 +122,7 @@ core 层的两条边界**不是写在文档里的约定**，而是可执行规�
 - **`0` 与 `1` 放行**：坐标原点与计数基元，强行具名会让代码更难读。
 - **`features/` 不做数字检查**：间距、尺寸属设计 token，不属知识语义常量。
 
-> 与 [`../../reference/constants.md`](../../specs/constants.md) 的关系：`R2` 保证「数字只能出现在常量表」，`TC-QUANT-001`–`TC-QUANT-007` 保证「常量表里的值与文档一致」。两条合起来才能防住「有人绕过常量表直接写数」。
+> 与 [`../../specs/constants.md`](../../specs/constants.md) 的关系：`R2` 保证「数字只能出现在常量表」，`TC-QUANT-001`–`TC-QUANT-007` 保证「常量表里的值与文档一致」。两条合起来才能防住「有人绕过常量表直接写数」。
 
 ## 三、内容管线
 

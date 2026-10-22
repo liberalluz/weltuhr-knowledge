@@ -1,6 +1,6 @@
 # GOV · 治理
 
-> **前置阅读**：[FND](FND-foundation.md) · [PACK](PACK-content-pack.md)。事件定义见 [`../reference/event-types.md`](event-types.md)。
+> **前置阅读**：[FND](FND-foundation.md) · [PACK](PACK-content-pack.md)。事件定义见 [`event-types.md`](event-types.md)。
 > **明确不管**：包格式与迁移规则本身（→ [PACK](PACK-content-pack.md)）· 自建内容怎么写（→ [PLAN](PLAN-planning.md) ③ / [NOTE](NOTE-notes.md)）。
 
 ---

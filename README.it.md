@@ -44,15 +44,15 @@ cd ../app && flutter run -d windows
 | [app/](app/README.md) | Client Flutter (un'unica base di codice per Windows / macOS / iOS) |
 | [server/](server/README.md) | Server Serverpod: sincronizzazione, fusione degli eventi, governance e revisione |
 | [content/](content/README.md) | Dati sorgente dei pacchetti di contenuti e pipeline di build |
-| [docs/](docs/README.md) | Documenti di consegna, documenti vivi, ADR e specifiche di progetto |
+| [docs/](docs/README.md) | Documentazione tecnica: specifiche · decisioni · metodologia a monte · idee · runbook · documenti di consegna versionati |
 | [infra/](infra/README.md) | Build / firma / aggiornamento / mirror / CI |
 
 Inoltre: [docs/intent/knowledge-system-learning-methodology.md](docs/intent/knowledge-system-learning-methodology.md) — la **base metodologica** di questo progetto (metodologia dell'apprendimento a sistema di conoscenza); per la specifica di progetto software vedi [docs/specs/](docs/specs/00-index.md).
 
 ## Documentazione
 
-- [docs/README.md](docs/README.md) — indice della documentazione (documenti di consegna / documenti vivi / ADR)
-- [docs/specs/00-index.md](docs/specs/00-index.md) — **indice delle specifiche di progetto** (FND / VIEW / PACK / PLAN / STEP / QUANT / NOTE / GOV + tabelle trasversali)
+- [docs/README.md](docs/README.md) — indice della documentazione: cinque directory di contenuto (`specs` / `decisions` / `intent` / `ideas` / `runbooks`) più `deliverables` versionati
+- [docs/specs/00-index.md](docs/specs/00-index.md) — **indice delle specifiche di progetto** (FND / VIEW / PACK / PLAN / STEP / QUANT / NOTE / GOV / ACC / SYNC + tabelle trasversali)
 
 ## Licenza e attribuzione
 

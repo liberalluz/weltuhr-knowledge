@@ -65,7 +65,7 @@ jobs:
 
       # 版本与本地环境钉死同一组：Flutter 3.47.7 = Dart 3.13.5，
       # 与 app/pubspec.yaml 的 `environment.sdk: 3.13.5` 精确对应。
-      # 改这里必须同时改 pubspec 与 docs/guides/environment.md，三处任一不同步
+      # 改这里必须同时改 pubspec 与 docs/runbooks/environment.md，三处任一不同步
       # 都会让「本地绿、CI 红」或反过来。
       - uses: subosito/flutter-action@v2
         if: steps.scope.outputs.run == 'true'

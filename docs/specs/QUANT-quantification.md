@@ -1,6 +1,6 @@
 # QUANT · 量化
 
-> **前置阅读**：[FND](FND-foundation.md) · [STEP](STEP-learning-steps.md)。所有数值见 [`../reference/constants.md`](constants.md)。
+> **前置阅读**：[FND](FND-foundation.md) · [STEP](STEP-learning-steps.md)。所有数值见 [`constants.md`](constants.md)。
 > **明确不管**：掌握度在界面上怎么画（→ [VIEW](VIEW-views.md) 的轨道环）· FSRS 参数的标定过程（→ `runbooks/`）。
 
 ---
