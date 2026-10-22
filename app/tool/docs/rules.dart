@@ -14,6 +14,8 @@
 /// 规则是纯函数：`DocContext -> List<DocIssue>`，不读盘。这样可以直接拿字符串测。
 library;
 
+import 'markdown_links.dart';
+
 /// 一条口径不一致。
 class DocIssue {
   const DocIssue({
@@ -1047,7 +1049,7 @@ LinkScan scanLinks(DocContext c) {
     final List<String> lines = c.markdown[file]!.split('\n');
     bool inFence = false;
     for (int i = 0; i < lines.length; i++) {
-      if (_fenceRe.hasMatch(lines[i])) {
+      if (fenceRe.hasMatch(lines[i])) {
         inFence = !inFence;
         continue;
       }
@@ -1057,10 +1059,10 @@ LinkScan scanLinks(DocContext c) {
       // 行内代码同样跳过：`` `[参考层](reference/)` `` 这种写法是在**描述**链接
       // 语法本身（本仓 `STP` / `SCMP` 就这么写），不是一条真链接。剥成占位符再扫，
       // 链接文本里的反引号（`` [`x`](y) ``）不受影响 —— `](` 与目标仍在。
-      final String scanLine = lines[i].replaceAll(_inlineCodeRe, '\u0000');
-      for (final RegExpMatch m in _linkRe.allMatches(scanLine)) {
+      final String scanLine = lines[i].replaceAll(inlineCodeRe, '\u0000');
+      for (final RegExpMatch m in linkRe.allMatches(scanLine)) {
         final String raw = m.group(1)!;
-        if (_isExternalTarget(raw)) {
+        if (isExternalTarget(raw)) {
           continue;
         }
         // 锚点跟在路径后面（`x.md#三`）：判存在只看路径那一段。
@@ -1069,7 +1071,7 @@ LinkScan scanLinks(DocContext c) {
           continue;
         }
         checked++;
-        final String? resolved = _resolveLink(file, target);
+        final String? resolved = resolveLink(file, target);
         if (resolved == null) {
           out.add(
             DocIssue(
@@ -1097,55 +1099,8 @@ LinkScan scanLinks(DocContext c) {
   return LinkScan(checked: checked, issues: out);
 }
 
-/// 行内链接 / 图片：`](目标)`。图片（`![alt](…)`）同样命中，两者都是路径承诺。
-final RegExp _linkRe = RegExp(r'\]\(\s*([^)\s]+)\s*\)');
-
-/// 代码围栏开闭行（三个反引号或三个波浪号，至多三格缩进）。
-final RegExp _fenceRe = RegExp(r'^ {0,3}(?:```|~~~)');
-
-/// 行内代码：成对的同数量反引号之间。
-///
-/// 必须支持**多反引号**定界（`` ``…`` ``）：描述「链接文本里带反引号」这类写法时
-/// 就会用到，用单反引号的正则会把 `` `` [`x`](y) `` `` 剥成半截、剩下的 `](y)`
-/// 被当成真链接 —— 实跑踩过一次，`STR` 里那处示例就此报假红。
-final RegExp _inlineCodeRe = RegExp(r'(`+).*?\1');
-
-/// 外链、页内锚点 —— 不判存在。
-bool _isExternalTarget(String raw) {
-  if (raw.startsWith('#')) {
-    return true;
-  }
-  return RegExp(r'^[a-zA-Z][a-zA-Z0-9+.\-]*:').hasMatch(raw);
-}
-
-/// 把 [target] 按 [fromFile] 所在目录解析成仓库相对路径。
-///
-/// 返回 `null` 表示**上跳越过仓库根**（`../../../x` 从 `docs/x.md` 出发）——
-/// 那不是「链坏了」，是这条链接根本不可能指向仓内，单独给一句更准的话。
-///
-/// 不调 `package:path`：这一支是纯函数、零依赖，为十行逻辑引一个包不划算；
-/// 也不解 `%20` 之类的百分号编码 —— 本仓路径一律直接写中文，没有编码形态，
-/// 出现编码说明写法本身就不对，应当报出来而不是替它兜。
-String? _resolveLink(String fromFile, String target) {
-  final int slash = fromFile.lastIndexOf('/');
-  final List<String> segs = slash < 0
-      ? <String>[]
-      : fromFile.substring(0, slash).split('/');
-  for (final String part in target.split('/')) {
-    if (part.isEmpty || part == '.') {
-      continue;
-    }
-    if (part == '..') {
-      if (segs.isEmpty) {
-        return null;
-      }
-      segs.removeLast();
-      continue;
-    }
-    segs.add(part);
-  }
-  return segs.join('/');
-}
+/// 链接的正则与路径解析已抽到 [`markdown_links.dart`](markdown_links.dart) ——
+/// 迁移器（`migrate_docs.dart`）必须与 `D6` 同口径，各写一份必然漂移。
 
 /// 报「实扫多/少了几条」，让日志能直接对上账。
 String _delta(Set<String> scanned, int claimed) {
