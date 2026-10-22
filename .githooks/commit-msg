@@ -5,6 +5,7 @@
 #   §3.1 type 11 值（必填）
 #   §3.2 scope 6 值（可省略；给了就必须是这六个，且**子维度不进 scope**）
 #   §3.3 subject ≤72 字符、句尾不加句号；有 body 时 header 与 body 之间空一行
+#        footer 必带 DCO 签署：行首 `Signed-off-by: 姓名 <邮箱>`（`git commit -s`）
 #
 # 用法：
 #   .githooks/commit-msg <消息文件>            # git hook（单条）
@@ -140,6 +141,29 @@ check_msg() {
   if [ -n "$second" ]; then
     echo "FAIL $label: header 与 body 之间必须空一行" >&2
     echo "      第二行：$second" >&2
+    FAIL=1
+  fi
+
+  # ④ DCO 签署（§3.3）：消息里必须有一行**以** `Signed-off-by: ` 开头，且值非空。
+  #    逐行 `read` 是为了「行首」这个语义 —— 用 `case` 直接匹配 `$'\n'Signed-off-by:`
+  #    也能中，但配 `[! ]` 这类取反字符类时 bash 的 parser 会报 `syntax error near
+  #    unexpected token ']*'`（已踩）。逐行读是内建，不 fork。
+  local line dco=0
+  while IFS= read -r line; do
+    case "$line" in
+      'Signed-off-by: '*)
+        rest=${line#Signed-off-by: }
+        case "${rest// /}" in
+          '') ;;
+          *) dco=1 ;;
+        esac
+        ;;
+    esac
+  done <<<"$msg"
+
+  if [ "$dco" -eq 0 ]; then
+    echo "FAIL $label: 缺 \`Signed-off-by:\` 签署行（§3.3 每笔必带）" >&2
+    echo "      解法：git commit -s；已提交未推送则 git commit --amend -s --no-edit" >&2
     FAIL=1
   fi
 }
