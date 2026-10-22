@@ -1,9 +1,5 @@
 # Security Policy
 
-**English** · [简体中文](SECURITY.zh.md) · [Deutsch](SECURITY.de.md) · [Italiano](SECURITY.it.md) · [日本語](SECURITY.ja.md) · [Français](SECURITY.fr.md)
-
-> Translation of [SECURITY.zh.md](SECURITY.zh.md) · 2026-10-17 · the Chinese version is authoritative.
-
 ## Supported versions
 
 Security updates are provided for the following versions only:

@@ -1,38 +1,27 @@
-<!-- 填写口径不在本模板复述，按需查权威处：
-     提交粒度 / 正文必含 / 自验证不得自证 → docs/guides/git-conventions.md §四 §七
-     交付物增量 / 默认单据 / 追溯补录   → docs/deliverables/README.md §三
-     版号递增与理由                      → docs/guides/git-conventions.md §六
-     批次号（最小排期单位）              → docs/deliverables/01-plan/SDP-软件开发计划.md §4.2 -->
+<!-- 形态：本文件 · 判据：docs/guides/git-conventions.md §4.1 · AI 声明：.github/CONTRIBUTING.ai.md
+     自审留痕五行必须填值，一律不用 - [ ]：勾了不代表填了，空框会被渲染成"未完成"
+     gh pr create 不读本文件 —— 开 PR 时正文须照此手填 -->
 
 ## 变更摘要
 
-## 影响面
+<!-- 做了什么 + 为什么，一到两句 -->
 
-- [ ] 客户端 `app/`
-- [ ] 服务端 `server/`
-- [ ] 内容包 `content/`
-- [ ] 基础设施 `infra/`
-- [ ] 文档 `docs/`
+## 自审留痕
 
-## 自验证证据
+- **分支基线**：从 `<sha>` 切出，与 `main` <无分叉 / 分叉原因>
+- **改动面**：动了 `<路径/模块>`；未动 `<相邻但明确没碰的部分>`
+- **版号**：<不变 / PATCH / MINOR / MAJOR> —— 理由 <一句话>
+- **反证**：为推翻本改动做过 <什么尝试> —— 结果 <如何>；未验 <哪些没验>
+- **如实登记**：<无 / 逐条列已知缺陷、跳过项、遗留 TODO>
 
-```
-$ flutter analyze
-$ flutter test
-```
+## 交付物
 
-## 交付物增量
+<!-- docs/deliverables/ 增量：DPMR · STR · 其它；无则写"无" -->
 
-- `DPMR`：
-- `STR`：
-- 其它：
+## AI 参与
 
-## 版号变化
-
-- 无
+<!-- 全自动 / 人裁 agent 落盘 / 纯人工 —— 后接"人核了 <什么>" -->
 
 ## 关联
 
-- 批次：
-- 里程碑：
-- issue / ADR / 规格条：
+<!-- 批次号 / 里程碑 / issue / ADR / 规格条 —— 必填，确实没有则写"无" -->

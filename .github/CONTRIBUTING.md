@@ -1,9 +1,5 @@
 # Contributing
 
-**English** · [简体中文](CONTRIBUTING.zh.md) · [Deutsch](CONTRIBUTING.de.md) · [Italiano](CONTRIBUTING.it.md) · [日本語](CONTRIBUTING.ja.md) · [Français](CONTRIBUTING.fr.md)
-
-> Translation of [CONTRIBUTING.zh.md](CONTRIBUTING.zh.md) · 2026-10-17 · the Chinese version is authoritative.
-
 > **What this file covers**: **governance** — who may change which level of decision · who is eligible to review · what a review looks at · roles · behavioural expectations · response times · licensing and DCO.
 > **What it does not cover**: **process and format** — repository layout · branching · commit format · PR granularity · **approval count** · merge strategy · versions and tags · deliverable version numbers. All of that is authoritative in [`docs/guides/git-conventions.md`](../docs/guides/git-conventions.md) and is not duplicated here. Design content → [`docs/design/00-index.md`](../docs/design/00-index.md); security vulnerabilities → [`SECURITY.md`](SECURITY.md).
 
