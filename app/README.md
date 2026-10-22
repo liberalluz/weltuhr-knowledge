@@ -25,7 +25,7 @@ flutter run -d windows        # 必须在 app/ 目录内运行（内容包按运
 | `lib/features/` | 界面：宇宙 / 树 / 详情 / 定位结果 / 进展 / 修习（**W2 起建**） | 可用 Flutter，不持有可写状态 |
 | `tool/lint/` | R1 跨层依赖 · R2 字面量常量 · R3 事件只 append · R4 源不进视觉通道 · R5 测试须标裁定来源 | 纯函数 `(path, source) → issues`，由 `test/lint/` 覆盖 |
 
-> R1–R5 的检查是 `dart run tool/lint/check.dart`（默认扫 `lib/` 与 `test/`），**不在 `flutter analyze` 里**。R3/R4 原先被列为「靠接口形状保证」，实测形状只挡得住**改**、挡不住**加** —— 给 `Event` 加个 `copyWith` 编译不报错、测试不红，所以补成规则。仍靠形状的只剩「UI 不写状态」（判据是结构性质，写不成静态模式），它留在 `STD` §4.3 的 B 类缺口里 —— 见 [ADR-0002](../docs/adr/0002-dev-order-vertical-slice.md)。
+> R1–R5 的检查是 `dart run tool/lint/check.dart`（默认扫 `lib/` 与 `test/`），**不在 `flutter analyze` 里**。R3/R4 原先被列为「靠接口形状保证」，实测形状只挡得住**改**、挡不住**加** —— 给 `Event` 加个 `copyWith` 编译不报错、测试不红，所以补成规则。仍靠形状的只剩「UI 不写状态」（判据是结构性质，写不成静态模式），它留在 `STD` §4.3 的 B 类缺口里 —— 见 [ADR-0002](../docs/decisions/0002-dev-order-vertical-slice.md)。
 
 ## 相关文档
 

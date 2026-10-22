@@ -18,7 +18,7 @@
 | `app/`     | Flutter 客户端（Windows / macOS / iOS 一套代码）                         | 产品版本 `vX.Y.Z`（§五）          |
 | `server/`  | Serverpod 服务端（事件同步 · HLC 合并 · 鉴权）                               | 与客户端**同一产品版本** `vX.Y.Z`（§五） |
 | `content/` | 内容包源数据与构建管线（每空间一目录 + `tools/build.py`）                          | 独立内容包版本（§五）                |
-| `docs/`    | 软件工程文档（`design/` `reference/` `guides/` `adr/` `deliverables/`） | 活文档不设版号；交付物另计（§六）          |
+| `docs/`    | 软件工程文档（`design/` `reference/` `guides/` `decisions/` `deliverables/`） | 活文档不设版号；交付物另计（§六）          |
 | `infra/`   | 构建 / 打包 / 签名 / 更新器 / CI                                         | 随产品版本                      |
 
 **入库判据**：源数据（json / md / 脚本）入库；**构建产物不入库**。
@@ -383,7 +383,7 @@ git push origin pack/python/v1.2.0
 
 ## 六、交付物版号
 
-**版号口径的权威处 = [`docs/README.md`](../README.md) §一**：`docs/deliverables/**` 用 `vX.Y.Z` **独立递增**；`design/` `reference/` `guides/` `adr/` 属活文档，**不设版号**，更新时间以 `git log` 为准（**不要求手写「最后更新」头** —— 手写头会变成第二份会过期的记录）。本节只补 **git 侧**的约束，不复述那套规则。
+**版号口径的权威处 = [`docs/README.md`](../README.md) §一**：`docs/deliverables/**` 用 `vX.Y.Z` **独立递增**；`design/` `reference/` `guides/` `decisions/` 属活文档，**不设版号**，更新时间以 `git log` 为准（**不要求手写「最后更新」头** —— 手写头会变成第二份会过期的记录）。本节只补 **git 侧**的约束，不复述那套规则。
 
 | 约束       | 内容                                                                                |
 | -------- | --------------------------------------------------------------------------------- |

@@ -5,9 +5,9 @@
 > 状态：文献表双轨（§11 功能分类版 + §12 文献格式版）；§9 待核实项已办结  
 >
 > **与 ADR 的分工**：本文是**论证与依据**（为什么是三条轴、为什么七级、锚点质量如何），
-> 结论落成决策的是 [`ADR-0005`](../adr/0005-three-axis-tree-replaces-six-axis.md)（三轴容器树取代六轴）、
-> [`ADR-0006`](../adr/0006-3d-rendering-stack-and-visual-style.md)（3D 渲染栈与视觉风格）、
-> [`ADR-0007`](../adr/0007-node-type-shape.md)（`Node` 的类型形态）。
+> 结论落成决策的是 [`ADR-0005`](../decisions/0005-three-axis-tree-replaces-six-axis.md)（三轴容器树取代六轴）、
+> [`ADR-0006`](../decisions/0006-3d-rendering-stack-and-visual-style.md)（3D 渲染栈与视觉风格）、
+> [`ADR-0007`](../decisions/0007-node-type-shape.md)（`Node` 的类型形态）。
 > 两者冲突时**以 ADR 为准**：本文可继续演进，地基本文不承载。
 
 
