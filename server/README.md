@@ -4,7 +4,7 @@
 
 ## 版本
 
-与客户端**共用产品版本** `vX.Y.Z`：本包 `pubspec.yaml` 的 `version` 须与 `app/pubspec.yaml` **逐字相同**（含 `+N` 构建号），**一个 tag 覆盖双端**，服务端不另打 tag。协议（事件 schema）变更时**服务端先发并向后兼容至少一个版本**，客户端随后放量。判据与理由见 [git-conventions §五](../docs/guides/git-conventions.md)。
+与客户端**共用产品版本** `vX.Y.Z`：本包 `pubspec.yaml` 的 `version` 须与 `app/pubspec.yaml` **逐字相同**（含 `+N` 构建号），**一个 tag 覆盖双端**，服务端不另打 tag。协议（事件 schema）变更时**服务端先发并向后兼容至少一个版本**，客户端随后放量。判据与理由见 [git-conventions §五](../docs/specs/git-conventions.md)。
 
 ## 本模块命令
 

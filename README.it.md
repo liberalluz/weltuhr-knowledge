@@ -1,12 +1,12 @@
 # Weltuhr
 
-[English](../../README.md) · [简体中文](README.zh.md) · [Deutsch](README.de.md) · **Italiano** · [日本語](README.ja.md) · [Français](README.fr.md)
+[English](README.md) · [简体中文](README.zh-CN.md) · [Deutsch](README.de.md) · **Italiano** · [日本語](README.ja.md) · [Français](README.fr.md)
 
-> Traduzione di [docs/readme/README.zh.md](../../docs/readme/README.zh.md) · 2026-10-17 · fa fede la versione cinese.
+> Traduzione di [README.zh-CN.md](README.zh-CN.md) · 2026-10-17 · fa fede la versione cinese.
 
 > Dispiegare un campo di studio in uno spazio di conoscenza **localizzabile, pianificabile e misurabile**, così che «voglio imparare X» diventi «so cosa imparare, in quale ordine, e a che punto sono quando conta come utilizzabile».
 
-[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](../../LICENSE)
+[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 
 ## Caratteristiche
 
@@ -41,25 +41,25 @@ cd ../app && flutter run -d windows
 
 | Directory | Responsabilità |
 |---|---|
-| [app/](../../app/README.md) | Client Flutter (un'unica base di codice per Windows / macOS / iOS) |
-| [server/](../../server/README.md) | Server Serverpod: sincronizzazione, fusione degli eventi, governance e revisione |
-| [content/](../../content/README.md) | Dati sorgente dei pacchetti di contenuti e pipeline di build |
-| [docs/](../../docs/README.md) | Documenti di consegna, documenti vivi, ADR e specifiche di progetto |
-| [infra/](../../infra/README.md) | Build / firma / aggiornamento / mirror / CI |
+| [app/](app/README.md) | Client Flutter (un'unica base di codice per Windows / macOS / iOS) |
+| [server/](server/README.md) | Server Serverpod: sincronizzazione, fusione degli eventi, governance e revisione |
+| [content/](content/README.md) | Dati sorgente dei pacchetti di contenuti e pipeline di build |
+| [docs/](docs/README.md) | Documenti di consegna, documenti vivi, ADR e specifiche di progetto |
+| [infra/](infra/README.md) | Build / firma / aggiornamento / mirror / CI |
 
-Inoltre: [docs/intent/knowledge-system-learning-methodology.md](../intent/knowledge-system-learning-methodology.md) — la **base metodologica** di questo progetto (metodologia dell'apprendimento a sistema di conoscenza); per la specifica di progetto software vedi [docs/specs/](../specs/00-index.md).
+Inoltre: [docs/intent/knowledge-system-learning-methodology.md](docs/intent/knowledge-system-learning-methodology.md) — la **base metodologica** di questo progetto (metodologia dell'apprendimento a sistema di conoscenza); per la specifica di progetto software vedi [docs/specs/](docs/specs/00-index.md).
 
 ## Documentazione
 
-- [docs/README.md](../../docs/README.md) — indice della documentazione (documenti di consegna / documenti vivi / ADR)
-- [docs/specs/00-index.md](../specs/00-index.md) — **indice delle specifiche di progetto** (FND / VIEW / PACK / PLAN / STEP / QUANT / NOTE / GOV + tabelle trasversali)
+- [docs/README.md](docs/README.md) — indice della documentazione (documenti di consegna / documenti vivi / ADR)
+- [docs/specs/00-index.md](docs/specs/00-index.md) — **indice delle specifiche di progetto** (FND / VIEW / PACK / PLAN / STEP / QUANT / NOTE / GOV + tabelle trasversali)
 
 ## Licenza e attribuzione
 
-Copyright (c) 2026 liberal. Questo progetto è rilasciato con licenza [Apache-2.0](../../LICENSE); vedi anche [NOTICE](../../NOTICE).
+Copyright (c) 2026 liberal. Questo progetto è rilasciato con licenza [Apache-2.0](LICENSE); vedi anche [NOTICE](NOTICE).
 
 ## Contribuire e chiedere aiuto
 
-- **Vulnerabilità di sicurezza**: non aprire una issue pubblica — segnala tramite il canale riservato descritto in [.github/SECURITY.md](../../.github/SECURITY.md) (prima risposta entro 7 giorni lavorativi)
+- **Vulnerabilità di sicurezza**: non aprire una issue pubblica — segnala tramite il canale riservato descritto in [.github/SECURITY.md](.github/SECURITY.md) (prima risposta entro 7 giorni lavorativi)
 - Domande e proposte: tramite le Issues del repository; per gli errori nei contenuti indica l'identificativo dello spazio e l'`itemId`
-- Flusso di contribuzione: [.github/CONTRIBUTING.md](../../.github/CONTRIBUTING.md)
+- Flusso di contribuzione: [.github/CONTRIBUTING.md](.github/CONTRIBUTING.md)

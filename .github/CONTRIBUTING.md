@@ -1,7 +1,7 @@
 # Contributing
 
 > **What this file covers**: **governance** — who may change which level of decision · who is eligible to review · what a review looks at · roles · behavioural expectations · response times · licensing and DCO.
-> **What it does not cover**: **process and format** — repository layout · branching · commit format · PR granularity · **approval count** · merge strategy · versions and tags · deliverable version numbers. All of that is authoritative in [`docs/guides/git-conventions.md`](../docs/guides/git-conventions.md) and is not duplicated here. Design content → [`docs/specs/00-index.md`](../docs/specs/00-index.md); security vulnerabilities → [`SECURITY.md`](SECURITY.md); AI-assisted contributions → [`CONTRIBUTING.ai.md`](CONTRIBUTING.ai.md).
+> **What it does not cover**: **process and format** — repository layout · branching · commit format · PR granularity · **approval count** · merge strategy · versions and tags · deliverable version numbers. All of that is authoritative in [`docs/guides/git-conventions.md`](../docs/specs/git-conventions.md) and is not duplicated here. Design content → [`docs/specs/00-index.md`](../docs/specs/00-index.md); security vulnerabilities → [`SECURITY.md`](SECURITY.md); AI-assisted contributions → [`CONTRIBUTING.ai.md`](CONTRIBUTING.ai.md).
 
 ## 1. Authority boundaries
 
@@ -17,7 +17,7 @@ The design baseline of this repository is a set of **adjudicated, numbered speci
 | **TBD values** | `C-28` search fuzziness threshold, etc. | **maintainers only** | do not fill in, do not supply a default |
 | **External commitments** | licence, supported version window, response times, brand name | **maintainers only** | change requires an explicit announcement and a written record |
 
-The grading criteria themselves are not repeated here; see [git-conventions §4.4 change grading](../docs/guides/git-conventions.md) and [specs/00-index §7](../docs/specs/00-index.md). This table answers only "who signs off".
+The grading criteria themselves are not repeated here; see [git-conventions §4.4 change grading](../docs/specs/git-conventions.md) and [specs/00-index §7](../docs/specs/00-index.md). This table answers only "who signs off".
 
 **Why the last three rows are listed separately** — they all look like "just fill in a value" or "just change one sentence", yet the cost lands on other people:
 
@@ -40,15 +40,15 @@ The test for "small change": it can be stated in one commit message, and it does
 
 A large PR that was never discussed will be closed rather than reviewed — not out of unfriendliness, but because **reviewing an A-level change that is already finished** amounts to rubber-stamping it after the fact, which costs more than discussing it from the start.
 
-> **Do this once before you start**: `git config core.hooksPath .githooks` — without it the local hook never fires, and a direct push to `main` is caught by CI only **after it has landed**. Command and failure mode: [git-conventions §2.1](../docs/guides/git-conventions.md).
+> **Do this once before you start**: `git config core.hooksPath .githooks` — without it the local hook never fires, and a direct push to `main` is caught by CI only **after it has landed**. Command and failure mode: [git-conventions §2.1](../docs/specs/git-conventions.md).
 
 ## 3. Five things before you open a PR
 
 | # | Item | Criterion |
 |---|---|---|
-| 1 | Local self-verification | run everything in [git-conventions §7 pre-commit self-check](../docs/guides/git-conventions.md); paste the **commands actually executed and their output** into the PR body |
+| 1 | Local self-verification | run everything in [git-conventions §7 pre-commit self-check](../docs/specs/git-conventions.md); paste the **commands actually executed and their output** into the PR body |
 | 2 | Observable assertion | new behaviour needs a test vector; "it's implemented in the code" is not acceptance (`X-05`, see [00-index §4](../docs/specs/00-index.md)) |
-| 3 | DCO sign-off | every commit carries `Signed-off-by`; what counts as signed, and the check that rejects a commit without it: [git-conventions §3.3](../docs/guides/git-conventions.md) |
+| 3 | DCO sign-off | every commit carries `Signed-off-by`; what counts as signed, and the check that rejects a commit without it: [git-conventions §3.3](../docs/specs/git-conventions.md) |
 | 4 | One thing per PR | refactors and behaviour changes are not mixed; code and docs are not mixed in one commit |
 | 5 | No stowaways | change only what you described; an unrelated problem you spot gets **its own issue**, not a drive-by reorder / rename / beautification |
 
@@ -58,7 +58,7 @@ Why rule 5 exists: the docs and code in this repository follow fixed conventions
 
 ## 4. Review
 
-**The count is not set here**: approval follows maintainer headcount (single maintainer **0** · ≥2 maintainers **1**, and it must not be the author). The rule is in [git-conventions §4.1](../docs/guides/git-conventions.md). This section answers only **who is eligible** and **what is looked at**.
+**The count is not set here**: approval follows maintainer headcount (single maintainer **0** · ≥2 maintainers **1**, and it must not be the author). The rule is in [git-conventions §4.1](../docs/specs/git-conventions.md). This section answers only **who is eligible** and **what is looked at**.
 
 - **While there is a single maintainer**: the **self-review conclusion** in the PR body stands in for approval (what changed / how it was verified / why it was cut this way). This is not an exemption, it is review exchanged for a written record; it lapses the moment a second maintainer appears.
 - **A- and B-level changes**: regardless of headcount, a maintainer takes part in the review.
@@ -71,7 +71,7 @@ Why rule 5 exists: the docs and code in this repository follow fixed conventions
 | 3 | does the interface quietly draw a field the model never declared | `X-01` |
 | 4 | is the NOT list touched | [not-list](../docs/decisions/not-list.md) |
 
-⚠️ **Current state**: branch protection is not enabled on `main` (private repositories on free GitHub accounts cannot use it), so the constraints above **rest on discipline** rather than on system enforcement — see [git-conventions §4.3 remote state](../docs/guides/git-conventions.md). "Technically nothing stops it" does not make it allowed.
+⚠️ **Current state**: branch protection is not enabled on `main` (private repositories on free GitHub accounts cannot use it), so the constraints above **rest on discipline** rather than on system enforcement — see [git-conventions §4.3 remote state](../docs/specs/git-conventions.md). "Technically nothing stops it" does not make it allowed.
 
 ## 5. Roles
 
@@ -85,7 +85,7 @@ Current maintainer: [@liberalluz](https://github.com/liberalluz)
 
 ### Collaboration tiers
 
-The rules above are written for every size at once, but **what actually has to change is triggered by who is collaborating**, not by a date. These are trigger conditions only; the approval count and merge mechanics stay in [git-conventions §4](../docs/guides/git-conventions.md).
+The rules above are written for every size at once, but **what actually has to change is triggered by who is collaborating**, not by a date. These are trigger conditions only; the approval count and merge mechanics stay in [git-conventions §4](../docs/specs/git-conventions.md).
 
 | Tier | Trigger | What changes on entering it |
 |---|---|---|
@@ -119,10 +119,10 @@ Handling of violations: a maintainer may lock a discussion, close a PR, or refus
 ## 8. Licence and attribution
 
 - By submitting, you agree that your contribution is distributed under **Apache-2.0** (see [`../LICENSE`](../LICENSE), [`../NOTICE`](../NOTICE)).
-- **DCO**: every commit carries `Signed-off-by: Your Name <email>`, certifying that you have the right to submit the content (text at [developercertificate.org](https://developercertificate.org/)); how to produce the line, and the check that rejects a commit without it, are in [git-conventions §3.3](../docs/guides/git-conventions.md). This is not a copyright assignment; you keep the copyright.
-- Knowledge content in a **content pack** (`content/`) must be original, or come from sources whose licence is compatible with this project; **do not introduce** text or media from CC-BY-NC, GPL or AGPL sources (criteria in [dependency-licenses §2](../docs/guides/dependency-licenses.md)). A content erratum does not change the original author's attribution.
-- Third-party code or media must be registered **in the same PR** in [`../NOTICE`](../NOTICE) and the [dependency licence list](../docs/guides/dependency-licenses.md).
+- **DCO**: every commit carries `Signed-off-by: Your Name <email>`, certifying that you have the right to submit the content (text at [developercertificate.org](https://developercertificate.org/)); how to produce the line, and the check that rejects a commit without it, are in [git-conventions §3.3](../docs/specs/git-conventions.md). This is not a copyright assignment; you keep the copyright.
+- Knowledge content in a **content pack** (`content/`) must be original, or come from sources whose licence is compatible with this project; **do not introduce** text or media from CC-BY-NC, GPL or AGPL sources (criteria in [dependency-licenses §2](../docs/specs/dependency-licenses.md)). A content erratum does not change the original author's attribution.
+- Third-party code or media must be registered **in the same PR** in [`../NOTICE`](../NOTICE) and the [dependency licence list](../docs/specs/dependency-licenses.md).
 
 ## Appendix: local environment
 
-Flutter / Dart / Serverpod versions are pinned in `app/pubspec.yaml` and `server/pubspec.yaml` and **do not track the latest**. Environment setup and the known pitfalls of a first Windows build (symlinks, developer mode) are in [`docs/guides/environment.md`](../docs/guides/environment.md).
+Flutter / Dart / Serverpod versions are pinned in `app/pubspec.yaml` and `server/pubspec.yaml` and **do not track the latest**. Environment setup and the known pitfalls of a first Windows build (symlinks, developer mode) are in [`docs/guides/environment.md`](../docs/runbooks/environment.md).

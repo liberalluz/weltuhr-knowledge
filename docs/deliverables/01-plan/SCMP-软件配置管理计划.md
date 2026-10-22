@@ -98,7 +98,7 @@
 
 界定本项目的**配置项**（哪些产物受版本控制与变更控制）、**基线**（哪些组合被冻结为可回溯的节点）与**变更入口**（改动走哪条路径）。
 
-**不管**：具体提交格式与分支命名 → [`../../guides/git-conventions.md`](../../guides/git-conventions.md)；产品排期 → [`SDP-软件开发计划.md`](SDP-软件开发计划.md)。
+**不管**：具体提交格式与分支命名 → [`../../guides/git-conventions.md`](../../specs/git-conventions.md)；产品排期 → [`SDP-软件开发计划.md`](SDP-软件开发计划.md)。
 
 ## 二、配置项识别
 
@@ -204,7 +204,7 @@
 | 架构级 | 同上 | 新增或修订 ADR；勘误与实质修订须分别留痕 |
 | 基线内配置项 | 同上 | 变更须可回溯到基线编号 |
 
-变更分级（A/B/C/D）的判据见 [`../../guides/git-conventions.md`](../../guides/git-conventions.md) §4.4。
+变更分级（A/B/C/D）的判据见 [`../../guides/git-conventions.md`](../../specs/git-conventions.md) §4.4。
 
 ## 五、配置状态记录
 
