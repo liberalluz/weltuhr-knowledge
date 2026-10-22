@@ -102,7 +102,8 @@ const Map<int, Map<String, String>> batches = <int, Map<String, String>>{
     // 1 份才是操作
     'docs/guides/environment.md': 'docs/runbooks/environment.md',
     // 5 份 README 语言副本移到仓根（docsLocale.scheme = suffix）
-    'docs/readme/README.zh.md': 'README.zh.md',
+    // 中文原文用 zh-CN（不写裸 zh），落点随之改名
+    'docs/readme/README.zh.md': 'README.zh-CN.md',
     'docs/readme/README.de.md': 'README.de.md',
     'docs/readme/README.fr.md': 'README.fr.md',
     'docs/readme/README.it.md': 'README.it.md',

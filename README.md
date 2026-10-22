@@ -1,8 +1,8 @@
 # Weltuhr
 
-**English** · [简体中文](README.zh.md) · [Deutsch](README.de.md) · [Italiano](README.it.md) · [日本語](README.ja.md) · [Français](README.fr.md)
+**English** · [简体中文](README.zh-CN.md) · [Deutsch](README.de.md) · [Italiano](README.it.md) · [日本語](README.ja.md) · [Français](README.fr.md)
 
-> Translation of [README.zh.md](README.zh.md) · 2026-10-17 · the Chinese version is authoritative.
+> Translation of [README.zh-CN.md](README.zh-CN.md) · 2026-10-17 · the Chinese version is authoritative.
 
 > Unfold a field of study into a knowledge space that is **locatable, plannable and measurable**, so that "I want to learn X" becomes "I know what to learn, in what order, and how far along I am when it counts as usable".
 
