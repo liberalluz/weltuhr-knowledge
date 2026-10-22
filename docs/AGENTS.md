@@ -33,21 +33,22 @@
 
 ## 译本规范
 
-**中文是唯一事实源**，英文是默认展示语言。**库内文档**一律 `中文原文 + 各语言译本`，译本不得成为第二事实源；**对外四份除外** —— 只出一份英文，见下表「对外四份」。
+**中文是唯一事实源**，英文是默认展示语言。**库内文档**一律 `中文原文 + 各语言译本`，译本不得成为第二事实源；**对外层**另立一套口径 —— 权威是英文，见下表「对外层」。
 
 | 项 | 规则 |
 |---|---|
 | 命名 | `<原名>.<lang>.md` —— `README.zh-CN.md` · `SDP-软件开发计划.en.md`。**原文保留 `<原名>.md`**，不加后缀 |
 | 语言码 | `zh-CN` `en` `de` `it` `ja` `fr`（BCP 47）。**简体固定写 `zh-CN`，不写裸 `zh`** —— `zh` 是宏语言码、不区分简繁；将来加繁体用 `zh-TW`。取值与 `.swe-init.json` 的 `docsLocale.supported` 一致 |
-| 对外四份 | **只出一份、语言统一英文**（账本 `docsLocale.external = en`）：根 [`README.md`](../README.md)（首页渲染）· [`.github/CONTRIBUTING.md`](../.github/CONTRIBUTING.md)（新 issue / PR 界面自动链接）· [`.github/SECURITY.md`](../.github/SECURITY.md)（Security 页 policy）· [`.github/CONTRIBUTING.ai.md`](../.github/CONTRIBUTING.ai.md)（AI 参与准入）。**不出译文** —— 治理、安全与准入三处措辞不一致会引发歧义 |
-| 落点 | 译本**与其中文原文同目录**：根 README 的五份译本即在仓根，中文原文为 [`README.zh-CN.md`](../README.zh-CN.md)；其余文档 → 与原文同目录。**`.github/` 下不出译文**（见上「对外四份」） |
-| 切换条 | `English · 简体中文 · Deutsch · Italiano · 日本語 · Français` 固定顺序，**当前语言加粗不设链接**，置于 `# 标题` 之下 |
-| 溯源行 | 译本头部第二行写 `> Translation of <指向中文原文的链接> · <日期> · the Chinese version is authoritative.`（措辞按各语言自写，格式照此）。**不写 commit sha** —— 提交前不可知，写了必然立刻误报 |
+| 对外层 | **根 [`README.md`](../README.md) 及仓根五份译文**：权威 = **英文** `README.md`（首页渲染，账本 `docsLocale.external = en`），`README.zh-CN.md` 是译文之一、不是原文。**其余三份对外文件不出译文**：[`.github/CONTRIBUTING.md`](../.github/CONTRIBUTING.md)（新 issue / PR 界面自动链接）· [`.github/SECURITY.md`](../.github/SECURITY.md)（Security 页 policy）· [`.github/CONTRIBUTING.ai.md`](../.github/CONTRIBUTING.ai.md)（AI 参与准入）—— 治理、安全与准入三处措辞不一致会引发歧义 |
+| 落点 | 译本**与权威版同目录**：根 README 的五份译文即在仓根；库内文档的译本与其**中文原文**同目录。**`.github/` 下不出译文**（见上「对外层」） |
+| 切换条 | `English · 简体中文 · Deutsch · Italiano · 日本語 · Français` 固定顺序，**当前语言加粗不设链接**。**对外层置于 `# 标题` 之前**（访客第一眼看到）；**库内文档置于 `# 标题` 之下** |
+| 溯源行 | 库内译本：头部写 `> Translation of <中文原文链接> · <日期> · the Chinese version is authoritative.`，**不写 commit sha** —— 提交前不可知，写了必然立刻误报。对外层：头部写 `> 以根 README.md @ <sha> 为准` 的等价措辞，**sha 必写**；它指**所据英文版的提交**、不是本笔提交，故提交前已知。⚠️ 两层相反是刻意设计，不是笔误 |
+| 跟译 | **改根 `README.md` ⇒ 同一 PR 内同步五份译文**；确实只跟得动一部分时，至少把 `@ <sha>` 前移并在 PR 正文列出未跟的段落。库内文档**不承诺逐轮同步**，靠溯源行让读者自行判断新旧 |
 | 链接 | 目标已有译本 ⇒ 指向同名译本；目标尚无译本 ⇒ 指向中文原文。**不指向其他译本** |
 | 不译 | `AGENTS.md`（两套语言 = 两套规则源）· `LICENSE` · `NOTICE`（法律文本） |
 | 完整性 | **中文原文不得删除，译本不得单独存在** —— `check_s0` 只判前缀存在，删了中文会静默通过 |
 
-**已落译本**：仓根 `README.de.md` / `README.fr.md` / `README.it.md` / `README.ja.md` / `README.zh-CN.md` 五份（中文原文为 `README.zh-CN.md`）；**`.github/` 三份不出译文**（见上「对外四份」）。`docs/` 下 **63 份**（`find docs -name '*.md'` 共 64 份，减 1 份不译的 `AGENTS.md`）的译本**等首个版本发布后统一做**。
+**已落译本**：仓根 `README.zh-CN.md` / `README.de.md` / `README.it.md` / `README.ja.md` / `README.fr.md` 五份，**全部译自英文 [`README.md`](../README.md)**，溯源行带 `@ <sha>`；**`.github/` 三份不出译文**（见上「对外层」）。`docs/` 下 **63 份**（`find docs -name '*.md'` 共 64 份，减 1 份不译的 `AGENTS.md`）的译本**等首个版本发布后统一做** —— 那一批走**库内口径**：中文是事实源、溯源行以中文原文为准、不写 sha。
 
 ## 交付物导航
 
