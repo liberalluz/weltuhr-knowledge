@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "name": "weltuhr-knowledge",
+  "stack": "flutter",
+  "stackSkeleton": ["app", "server", "content", "infra"],
+  "toolchain": {},
+  "docsProfile": {
+    "id": "swebok-v4",
+    "rev": 1,
+    "dirs": ["decisions", "intent", "ideas", "specs", "runbooks"]
+  },
+  "docsLocale": {
+    "primary": "zh-CN",
+    "supported": ["zh-CN", "en", "de", "it", "ja", "fr"],
+    "scheme": "suffix",
+    "external": "en",
+    "changelog": "zh-CN"
+  },
+  "license": "Apache-2.0",
+  "inferredFields": ["stack", "stackSkeleton", "docsProfile", "docsLocale", "toolchain"],
+  "remote": {
+    "deferred": true,
+    "decidedAt": "2026-10-22T08:20:29+08:00"
+  },
+  "createdAt": "2026-10-22T07:51:41+08:00",
+  "updatedAt": "2026-10-22T08:27:44+08:00"
+}
