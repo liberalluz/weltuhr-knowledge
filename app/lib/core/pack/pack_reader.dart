@@ -9,7 +9,7 @@
 ///
 /// 旧格式吃两段文本（`manifest.json` + `dist/pack.json`），并用 `meta{space,
 /// version}` 信封校验「两者是不是同一批产物」。新格式**没有这个必要**：
-/// 清单字段与六段内容同在 `pack.json` 顶层（[`minimal-pack.md`](../../../../docs/reference/minimal-pack.md)
+/// 清单字段与六段内容同在 `pack.json` 顶层（[`minimal-pack.md`](../../../../docs/specs/minimal-pack.md)
 /// §3.1 的夹具就是这个形态），「同一批」由「同一个文件」保证。
 /// 因此本层只收一个入参，也**不再有 `meta` 信封**。
 ///

@@ -215,10 +215,10 @@ const Set<String> _derivedFieldNames = <String>{'path', 'inScope', 'depth'};
 
 /// 测试名里合法的裁定标号。
 ///
-/// - `SPEC-XXX-NNN` —— 设计规格编号（`docs/design/`）。域前缀长度不一
+/// - `SPEC-XXX-NNN` —— 设计规格编号（`docs/specs/`）。域前缀长度不一
 ///   （`GOV` 三位、`QUANT` 五位），所以这里不能写死 `{3}`
-/// - `C-NN` —— 常量编号（`docs/reference/constants.md`）
-/// - `ADR-NNNN` —— 架构决策（`docs/adr/`）
+/// - `C-NN` —— 常量编号（`docs/specs/constants.md`）
+/// - `ADR-NNNN` —— 架构决策（`docs/decisions/`）
 /// - `R<n>` —— 本文件里的规则自身。⚠️ 写成 `\d+` 不是 `\d`：`R10` 出现时
 ///   `\bR\d\b` **匹配不到**（`1` 与 `0` 都是词字符，中间没有词边界），
 ///   于是「新规则自己的测试标了号反而被判没标号」—— 这条正则在写的时候

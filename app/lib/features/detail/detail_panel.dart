@@ -63,7 +63,7 @@ const List<RelationKind> _relationOrder = <RelationKind>[
   RelationKind.gap,
 ];
 
-/// 六要件的显示名（`docs/reference/entity-fields.md` §1）。
+/// 六要件的显示名（`docs/specs/entity-fields.md` §1）。
 const Map<RequirementKey, String> _requirementLabels = <RequirementKey, String>{
   RequirementKey.boundary: '边界',
   RequirementKey.justification: '证成',

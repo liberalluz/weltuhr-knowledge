@@ -19,7 +19,7 @@ const String edgeTypeParent = 'parent';
 const String edgeTypeWormhole = 'wormhole';
 const String edgeTypePrerequisite = 'prerequisite';
 
-/// 一条边。字段集以 `docs/reference/entity-fields.md` §3–§5 为唯一权威处。
+/// 一条边。字段集以 `docs/specs/entity-fields.md` §3–§5 为唯一权威处。
 sealed class NodeEdge {
   const NodeEdge();
 

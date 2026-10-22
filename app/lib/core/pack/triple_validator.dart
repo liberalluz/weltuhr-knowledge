@@ -3,8 +3,8 @@
 /// ## 判据从哪来
 ///
 /// 六条码与校验顺序**不是这里自拟的** —— 出处是
-/// [`minimal-pack.md`](../../../../docs/reference/minimal-pack.md) §4.3，
-/// 而它逐条对应 [`path-rules.md`](../../../../docs/reference/path-rules.md) §六
+/// [`minimal-pack.md`](../../../../docs/specs/minimal-pack.md) §4.3，
+/// 而它逐条对应 [`path-rules.md`](../../../../docs/specs/path-rules.md) §六
 /// 的七面对应表。本节注释只解释**为什么这么排**，不重新定义规则。
 ///
 /// ## 为什么 fail-fast，而不是「一次报全部」

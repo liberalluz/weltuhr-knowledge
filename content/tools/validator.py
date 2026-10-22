@@ -2,9 +2,9 @@
 
 判据来源（本文件不重述裁定，只给出指回条目的 issue code）：
 
-- `docs/design/PACK-content-pack.md` §二 pack 格式（`SPEC-PACK-005` … `009`）
-- `docs/design/FND-foundation.md`（`SPEC-FND-004` 六要件三态 · `005` DAG · `013` 稳定 id）
-- `docs/reference/entity-fields.md`（字段与取值）
+- `docs/specs/PACK-content-pack.md` §二 pack 格式（`SPEC-PACK-005` … `009`）
+- `docs/specs/FND-foundation.md`（`SPEC-FND-004` 六要件三态 · `005` DAG · `013` 稳定 id）
+- `docs/specs/entity-fields.md`（字段与取值）
 
 设计约束：
   1. **不改写数据**。校验器只读，任何"修正"都由作者在源数据里做。

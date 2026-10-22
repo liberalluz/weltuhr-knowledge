@@ -3,7 +3,7 @@ import 'package:project_knowledge/core/constants.dart';
 import 'package:project_knowledge/core/enums.dart';
 
 void main() {
-  group('常量表（docs/reference/constants.md 的代码投影）', () {
+  group('常量表（docs/specs/constants.md 的代码投影）', () {
     test('C-01 / C-02 记忆饱和常数与毕业阈值', () {
       expect(sZeroDays, 30);
       expect(graduationSDays, 180);

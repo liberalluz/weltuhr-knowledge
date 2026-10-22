@@ -6,7 +6,7 @@ library;
 import '../constants.dart';
 import '../json.dart';
 
-/// 事件类型全集。唯一权威处 = `docs/reference/event-types.md` §二。
+/// 事件类型全集。唯一权威处 = `docs/specs/event-types.md` §二。
 ///
 /// **新增类型须先在该表登记**（含 payload 字段与是否写判定），再实现。
 enum EventType {

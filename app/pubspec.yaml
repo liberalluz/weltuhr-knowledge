@@ -3,7 +3,7 @@ description: "Weltuhr — 知识体系学习软件"
 publish_to: 'none'
 version: 0.1.0+1
 
-# 版本钉死：不用 ^ 区间（docs/guides/environment.md §一）。升级须走变更控制。
+# 版本钉死：不用 ^ 区间（docs/runbooks/environment.md §一）。升级须走变更控制。
 environment:
   sdk: 3.13.5
 
