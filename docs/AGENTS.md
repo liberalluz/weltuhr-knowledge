@@ -32,21 +32,21 @@
 
 ## 译本规范
 
-**中文是唯一事实源**，英文是默认展示语言。**库内文档**一律 `中文原文 + 各语言译本`，译本不得成为第二事实源；**对外三份除外** —— 只出一份英文，见下表「对外三份」。
+**中文是唯一事实源**，英文是默认展示语言。**库内文档**一律 `中文原文 + 各语言译本`，译本不得成为第二事实源；**对外四份除外** —— 只出一份英文，见下表「对外四份」。
 
 | 项 | 规则 |
 |---|---|
 | 命名 | `<原名>.<lang>.md` —— `README.zh.md` · `SDP-软件开发计划.en.md`。**原文保留 `<原名>.md`**，不加后缀 |
 | 语言码 | `zh` `en` `de` `it` `ja` `fr`（BCP 47 短码） |
-| 对外三份 | **只出一份、语言统一英文**（账本 `docsLocale.external = en`）：根 [`README.md`](../README.md)（首页渲染）· [`.github/CONTRIBUTING.md`](../.github/CONTRIBUTING.md)（新 issue / PR 界面自动链接）· [`.github/SECURITY.md`](../.github/SECURITY.md)（Security 页 policy）。**不出译文** —— 治理与安全承诺两份措辞不一致会引发歧义 |
-| 落点 | 译本**与其中文原文同目录**：根 README → [`readme/`](readme/)；其余文档 → 与原文同目录。**`.github/` 下不出译文**（见上「对外三份」） |
+| 对外四份 | **只出一份、语言统一英文**（账本 `docsLocale.external = en`）：根 [`README.md`](../README.md)（首页渲染）· [`.github/CONTRIBUTING.md`](../.github/CONTRIBUTING.md)（新 issue / PR 界面自动链接）· [`.github/SECURITY.md`](../.github/SECURITY.md)（Security 页 policy）· [`.github/CONTRIBUTING.ai.md`](../.github/CONTRIBUTING.ai.md)（AI 参与准入）。**不出译文** —— 治理、安全与准入三处措辞不一致会引发歧义 |
+| 落点 | 译本**与其中文原文同目录**：根 README → [`readme/`](readme/)；其余文档 → 与原文同目录。**`.github/` 下不出译文**（见上「对外四份」） |
 | 切换条 | `English · 简体中文 · Deutsch · Italiano · 日本語 · Français` 固定顺序，**当前语言加粗不设链接**，置于 `# 标题` 之下 |
 | 溯源行 | 译本头部第二行写 `> Translation of <指向中文原文的链接> · <日期> · the Chinese version is authoritative.`（措辞按各语言自写，格式照此）。**不写 commit sha** —— 提交前不可知，写了必然立刻误报 |
 | 链接 | 目标已有译本 ⇒ 指向同名译本；目标尚无译本 ⇒ 指向中文原文。**不指向其他译本** |
 | 不译 | `AGENTS.md`（两套语言 = 两套规则源）· `LICENSE` · `NOTICE`（法律文本） |
 | 完整性 | **中文原文不得删除，译本不得单独存在** —— `check_s0` 只判前缀存在，删了中文会静默通过 |
 
-**已落译本**：`readme/` 五份（`de` `it` `ja` `fr`，中文原文为 `README.zh.md`）；**`.github/` 两份不出译文**（见上「对外三份」）。其余 57 份文档的译本**等首个版本发布后统一做**。
+**已落译本**：`readme/` 五份（`de` `it` `ja` `fr`，中文原文为 `README.zh.md`）；**`.github/` 三份不出译文**（见上「对外四份」）。其余 57 份文档的译本**等首个版本发布后统一做**。
 
 ## 交付物导航
 
