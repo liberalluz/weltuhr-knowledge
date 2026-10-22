@@ -1,20 +1,17 @@
-# Weltuhr
-
 [English](README.md) · [简体中文](README.zh-CN.md) · [Deutsch](README.de.md) · **Italiano** · [日本語](README.ja.md) · [Français](README.fr.md)
 
-> Traduzione di [README.zh-CN.md](README.zh-CN.md) · 2026-10-17 · fa fede la versione cinese.
+> Fa fede la versione inglese [README.md](README.md) @ d888a44; questa traduzione corrisponde a quella versione.
+
+# Weltuhr
 
 > Dispiegare un campo di studio in uno spazio di conoscenza **localizzabile, pianificabile e misurabile**, così che «voglio imparare X» diventi «so cosa imparare, in quale ordine, e a che punto sono quando conta come utilizzabile».
 
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 
-## Caratteristiche
-
-- **Spazi di conoscenza**: la conoscenza è organizzata attorno a pacchetti di contenuti — uno spazio, un pacchetto. Il confine di uno spazio è deciso da tre criteri, non tracciato a mano in livelli
-- **Coordinate, non cartelle**: sei assi (disciplina / ruolo / settore / competenza / tema / stack tecnologico) × tre livelli (persistente / vista / effimero) formano **coordinate di indice** combinabili come filtri, non cartelle annidate
-- **Universo 3D + albero 2D + dettaglio**: tre proiezioni di uno stesso modello a grafo; la posizione stessa porta significato (`r` / `θ` / `φ`), senza layout force-directed in 3D
+- **Spazi di conoscenza**: la conoscenza è organizzata attorno ai pacchetti di contenuti — uno spazio, un pacchetto. Il confine di uno spazio è deciso da tre criteri, non tracciato a mano in livelli
+- **Un grafo, tre proiezioni**: sei assi (disciplina / ruolo / settore / competenza / tema / stack tecnologico) × tre livelli (persistente / vista / effimero) formano **coordinate di indice** combinabili come filtri, non cartelle annidate; universo 3D, albero 2D e pannello di dettaglio sono tre proiezioni dello stesso grafo, la posizione stessa porta significato (`r` / `θ` / `φ`) e non si usa un layout force-directed in 3D
 - **Pianificazione in tre fasi**: fonte (materiali) → sistema (ordine) → metodo (azioni + criteri); tutte e tre sono redigibili dall'utente, i candidati sono ordinati secondo i propri criteri e i compromessi sono mostrati
-- **Ciclo di acquisizione in sette passi**: localizzare → pianificare → esercitare → verificare → mantenere → uscita; il ripasso segue FSRS. Il progresso è discreto (non torna mai indietro) e resta separato dalla padronanza, che è continua (può calare)
+- **Ciclo di acquisizione in sette passi**: scegliere la fonte → scegliere il sistema → scegliere il metodo → esercitare → verificare → mantenere → uscita; il ripasso segue FSRS. Il progresso è discreto (non torna mai indietro) e resta separato dalla padronanza, che è continua (può calare)
 - **Due tipi di note**: le note di sistema (derivate dal sistema) e quelle scritte dall'utente condividono lo stesso ancoraggio `itemId` e si possono commutare sul posto; l'esportazione verso app di note esterne è a senso unico
 
 ## Avvio rapido
@@ -23,6 +20,11 @@
 
 ```bash
 git clone git@github.com:liberalluz/weltuhr-knowledge.git && cd weltuhr-knowledge
+
+# abilitare gli hook gestiti dal repository (controllo del formato del messaggio di commit).
+# Una volta per clone; senza di essi la stessa regola gira comunque in CI, ma te ne
+# accorgi solo dopo il push.
+git config core.hooksPath .githooks
 
 # dipendenze del client
 cd app && flutter pub get
@@ -37,29 +39,57 @@ cd ../content && python tools/build.py
 cd ../app && flutter run -d windows
 ```
 
-## Mappa delle directory
+## Comandi
+
+| Comando | Cosa fa |
+|---|---|
+| `cd app && flutter run -d windows` | Avvia il client |
+| `cd app && flutter test --reporter compact` | Esegue la suite di test del client |
+| `python content/tools/build.py` | Genera il pacchetto di contenuti |
+| `python content/tools/verify.py --suite` | Verifica i pacchetti di contenuti rispetto al loro schema |
+| `cd app && flutter analyze && dart run tool/lint/check.dart && dart run tool/docs/check.dart` | Controlli statici: analyzer, regole lint del repository, link e coerenza della documentazione |
+
+> Questa tabella deve corrispondere a ciò che la CI verifica davvero; se cambia un workflow, la tabella cambia nella stessa pull request.
+
+## Struttura del progetto
 
 | Directory | Responsabilità |
 |---|---|
 | [app/](app/README.md) | Client Flutter (un'unica base di codice per Windows / macOS / iOS) |
 | [server/](server/README.md) | Server Serverpod: sincronizzazione, fusione degli eventi, governance e revisione |
 | [content/](content/README.md) | Dati sorgente dei pacchetti di contenuti e pipeline di build |
-| [docs/](docs/README.md) | Documentazione tecnica: specifiche · decisioni · metodologia a monte · idee · runbook · documenti di consegna versionati |
+| [docs/](docs/README.md) | Documentazione tecnica — regole di collocazione in [docs/README.md](docs/README.md) |
 | [infra/](infra/README.md) | Build / firma / aggiornamento / mirror / CI |
 
-Inoltre: [docs/intent/knowledge-system-learning-methodology.md](docs/intent/knowledge-system-learning-methodology.md) — la **base metodologica** di questo progetto (metodologia dell'apprendimento a sistema di conoscenza); per la specifica di progetto software vedi [docs/specs/](docs/specs/00-index.md).
+## Architettura
+
+Tre livelli: il client Flutter disegna tre proiezioni di un unico modello a grafo (universo 3D / albero 2D / dettaglio); il server Serverpod si occupa di sincronizzazione, fusione degli eventi, governance e revisione; i pacchetti di contenuti sono dati puri compilati da `content/tools/` in `pack.json`. Il modello a grafo, le sue coordinate e le regole dei percorsi sono nell'[indice delle specifiche](docs/specs/00-index.md).
+
+Le decisioni di progetto e le alternative scartate: [docs/decisions/](docs/decisions/).
 
 ## Documentazione
 
-- [docs/README.md](docs/README.md) — indice della documentazione: cinque directory di contenuto (`specs` / `decisions` / `intent` / `ideas` / `runbooks`) più `deliverables` versionati
-- [docs/specs/00-index.md](docs/specs/00-index.md) — **indice delle specifiche di progetto** (FND / VIEW / PACK / PLAN / STEP / QUANT / NOTE / GOV / ACC / SYNC + tabelle trasversali)
+- Regole di collocazione e copertura delle aree di conoscenza: [docs/README.md](docs/README.md)
+- Specifiche e contratti di interfaccia: [docs/specs/](docs/specs/00-index.md)
+- Esercizio, preparazione dell'ambiente e come avviare le cose: [docs/runbooks/](docs/runbooks/)
+- Base metodologica del progetto: [docs/intent/knowledge-system-learning-methodology.md](docs/intent/knowledge-system-learning-methodology.md)
 
-## Licenza e attribuzione
+## Ottenere aiuto
 
-Copyright (c) 2026 liberal. Questo progetto è rilasciato con licenza [Apache-2.0](LICENSE); vedi anche [NOTICE](NOTICE).
+- Inizia dall'indice della documentazione: [docs/README.md](docs/README.md)
+- Qualcosa è rotto o non parte: [docs/runbooks/](docs/runbooks/)
+- Domande e proposte: le Issues del repository. Per gli errori nei contenuti indica l'identificativo dello spazio e l'`itemId`
 
-## Contribuire e chiedere aiuto
+## Contribuire
 
-- **Vulnerabilità di sicurezza**: non aprire una issue pubblica — segnala tramite il canale riservato descritto in [.github/SECURITY.md](.github/SECURITY.md) (prima risposta entro 7 giorni lavorativi)
-- Domande e proposte: tramite le Issues del repository; per gli errori nei contenuti indica l'identificativo dello spazio e l'`itemId`
-- Flusso di contribuzione: [.github/CONTRIBUTING.md](.github/CONTRIBUTING.md)
+Nomi dei branch, formato dei commit, pull request e soglia di revisione sono in [.github/CONTRIBUTING.md](.github/CONTRIBUTING.md).
+
+Manutentore: liberal
+
+## Sicurezza
+
+Segnala le vulnerabilità tramite il canale riservato descritto in [.github/SECURITY.md](.github/SECURITY.md). Non aprire una issue pubblica per un problema di sicurezza.
+
+## Licenza
+
+Apache-2.0 — vedi [LICENSE](LICENSE) e [NOTICE](NOTICE).

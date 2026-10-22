@@ -15,7 +15,10 @@ limitations under the License.
 
 ---
 
-第三方组件与素材的署名与许可要求，随依赖引入逐项登记于此。
+Attribution and license requirements for third-party components and assets are
+recorded here, item by item, as each dependency is introduced.
 
-当前状态：**尚无第三方依赖** —— 依赖锁定（`pubspec.yaml` / `pubspec.lock`）后，
-须按 `docs/specs/dependency-licenses.md` 逐项核查，传染型依赖单独标注合规结论。
+Current status: **no third-party dependencies yet** — once dependencies are
+pinned (`pubspec.yaml` / `pubspec.lock`), each one must be checked against
+`docs/specs/dependency-licenses.md`, and copyleft dependencies must carry an
+explicit compliance conclusion.
