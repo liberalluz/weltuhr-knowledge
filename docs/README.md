@@ -10,9 +10,9 @@
 | [specs/](specs/00-index.md) | **设计规格** —— 产品与系统的「是什么」 | 活文档，不设版号 |
 | [reference/](specs/channel-table.md) | **参考层** —— 横切七表（通道 / 常量 / 事件类型 / 实体字段 / 术语 / path 规则 / NOT 清单）+ 未决台账 + 两份规格（骨架数据 / 最小示例包）+ 两份方法论长文，**共 12 份** | 活文档，不设版号 |
 | [deliverables/](deliverables/README.md) | **交付物** —— 按 GB/T 8567 组织的**六段 25 种**（计划 / 需求 / 设计 / 测试 / 交付 / 总结） | `vX.Y.Z` 独立递增 |
-| [guides/](guides/) | **操作指南** —— 怎么做（环境、Git、依赖许可…） | 活文档，不设版号 |
+| [runbooks/](runbooks/environment.md) | **操作手册** —— 怎么做（环境搭建与跑法） | 活文档，不设版号 |
 | [decisions/](decisions/) | **架构决策记录** —— 为什么这么选，含被否方案与代价 | 活文档，不设版号 |
-| [readme/](readme/README.zh.md) | **README 译本** —— 仓根 [README.md](../README.md)（英文）的中 / 德 / 意 / 日 / 法五份译本，中文为**唯一权威原文** | 活文档，不设版号 |
+| [readme/](../README.zh.md) | **README 译本** —— 仓根 [README.md](../README.md)（英文）的中 / 德 / 意 / 日 / 法五份译本，中文为**唯一权威原文** | 活文档，不设版号 |
 
 **判据**：讲「是什么 / 为什么」→ `specs/` 或 `decisions/`；讲「多少次 / 哪些值」→ `reference/`；讲「怎么操作」→ `guides/`；要对外交付、需签字 → `deliverables/`。
 

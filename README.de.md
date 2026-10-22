@@ -1,12 +1,12 @@
 # Weltuhr
 
-[English](../../README.md) · [简体中文](README.zh.md) · **Deutsch** · [Italiano](README.it.md) · [日本語](README.ja.md) · [Français](README.fr.md)
+[English](README.md) · [简体中文](README.zh.md) · **Deutsch** · [Italiano](README.it.md) · [日本語](README.ja.md) · [Français](README.fr.md)
 
-> Übersetzung von [docs/readme/README.zh.md](../../docs/readme/README.zh.md) · 2026-10-17 · maßgeblich ist die chinesische Fassung.
+> Übersetzung von [README.zh.md](README.zh.md) · 2026-10-17 · maßgeblich ist die chinesische Fassung.
 
 > Ein Lerngebiet zu einem Wissensraum entfalten, der **verortbar, planbar und messbar** ist — sodass aus „ich möchte X lernen" wird: „ich weiß, was ich in welcher Reihenfolge lerne und wann es als nutzbar gilt".
 
-[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](../../LICENSE)
+[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 
 ## Merkmale
 
@@ -41,25 +41,25 @@ cd ../app && flutter run -d windows
 
 | Verzeichnis | Zuständigkeit |
 |---|---|
-| [app/](../../app/README.md) | Flutter-Client (eine Codebasis für Windows / macOS / iOS) |
-| [server/](../../server/README.md) | Serverpod-Server: Synchronisation, Ereigniszusammenführung, Governance und Prüfung |
-| [content/](../../content/README.md) | Quelldaten der Content-Pakete und Build-Pipeline |
-| [docs/](../../docs/README.md) | Lieferdokumente, lebende Dokumente, ADRs und Design-Spezifikationen |
-| [infra/](../../infra/README.md) | Build / Signierung / Updater / Spiegel / CI |
+| [app/](app/README.md) | Flutter-Client (eine Codebasis für Windows / macOS / iOS) |
+| [server/](server/README.md) | Serverpod-Server: Synchronisation, Ereigniszusammenführung, Governance und Prüfung |
+| [content/](content/README.md) | Quelldaten der Content-Pakete und Build-Pipeline |
+| [docs/](docs/README.md) | Lieferdokumente, lebende Dokumente, ADRs und Design-Spezifikationen |
+| [infra/](infra/README.md) | Build / Signierung / Updater / Spiegel / CI |
 
-Außerdem: [docs/intent/knowledge-system-learning-methodology.md](../intent/knowledge-system-learning-methodology.md) — die **methodische Grundlage** dieses Projekts (Methodik des Wissenssystem-Lernens); zur Software-Design-Spezifikation siehe [docs/specs/](../specs/00-index.md).
+Außerdem: [docs/intent/knowledge-system-learning-methodology.md](docs/intent/knowledge-system-learning-methodology.md) — die **methodische Grundlage** dieses Projekts (Methodik des Wissenssystem-Lernens); zur Software-Design-Spezifikation siehe [docs/specs/](docs/specs/00-index.md).
 
 ## Dokumentation
 
-- [docs/README.md](../../docs/README.md) — Index der Dokumentation (Lieferdokumente / lebende Dokumente / ADRs)
-- [docs/specs/00-index.md](../specs/00-index.md) — **Index der Design-Spezifikation** (FND / VIEW / PACK / PLAN / STEP / QUANT / NOTE / GOV + Querschnittstabellen)
+- [docs/README.md](docs/README.md) — Index der Dokumentation (Lieferdokumente / lebende Dokumente / ADRs)
+- [docs/specs/00-index.md](docs/specs/00-index.md) — **Index der Design-Spezifikation** (FND / VIEW / PACK / PLAN / STEP / QUANT / NOTE / GOV + Querschnittstabellen)
 
 ## Lizenz und Namensnennung
 
-Copyright (c) 2026 liberal. Dieses Projekt steht unter der Lizenz [Apache-2.0](../../LICENSE); siehe auch [NOTICE](../../NOTICE).
+Copyright (c) 2026 liberal. Dieses Projekt steht unter der Lizenz [Apache-2.0](LICENSE); siehe auch [NOTICE](NOTICE).
 
 ## Mitwirken und Hilfe
 
-- **Sicherheitslücken**: bitte kein öffentliches Issue eröffnen — melden über den vertraulichen Kanal in [.github/SECURITY.md](../../.github/SECURITY.md) (erste Rückmeldung innerhalb von 7 Werktagen zugesagt)
+- **Sicherheitslücken**: bitte kein öffentliches Issue eröffnen — melden über den vertraulichen Kanal in [.github/SECURITY.md](.github/SECURITY.md) (erste Rückmeldung innerhalb von 7 Werktagen zugesagt)
 - Fragen und Vorschläge: über die Issues des Repositories; bei inhaltlichen Fehlern bitte Raumkennung und `itemId` angeben
-- Beitragsablauf: [.github/CONTRIBUTING.md](../../.github/CONTRIBUTING.md)
+- Beitragsablauf: [.github/CONTRIBUTING.md](.github/CONTRIBUTING.md)

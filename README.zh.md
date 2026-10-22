@@ -1,10 +1,10 @@
 # Weltuhr
 
-[English](../../README.md) · **简体中文** · [Deutsch](README.de.md) · [Italiano](README.it.md) · [日本語](README.ja.md) · [Français](README.fr.md)
+[English](README.md) · **简体中文** · [Deutsch](README.de.md) · [Italiano](README.it.md) · [日本語](README.ja.md) · [Français](README.fr.md)
 
 > 把一个学习领域展开成**可定位、可规划、可量化**的知识空间，让「我要学 X」变成「我知道该按什么顺序学什么、学到什么程度算能用」。
 
-[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](../../LICENSE)
+[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 
 ## 特性要点
 
@@ -39,25 +39,25 @@ cd ../app && flutter run -d windows
 
 | 目录 | 职责 |
 |---|---|
-| [app/](../../app/README.md) | Flutter 客户端（Windows / macOS / iOS 一套代码） |
-| [server/](../../server/README.md) | Serverpod 服务端：同步、事件合并、治理与审核 |
-| [content/](../../content/README.md) | 内容包源数据与构建管线 |
-| [docs/](../../docs/README.md) | 交付文档、活文档、ADR 与设计规格 |
-| [infra/](../../infra/README.md) | 构建 / 签名 / 更新器 / 镜像 / CI |
+| [app/](app/README.md) | Flutter 客户端（Windows / macOS / iOS 一套代码） |
+| [server/](server/README.md) | Serverpod 服务端：同步、事件合并、治理与审核 |
+| [content/](content/README.md) | 内容包源数据与构建管线 |
+| [docs/](docs/README.md) | 交付文档、活文档、ADR 与设计规格 |
+| [infra/](infra/README.md) | 构建 / 签名 / 更新器 / 镜像 / CI |
 
-另：[docs/intent/knowledge-system-learning-methodology.md](../intent/knowledge-system-learning-methodology.md) —— 本项目的**方法论依据**（知识体系学习方法论），软件设计规格见 [docs/specs/](../specs/00-index.md)。
+另：[docs/intent/knowledge-system-learning-methodology.md](docs/intent/knowledge-system-learning-methodology.md) —— 本项目的**方法论依据**（知识体系学习方法论），软件设计规格见 [docs/specs/](docs/specs/00-index.md)。
 
 ## 文档
 
-- [docs/README.md](../../docs/README.md) —— 文档体系索引（交付物 / 活文档 / ADR）
-- [docs/specs/00-index.md](../specs/00-index.md) —— **设计规格索引**（FND / VIEW / PACK / PLAN / STEP / QUANT / NOTE / GOV + 横切表）
+- [docs/README.md](docs/README.md) —— 文档体系索引（交付物 / 活文档 / ADR）
+- [docs/specs/00-index.md](docs/specs/00-index.md) —— **设计规格索引**（FND / VIEW / PACK / PLAN / STEP / QUANT / NOTE / GOV + 横切表）
 
 ## 许可与署名
 
-Copyright (c) 2026 liberal。本项目以 [Apache-2.0](../../LICENSE) 许可发布，另见 [NOTICE](../../NOTICE)。
+Copyright (c) 2026 liberal。本项目以 [Apache-2.0](LICENSE) 许可发布，另见 [NOTICE](NOTICE)。
 
 ## 贡献与求助
 
-- **安全漏洞**：请勿用公开 issue，按 [.github/SECURITY.md](../../.github/SECURITY.md) 的私密渠道报告（承诺 7 个工作日内首次回复）
+- **安全漏洞**：请勿用公开 issue，按 [.github/SECURITY.md](.github/SECURITY.md) 的私密渠道报告（承诺 7 个工作日内首次回复）
 - 问题与建议：经仓库 Issues 提交；内容勘误请注明空间标识与 `itemId`
-- 贡献流程：[.github/CONTRIBUTING.md](../../.github/CONTRIBUTING.md)
+- 贡献流程：[.github/CONTRIBUTING.md](.github/CONTRIBUTING.md)

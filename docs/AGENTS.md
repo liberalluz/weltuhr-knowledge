@@ -8,7 +8,7 @@
 
 ## 职责边界
 
-- **负责**：设计规格与横切表（`specs/`）· 上游论证（`intent/`）· 交付物（`deliverables/`）· 操作指南（`guides/`）· 架构决策（`decisions/`）
+- **负责**：设计规格与横切表（`specs/`）· 上游论证（`intent/`）· 交付物（`deliverables/`）· 操作手册（`runbooks/`）· 架构决策（`decisions/`）
 - **不负责**：客户端实现约定（→ `app/AGENTS.md`）· 服务端实现约定（→ `server/AGENTS.md`）· 内容包与构建（→ `content/AGENTS.md`）· 部署与 CI（→ `infra/AGENTS.md`）
 
 ## 落点判据
@@ -17,7 +17,7 @@
 |---|---|
 | 是什么 / 为什么 | `specs/` 或 `decisions/` |
 | 多少次 / 哪些值 | `specs/` |
-| 怎么操作 | `guides/` |
+| 怎么操作 | `runbooks/` |
 | 对外交付、需签字、需版号 | `deliverables/` |
 
 ## 红线
@@ -25,7 +25,7 @@
 - **交付物先建文件，再写内容**。不得「某份还没建，先写进 `deliverables/README.md`」—— 那个降级会在补齐时留下两份事实源。正文可以是「待填」。
 - **记录类不追溯补录**。`DPMR` / `STR` 记录的是「当时确实如此」，事后补写会让证据退化为叙述。判据：这份文档在**记录一次已发生的事**，还是在**描述当前应当如此**？前者不补，后者可补。
 - **基线只在 `SCMP` 登记**。`deliverables/README.md` 只保留编号与日期速览，完整内容只此一处。
-- **活文档不设版号**。`specs/` `intent/` `guides/` `decisions/` 的更新时间以 `git log` 为准，**不手写「最后更新」头** —— 手写头会变成第二份会过期的记录。
+- **活文档不设版号**。`specs/` `intent/` `runbooks/` `decisions/` 的更新时间以 `git log` 为准，**不手写「最后更新」头** —— 手写头会变成第二份会过期的记录。
 - **引用不复制**。同一规则只在唯一权威处展开，其余位置写「见 XX」。数值只在 `specs/` 维护。
 - **骨架文件的填充时点写在文件头**，不得因为「顺手能写」就提前填 —— 时点没到之前写出来的内容只是猜测，而且会被下游当成已定事实。
 - **验收必须可观测**。写不出可观测断言的条目，说明该条没想清楚；不得以「实现里写了」充当验收。
@@ -39,14 +39,14 @@
 | 命名 | `<原名>.<lang>.md` —— `README.zh.md` · `SDP-软件开发计划.en.md`。**原文保留 `<原名>.md`**，不加后缀 |
 | 语言码 | `zh` `en` `de` `it` `ja` `fr`（BCP 47 短码） |
 | 对外四份 | **只出一份、语言统一英文**（账本 `docsLocale.external = en`）：根 [`README.md`](../README.md)（首页渲染）· [`.github/CONTRIBUTING.md`](../.github/CONTRIBUTING.md)（新 issue / PR 界面自动链接）· [`.github/SECURITY.md`](../.github/SECURITY.md)（Security 页 policy）· [`.github/CONTRIBUTING.ai.md`](../.github/CONTRIBUTING.ai.md)（AI 参与准入）。**不出译文** —— 治理、安全与准入三处措辞不一致会引发歧义 |
-| 落点 | 译本**与其中文原文同目录**：根 README → [`readme/`](readme/)；其余文档 → 与原文同目录。**`.github/` 下不出译文**（见上「对外四份」） |
+| 落点 | 译本**与其中文原文同目录**：根 README 的五份译本即在仓根，中文原文为 [`README.zh.md`](../README.zh.md)；其余文档 → 与原文同目录。**`.github/` 下不出译文**（见上「对外四份」） |
 | 切换条 | `English · 简体中文 · Deutsch · Italiano · 日本語 · Français` 固定顺序，**当前语言加粗不设链接**，置于 `# 标题` 之下 |
 | 溯源行 | 译本头部第二行写 `> Translation of <指向中文原文的链接> · <日期> · the Chinese version is authoritative.`（措辞按各语言自写，格式照此）。**不写 commit sha** —— 提交前不可知，写了必然立刻误报 |
 | 链接 | 目标已有译本 ⇒ 指向同名译本；目标尚无译本 ⇒ 指向中文原文。**不指向其他译本** |
 | 不译 | `AGENTS.md`（两套语言 = 两套规则源）· `LICENSE` · `NOTICE`（法律文本） |
 | 完整性 | **中文原文不得删除，译本不得单独存在** —— `check_s0` 只判前缀存在，删了中文会静默通过 |
 
-**已落译本**：`readme/` 五份（`de` `it` `ja` `fr`，中文原文为 `README.zh.md`）；**`.github/` 三份不出译文**（见上「对外四份」）。其余 57 份文档的译本**等首个版本发布后统一做**。
+**已落译本**：仓根 `README.de.md` / `README.fr.md` / `README.it.md` / `README.ja.md` / `README.zh.md` 五份（中文原文为 `README.zh.md`）；**`.github/` 三份不出译文**（见上「对外四份」）。其余 57 份文档的译本**等首个版本发布后统一做**。
 
 ## 交付物导航
 

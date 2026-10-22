@@ -65,7 +65,7 @@
 
 交付物清单见 [`../README.md`](../README.md) §一（六段 25 种，唯一权威处）。本文件不复制清单。
 
-随 PR 的文档增量单据见 [`../../guides/git-conventions.md`](../../guides/git-conventions.md) §四。
+随 PR 的文档增量单据见 [`../../guides/git-conventions.md`](../../specs/git-conventions.md) §四。
 
 ## 四、进度与里程碑
 
@@ -174,7 +174,7 @@
 
 ## 六、组织与职责
 
-<!-- 待填。→ 填充时点：P1 开工前。内容：单人维护期的评审由 PR 正文自验证证据承担（见 guides/git-conventions.md §4.1）。 -->
+<!-- 待填。→ 填充时点：P1 开工前。内容：单人维护期的评审由 PR 正文自验证证据承担（见 specs/git-conventions.md §4.1）。 -->
 
 ## 七、风险
 
@@ -229,7 +229,7 @@
 | **二级 · 批次变更** | 批次新增 / 作废 / 移阶段 / 关键内容改写 | 维护者决策 | 本文件修订历史 + `SCMP` 版号 |
 | **三级 · 措辞变更** | 注记 · 出处列 · 链接修正 | PR 正文自审留痕即可 | 只递增 `SDP` 版号 |
 
-变更分级（A/B/C/D）的**操作**判据见 [`../../guides/git-conventions.md`](../../guides/git-conventions.md) §4.4；本节只管「排期这一层的变更算什么级别」。
+变更分级（A/B/C/D）的**操作**判据见 [`../../guides/git-conventions.md`](../../specs/git-conventions.md) §4.4；本节只管「排期这一层的变更算什么级别」。
 
 ### 8.2 三条判据
 
