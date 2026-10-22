@@ -49,15 +49,15 @@ cd ../app && flutter run -d windows
 | [app/](app/README.md) | Flutter client (one codebase for Windows / macOS / iOS) |
 | [server/](server/README.md) | Serverpod server: sync, event merging, governance and review |
 | [content/](content/README.md) | Content-pack source data and build pipeline |
-| [docs/](docs/README.md) | Deliverable documents, living docs, ADRs and design specs |
+| [docs/](docs/README.md) | Engineering docs: design specs · decision records · upstream methodology · ideas · runbooks · versioned deliverables |
 | [infra/](infra/README.md) | Build / signing / updater / mirror / CI |
 
 Also: [docs/intent/knowledge-system-learning-methodology.md](docs/intent/knowledge-system-learning-methodology.md) — the **methodological basis** of this project (knowledge-system learning methodology); for the software design specification see [docs/specs/](docs/specs/00-index.md).
 
 ## Documentation
 
-- [docs/README.md](docs/README.md) — documentation index (deliverables / living docs / ADRs)
-- [docs/specs/00-index.md](docs/specs/00-index.md) — **design specification index** (FND / VIEW / PACK / PLAN / STEP / QUANT / NOTE / GOV + cross-cutting tables)
+- [docs/README.md](docs/README.md) — documentation index: five content dirs (`specs` / `decisions` / `intent` / `ideas` / `runbooks`) plus versioned `deliverables`
+- [docs/specs/00-index.md](docs/specs/00-index.md) — **design specification index** (FND / VIEW / PACK / PLAN / STEP / QUANT / NOTE / GOV / ACC / SYNC + cross-cutting tables)
 
 ## Licence and attribution
 

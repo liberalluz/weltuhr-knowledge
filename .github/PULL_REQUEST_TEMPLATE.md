@@ -1,4 +1,4 @@
-<!-- 形态：本文件 · 判据：docs/guides/git-conventions.md §4.1 · AI 声明：.github/CONTRIBUTING.ai.md
+<!-- 形态：本文件 · 判据：docs/specs/git-conventions.md §4.1 · AI 声明：.github/CONTRIBUTING.ai.md
      自审留痕五行必须填值，一律不用 - [ ]：勾了不代表填了，空框会被渲染成"未完成"
      gh pr create 不读本文件 —— 开 PR 时正文须照此手填 -->
 

@@ -44,15 +44,15 @@ cd ../app && flutter run -d windows
 | [app/](app/README.md) | Flutter-Client (eine Codebasis für Windows / macOS / iOS) |
 | [server/](server/README.md) | Serverpod-Server: Synchronisation, Ereigniszusammenführung, Governance und Prüfung |
 | [content/](content/README.md) | Quelldaten der Content-Pakete und Build-Pipeline |
-| [docs/](docs/README.md) | Lieferdokumente, lebende Dokumente, ADRs und Design-Spezifikationen |
+| [docs/](docs/README.md) | Technische Dokumentation: Design-Spezifikationen · Entscheidungsrecords · vorgelagerte Methodik · Ideen · Runbooks · versionierte Lieferdokumente |
 | [infra/](infra/README.md) | Build / Signierung / Updater / Spiegel / CI |
 
 Außerdem: [docs/intent/knowledge-system-learning-methodology.md](docs/intent/knowledge-system-learning-methodology.md) — die **methodische Grundlage** dieses Projekts (Methodik des Wissenssystem-Lernens); zur Software-Design-Spezifikation siehe [docs/specs/](docs/specs/00-index.md).
 
 ## Dokumentation
 
-- [docs/README.md](docs/README.md) — Index der Dokumentation (Lieferdokumente / lebende Dokumente / ADRs)
-- [docs/specs/00-index.md](docs/specs/00-index.md) — **Index der Design-Spezifikation** (FND / VIEW / PACK / PLAN / STEP / QUANT / NOTE / GOV + Querschnittstabellen)
+- [docs/README.md](docs/README.md) — Index der Dokumentation: fünf Inhaltsverzeichnisse (`specs` / `decisions` / `intent` / `ideas` / `runbooks`) plus versionierte `deliverables`
+- [docs/specs/00-index.md](docs/specs/00-index.md) — **Index der Design-Spezifikation** (FND / VIEW / PACK / PLAN / STEP / QUANT / NOTE / GOV / ACC / SYNC + Querschnittstabellen)
 
 ## Lizenz und Namensnennung
 

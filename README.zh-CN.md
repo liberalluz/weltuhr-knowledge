@@ -42,15 +42,15 @@ cd ../app && flutter run -d windows
 | [app/](app/README.md) | Flutter 客户端（Windows / macOS / iOS 一套代码） |
 | [server/](server/README.md) | Serverpod 服务端：同步、事件合并、治理与审核 |
 | [content/](content/README.md) | 内容包源数据与构建管线 |
-| [docs/](docs/README.md) | 交付文档、活文档、ADR 与设计规格 |
+| [docs/](docs/README.md) | 工程文档：设计规格 · 决策记录 · 上游方法论 · 想法 · 操作手册 · 有版号的交付物 |
 | [infra/](infra/README.md) | 构建 / 签名 / 更新器 / 镜像 / CI |
 
 另：[docs/intent/knowledge-system-learning-methodology.md](docs/intent/knowledge-system-learning-methodology.md) —— 本项目的**方法论依据**（知识体系学习方法论），软件设计规格见 [docs/specs/](docs/specs/00-index.md)。
 
 ## 文档
 
-- [docs/README.md](docs/README.md) —— 文档体系索引（交付物 / 活文档 / ADR）
-- [docs/specs/00-index.md](docs/specs/00-index.md) —— **设计规格索引**（FND / VIEW / PACK / PLAN / STEP / QUANT / NOTE / GOV + 横切表）
+- [docs/README.md](docs/README.md) —— 文档体系索引：五个内容目录（`specs` / `decisions` / `intent` / `ideas` / `runbooks`）加有版号的 `deliverables`
+- [docs/specs/00-index.md](docs/specs/00-index.md) —— **设计规格索引**（FND / VIEW / PACK / PLAN / STEP / QUANT / NOTE / GOV / ACC / SYNC + 横切表）
 
 ## 许可与署名
 
