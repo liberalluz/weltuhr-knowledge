@@ -196,7 +196,7 @@ git config --get core.hooksPath       # 自查：应回显 .githooks
 | 审查（按需）        | `Reviewed-by: 姓名 <邮箱>`                            |
 | **签署（每笔必带）**    | `Signed-off-by: 姓名 <邮箱>` —— 用 `git commit -s` 自动追加 |
 
-> `Signed-off-by` 是 **DCO 签署**，不是「有时加一下」的装饰：缺它的提交会被 `.githooks/commit-msg` 直接拒（本地与 CI 同一个文件，见 §3.5）。它只约束**分支上的原始提交** —— `main` 上的 squash 提交不受此判据约束，签名能否随 squash 落到 `main`，取决于该 PR 是否单笔。规则生效前未带签名的历史提交**不追改**。
+> `Signed-off-by` 是 **DCO 签署**，不是「有时加一下」的装饰：缺它的提交会被 `.githooks/commit-msg` 直接拒（本地与 CI 同一个文件，见 §3.5）。它只约束**分支上的原始提交** —— `main` 上的 squash 提交不受此判据约束，签名能否随 squash 落到 `main`，取决于平台如何拼接消息；本仓实测单笔与多笔都会保留，但不作保证。规则生效前未带签名的历史提交**不追改**。
 
 ### 3.4 切分纪律
 
