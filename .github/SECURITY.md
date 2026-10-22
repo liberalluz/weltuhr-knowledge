@@ -1,7 +1,5 @@
 # Security Policy
 
-> This file is authoritative in **English** and is published in one language only. A second version would create two wordings of the same security commitment.
-
 ## Supported versions
 
 Security updates are provided for the following versions only:
