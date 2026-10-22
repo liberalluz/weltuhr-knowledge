@@ -60,7 +60,7 @@
 | [`../../decisions/0005-three-axis-tree-replaces-six-axis.md`](../../decisions/0005-three-axis-tree-replaces-six-axis.md) | 三轴容器树 · 四类包 · 地形层 · 事件三区 · `ADR-0004` 收窄 · **本版重组的全部依据** |
 | [`../../specs/00-index.md`](../../specs/00-index.md) | 208 条 `SPEC-*` 编号与跨文档约束 `X-01`–`X-09`（**其中八类待按 `ADR-0005` §二 修订，本版不动**） |
 | [`../README.md`](../README.md) | 交付物清单与命名（唯一权威处） |
-| [`SCMP-软件配置管理计划.md`](SCMP-软件配置管理计划.md) | 基线登记（唯一权威处） |
+| [`scmp.md`](../../specs/scmp.md) | 配置管理策略（**基线登记已移出本文件**，见 [`baselines.md`](../../baselines.md)） |
 
 ## 三、交付物
 
