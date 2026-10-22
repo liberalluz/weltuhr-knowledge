@@ -128,14 +128,30 @@ git config --get core.hooksPath       # 自查：应回显 .githooks
 | 3  | 只暂存**显式路径**                 | `git add <path> …`                                                                     | ⚠️ 禁用 `git add -A` / `git add .` |
 | 4  | 提交                          | `git commit`                                                                           | §三 · `.githooks/commit-msg` |
 | 5  | 推分支                         | `git push -u origin <type>/<topic>`                                                    | 第 0 步没做 ⇒ 钩子不触发      |
-| 6  | 开 PR，**正文照骨架手填**            | `gh pr create --title … --body …`                                                      | §4.1 · 骨架见模板        |
+| 6  | 开 PR：**读模板 → 写正文 → 开 PR** | `Read .github/PULL_REQUEST_TEMPLATE.md` → 正文落 `<file>` → `gh pr create --title … --body-file <file>` | §4.1 · 骨架见模板 · §2.3 |
 | 7  | squash 合入 → 合后收口            | 见 §4.2                                                                                 | §4.2（四步）            |
 
 以下三处最容易漏，单独强调：
 
 - **第 3 步**：`git add -A --dry-run`（§七）只用来**检查**有无意外文件，**不是提交方式**。暂存一律列显式路径 —— `-A` 会把 `tmp/`、本地配置、半成品一起带进去，且事后从 diff 里看不出来是「顺手带上的」还是「本来就该改」。
 - **第 5 步**：`core.hooksPath` 没设，钩子一行也不跑。拦直推 `main`、引用类型判据、`(#NNN)` 校验**三条全挂在同一个开关上**，一起失效（§2.1）。
-- **第 6 步**：`gh pr create` **不读** `.github/PULL_REQUEST_TEMPLATE.md` —— 模板只对 Web UI 生效。用 CLI 开 PR 时正文必须照骨架手填，且这一环**没有任何装置兜底**（CI 不校验正文），漏填只能事后在评论里追补。
+- **第 6 步**：`gh pr create` **不读** `.github/PULL_REQUEST_TEMPLATE.md` —— 缺省无自动读取行为（`--template <file>` 可显式指定骨架），Web UI 那一趟才由服务端渲染模板。用 CLI 开 PR 时正文必须照骨架手填，且这一环**没有任何装置兜底**（CI 不校验正文），漏填只能事后在评论里追补。**正文一律先落 `.workbuddy/tmp/<name>.md`，再以 `--body-file` 传入** —— 多行正文走 `--body` 会被 shell 转义吃掉；临时文件用完即删，不进仓。**开 PR 是三步，第一步不能省**：① **先读** `.github/PULL_REQUEST_TEMPLATE.md` 认骨架（5 节标题与顺序 · 自审留痕五行名称）—— `gh` 不读它，人也不读就等于**根本没有骨架**，漏栏要等别人看 PR 才发现；② 照骨架逐节填值，五行全部给值、一律不用 `- [ ]`；③ 再 `--body-file` 传入。省掉第 ① 步的典型后果是把 §4.1 的**判据项**当节名写（判据 8 项、模板 5 节，两者不是一回事）。
+
+### 2.3 失败处置
+
+下列情形在 2026-10-22 的 15 笔 PR 上**全部实际发生过**，且已验明是**通道间歇故障**，不是配置错误 —— **不要改 `remote`、不要清代理、不要提权**。同期 `gh` 走同一代理往往正常，可作为「是通道、不是配置」的对照判据。
+
+| 步 | 现象 | 处置 | 判据 |
+|---|---|---|---|
+| 5 | `git push` 报 `CONNECT tunnel failed, response 502` · `schannel: server closed abruptly (missing close_notify)` · `Failed to connect to github.com:443 after N ms` | 先**重试**（实测第 3 次成功）；连续全败改走 SSH 一次性 refspec，**不改 `remote`**：`GIT_SSH_COMMAND="ssh -o BatchMode=yes -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10" git push git@github.com:<owner>/<repo>.git <branch>` | 远端 ref sha == 本地 `HEAD`：`gh api repos/<owner>/<repo>/git/ref/heads/<branch>` |
+| 6 | 正文写错（项数 / 漏栏 / 措辞） | `gh pr edit <n> --body-file <file>` 改正，**不重开 PR** | `gh pr view <n> --json body` 回读 |
+| 6 | 正文「动了 N 条路径」与 diff 对不上 | 以 `gh pr diff --name-only` 的**行数**为准；**同一文件被两笔改过按文件去重**，不能把两次的条目数相加 | `gh pr diff --name-only \| wc -l` == N |
+| 7 | `gh pr merge --squash --delete-branch` 打 `CONNECT tunnel failed` / `missing close_notify` / `warning: not possible to fast-forward to main` | **不是合并失败**：它合完会自己 fetch 一次，失败的是那一步 | `gh pr view <n> --json state,mergeCommit` → `state` 为 `MERGED` |
+| 7 | 合并后 `git branch -D <branch>` 报 `not found` | 正常：`--delete-branch` 已连本地段一起删 | `git branch` 里确无该分支 |
+| 8 | `git fetch --prune` 报 502 | ① 走 SSH 并**带显式 refspec**：`git fetch --prune git@github.com:<owner>/<repo>.git '+refs/heads/*:refs/remotes/origin/*'`；② 仍不通则 `gh api` 取远端事实 + `git branch -dr origin/<branch>` 手工清 tracking ref（纯本地操作，不碰远端） | `git rev-parse main` == `git rev-parse origin/main` |
+| 8 | `git fetch <url>` 之后 `origin/*` 没更新 | 只写 URL 不带 refspec ⇒ 内容只进 `FETCH_HEAD`，不进 `origin/*`，已删分支也不会剪 | 同上 |
+
+> **`fetch` 报错不等于收口失败**：`gh pr merge` 自己会 fetch，本地 `main` 常已被快进。收口判据永远是 `main` 与 `origin/main` 两个 sha 相等，不是「`fetch` 有没有报错」。
 
 ---
 
@@ -292,10 +308,10 @@ git config --get core.hooksPath       # 自查：应回显 .githooks
 
 **合后**（四步，缺一不算收口）：
 
-1. **删源分支** —— 远端与本地**都要删**。远端由仓库开关自动删除（开关现状见 §4.3）；**本地不自动**。
+1. **删源分支** —— 远端与本地**都要删**。远端由仓库开关自动删除（开关现状见 §4.3）；**本地不自动**。用 `gh pr merge --delete-branch` 时它会连**本地段**一起删，故随后的 `git branch -D` 报 `not found` 属正常，不是没删。
 2. **`git fetch --prune origin`** —— 只清 `origin/*` 跟踪引用、给本地分支打上 `[gone]` 标记，**不删本地分支**，故须另跑 `git branch -D <branch>`。
 3. **本地 `main` 前进** —— `git switch main` → `git merge --ff-only origin/main`。**`fetch` 只更新 `origin/main` 引用，本地 `main` 不会自己走**；漏这步，下一次从 `main` 切分支就切到合并前的旧点，PR 里的「分支基线」sha 随之失真。
-4. **收尾判据** —— `git branch` 只剩 `main`，且 `git log --oneline -1` 的标题带 `(#NNN)`。**`[gone]` 不等于已删除。**
+4. **收尾判据** —— `git branch` 只剩 `main`，且 `git log --oneline -1` 的标题带 `(#NNN)`。**`[gone]` 不等于已删除。** 另须核 `git rev-parse main` == `git rev-parse origin/main` —— 只比分支列表**看不出**本地 `main` 是否真的前进了。
 
 评审意见落 PR 正文 / 评论，`main` 只留里程碑结论。
 
@@ -413,4 +429,5 @@ git add -A --dry-run                 # 只看不暂存：确认无意外文件�
 
 - 涉及内容包时另跑 `python content/tools/build.py`，确认包能构建。
 - 涉及文档时跑相对链接校验，确认无悬空。
+- ⚠️ **`success` ≠ 跑了**：只改文档的 PR，`app-checks` 常在 **7s** 内通过 —— 那是 `affected.py` 判定后**空跑**，不是执行证据。判据 = 耗时（约 `1m50s` 才算真跑）＋「有没有碰 `app/` 下任何文件」；只改 `app/README.md` 一行，同样判全套。
 - **跑不通或沙箱跑不了的项**（如 `flutter build` / `flutter run` / 真机验收）在 PR 正文**如实标注「未验 + 原因 + 归谁验」**，不得留空或写「应该能过」。
