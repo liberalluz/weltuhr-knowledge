@@ -1,11 +1,11 @@
 # Contributing
 
 > **What this file covers**: **governance** — who may change which level of decision · who is eligible to review · what a review looks at · roles · behavioural expectations · response times · licensing and DCO.
-> **What it does not cover**: **process and format** — repository layout · branching · commit format · PR granularity · **approval count** · merge strategy · versions and tags · deliverable version numbers. All of that is authoritative in [`docs/guides/git-conventions.md`](../docs/guides/git-conventions.md) and is not duplicated here. Design content → [`docs/design/00-index.md`](../docs/design/00-index.md); security vulnerabilities → [`SECURITY.md`](SECURITY.md); AI-assisted contributions → [`CONTRIBUTING.ai.md`](CONTRIBUTING.ai.md).
+> **What it does not cover**: **process and format** — repository layout · branching · commit format · PR granularity · **approval count** · merge strategy · versions and tags · deliverable version numbers. All of that is authoritative in [`docs/guides/git-conventions.md`](../docs/guides/git-conventions.md) and is not duplicated here. Design content → [`docs/specs/00-index.md`](../docs/specs/00-index.md); security vulnerabilities → [`SECURITY.md`](SECURITY.md); AI-assisted contributions → [`CONTRIBUTING.ai.md`](CONTRIBUTING.ai.md).
 
 ## 1. Authority boundaries
 
-The design baseline of this repository is a set of **adjudicated, numbered specifications** (item count in [`docs/design/00-index.md`](../docs/design/00-index.md); this file does not repeat it). In multi-person collaboration the first discipline is not "how to write code" but **who may change a decision**: a wrong change to code can be reverted, a wrong change to a decision makes every downstream implementation drift the same way, and no test will catch it.
+The design baseline of this repository is a set of **adjudicated, numbered specifications** (item count in [`docs/specs/00-index.md`](../docs/specs/00-index.md); this file does not repeat it). In multi-person collaboration the first discipline is not "how to write code" but **who may change a decision**: a wrong change to code can be reverted, a wrong change to a decision makes every downstream implementation drift the same way, and no test will catch it.
 
 | Object of change | Example | Who decides | What is required |
 |---|---|---|---|
@@ -17,7 +17,7 @@ The design baseline of this repository is a set of **adjudicated, numbered speci
 | **TBD values** | `C-28` search fuzziness threshold, etc. | **maintainers only** | do not fill in, do not supply a default |
 | **External commitments** | licence, supported version window, response times, brand name | **maintainers only** | change requires an explicit announcement and a written record |
 
-The grading criteria themselves are not repeated here; see [git-conventions §4.4 change grading](../docs/guides/git-conventions.md) and [design/00-index §7](../docs/design/00-index.md). This table answers only "who signs off".
+The grading criteria themselves are not repeated here; see [git-conventions §4.4 change grading](../docs/guides/git-conventions.md) and [specs/00-index §7](../docs/specs/00-index.md). This table answers only "who signs off".
 
 **Why the last three rows are listed separately** — they all look like "just fill in a value" or "just change one sentence", yet the cost lands on other people:
 
@@ -36,7 +36,7 @@ The grading criteria themselves are not repeated here; see [git-conventions §4.
 | Small change (docs, comments, single-point fix) | open a PR directly | No |
 | New feature / design change / touching A- or B-level criteria | open an issue and discuss to agreement first | **Yes** |
 
-The test for "small change": it can be stated in one commit message, and it does not touch any item in `docs/design/`.
+The test for "small change": it can be stated in one commit message, and it does not touch any item in `docs/specs/`.
 
 A large PR that was never discussed will be closed rather than reviewed — not out of unfriendliness, but because **reviewing an A-level change that is already finished** amounts to rubber-stamping it after the fact, which costs more than discussing it from the start.
 
@@ -47,7 +47,7 @@ A large PR that was never discussed will be closed rather than reviewed — not 
 | # | Item | Criterion |
 |---|---|---|
 | 1 | Local self-verification | run everything in [git-conventions §7 pre-commit self-check](../docs/guides/git-conventions.md); paste the **commands actually executed and their output** into the PR body |
-| 2 | Observable assertion | new behaviour needs a test vector; "it's implemented in the code" is not acceptance (`X-05`, see [00-index §4](../docs/design/00-index.md)) |
+| 2 | Observable assertion | new behaviour needs a test vector; "it's implemented in the code" is not acceptance (`X-05`, see [00-index §4](../docs/specs/00-index.md)) |
 | 3 | DCO sign-off | every commit carries `Signed-off-by`; what counts as signed, and the check that rejects a commit without it: [git-conventions §3.3](../docs/guides/git-conventions.md) |
 | 4 | One thing per PR | refactors and behaviour changes are not mixed; code and docs are not mixed in one commit |
 | 5 | No stowaways | change only what you described; an unrelated problem you spot gets **its own issue**, not a drive-by reorder / rename / beautification |

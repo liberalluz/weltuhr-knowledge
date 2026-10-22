@@ -12,7 +12,7 @@
 | `type` | enum | 见 §二 |
 | `hlc` | object | `{ physical: int, counter: int, deviceId: string }` —— **混合逻辑时钟**，离线也能生成且保证全序 |
 | `spaceId` | string | 所属包的 `plugin_id`（`ADR-0005` 后取代「知识空间」）。**仍非空** —— 取值与 `itemId` 的前缀同源，只为 `fold(spaceId:)` 提供过滤维度 |
-| `userId` | string | **数据归属**。与 `hlc` 分工不同：`userId` 定「这条属于谁」，`hlc` 定「谁先谁后」。`v0.1.0` 取本地默认值，**非空、不写 `null`**（空值会让 `fold` 的过滤维度多出第三个分支）。见 [`ACC-013`](../design/ACC-accounts.md) |
+| `userId` | string | **数据归属**。与 `hlc` 分工不同：`userId` 定「这条属于谁」，`hlc` 定「谁先谁后」。`v0.1.0` 取本地默认值，**非空、不写 `null`**（空值会让 `fold` 的过滤维度多出第三个分支）。见 [`ACC-013`](../specs/ACC-accounts.md) |
 | `itemId` | string \| null | 目标节点（= `Node.id`）。迁移类事件可为 null 或指向旧 id |
 | `at` | string | ISO-8601，由 `hlc` 派生，供人阅读；**排序一律用 `hlc`，不用 `at`** |
 | `payload` | object | 各类型自有字段，见 §二 |
@@ -23,7 +23,7 @@
 |---|---|
 | 两台设备各学了一遍**同一项** | **不去重**。你确实复习了两次，`S` 就该变长；去重反而违背复习语义。两个事件都重放 |
 | **同一条事件**被上传两次（断网重传） | **幂等**。靠 `id` 的 UNIQUE 索引拦掉，只保留一条 |
-| 同一台设备上**两个账号**各学了一遍同一项 | **按 `userId` 分开统计**，互不见。`fold` 必须按 `userId` 过滤，否则 A 的进度会算进 B（见 [`ACC-014`](../design/ACC-accounts.md)） |
+| 同一台设备上**两个账号**各学了一遍同一项 | **按 `userId` 分开统计**，互不见。`fold` 必须按 `userId` 过滤，否则 A 的进度会算进 B（见 [`ACC-014`](../specs/ACC-accounts.md)） |
 
 ### HLC 的一条实现约束
 

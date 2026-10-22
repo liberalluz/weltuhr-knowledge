@@ -47,12 +47,12 @@ cd ../app && flutter run -d windows
 | [docs/](../../docs/README.md) | Lieferdokumente, lebende Dokumente, ADRs und Design-Spezifikationen |
 | [infra/](../../infra/README.md) | Build / Signierung / Updater / Spiegel / CI |
 
-Außerdem: [docs/reference/knowledge-system-learning-methodology.md](../../docs/reference/knowledge-system-learning-methodology.md) — die **methodische Grundlage** dieses Projekts (Methodik des Wissenssystem-Lernens); zur Software-Design-Spezifikation siehe [docs/design/](../../docs/design/00-index.md).
+Außerdem: [docs/reference/knowledge-system-learning-methodology.md](../../docs/reference/knowledge-system-learning-methodology.md) — die **methodische Grundlage** dieses Projekts (Methodik des Wissenssystem-Lernens); zur Software-Design-Spezifikation siehe [docs/specs/](../specs/00-index.md).
 
 ## Dokumentation
 
 - [docs/README.md](../../docs/README.md) — Index der Dokumentation (Lieferdokumente / lebende Dokumente / ADRs)
-- [docs/design/00-index.md](../../docs/design/00-index.md) — **Index der Design-Spezifikation** (FND / VIEW / PACK / PLAN / STEP / QUANT / NOTE / GOV + Querschnittstabellen)
+- [docs/specs/00-index.md](../specs/00-index.md) — **Index der Design-Spezifikation** (FND / VIEW / PACK / PLAN / STEP / QUANT / NOTE / GOV + Querschnittstabellen)
 
 ## Lizenz und Namensnennung
 

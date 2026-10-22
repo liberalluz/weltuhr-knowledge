@@ -45,12 +45,12 @@ cd ../app && flutter run -d windows
 | [docs/](../../docs/README.md) | 交付文档、活文档、ADR 与设计规格 |
 | [infra/](../../infra/README.md) | 构建 / 签名 / 更新器 / 镜像 / CI |
 
-另：[docs/reference/knowledge-system-learning-methodology.md](../../docs/reference/knowledge-system-learning-methodology.md) —— 本项目的**方法论依据**（知识体系学习方法论），软件设计规格见 [docs/design/](../../docs/design/00-index.md)。
+另：[docs/reference/knowledge-system-learning-methodology.md](../../docs/reference/knowledge-system-learning-methodology.md) —— 本项目的**方法论依据**（知识体系学习方法论），软件设计规格见 [docs/specs/](../specs/00-index.md)。
 
 ## 文档
 
 - [docs/README.md](../../docs/README.md) —— 文档体系索引（交付物 / 活文档 / ADR）
-- [docs/design/00-index.md](../../docs/design/00-index.md) —— **设计规格索引**（FND / VIEW / PACK / PLAN / STEP / QUANT / NOTE / GOV + 横切表）
+- [docs/specs/00-index.md](../specs/00-index.md) —— **设计规格索引**（FND / VIEW / PACK / PLAN / STEP / QUANT / NOTE / GOV + 横切表）
 
 ## 许可与署名
 
