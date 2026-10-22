@@ -58,6 +58,6 @@ Copyright (c) 2026 liberal。本项目以 [Apache-2.0](../../LICENSE) 许可发�
 
 ## 贡献与求助
 
-- **安全漏洞**：请勿用公开 issue，按 [.github/SECURITY.zh.md](../../.github/SECURITY.zh.md) 的私密渠道报告（承诺 7 个工作日内首次回复）
+- **安全漏洞**：请勿用公开 issue，按 [.github/SECURITY.md](../../.github/SECURITY.md) 的私密渠道报告（承诺 7 个工作日内首次回复）
 - 问题与建议：经仓库 Issues 提交；内容勘误请注明空间标识与 `itemId`
-- 贡献流程：[.github/CONTRIBUTING.zh.md](../../.github/CONTRIBUTING.zh.md)
+- 贡献流程：[.github/CONTRIBUTING.md](../../.github/CONTRIBUTING.md)

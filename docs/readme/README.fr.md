@@ -60,6 +60,6 @@ Copyright (c) 2026 liberal. Ce projet est publié sous licence [Apache-2.0](../.
 
 ## Contribuer et obtenir de l'aide
 
-- **Vulnérabilités de sécurité** : n'ouvrez pas d'issue publique — signalez-les par le canal privé décrit dans [.github/SECURITY.fr.md](../../.github/SECURITY.fr.md) (première réponse sous 7 jours ouvrés)
+- **Vulnérabilités de sécurité** : n'ouvrez pas d'issue publique — signalez-les par le canal privé décrit dans [.github/SECURITY.md](../../.github/SECURITY.md) (première réponse sous 7 jours ouvrés)
 - Questions et propositions : via les Issues du dépôt ; pour une erreur de contenu, précisez l'identifiant de l'espace et l'`itemId`
-- Processus de contribution : [.github/CONTRIBUTING.fr.md](../../.github/CONTRIBUTING.fr.md)
+- Processus de contribution : [.github/CONTRIBUTING.md](../../.github/CONTRIBUTING.md)

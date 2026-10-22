@@ -1,8 +1,6 @@
 # Security Policy
 
-**English** · [简体中文](SECURITY.zh.md) · [Deutsch](SECURITY.de.md) · [Italiano](SECURITY.it.md) · [日本語](SECURITY.ja.md) · [Français](SECURITY.fr.md)
-
-> Translation of [SECURITY.zh.md](SECURITY.zh.md) · 2026-10-17 · the Chinese version is authoritative.
+> This file is authoritative in **English** and is published in one language only. A second version would create two wordings of the same security commitment.
 
 ## Supported versions
 

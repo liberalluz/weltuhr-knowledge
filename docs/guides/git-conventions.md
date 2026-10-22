@@ -1,7 +1,7 @@
 # Git 规范
 
 > 活文档，不设版号。**流程与格式权威处**：仓库结构 · 分支 · 提交 · 评审与合并 · 版本与 tag · 交付物版号。
-> **本文件管不到的**：协作治理（谁能改哪一级裁定 · 角色 · 许可与 DCO · 行为期望 · 响应时限 · **评审关注点**）见 [`.github/CONTRIBUTING.zh.md`](../../.github/CONTRIBUTING.zh.md)，此处不重复。
+> **本文件管不到的**：协作治理（谁能改哪一级裁定 · 角色 · 许可与 DCO · 行为期望 · 响应时限 · **评审关注点**）见 [`.github/CONTRIBUTING.md`](../../.github/CONTRIBUTING.md)，此处不重复。
 
 
 
@@ -273,7 +273,7 @@ git config --get core.hooksPath       # 自查：应回显 .githooks
 
 ### 4.4 变更分级（A/B/C/D）
 
-> **定义权威处 = 技能 `references/dev-workflow.md` §S3**。本表落在项目内，因为 A/B/C/D 是 **PR 判据**，判据必须在项目内可查；两者冲突时**以技能 §S3 为准**。各级由谁批准，见 [`.github/CONTRIBUTING.zh.md`](../../.github/CONTRIBUTING.zh.md) §一。
+> **定义权威处 = 技能 `references/dev-workflow.md` §S3**。本表落在项目内，因为 A/B/C/D 是 **PR 判据**，判据必须在项目内可查；两者冲突时**以技能 §S3 为准**。各级由谁批准，见 [`.github/CONTRIBUTING.md`](../../.github/CONTRIBUTING.md) §1。
 
 | 级     | 判据                                     | 动作                                   |
 | ----- | -------------------------------------- | ------------------------------------ |
