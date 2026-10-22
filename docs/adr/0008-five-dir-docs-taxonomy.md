@@ -141,6 +141,6 @@
 
 这三处**在该批内就地改**，不能留到批 6 —— 否则那一批的 `main` 会红。
 
-- **`docsProfile` 的账本状态待清**：本 ADR 追认了 `docsProfile.dirs`，但 `.swe-init.json` 的 `inferredFields` 里仍列着 `docsProfile`。是移除该项（改为已确认）还是保留，由决策人另定 —— 本 ADR 不代改账本。
+- **`docsProfile` 已转为确认值**：`.swe-init.json` 的 `inferredFields` 已移除该项，`docsProfile.dirs` 自此是**账本里的确认值**，不再是推断值。改它必须走账本变更（PR 改 `.swe-init.json`），不能只改目录。
 - **`docs/` 的文档数会从 66 变 61**：`readme/` 5 份移到仓根，不再计入 `docs/`；换轨后分布为 `decisions` 11 · `specs` 21 · `intent` 2 · `ideas` 0 · `runbooks` 1 · `deliverables` 26。
 - **`ideas/` 是唯一空目录**，只需一份 `README.md` 写清「想法 vs 意图」的时态判据（见决策 §2）。它不计入上表的 61 份。
