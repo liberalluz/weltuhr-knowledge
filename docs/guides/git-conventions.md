@@ -130,19 +130,22 @@ git config --get core.hooksPath       # 自查：应回显 .githooks
 
 ### 3.1 type（必填，11 种）
 
+> **值域出处**：集合与 [`@commitlint/config-conventional`](https://github.com/conventional-changelog/commitlint/tree/master/%40commitlint/config-conventional) 的 `type-enum` **完全相同**，故按字母序排列，便于与出处逐行核对。该配置被 Conventional Commits 1.0.0 正文（§4）列为推荐示例（该规范自身只 MUST 规定 `feat` / `fix` 两个）；比 Angular 现行 8 值多 `chore` / `revert` / `style`。
+> **排序不承载语义** —— 判定只看值是否在集合内，顺序不影响 `.githooks/commit-msg` 的正则匹配（11 值两两无前缀关系）。
+
 | type       | 说明             |
 | ---------- | -------------- |
+| `build`    | 构建系统或外部依赖变更    |
+| `chore`    | 其他杂项           |
+| `ci`       | CI 配置 / 脚本变更   |
+| `docs`     | 仅文档变更          |
 | `feat`     | 新功能            |
 | `fix`      | 修复 bug         |
-| `docs`     | 仅文档变更          |
-| `style`    | 不影响语义的格式调整     |
-| `refactor` | 重构，非新功能也非修 bug |
 | `perf`     | 性能优化           |
-| `test`     | 新增或修改测试        |
-| `build`    | 构建系统或外部依赖变更    |
-| `ci`       | CI 配置 / 脚本变更   |
-| `chore`    | 其他杂项           |
+| `refactor` | 重构，非新功能也非修 bug |
 | `revert`   | 回滚             |
+| `style`    | 不影响语义的格式调整     |
+| `test`     | 新增或修改测试        |
 
 ### 3.2 scope（6 值，与顶层目录一一对应）
 
