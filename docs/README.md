@@ -12,7 +12,7 @@
 | [intent/](intent/) | **为什么** | 两份方法论长文 —— 全案的上游依据，`specs/` 全部引用它而它不引用 `specs/` | 活文档，不设版号 |
 | [ideas/](ideas/README.md) | **还没认定的想做什么** | 候选，尚未被接受成决策或规格。**当前为空，空本身是信息** | 活文档，不设版号 |
 | [runbooks/](runbooks/environment.md) | **怎么把东西跑起来** | 操作手册：环境搭建与跑法、已知的坑 | 活文档，不设版号 |
-| [deliverables/](deliverables/README.md) | **要签字、有版号** | 按 GB/T 8567 组织的**六段 25 种**（计划 / 需求 / 设计 / 测试 / 交付 / 总结） | `vX.Y.Z` 独立递增 |
+| deliverables/ | **要签字、有版号** | 按 GB/T 8567 组织的**六段 25 种**（计划 / 需求 / 设计 / 测试 / 交付 / 总结） | `vX.Y.Z` 独立递增 |
 
 **判据**（放进来之前问自己）：讲「应当如何」→ `specs/`；讲「定没定」→ `decisions/`；讲「为什么」→ `intent/`；**还没认定**的候选 → `ideas/`；讲「怎么操作」→ `runbooks/`；要对外交付、需签字 → `deliverables/`。
 
@@ -24,8 +24,8 @@
 
 | 内容 | 唯一权威处 |
 |---|---|
-| 交付物清单与命名（六段 25 种） | [`deliverables/README.md`](deliverables/README.md) §一 |
-| 排期、批次、阶段与目标版本 | 仓外文档仓 `process/sdp.md` §四（`SDP` 已按 `ADR-0009` 出仓） |
+| 交付物清单与命名（六段 25 种） | `deliverables/README.md` §一 |
+| 排期、批次、阶段与目标版本 | 本仓不登记 —— `SDP` 已按 `ADR-0009` 移出 |
 | 基线与配置项 | [`specs/scmp.md`](specs/scmp.md) §三 |
 
 目录级约定与红线见 [`AGENTS.md`](AGENTS.md)。

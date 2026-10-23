@@ -15,9 +15,6 @@
   `content/<空间>/dist/pack.json` 喂读包测试（`dist/` 不入库，`SPEC-PACK-018`）。
   不含的话，「内容端改结构、客户端读包逻辑坏了」这类 PR 会全绿。
 - `content` 含 `app/tool/ci/` —— 判据自身改动要触发一次回归，否则判据改坏了没人知道。
-- `app` 含 `docs/deliverables/` —— `tool/docs/check.dart` 对的就是那四份交付物的
-  版号与读数。不含的话，一笔「只改 `docs/`」的 PR 会跳过口径对账 —— 而那正是
-  四份文档每版都在改、也是最该被机器看住的地方。
 - 两条都含各自的 workflow 文件。
 
 为什么不写 workflow 级 `paths:`（这是本文件存在的理由）：
@@ -117,11 +114,12 @@ def changed_files(root, base):
 
     **`-z` 不是可选项**：`core.quotepath` 默认开着，非 ASCII 路径会被输出成
     `"docs/deliverables/01-plan/SDP-\\350\\275\\257..."` —— **带引号且八进制转义**。
-    本仓 `docs/deliverables/` 25 份**全是中文文件名**，一旦拿到这种形态，
-    `normalize()` 与 `hits()` 的前缀匹配全部落空 ⇒ 只改交付物的 PR 判「未命中」
+    撞出这条时本仓有一批 25 份中文文件名的交付物，一旦拿到这种形态，
+    `normalize()` 与 `hits()` 的前缀匹配全部落空 ⇒ 只改那批文件的 PR 判「未命中」
     ⇒ 静默跳过 `tool/docs/check.dart` 与 `flutter test`，而 check 仍报 success。
     `-z` 下 git 按原始字节输出、以 NUL 分隔，既无转义也无引号（也顺带免疫
-    文件名含空格）。2026-10-20 由 PR #87 现场撞出。
+    文件名含空格）。2026-10-20 由 PR #87 现场撞出；那批文件后由 `S7-3` 删除，
+    但判据不随之退化 —— 将来任何非 ASCII 路径都要走通。
 
     返回 `(files, None)` 或 `(None, 原因)`。失败由调用方降级成「全跑」。
     """
@@ -165,9 +163,10 @@ def self_test_changed_files():
     这条用例的存在理由，正是原来那批用例的盲区：它们喂的全是理想输入
     （`"docs/deliverables/04-test/STD-软件测试说明.md"`），而 `git diff
     --name-only` 的真实输出是 `"docs/deliverables/.../STD-\\350\\275\\257..."`。
-    **把输入形态 mock 成理想态，被测的那条语义就永远测不出来** —— 本仓
-    25 份交付物全是中文文件名，于是一路静默到 2026-10-20 才被一笔只改
-    交付物的 PR 撞出（`app-checks` 7 秒空跑、报 success）。
+    **把输入形态 mock 成理想态，被测的那条语义就永远测不出来** —— 当时本仓
+    有 25 份中文文件名的交付物，于是一路静默到 2026-10-20 才被一笔只改
+    那批文件的 PR 撞出（`app-checks` 7 秒空跑、报 success）。用例本身在临时仓
+    里自建路径，与本仓现状无关，故 `S7-3` 删那批文件后仍保留。
 
     git 不可用或建不出仓时返回**失败**而非跳过：跳过就是再给一次假绿。
     """
@@ -183,7 +182,7 @@ def self_test_changed_files():
                 errors="replace",
             )
 
-        rel = "docs/deliverables/01-plan/SDP-软件开发计划.md"
+        rel = "docs/设计/术语表.md"
         try:
             if git("init", "-q").returncode != 0:
                 return False, "git init 失败"
@@ -217,8 +216,6 @@ def self_test(scopes):
         ("app", ["content/python/manifest.json"], True, "内容数据变了要重跑读包测试"),
         ("app", ["content/tools/build.py"], True, "内容构建脚本"),
         ("app", ["app/tool/ci/affected.py"], True, "判据自身在 app/ 下"),
-        ("app", ["docs/deliverables/04-test/STD-软件测试说明.md"], True,
-         "交付物口径由 tool/docs 对账，改了就重跑"),
         ("app", ["docs/specs/git-conventions.md"], False, "指南不参与任何检查"),
         ("app", [".github/workflows/app-checks.yml"], True, "自身 workflow"),
         (

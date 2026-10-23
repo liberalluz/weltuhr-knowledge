@@ -8,7 +8,7 @@
 
 | 本章 | 对应设计文档 | 本文件写什么 | 不写什么 |
 |---|---|---|---|
-| §二 分层与模块边界 | [FND](FND-foundation.md) · [SSDD](../deliverables/03-design/SSDD-系统结构设计说明.md) | 分层、模块划分、依赖方向 | 领域模型定义（回指 FND） |
+| §二 分层与模块边界 | [FND](FND-foundation.md) · SSDD | 分层、模块划分、依赖方向 | 领域模型定义（回指 FND） |
 | §三 内容管线 | [PACK](PACK-content-pack.md) | 源数据 → 构建 → 加载三段的结构 | pack schema 字段（回指 PACK 与 `entity-fields.md`） |
 | §四 事件内核 | [FND](FND-foundation.md) | 事件表、折叠、持久化的结构 | 事件类型全集（回指 `event-types.md`） |
 | §五 视图投影 | [VIEW](VIEW-views.md) | 投影管线与渲染入口 | 通道映射（回指 `channel-table.md`） |
