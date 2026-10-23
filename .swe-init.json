@@ -6,7 +6,7 @@
   "toolchain": {},
   "docsProfile": {
     "id": "swebok-v4",
-    "rev": 1,
+    "rev": 2,
     "dirs": ["decisions", "intent", "ideas", "specs", "runbooks"]
   },
   "docsLocale": {
@@ -23,5 +23,5 @@
     "decidedAt": "2026-10-22T08:20:29+08:00"
   },
   "createdAt": "2026-10-22T07:51:41+08:00",
-  "updatedAt": "2026-10-22T10:25:55+08:00"
+  "updatedAt": "2026-10-23T10:38:44+08:00"
 }

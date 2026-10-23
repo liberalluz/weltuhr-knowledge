@@ -8,7 +8,7 @@
 
 ## 职责边界
 
-- **负责**：设计规格与横切表（`specs/`）· 上游论证（`intent/`）· 未认定的候选（`ideas/`）· 交付物（`deliverables/`）· 操作手册（`runbooks/`）· 架构决策（`decisions/`）
+- **负责**：设计规格与横切表（`specs/`）· 上游论证（`intent/`）· 未认定的候选（`ideas/`）· 操作手册（`runbooks/`）· 架构决策（`decisions/`）
 - **不负责**：客户端实现约定（→ `app/AGENTS.md`）· 服务端实现约定（→ `server/AGENTS.md`）· 内容包与构建（→ `content/AGENTS.md`）· 部署与 CI（→ `infra/AGENTS.md`）
 
 ## 落点判据
@@ -19,13 +19,12 @@
 | 多少次 / 哪些值 | `specs/` |
 | 还没认定的想做什么 | `ideas/`（**不得作为实施依据**，见该目录 `README.md`） |
 | 怎么操作 | `runbooks/` |
-| 对外交付、需签字、需版号 | `deliverables/` |
+| 对外交付、需签字、需版号 | **不在本仓** —— `ADR-0009` 起仓外托管 |
 
 ## 红线
 
-- **交付物先建文件，再写内容**。不得「某份还没建，先写进 `deliverables/README.md`」—— 那个降级会在补齐时留下两份事实源。正文可以是「待填」。
 - **记录类不追溯补录**。`DPMR` / `STR` 记录的是「当时确实如此」，事后补写会让证据退化为叙述。判据：这份文档在**记录一次已发生的事**，还是在**描述当前应当如此**？前者不补，后者可补。
-- **基线只在 `SCMP` 登记**。`deliverables/README.md` 只保留编号与日期速览，完整内容只此一处。
+- **基线只在 `SCMP` 登记**。别处不得再留一份可改的基线表 —— 复制就有两份事实源，两份就一定会不同步。
 - **活文档不设版号**。`specs/` `intent/` `ideas/` `runbooks/` `decisions/` 的更新时间以 `git log` 为准，**不手写「最后更新」头** —— 手写头会变成第二份会过期的记录。
 - **引用不复制**。同一规则只在唯一权威处展开，其余位置写「见 XX」。数值只在 `specs/` 维护。
 - **骨架文件的填充时点写在文件头**，不得因为「顺手能写」就提前填 —— 时点没到之前写出来的内容只是猜测，而且会被下游当成已定事实。
@@ -48,17 +47,4 @@
 | 不译 | `AGENTS.md`（两套语言 = 两套规则源）· `LICENSE` · `NOTICE`（法律文本） |
 | 完整性 | **中文原文不得删除，译本不得单独存在** —— `check_s0` 只判前缀存在，删了中文会静默通过 |
 
-**已落译本**：仓根 `README.zh-CN.md` / `README.de.md` / `README.it.md` / `README.ja.md` / `README.fr.md` 五份，**全部译自英文 [`README.md`](../README.md)**，溯源行带 `@ <sha>`；**`.github/` 三份不出译文**（见上「对外层」）。`docs/` 下 **63 份**（`find docs -name '*.md'` 共 64 份，减 1 份不译的 `AGENTS.md`）的译本**等首个版本发布后统一做** —— 那一批走**库内口径**：中文是事实源、溯源行以中文原文为准、不写 sha。
-
-## 交付物导航
-
-| 段 | 内容 | 已写实 |
-|---|---|---|
-| `deliverables/01-plan/` | 计划类 7 份 | `SDP` §4 计划表 · `SCMP` §三 基线 · `DPMR` 前史 · 其余骨架 |
-| `deliverables/02-requirements/` | 需求类 5 份 | `SRS` 已含 `v0.1.0` 切片（**141 / 203**）与归属全量。⚠️ 其中 `ACC` 12 条随 `ADR-0005` 决策 6 失效（`P1` 无登录、无服务端），待 `SRS` 清偿 |
-| `deliverables/03-design/` | 设计类 4 份 | `SDD` 分章映射 · 其余骨架 |
-| `deliverables/04-test/` | 测试类 3 份 | `STP` 分层与判据 · `STR` 不追溯声明 · `STD` 编号规则 |
-| `deliverables/05-delivery/` | 交付类 5 份 | 全为骨架 |
-| `deliverables/06-report/` | 总结 1 份 | 骨架 |
-
-清单与命名的唯一权威处 = `deliverables/README.md` §一。
+**已落译本**：仓根 `README.zh-CN.md` / `README.de.md` / `README.it.md` / `README.ja.md` / `README.fr.md` 五份，**全部译自英文 [`README.md`](../README.md)**，溯源行带 `@ <sha>`；**`.github/` 三份不出译文**（见上「对外层」）。`docs/` 下 **45 份**（`find docs -name '*.md'` 共 46 份，减 1 份不译的 `AGENTS.md`）的译本**等首个版本发布后统一做** —— 那一批走**库内口径**：中文是事实源、溯源行以中文原文为准、不写 sha。
