@@ -1,6 +1,6 @@
 # ADR-0009 · 交付物解散：`deliverables/` 分流到四类落点
 
-- **状态**：Accepted (2026-10-23)
+- **状态**：已接受（2026-10-23）
 - **日期**：2026-10-22
 - **决策人**：`liberal`（起草：格意二）
 - **覆盖范围**：`docs/deliverables/` 全部 **26 份**（6 段 25 种 + `README.md`）· `docs/AGENTS.md` 的落点判据表与**三条**相关红线（基线登记 · 活文档不设版号 · 交付物先建）· `app/tool/docs/rules.dart` 的六个路径常量与 `D2` / `D5` 判据 · `SCMP` 的 §二 / §三 / §5.1 / §5.2 · `docs/README.md` · `.swe-init.json` 的 `docsProfile`
