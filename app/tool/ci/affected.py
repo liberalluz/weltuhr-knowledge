@@ -15,6 +15,12 @@
   `content/<空间>/dist/pack.json` 喂读包测试（`dist/` 不入库，`SPEC-PACK-018`）。
   不含的话，「内容端改结构、客户端读包逻辑坏了」这类 PR 会全绿。
 - `content` 含 `app/tool/ci/` —— 判据自身改动要触发一次回归，否则判据改坏了没人知道。
+- `app` 含 `docs/specs/` —— `docs/check` 是 `app-checks` 的一步，而它查的
+  `D1`–`D5` 全部落在 `docs/specs/`（三份受控 + `SDD`，另加两份横切）。不含的话，
+  「版号不自洽 / 用例数三处对不上」这类**不会有任何东西报错**的错，在 CI 里完全
+  不可见 —— 2026-10-23 前已有五次实证：只改 specs 时 `app-checks` 8 秒空跑。
+  不含整个 `docs/`：`D6` 的断链属「改完立刻可见」，不为它把约 2 分钟的全套成本
+  摊到每次文档改动。
 - 两条都含各自的 workflow 文件。
 
 为什么不写 workflow 级 `paths:`（这是本文件存在的理由）：
@@ -216,7 +222,7 @@ def self_test(scopes):
         ("app", ["content/python/manifest.json"], True, "内容数据变了要重跑读包测试"),
         ("app", ["content/tools/build.py"], True, "内容构建脚本"),
         ("app", ["app/tool/ci/affected.py"], True, "判据自身在 app/ 下"),
-        ("app", ["docs/specs/git-conventions.md"], False, "指南不参与任何检查"),
+        ("app", ["docs/specs/git-conventions.md"], True, "specs 任意文件都进 app 面：docs/check 的 D1-D5 只读这里"),
         ("app", [".github/workflows/app-checks.yml"], True, "自身 workflow"),
         (
             "app",
@@ -229,7 +235,13 @@ def self_test(scopes):
         ("content", ["content/tools/build.py"], True, "内容脚本"),
         ("content", ["app/tool/ci/affected.py"], True, "判据改动触发一次回归"),
         ("content", ["docs/runbooks/environment.md"], False, "文档不触发"),
-        ("app", ["docs/specs/术语表.md"], False, "参考层中文名不进口径对账"),
+        ("app", ["docs/specs/术语表.md"], True, "中文文件名不影响前缀匹配（core.quotepath 由另一条测）"),
+        (
+            "app",
+            ["docs/decisions/0005-three-axis-tree-replaces-six-axis.md"],
+            False,
+            "决策面不进 app：D1-D5 不读它，D6 断链改完立刻可见",
+        ),
     ]
 
     failed = 0
