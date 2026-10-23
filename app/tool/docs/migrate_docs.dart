@@ -120,6 +120,21 @@ const Map<int, Map<String, String>> batches = <int, Map<String, String>>{
     'docs/deliverables/04-test/STP-软件测试计划.md': 'docs/specs/stp.md',
     'docs/deliverables/04-test/STD-软件测试说明.md': 'docs/specs/std.md',
   },
+  // 批 8 = `ADR-0010`：`specs/` 里再分一层，只装**受控交付物**。
+  //
+  // 判据是「有没有版号序列、在不在 `D2` 管辖内」，一句话说得清 —— 而不是
+  // 「按主题卷 / 横切表 / 工程规范」那样要靠枚举（`ADR-0008` 否决方案 C 的
+  // 原话：「一个目录的定义要靠枚举才说得清，说明它不是一类」）。
+  //
+  // ⚠️ 只搬这五份。`baselines.md` 留在 `docs/` 根（它是登记表，不是交付物），
+  // 其余 21 份活文档留在 `specs/` 根。
+  8: <String, String>{
+    'docs/specs/scmp.md': 'docs/specs/controlled/scmp.md',
+    'docs/specs/srs.md': 'docs/specs/controlled/srs.md',
+    'docs/specs/sdd.md': 'docs/specs/controlled/sdd.md',
+    'docs/specs/stp.md': 'docs/specs/controlled/stp.md',
+    'docs/specs/std.md': 'docs/specs/controlled/std.md',
+  },
 };
 
 /// 遍历时整棵跳过的目录 —— 与 [`check.dart`](check.dart) 的 `linkSkipDirs` 一致。

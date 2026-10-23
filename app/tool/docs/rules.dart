@@ -89,19 +89,24 @@ class DocContext {
 /// ⚠️ **2026-10-23 `S7-2`（`ADR-0009` §5）起是三份不是四份**：`STR` 已出仓，
 /// 仓内不再有测试报告；读数改由 [stdFile] 的 §六「当前读数」单点登记。
 /// 剩下三份都在 `docs/specs/`，但路径仍逐条写死 —— 按目录拼会在下次迁移时静默失配。
+///
+/// ⚠️ **2026-10-23 `ADR-0011` 起在 `docs/specs/` 下再分一层 `controlled/`**：
+/// 受控交付物（有版号序列、受 `D2` 管）迁入 `docs/specs/controlled/`，其余活文档
+/// 继续平铺在 `docs/specs/` 根。判据是「有没有版号序列」，不是文档主题。
+/// **路径仍逐条写死**，理由同上 —— 这次搬家正是「按目录拼」会静默失配的又一例。
 const List<String> docFiles = <String>[
-  'docs/specs/scmp.md',
-  'docs/specs/std.md',
-  'docs/specs/stp.md',
+  'docs/specs/controlled/scmp.md',
+  'docs/specs/controlled/std.md',
+  'docs/specs/controlled/stp.md',
 ];
 
-const String scmpFile = 'docs/specs/scmp.md';
-const String stdFile = 'docs/specs/std.md';
-const String stpFile = 'docs/specs/stp.md';
+const String scmpFile = 'docs/specs/controlled/scmp.md';
+const String stdFile = 'docs/specs/controlled/std.md';
+const String stpFile = 'docs/specs/controlled/stp.md';
 
-/// `SDP` 已出仓（`S7-2` → 仓外 `process/sdp.md`），常量随之退役 —— 仓内不再有
-/// 这个文件，留着常量只会让「读不到」与「路径写错」两种故障长得一样。
-const String sddFile = 'docs/specs/sdd.md';
+/// `SDP` 已出仓（`S7-2` → 仓外 `process/sdp.md`）。`SDD` 仍在仓内，随 `ADR-0011`
+/// 落在 `docs/specs/controlled/` —— 它是受控交付物但不是读数来源，故不进 [docFiles]。
+const String sddFile = 'docs/specs/controlled/sdd.md';
 
 /// 参与**版号自洽**的四份 = [docFiles] 三份 + `SDD`。
 ///
