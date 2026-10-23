@@ -136,8 +136,9 @@
 | `content/` 源数据 | `content/tools/fixtures/` 共 **40 份**样例（源层 32 + 产物层 8）+ **3 个真实空间**：`python`（150 项 / 170 边 / 10 域）· `english` · `german`（各 80 项 / 84 边 / 8 域 / 24 题 / 2 体系）；三包 `dist/pack.json` 均不入库 | ✅ `BL-3`（`BL-3` 之后新增的两个空间**未入基线**；缺口：两包 `excerpts` 为空段） |
 | `infra/` 基础设施 | 仅 `README.md` + `AGENTS.md`，无代码 | 未入基线 |
 | `docs/specs/` `decisions/` `intent/` `runbooks/` | **10 份**设计（`B3` 笔 10 前新增 `ACC` 账号 · `SYNC` 同步）+ 6 张横切表 + 2 份 guide + **4 份 ADR**（`0004` 账号作为使用前提，覆盖 `0002` 的「服务端不在 `v0.1.0` 关键路径」） | ✅ `BL-0` |
-| `docs/deliverables/` | 六段 25 种 —— **2026-10-23 起已解散**（`ADR-0009`：3 份外层托管、5 份迁入 `specs/`、17 份骨架删除） | ✅ `BL-1`（解散前） |
 | `.gitattributes` `.github/` `.gitignore` | 已落，`content-checks` 四步全绿 | ✅ `BL-1` |
+
+> **交付与验收记录、过程计划等已出仓**，由仓外文档目录治理（仓内不引用其路径）。解散过程与各份去向见 `ADR-0009`。
 
 ### 5.1 仓内受控文档版号分布
 
