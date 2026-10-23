@@ -16,6 +16,7 @@
 | [0008](0008-five-dir-docs-taxonomy.md) | 文档目录换轨：六目录并为五目录，`deliverables` 原位 | 已接受（**已执行完毕**：批 0–6 + 收尾笔 `#123`；`deliverables` 的去留见 `0009`） | 全部 `docs/` · `.swe-init.json` `docsProfile` · `migrate_docs.dart` |
 | [0009](0009-deliverables-dissolve.md) | 交付物解散：`deliverables/` 分流到四类落点 | 已接受（2026-10-23） | `deliverables/` 26 份 · `rules.dart` 六常量 · `D2` / `D5` · `SCMP` §二 / §三 / §5.1 / §5.2 · `baselines.md` |
 | [0010](0010-pc-09-device-follows-subject.md) | `PC-09`：性能装置跟被测对象走，不等 `B17b` | 已接受（2026-10-21 决策，2026-10-22 补论证） | `PC-09` · `SDP` §7.1 `R-22`–`R-24` · `C-32` · `B17a` / `B17b` |
+| [0011](0011-specs-controlled-subdir.md) | `specs/` 下再分一层：受控交付物迁入 `controlled/` | 已接受（2026-10-23，**同日执行完毕**） | 五份受控文档 · `rules.dart` 四常量 · `migrate_docs.dart` 批 8 · `docs/README.md` · `docs/AGENTS.md` · `00-index` · 技能 `nebula-project-builder` |
 
 ## 何时需要 ADR
 

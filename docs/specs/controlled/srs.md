@@ -5,20 +5,20 @@
 
 ## 一、需求来源与编号
 
-需求条目全集 = [`00-index.md`](00-index.md) 的 **203 条**，格式 `SPEC-<域>-<NNN>`：
+需求条目全集 = [`00-index.md`](../00-index.md) 的 **203 条**，格式 `SPEC-<域>-<NNN>`：
 
 | 域 | 对应设计文档 | 条数 | `v0.1.0` | `v0.2.0` | `v1.0.0` | `v1.1.0` |
 |---|---|---|---|---|---|---|
-| `FND` | [FND-foundation](FND-foundation.md) | 16 | 16 | 0 | 0 | 0 |
-| `VIEW` | [VIEW-views](VIEW-views.md) | 35 | 34 | 0 | 1 | 0 |
-| `PACK` | [PACK-content-pack](PACK-content-pack.md) | 18 | 11 | 7 | 0 | 0 |
-| `PLAN` | [PLAN-planning](PLAN-planning.md) | 21 | 19 | 2 | 0 | 0 |
-| `STEP` | [STEP-learning-steps](STEP-learning-steps.md) | 34 | 34 | 0 | 0 | 0 |
-| `QUANT` | [QUANT-quantification](QUANT-quantification.md) | 15 | 15 | 0 | 0 | 0 |
-| `NOTE` | [NOTE-notes](NOTE-notes.md) | 19 | 0 | 19 | 0 | 0 |
-| `GOV` | [GOV-governance](GOV-governance.md) | 14 | 0 | 11 | 1 | 2 |
-| `ACC` | [ACC-accounts](ACC-accounts.md) | 15 | 12 | 3 | 0 | 0 |
-| `SYNC` | [SYNC-sync](SYNC-sync.md) | 16 | 0 | 16 | 0 | 0 |
+| `FND` | [FND-foundation](../FND-foundation.md) | 16 | 16 | 0 | 0 | 0 |
+| `VIEW` | [VIEW-views](../VIEW-views.md) | 35 | 34 | 0 | 1 | 0 |
+| `PACK` | [PACK-content-pack](../PACK-content-pack.md) | 18 | 11 | 7 | 0 | 0 |
+| `PLAN` | [PLAN-planning](../PLAN-planning.md) | 21 | 19 | 2 | 0 | 0 |
+| `STEP` | [STEP-learning-steps](../STEP-learning-steps.md) | 34 | 34 | 0 | 0 | 0 |
+| `QUANT` | [QUANT-quantification](../QUANT-quantification.md) | 15 | 15 | 0 | 0 | 0 |
+| `NOTE` | [NOTE-notes](../NOTE-notes.md) | 19 | 0 | 19 | 0 | 0 |
+| `GOV` | [GOV-governance](../GOV-governance.md) | 14 | 0 | 11 | 1 | 2 |
+| `ACC` | [ACC-accounts](../ACC-accounts.md) | 15 | 12 | 3 | 0 | 0 |
+| `SYNC` | [SYNC-sync](../SYNC-sync.md) | 16 | 0 | 16 | 0 | 0 |
 | **合计** | — | **203** | **141** | **58** | **2** | **2** |
 
 **`ACC` 12 条进 `v0.1.0` 的理由**：账号被裁定为**使用前提**（`ACC-001`），不登录进不了主界面 ⇒ 这条链在 `v0.1.0` 就必须成立。剩 3 条（`ACC-008` 强制可验证渠道 · `ACC-012` 多设备会话 · `ACC-014` 旧数据认领）依赖验证渠道与多设备，随 `v0.2.0`。
@@ -28,7 +28,7 @@
 
 ## 二、跨文档约束
 
-另有 **9 条跨文档约束** `X-01`–`X-09` 同时约束多份设计文档（见 [`00-index.md`](00-index.md) §四）。它们不单独成条，**落在具体 `SPEC` 上**，此处只登记落点与归属版本：
+另有 **9 条跨文档约束** `X-01`–`X-09` 同时约束多份设计文档（见 [`00-index.md`](../00-index.md) §四）。它们不单独成条，**落在具体 `SPEC` 上**，此处只登记落点与归属版本：
 
 | 约束 | 落点 | 归属 |
 |---|---|---|
@@ -71,7 +71,7 @@
 
 ### 3.3 `FND` 域（16 条，全部 `v0.1.0`）
 
-> 「验收指向」里的 `FND 验收表` 指 [`FND-foundation.md`](FND-foundation.md) 末尾的验收表（其余域同理），文档链接见 §一。
+> 「验收指向」里的 `FND 验收表` 指 [`FND-foundation.md`](../FND-foundation.md) 末尾的验收表（其余域同理），文档链接见 §一。
 > `⚠ 无验收行` = 该条在验收表里没有任何对应断言 —— 清单汇总与原因见 §五 ①。
 
 | 编号 | 需求陈述 | 验收指向 |
@@ -232,7 +232,7 @@
 
 ### 3.9 `ACC` 域（12 条）
 
-> 账号被裁定为**使用前提**（`ACC-001`）⇒ 登录链在 `v0.1.0` 必须成立。本条按 [`ADR-0004`](../decisions/0004-accounts-as-usage-prerequisite.md) 生成，`v0.1.0` 只做「邮箱 + 密码」，**不做验证、不做找回**（`ACC-007`）。
+> 账号被裁定为**使用前提**（`ACC-001`）⇒ 登录链在 `v0.1.0` 必须成立。本条按 [`ADR-0004`](../../decisions/0004-accounts-as-usage-prerequisite.md) 生成，`v0.1.0` 只做「邮箱 + 密码」，**不做验证、不做找回**（`ACC-007`）。
 
 | 编号 | 一句需求 | 验收指向 |
 |---|---|---|
@@ -450,7 +450,7 @@
 | 版号 | 日期 | 修订摘要 |
 |---|---|---|
 | `v0.5.1` | 2026-10-22 | **勘误**：`ADR-0008` 换轨后目录名过时 —— 需求来源指向与回指表述 5 处（`design/` · `reference/` 均已并入 `specs/`）。只改路径指向，**需求条目（203 条）与验收覆盖零改动**。 |
-| `v0.5.0` | 2026-10-18 | **新增 `ACC` 域 15 条 + `SYNC` 域 16 条**（账号与跨设备同步），SPEC 总数 171 → **203**；§二 跨文档约束 8 → **9 条**（新增 `X-09`）；§三 `v0.1.0` 切片 128 → **141**（`ACC` 12 条进，`SYNC` 全部归 `v0.2.0`，另 `VIEW-035` 进）；§四 归属重算（`v0.2.0` 39 → **58**）；§五 ① 覆盖 83 → **100**。依据 [`ADR-0004`](../decisions/0004-accounts-as-usage-prerequisite.md) |
+| `v0.5.0` | 2026-10-18 | **新增 `ACC` 域 15 条 + `SYNC` 域 16 条**（账号与跨设备同步），SPEC 总数 171 → **203**；§二 跨文档约束 8 → **9 条**（新增 `X-09`）；§三 `v0.1.0` 切片 128 → **141**（`ACC` 12 条进，`SYNC` 全部归 `v0.2.0`，另 `VIEW-035` 进）；§四 归属重算（`v0.2.0` 39 → **58**）；§五 ① 覆盖 83 → **100**。依据 [`ADR-0004`](../../decisions/0004-accounts-as-usage-prerequisite.md) |
 | `v0.4.0` | 2026-10-17 | §三 `VIEW` 域两条陈述随 `ADR-0003` 更新（`VIEW-002` 的 `r` 由「复合轴」改为「域带」；`VIEW-002` / `VIEW-003` 验收指向由「⚠ 无验收行」改为「VIEW 验收表」）；§五 ① 覆盖重算 **81 → 83**（无验收行 90 → 88），`VIEW` 域 13 → 15。**SPEC 总数仍 171** —— 修订为原地，未新增编号 |
 | `v0.3.0` | 2026-10-17 | §五 末「下一动作」由「待登记」改为已登记事实（`BL-1` 冻结于 `SCMP` §3.1），并写明缺口登记 ≠ 缺口关闭 |
 | `v0.2.0` | 2026-10-17 | 补齐 §三 `v0.1.0` 切片（128 条）· §四 归属全量（171 条）· §二 补 `X-01`–`X-08` 落点 · §五 基线缺口四项（含「90 条无验收行」） |

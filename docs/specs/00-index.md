@@ -67,7 +67,7 @@
 > **形态不同，判据是同一条**：残余价值是**条目级**还是**整表级**。`constants` 90 条里 34 条还在跑 ⇒ 只能分层；`VIEW` / `channel-table` 的地基整块不存在、逐条改等于重写（`VIEW` 里 `Z0`–`Z4` 出现 **258 处**）⇒ 只能整卷封存。
 > **⚠️ 三份里只有一份带运行期风险**：`C-55` / `C-56` **仍在代码里跑**（接 `GalaxyLayout.spun()` 与 `StarSystemLayout.advanced()`）。**文档标废不等于代码停了** —— 随 `B13a` 删 `features/universe/` 时一并停用，**不得只删文档留代码**。其余两份是纯文档，标废即生效。
 
-## 三、横切表（本目录）
+## 三、横切表与规格（本目录）
 
 被多份文档引用，**只在 `specs/` 维护**。六张横切表：
 
@@ -83,6 +83,41 @@
 > 另有**上游理论长文** [`../intent/knowledge-system-learning-methodology.md`](../intent/knowledge-system-learning-methodology.md) —— 全案的理论依据。它是 `specs/` 的**上游**（specs 全部引用它，它不引用 specs），改动频率远低于 specs，故独立成 `intent/` 层而非并入设计基线。
 >
 > 同层的第二篇是 [`../intent/knowledge-space-navigation-methodology.md`](../intent/knowledge-space-navigation-methodology.md) —— **三轴容器树的论证依据**（16 个维度的取舍 · 三轴锚点质量 · 七级同构逐级映射）。它同样只作上游：**结论以 [`ADR-0005`](../decisions/0005-three-axis-tree-replaces-six-axis.md) / [`0006`](../decisions/0006-3d-rendering-stack-and-visual-style.md) / [`0007`](../decisions/0007-node-type-shape.md) 为准**，方法论本身可继续演进。
+
+### 三.1 规则表与规格
+
+另有三份不是数值表，但同样**只在 `specs/` 维护**：
+
+| 文档 | 内容 | 主要引用方 |
+|---|---|---|
+| [path-rules](path-rules.md) | `path` 的 **16 条规则** + 与三元校验器的对应 | `entity-fields` · `PACK` · `minimal-pack` |
+| [minimal-pack](minimal-pack.md) | **M1 最小示例包** —— `B13a` 笔 2–6 的验收样本 + 6 个错误码 | `STD` · `PACK` · 12 个吃真包的测试 |
+| [skeleton-catalog](skeleton-catalog.md) | **骨架数据规格** —— 三轴取哪份目录、槽位映射、编号定位、体积预算（`B13b` 的唯一输入） | `FND` · `SCMP` · `B13b` |
+
+### 三.2 工程规范
+
+读者是**贡献者**不是实现者，故不属产品规格，但同属「应当如何」：
+
+| 文档 | 内容 |
+|---|---|
+| [git-conventions](git-conventions.md) | **Git 流程与格式的权威处**：仓库结构 · 分支 · 提交 · 评审与合并 · 版本与 tag · 交付物版号 |
+| [dependency-licenses](dependency-licenses.md) | 依赖许可核查判据：强传染（GPL / AGPL）禁止引入，许可清单与取证方式 |
+
+### 三.3 受控交付物（`controlled/`）
+
+**本目录唯一的带版号子目录**。判据是「有没有版号序列、在不在 `D2` 管辖内」，**不是文档主题**（`ADR-0011`）—— 所以 21 份活文档继续平铺，不按主题卷 / 横切表 / 规范拆三类。
+
+| 文档 | 是什么 |
+|---|---|
+| [SCMP](controlled/scmp.md) | 软件配置管理计划 —— 配置项识别、基线策略、§5.1 分布表 |
+| [SRS](controlled/srs.md) | 软件需求规格说明 |
+| [SDD](controlled/sdd.md) | 软件结构设计说明 |
+| [STP](controlled/stp.md) | 软件测试计划 —— 测什么、怎么判通过 |
+| [STD](controlled/std.md) | 软件测试说明 —— 用例正文 + §六 当前读数（**总条数与 `flutter test` 的唯一读数点**） |
+
+> **读这五份之前先知道两件事**：① 头部**没有**版号行，版号只登记在正文末尾的「历史」节（`ADR-0009` 的 `S7-1` 剥掉了）；② 它们引用本目录的活文档要写 `../`，反向写 `controlled/`。
+>
+> `ADR-0009:169` 登记待建的 `IRS` `DRD` `IDD` `DBDD` 四份同属此层（受控将由 5 变 9），**建时直接落 `controlled/`**，别再落根。
 
 ## 四、跨文档约束清单
 

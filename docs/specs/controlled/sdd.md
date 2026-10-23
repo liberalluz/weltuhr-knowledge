@@ -8,11 +8,11 @@
 
 | 本章 | 对应设计文档 | 本文件写什么 | 不写什么 |
 |---|---|---|---|
-| §二 分层与模块边界 | [FND](FND-foundation.md) · SSDD | 分层、模块划分、依赖方向 | 领域模型定义（回指 FND） |
-| §三 内容管线 | [PACK](PACK-content-pack.md) | 源数据 → 构建 → 加载三段的结构 | pack schema 字段（回指 PACK 与 `entity-fields.md`） |
-| §四 事件内核 | [FND](FND-foundation.md) | 事件表、折叠、持久化的结构 | 事件类型全集（回指 `event-types.md`） |
-| §五 视图投影 | [VIEW](VIEW-views.md) | 投影管线与渲染入口 | 通道映射（回指 `channel-table.md`） |
-| §六 关键机制 | [QUANT](QUANT-quantification.md) · [GOV](GOV-governance.md) | 掌握度计算、同步与合并的落点 | 参数数值（回指 `constants.md`） |
+| §二 分层与模块边界 | [FND](../FND-foundation.md) · SSDD | 分层、模块划分、依赖方向 | 领域模型定义（回指 FND） |
+| §三 内容管线 | [PACK](../PACK-content-pack.md) | 源数据 → 构建 → 加载三段的结构 | pack schema 字段（回指 PACK 与 `entity-fields.md`） |
+| §四 事件内核 | [FND](../FND-foundation.md) | 事件表、折叠、持久化的结构 | 事件类型全集（回指 `event-types.md`） |
+| §五 视图投影 | [VIEW](../VIEW-views.md) | 投影管线与渲染入口 | 通道映射（回指 `channel-table.md`） |
+| §六 关键机制 | [QUANT](../QUANT-quantification.md) · [GOV](../GOV-governance.md) | 掌握度计算、同步与合并的落点 | 参数数值（回指 `constants.md`） |
 
 **为什么这样分**：`specs/` 是活文档（不设版号、随讨论演进），本文件按版号冻结。若复制设计正文，必然出现「设计改了交付物没改」。
 
@@ -98,7 +98,7 @@ core 层的两条边界**不是写在文档里的约定**，而是可执行规�
 - **`0` 与 `1` 放行**：坐标原点与计数基元，强行具名会让代码更难读。
 - **`features/` 不做数字检查**：间距、尺寸属设计 token，不属知识语义常量。
 
-> 与 [`constants.md`](constants.md) 的关系：`R2` 保证「数字只能出现在常量表」，`TC-QUANT-001`–`TC-QUANT-007` 保证「常量表里的值与文档一致」。两条合起来才能防住「有人绕过常量表直接写数」。
+> 与 [`constants.md`](../constants.md) 的关系：`R2` 保证「数字只能出现在常量表」，`TC-QUANT-001`–`TC-QUANT-007` 保证「常量表里的值与文档一致」。两条合起来才能防住「有人绕过常量表直接写数」。
 
 ## 三、内容管线
 
