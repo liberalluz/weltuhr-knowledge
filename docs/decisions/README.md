@@ -13,7 +13,7 @@
 | [0005](0005-three-axis-tree-replaces-six-axis.md) | 三轴容器树取代六轴坐标 | 已接受（**覆盖 `FND-002` / `FND-006` / `FND-007`**，并收窄 `0004`） | `entity-fields` · `FND` · `PACK` · `PLAN` · `STEP` · `VIEW` · `ACC` · `SDP` |
 | [0006](0006-3d-rendering-stack-and-visual-style.md) | 3D 渲染栈与视觉风格 | 已接受（`0005` 未决项之一；**附 spike 闸门**） | `VIEW` · `entity-fields` · `skeleton-catalog` · `SDP` §4.2 `B17b` / §4.5 · `app/pubspec.yaml` · `infra/` |
 | [0007](0007-node-type-shape.md) | `Node` 的类型形态：按槽位分型 | 已接受 | `entity-fields` §1.2 · `SDP` §4.2 `B13a` · `core/entities/` · 647 用例的构造点 |
-| [0008](0008-five-dir-docs-taxonomy.md) | 文档目录换轨：六目录并为五目录，`deliverables` 原位 | 已接受（**执行中**：批 2–6 已完成，`S7` 见 `0009`） | 全部 `docs/` · `.swe-init.json` `docsProfile` · `migrate_docs.dart` |
+| [0008](0008-five-dir-docs-taxonomy.md) | 文档目录换轨：六目录并为五目录，`deliverables` 原位 | 已接受（**已执行完毕**：批 0–6 + 收尾笔 `#123`；`deliverables` 的去留见 `0009`） | 全部 `docs/` · `.swe-init.json` `docsProfile` · `migrate_docs.dart` |
 | [0009](0009-deliverables-dissolve.md) | 交付物解散：`deliverables/` 分流到四类落点 | Accepted (2026-10-23) | `deliverables/` 26 份 · `rules.dart` 六常量 · `D2` / `D5` · `SCMP` §二 / §三 / §5.1 / §5.2 · `baselines.md` |
 | [0010](0010-pc-09-device-follows-subject.md) | `PC-09`：性能装置跟被测对象走，不等 `B17b` | 已接受（2026-10-21 决策，2026-10-22 补论证） | `PC-09` · `SDP` §7.1 `R-22`–`R-24` · `C-32` · `B17a` / `B17b` |
 
