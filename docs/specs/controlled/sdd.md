@@ -1,6 +1,6 @@
 # 软件结构设计说明（SDD）
 
-> **状态**：§二 §三 已写实，§四–§六 待填（§2.1 视图层为 **6 份**（实扫），`core/` 文件树按实扫补全至 **五十份**（树内 39 条，`plan/` 11 份待笔 6 补登）；**`B13a` 笔 5b 补 `entities/requirement.dart`** —— `Requirements` 从 `content.dart` 的 `ItemRequirements` 改名搬出、`node.dart` 改用新名（旧名把「属于 `Item`」写进了类型名，而 `ADR-0007` 之后要件只挂可学节点）；**`B13a` 笔 5a 删掉了六轴渲染层** —— `features/universe/` 20 份 · `core/frame/` 3 份 · `core/view/` 六份（`filter` · `fit` · `motion` · `navigation` · `tree` · `viewport`）· `graph/subtrees.dart` 整层退出，视图层 23 → 6、`core/` 59 → 49；容器树界面归 `B17a`、3D 归 `B17b`。以下为 `v0.14.0` 起的状态，保留以便回溯：定位层拆引擎与分诊，构图层拆绘制与拾取，视图层含导航记忆与**运动时钟**；`B3` 笔 10 起导航记忆带空间维度、`B12` 第六笔起带域维度；`B12` 的五档逐级下钻各档一对「几何 + 绘制」，视图层文件数 12 → 23 全部来自 `B12`）
+> **状态**：§二 §三 已写实，§四–§六 待填。§2.1 视图层 **6 份**（实扫）、`core/` 文件树 **五十份**（树内 39 条，`plan/` 11 份待补登）；**`B13a` 笔 5b 补 `entities/requirement.dart`** —— `Requirements` 从 `content.dart` 的 `ItemRequirements` 改名搬出，`node.dart` 改用新名。逐版摘要见文末「历史（迁移前版号序列）」表。
 > 本文件是**软件结构**的设计视图。分章与 `specs/` 主题文档对齐，实现细节**回指不复制**。当前已映射**八份**（`FND` / `VIEW` / `PACK` / `PLAN` / `STEP` / `QUANT` / `NOTE` / `GOV`）；`ACC` / `SYNC` 两域属 `v0.1.0` 服务端新增，**结构与机制待补**（见 `ACC` / `SYNC` 本身，本文件暂不映射）。
 > **追溯补录**：2026-10-17 · §二 §三 依据 `app/lib/` · `app/tool/lint/` · `content/tools/` 的既有代码反推，非当时所写。
 
