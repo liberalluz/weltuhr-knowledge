@@ -43,7 +43,7 @@
 | # | 规则 | `src:` |
 |---|---|---|
 | **P-15** | **禁跨包父子**：一个 `Node` 的主父必须与它**同包**（`pack_id` 相同）。跨包挂载只能走 `WormholeEdge`（引用）或 `payload.attach_to`（挂到骨架恒星下，那是**骨架包**的节点，属显式例外且只有这一个方向）。`attach_to` 装包时**物化为一条跨包 `main` `ParentEdge`**，之后按普通主父处理 —— 不物化则 `pathOf` 与 `ParentIndex` 要各存两种父来源 | `SDP` §4.2 `B14` · `ADR-0005` 决策 5 · [`minimal-pack.md`](minimal-pack.md) §4.1 |
-| **P-16** | **装包前以 `manifest.path_reservations[]`（`(parent_id, slug)` 清单）判冲突** —— 侧载无审核，这是**唯一**依据。不得装完再靠遍历全树比对（那在 3,323 骨架 + 多载荷下既是性能问题，也来不及回滚） | `entity-fields` §1 · §6 |
+| **P-16** | **装包前以 `manifest.path_reservations[]`（`(parent_id, slug)` 清单）判冲突** —— 侧载无审核，这是**唯一**依据。不得装完再靠遍历全树比对（那在 3,375 骨架 + 多载荷下既是性能问题，也来不及回滚） | `entity-fields` §1 · §6 |
 
 ## 六、与校验器的对应
 
