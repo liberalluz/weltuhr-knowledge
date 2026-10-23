@@ -220,7 +220,7 @@ class PlannerPanelState extends State<PlannerPanel> {
 
   /// 刚加入的自建内容的一条说明（`B4-R`）。`null` = 不显示。
   ///
-  /// 自建源在已选体系下覆盖恒 0（客户端写不了 `Item.sourceRefs`）。原先建完
+  /// 自建源在已选体系下覆盖恒 0（客户端写不了 `NodeEntry.sourceRefs`）。原先建完
   /// **立刻选中**，随即被筛掉再清空 —— 用户看到的是「对话框关了、列表里什么
   /// 都没多出来、顶上多一句提到没见过的名字」。现在它留在列表里标「覆盖 0」，
   /// 用这句话说清「已加入，但当前用不上」。
@@ -533,7 +533,7 @@ class PlannerPanelState extends State<PlannerPanel> {
           // 建完**立刻选中**，这是 `SPEC-PLAN-007` 里「建和选不该拆成两处」。
           _select(PlanSegment.source, source.id);
         } else {
-          // 已选体系下自建源覆盖恒 0（客户端写不了 `Item.sourceRefs`）。
+          // 已选体系下自建源覆盖恒 0（客户端写不了 `NodeEntry.sourceRefs`）。
           // **不选中**：选了立刻会被判「需重选」再清掉，用户看到的是
           // 「建了、然后消失」。留在列表里标「覆盖 0」并给一句话，
           // 比反复清空诚实（`B4-R` 走查实拍）。
