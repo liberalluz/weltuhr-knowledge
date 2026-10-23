@@ -3,7 +3,13 @@
   "name": "weltuhr-knowledge",
   "stack": "flutter",
   "stackSkeleton": ["app", "server", "content", "infra"],
-  "toolchain": {},
+  "toolchain": {
+    "dart": "3.13.5",
+    "flutter": "3.47.7",
+    "platforms": ["windows", "macos", "ios"],
+    "mirror": "flutter-io.cn",
+    "bundleId": "com.weltuhr.projectKnowledge"
+  },
   "docsProfile": {
     "id": "swebok-v4",
     "rev": 3,
@@ -17,11 +23,21 @@
     "changelog": "zh-CN"
   },
   "license": "Apache-2.0",
-  "inferredFields": ["stack", "stackSkeleton", "docsLocale", "toolchain"],
   "remote": {
-    "deferred": true,
-    "decidedAt": "2026-10-22T08:20:29+08:00"
+    "platform": "github",
+    "owner": "liberalluz",
+    "mergeStrategy": "squash",
+    "protection": {
+      "mode": "declared",
+      "approvals": 0,
+      "enforcedBy": [
+        ".githooks/pre-push",
+        ".github/workflows/repo-hygiene.yml"
+      ],
+      "platformLimit": "GitHub Free 私有仓不支持分支保护 / rulesets"
+    },
+    "decidedAt": "2026-10-23T14:14:25+08:00"
   },
   "createdAt": "2026-10-22T07:51:41+08:00",
-  "updatedAt": "2026-10-23T13:59:10+08:00"
+  "updatedAt": "2026-10-23T14:14:25+08:00"
 }
