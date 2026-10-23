@@ -309,10 +309,14 @@ bool _hasTestName(Map<String, String> tests, String name) {
 ///
 /// 两个方向：
 ///
-/// 1. **各自内部**：历史节必须存在、版号表必须非空。
-///    取最大值而不是「最后一行」—— 表的排序方向并不统一（`STD` / `STP` 升序、
-///    `SCMP` 前段降序后段升序、`STR` 当年还夹着 `v0.18.0` 在 `v0.17.0` 前面），
-///    依赖位置就得先修表；而修表是另一件事，不该挡住这条检查。
+/// 1. **各自内部**：历史节必须存在、版号表必须非空、**且按版号严格降序**。
+///    - 降序是 2026-10-23 立的新判据（规则文本在 `docs/AGENTS.md` 红线，六份表同批重排）。
+///      此前各表的排序方向各走各的（`STD` / `STP` 升序、`SCMP` 前段降序后段升序、
+///      `SDP` 尾部连续倒挂），`D2` 只能靠「取语义最大」绕开行序。
+///    - **取值仍按语义最大、不读首行**：「表序对了」与「版号对了」是两件事；
+///      让取值也依赖位置，等于用一个还没人守的约定去守另一个约定（`R-08`）。
+///    - 两条必须一起：降序给出**唯一的插入位置**，否则「补录的旧版号该插哪」
+///      每次都要现场判断，判断不一致就累积成交错序 —— 这正是旧表乱掉的原因。
 /// 2. **`SCMP` §5.1 对四份**：表里 `SCMP` / `STD` / `STP` / `SDD` 四行的
 ///    版号，必须等于对应文件历史节的语义最大版号。这是**唯一一处**跨文件登记版号
 ///    的地方，它一旦滞后，读者按 §5.1 找基线就会找错。
@@ -385,8 +389,9 @@ List<DocIssue> checkD2Versions(DocContext c) {
       continue;
     }
 
-    // 3) 语义最大版号。
+    // 3) 语义最大版号 + 降序校验。
     String? maxVer;
+    String? prevVer;
     int rows = 0;
     for (int i = start + 1; i < sectionEnd; i++) {
       if (!lines[i].trim().startsWith('|')) {
@@ -401,6 +406,20 @@ List<DocIssue> checkD2Versions(DocContext c) {
         continue;
       }
       rows++;
+      // 降序：本行必须**严格小于**上一行。相等也报 —— 同一版号占两行，等于
+      // 同一版本被记了两次，读者无从判断哪条是准的（`SCMP` §5.1 的「同版号合并
+      // 为一行」是同一条理由，只是那张表按份数合、这张表按版本合）。
+      if (prevVer != null && _compareVersion(v, prevVer) >= 0) {
+        out.add(
+          DocIssue(
+            ruleId: 'D2',
+            file: f,
+            line: i + 1,
+            message: '历史表必须按版号降序（新行插表首）：$v 应排在 $prevVer 之前',
+          ),
+        );
+      }
+      prevVer = v;
       if (maxVer == null || _compareVersion(v, maxVer) > 0) {
         maxVer = v;
       }

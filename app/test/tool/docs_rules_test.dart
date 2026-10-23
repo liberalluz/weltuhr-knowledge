@@ -198,6 +198,9 @@ void main() {
         '| `v0.1.0` | 2026-10-17 | 首建 |',
         // 故意**倒序**：最大的排前面、最小的排最后。若实现是「取最后一行」，
         // 会得到 v0.1.0 而误报；只有「取语义最大」才对。顺带证明检查不依赖位置。
+        // ⚠️ 2026-10-23 起「降序」本身成了硬判据（`TC-DOC-021` 守倒挂），所以这个
+        // 夹具同时是**合法形态** —— 本条守「取值不看位置」，与那条守「位置必须对」
+        // 是两条正交的判据，别把它们混成一条。
         '| `v0.3.0` | 2026-10-19 | 又加 |\n'
             '| `v0.1.0` | 2026-10-17 | 首建 |',
       );
@@ -239,6 +242,43 @@ void main() {
       expect(d2, hasLength(1));
       expect(d2.single.isWarning, isFalse, reason: '`S7-2` 起是 error，不是警告');
       expect(d2.single.message, contains('§5.1 登记 STD 为 v0.0.9'));
+    });
+
+    test('TC-DOC-021 历史表必须按版号降序，倒挂就报（无 SPEC：检查器规则）', () {
+      // 升序 = `v0.1.0` 在前、`v0.3.0` 在后 —— 正是 2026-10-23 之前六份表的形态。
+      Map<String, String> d = _patch(
+        _docs(),
+        sddFile,
+        '| `v0.1.0` | 2026-10-17 | 首建 |',
+        '| `v0.1.0` | 2026-10-17 | 首建 |\n'
+            '| `v0.3.0` | 2026-10-19 | 又加 |',
+      );
+      // §5.1 同步登记 `v0.3.0`，否则「版号对不上」会再加一处，断言就不唯一了。
+      d = _patch(
+          d, scmpFile, '| `v0.1.0` | 1 | `SDD`（x） |', '| `v0.3.0` | 1 | `SDD`（x） |');
+      final List<DocIssue> issues = _run(d);
+      final List<DocIssue> d2 =
+          issues.where((DocIssue i) => i.ruleId == 'D2').toList();
+      expect(d2, hasLength(1), reason: '版号本身对得上，只有降序一处');
+      expect(d2.single.message, contains('应排在 v0.1.0 之前'));
+      expect(d2.single.line, greaterThan(0), reason: '行号要指到倒挂的那一行');
+    });
+
+    test('TC-DOC-022 历史表同版号出现两次也报（无 SPEC：检查器规则）', () {
+      final List<DocIssue> issues = _run(
+        _patch(
+          _docs(),
+          sddFile,
+          '| `v0.1.0` | 2026-10-17 | 首建 |',
+          '| `v0.1.0` | 2026-10-17 | 首建 |\n'
+              '| `v0.1.0` | 2026-10-19 | 又记一次 |',
+        ),
+      );
+      final List<DocIssue> d2 =
+          issues.where((DocIssue i) => i.ruleId == 'D2').toList();
+      expect(d2, hasLength(1));
+      expect(d2.single.message, contains('应排在 v0.1.0 之前'),
+          reason: '相等也报 —— 同版号两行等于同一版本记了两次');
     });
   });
 
