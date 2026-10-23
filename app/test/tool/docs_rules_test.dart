@@ -454,4 +454,61 @@ void main() {
       expect(issues, isEmpty, reason: '围栏与行内代码里贴示例是常态，校验它只会制造假红');
     });
   });
+
+  group('D7 头部状态行', () {
+    test('TC-DOC-023 头部出现「上一版」就报，提示指向文末历史表（无 SPEC：检查器规则）', () {
+      final Map<String, String> docs = _patch(
+        _docs(),
+        stdFile,
+        '> **状态**：§三 用例表 **2 条**',
+        '> **状态**：§三 用例表 **2 条**\n> **上一版**：§三 用例表 **1 条**',
+      );
+      final List<DocIssue> got = _run(docs)
+          .where((DocIssue i) => i.ruleId == 'D7')
+          .toList();
+      expect(got, hasLength(1));
+      expect(got.single.file, stdFile);
+      expect(got.single.line, 2);
+      expect(got.single.isWarning, isTrue, reason: '头部臃肿是信息组织问题，不阻断');
+      expect(got.single.message, contains('上一版'));
+      expect(got.single.message, contains('历史表'));
+    });
+
+    test('TC-DOC-024 历史表里的「此前」是叙述，不算堆叠（无 SPEC：检查器规则）', () {
+      // 负例守着「只扫第一个 `## ` 之前」—— 实现若改成全文件扫，六份历史表
+      // 每一行「此前 N → M」都会误报，这条会当场红。
+      final Map<String, String> docs = _patch(
+        _docs(),
+        stdFile,
+        '| `v0.1.0` | 2026-10-17 | 首建 |',
+        '| `v0.1.0` | 2026-10-17 | 首建（此前 597 → **608**） |',
+      );
+      expect(
+        _run(docs).where((DocIssue i) => i.ruleId == 'D7'),
+        isEmpty,
+        reason: '它已经是「同一事实只写一处」之后的那一处，不该被本规则反咬',
+      );
+    });
+
+    test('TC-DOC-025 头部状态行超过 600 字就报，并说出实测字数（无 SPEC：检查器规则）', () {
+      final String long = '> **状态**：${'甲' * (headerStatusMaxChars + 1)}';
+      final Map<String, String> docs = _patch(
+        _docs(),
+        sddFile,
+        '> **状态**：ok',
+        long,
+      );
+      final List<DocIssue> got = _run(docs)
+          .where((DocIssue i) => i.ruleId == 'D7')
+          .toList();
+      expect(got, hasLength(1));
+      expect(got.single.file, sddFile);
+      expect(got.single.line, 1);
+      expect(
+        got.single.message,
+        contains('${long.length} 字'),
+        reason: '只报「超了」不够 —— 得给出实测值，才知道要删多少',
+      );
+    });
+  });
 }

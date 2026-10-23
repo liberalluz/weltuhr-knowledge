@@ -1,6 +1,6 @@
 # 软件测试说明（STD）
 
-> **状态**：**5c 收口 —— 旧本体四份删除，用例落点随之重指（`B13a` 笔 5c）** —— `pack_parse` / `entities/content` / `plan/method_bundle` / `plan/plan_target` 与 α 包夹具删除，9 条包解析用例改指 `pack_reader_test`（5 条改名对齐 · 2 条随 `ADR-0007` 取消 `meta` 段而作废 · 2 条重写夹具时未带上，落点标 `—` 待补）；α 包 4 条与 `PlanTarget` 6 条作废保留行，三条欠账已登记。`appliesTo` 键集 `{spaceId, type, layer}` → **`{type, axes, layer}`**，5 条契约用例拆到 `applies_to_test.dart`。§三 用例表 **791 条**（含 65 条作废保留行）。逐版摘要见文末「历史（迁移前版号序列）」表。
+> **状态**：**5c 收口 —— 旧本体四份删除，用例落点随之重指（`B13a` 笔 5c）** —— `pack_parse` / `entities/content` / `plan/method_bundle` / `plan/plan_target` 与 α 包夹具删除，9 条包解析用例改指 `pack_reader_test`（5 条改名对齐 · 2 条随 `ADR-0007` 取消 `meta` 段而作废 · 2 条重写夹具时未带上，落点标 `—` 待补）；α 包 4 条与 `PlanTarget` 6 条作废保留行，三条欠账已登记。`appliesTo` 键集 `{spaceId, type, layer}` → **`{type, axes, layer}`**，5 条契约用例拆到 `applies_to_test.dart`。§三 用例表 **794 条**（含 65 条作废保留行）。逐版摘要见文末「历史（迁移前版号序列）」表。
 > 本文件是**用例正文**。测什么与通过判据见 [`STP`](stp.md)；**仓内当前读数见 §六**。
 > **追溯补录**：2026-10-17 · §三 依据 `app/test/` 与 `content/tools/fixtures/` 的既有测试逐条反推，非当时所写。
 
@@ -1438,7 +1438,7 @@
 | `TC-PLAN-030` | `PLAN-021` | **显式** | 同 §3.44 的夹具 | 读三段首条的 `reason` | `出处等级 L0` / `本序无逆序` / `覆盖 4/4 类` —— 「为何推荐」就是排序键本身（`PLAN-021` 只做 A 级，不做一键生成） | Unit | 同上 · `TC-PLAN-030 三段每张卡都给出「为何推荐」，且内容即排序键（SPEC-PLAN-021）` |
 | `TC-PLAN-031` | — | — | 包内 `L2` 一条 + 自建 `L1` 一条 | `loadCandidates(pack, userSources: [L1 自建])` | 自建 `L1` 排在包内 `L2` **之前**，且它的 `origin` 仍是 `user` —— 排序键不看出处；把「用户自建」当降权，排序键就变成两个了 | Unit | 同上 · `TC-PLAN-031 排序键不看出处：自建 standard 仍排在包内 textbook 之前（无 SPEC：出处不参与排序键本笔补）` |
 
-### 3.46 `B4` 前置 · 交付物一致性检查器（15 条 · 2026-10-19 提出，`v0.46.0` 起补 4 条）
+### 3.46 `B4` 前置 · 交付物一致性检查器（25 条 · 2026-10-19 提出；`v0.44.0` 补 4 条 · `v0.52.0` 补 5 条 · `v0.55.0` 补 2 条 · `v0.63.0` 补 3 条）
 
 > 这一节验的不是产品，是**检查器自己**。`tool/docs/check.dart` 的五条规则（`D1`–`D5`）
 > 是把「四份交付物之间同一个读数必须相等」这件事变成可执行的东西；规则自己写错了会
@@ -1478,6 +1478,9 @@
 
 | `TC-DOC-021` | — | — | `SDD` 历史表写成升序（`v0.1.0` 在前、`v0.3.0` 在后），`SCMP` §5.1 同步登记 `v0.3.0` | `checkAll` | `D2` 报 1 处 —— 降序被破，行号指到倒挂那一行；**版号本身对得上**，所以只有这一处 | Unit | `app/test/tool/docs_rules_test.dart` · `TC-DOC-021 历史表必须按版号降序，倒挂就报（无 SPEC：检查器规则）` |
 | `TC-DOC-022` | — | — | `SDD` 历史表同一版号 `v0.1.0` 出现两次 | `checkAll` | `D2` 报 1 处 —— **相等也报**：同版号两行等于同一版本记了两次，读者无从判断哪条是准的 | Unit | `app/test/tool/docs_rules_test.dart` · `TC-DOC-022 历史表同版号出现两次也报（无 SPEC：检查器规则）` |
+| `TC-DOC-023` | — | — | `STD` 头部加一行「上一版：旧读数」 | `checkAll` | `D7` 报 1 处警告，消息指明「归文末历史表」—— **版号与读数都没错，错的只是位置** | Unit | `app/test/tool/docs_rules_test.dart` · `TC-DOC-023 头部出现「上一版」就报，提示指向文末历史表（无 SPEC：检查器规则）` |
+| `TC-DOC-024` | — | — | `STD` 历史表某行写「此前 597 → **608**」（在第一个 `## ` 之后） | `checkAll` | `D7` **零报** —— 只扫头部；若实现改成全文件扫，六份历史表会整片误报 | Unit | `app/test/tool/docs_rules_test.dart` · `TC-DOC-024 历史表里的「此前」是叙述，不算堆叠（无 SPEC：检查器规则）` |
+| `TC-DOC-025` | — | — | `SDD` 头部状态行写成 601 字 | `checkAll` | `D7` 报 1 处警告并带**实测字数** —— 只说「超了」无法判断该删多少 | Unit | `app/test/tool/docs_rules_test.dart` · `TC-DOC-025 头部状态行超过 600 字就报，并说出实测字数（无 SPEC：检查器规则）` |
 
 ### 3.47 `B4` 第 4 笔 · Planner 面板骨架（10 条 · 2026-10-19 提出）
 
@@ -1951,6 +1954,7 @@
 
 | 版号 | 日期 | 修订摘要 |
 |---|---|---|
+| `v0.63.0` | 2026-10-23 | §三 新增 `TC-DOC-023`–`025` 三条（`D7` 头部状态行：堆叠词报 1 处 · 历史表「此前」零报 · 超 `600` 字报并给实测值）；**§三 用例表 791 → 794**。同批把 §3.46 标题的条数从停在 **15** 条改准到 **25** 条（`v0.44.0` / `v0.52.0` / `v0.55.0` / `v0.63.0` 四次增量相加），此前标题与实际不符 |
 | `v0.62.1` | 2026-10-22 | **勘误**：`ADR-0008` 换轨后目录名过时 —— `entity-fields` / `constants` 回指 3 处 + 批次归属说明。只改路径指向，**用例仍 789 条**、断言与判据零改动。 |
 | `v0.62.0` | 2026-10-21 | **用例数不变（789）**：`B13a` 笔 5c 收口同步。§3.7.3 包解析 9 条落点从已删的 `pack_parse_test` 改指 `pack_reader_test` —— `TC-LOAD-010` / `013` / `014` / `015` / `016` 五条逐字换成新用例名并同步前置与预期（`items` → `nodes`、`parsePack` → `readPack`）；`TC-LOAD-011` / `012` 作废（`ADR-0007` 取消 `meta` 段，包身份改由 `Pack.pluginId` 自带、版本并入 `PackVersions`）；`TC-LOAD-017` / `018` 落点 `—` 标**待补**（坏 JSON 与「一次报全部」两条行为仍在，重写夹具时未带上）。§3.7.5 真实 α 包 4 条（`TC-LOAD-037`–`040`）与 §3.26 `TC-PACK-042` / `043` 作废 —— α 包夹具 `support/alpha_pack.dart` 随 `pack_parse.dart` 删除，且 `pack.space` / `sixAxis` / `primaryAxis` 已随 `ADR-0005` / `ADR-0007` 消失；**欠账如实登记**：真实内容包的四数校验、150 项自定位、题库悬空引用校验当前无自动化。§3.50 `TC-PLAN-062`–`067` 作废 —— `PlanSelector` / `PlanTarget` 由 `ADR-0007` 决策 2 废除，范围只落 `Plan.subtreeRoot`，四种解算式不再有入口。§3.45 五条逐字改名对齐（`TC-PLAN-019` / `020` / `025` / `027` / `031`，`L0`–`L4` 口径改五档 `AuthorityLevel`）。作废行按 `D3` 口径保留（删除线 + 落点 `—`），行数与编号集合不变 |
 | `v0.61.0` | 2026-10-21 | **`B13a` 笔 5c-1：`appliesTo` 匹配器落到新本体（契约收口）** —— 键集 `{spaceId, type, layer}` → **`{type, axes, layer}`**（`spaceId` 随「一空间一包已废」失效、`sixAxis` 随 `ADR-0005` 失效）；入参 `Item` + `KnowledgeSpace` → **`Node`**，`type` / `layer` 只对可学节点有意义（结构节点上声明它们 ⇒ 不命中，不是缺字段）。5 条契约用例从 `candidates_test.dart` **拆到 `test/core/plan/applies_to_test.dart`** 并改吃节点夹具（`test/support/node_fixture.dart`）—— 这一份在 5c-2 / 5c-3 换解析层时原样存活。§3.44 五条改判：`TC-PLAN-017` 由 `spaceId` 改 `axes` · `TC-PLAN-016` 扩到两个废键 · `TC-PLAN-014` 补结构节点与空数组两条断言 · `TC-PLAN-018` 补形状错。⚠️ **用例表 789 条、Dart 419 条均不变**（只换契约与落点，不增删用例）；§四 不变。⚠️ **如实登记：`appliesToNode` 仍无生产调用方** —— 生产里的源过滤是 `candidates.dart` 的私有 `_spaceAllows`（只查已废的 `spaceId`），接线归 5c-2 |

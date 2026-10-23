@@ -174,6 +174,7 @@ List<DocIssue> checkAll(DocContext ctx) {
     ...checkD4SpecCoverage(ctx),
     ...checkD5TestCount(ctx),
     ...checkD6Links(ctx),
+    ...checkD7HeaderBlock(ctx),
   ];
 }
 
@@ -1155,6 +1156,97 @@ String _delta(Set<String> scanned, int claimed) {
     return '';
   }
   return diff > 0 ? '（实扫多 $diff 条）' : '（实扫少 ${-diff} 条）';
+}
+
+// ---------------------------------------------------------------------------
+// D7 · 头部状态行
+// ---------------------------------------------------------------------------
+
+/// 头部状态行超过这个字数就警告。
+///
+/// 取 600 的依据：`#143` 压缩后的实测值是 `SCMP` 454 · `STD` 432 · `SDD` 240 ·
+/// `STP` 131，留约一倍余量。不取 1000 —— 那等于不管，压缩前 `SCMP` 是 **5,809**；
+/// 也不取 200 —— 「本笔契约变化 + 本笔的发现」两件事 450 字才说得清，阈值压到
+/// 叙述装不下，人只会删事实而不是删重复。
+const int headerStatusMaxChars = 600;
+
+/// 堆叠化石：出现即说明有人「把上一段降级、再追加一段」。
+///
+/// 不收裸 `此前` —— 历史表的行里合法写「此前 597 → **608**」，那是叙述不是堆叠；
+/// 只收 `再此前`，它几乎只出现在堆叠链里。
+const List<String> headerStackMarks = <String>['的历史状态', '上一版', '上一笔', '再此前'];
+
+/// `D7`：受控四份的头部只写当前，不写历史。
+///
+/// **由来**：`SCMP` 头部曾堆到 22,429 字（占全文 27%）—— 第 3 行把一笔到
+/// `v0.11.7` 串成 5,809 字，其后八段是「`v0.64.0`–`v0.57.0` 的历史状态」，
+/// 最长一行 13,525 字。而这些内容与文末「历史（迁移前版号序列）」表的
+/// 「修订摘要」列是**同一批事实的两份副本**：`AGENTS.md` 的「引用不复制」与
+/// `D5` 的「结构消灭：只有一个地方能写」说的都是这件事。`#143` 已压到单句，
+/// 本规则防回涨。
+///
+/// **两条判据**（都报 warning）：
+/// 1. 第一个 `## ` 之前不得出现 [headerStackMarks] 任一；
+/// 2. `> **状态**：` 那一行不得超过 [headerStatusMaxChars] 字。
+///
+/// 为什么是 warning 不是 error：头部臃肿是**信息组织**问题，不是两个数打架 ——
+/// 与 `D5`「缺当前读数节只警告」同一档。要它阻断，先改 `isWarning`。
+///
+/// ⚠️ **只扫第一个 `## ` 之前**：历史表在那之后，表行里的「此前」是合法叙述，
+/// 全文件扫会把六份历史表全部误报 —— 一条会误报的规则活不过三次改动。
+List<DocIssue> checkD7HeaderBlock(DocContext c) {
+  final List<DocIssue> out = <DocIssue>[];
+  for (final String f in versionDocFiles) {
+    final String? text = c.docs[f];
+    if (text == null) {
+      continue; // 缺文件由 `D2` 报「文件不存在」，不重复报
+    }
+    final List<String> lines = text.split('\n');
+    int headEnd = lines.length;
+    for (int i = 0; i < lines.length; i++) {
+      if (lines[i].startsWith('## ')) {
+        headEnd = i;
+        break;
+      }
+    }
+
+    final Set<String> reported = <String>{};
+    bool statusReported = false;
+    for (int i = 0; i < headEnd; i++) {
+      for (final String mark in headerStackMarks) {
+        if (reported.contains(mark) || !lines[i].contains(mark)) {
+          continue;
+        }
+        reported.add(mark);
+        out.add(
+          DocIssue(
+            ruleId: 'D7',
+            file: f,
+            line: i + 1,
+            message: '头部出现「$mark」—— 状态行只写当前，逐版摘要归文末历史表',
+            isWarning: true,
+          ),
+        );
+      }
+      if (!statusReported &&
+          lines[i].startsWith('> **状态**') &&
+          lines[i].length > headerStatusMaxChars) {
+        statusReported = true;
+        out.add(
+          DocIssue(
+            ruleId: 'D7',
+            file: f,
+            line: i + 1,
+            message:
+                '头部状态行 ${lines[i].length} 字，超过 $headerStatusMaxChars —— '
+                '只写当前，历史归文末表；压不动就说明它被写成了变更日志',
+            isWarning: true,
+          ),
+        );
+      }
+    }
+  }
+  return out;
 }
 
 // ---------------------------------------------------------------------------
