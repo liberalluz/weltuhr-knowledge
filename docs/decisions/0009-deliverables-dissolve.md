@@ -1,6 +1,6 @@
 # ADR-0009 · 交付物解散：`deliverables/` 分流到四类落点
 
-- **状态**：已接受（**执行中**：`S7-1` 已完成 —— 五份迁入 `specs/`、`baselines.md` 建档、`D2` 改造；`S7-2`–`S7-4` 未开工）
+- **状态**：Accepted (2026-10-23)
 - **日期**：2026-10-22
 - **决策人**：`liberal`（起草：格意二）
 - **覆盖范围**：`docs/deliverables/` 全部 **26 份**（6 段 25 种 + `README.md`）· `docs/AGENTS.md` 的落点判据表与**三条**相关红线（基线登记 · 活文档不设版号 · 交付物先建）· `app/tool/docs/rules.dart` 的六个路径常量与 `D2` / `D5` 判据 · `SCMP` 的 §二 / §三 / §5.1 / §5.2 · `docs/README.md` · `.swe-init.json` 的 `docsProfile`
@@ -319,6 +319,14 @@ ADR-0008 决策 3 写定：
 - 沿用 ADR-0008：**`main` 在任何一次提交上都必须链接完整**。每批执行前重跑一次 `migrate_docs.dart --batch N --diff`（字段需先补 `deliverables` 映射）。
 - 预演**不能累加**：后一批的预演结果必须在前一批真正执行后重跑。
 - 三处目录级链接无法自动改写，需人工就地改（沿用 ADR-0008 §「三处」的清单，加上 `deliverables/README.md` 自身被删时的四处入链）。
+
+### 实测（2026-10-23，`S7-0` ~ `S7-4` 五批执行完毕）
+
+- 仓内文档 **64 → 45 份**
+- `docFiles` **4 → 3**（`STR` 出仓）
+- `versionDocFiles` **6 → 4**（`STR`、`SDP` 双双出仓）
+  - ⚠️ **是 4 不是 5**：`STR` 经 `docFiles` 进入、`SDP` 单列，各减一
+- 仓外受控 **11 份**，已落 **3 份**：`STR` / `DPMR` → `records/`，`SDP` → `process/`
 
 ---
 
