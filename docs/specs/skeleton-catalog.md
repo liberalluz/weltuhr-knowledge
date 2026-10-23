@@ -64,8 +64,8 @@
 
 | 项 | 规则 |
 |---|---|
-| `id` | `<axis>/<official_code>`；无官方码时用 `<axis>/<slug>`。骨架层一律有官方码 ⇒ **骨架 id 全部由码构成** |
-| `axis` | `discipline` / `major` / `role` —— 三个轴根即 `/discipline`、`/major`、`/role`，同时消解 path 冲突 |
+| `id` | `<axis>/<official_code>`；无官方码时用 `<axis>/<slug>`。骨架层一律有官方码 ⇒ **骨架 id 全部由码构成**。全 id 前缀 `skeleton:`（`entity-fields.md` §2），即 `skeleton:discipline/0101` |
+| `axis` | `discipline` / `major` / `occupation` —— 三个轴根即 `/discipline`、`/major`、`/occupation`，同时消解 path 冲突。⚠️ 取值以 `entity-fields.md` §2 的枚举为准（`Axis.occupation`），**不是 `role`**；`<axis>` 段进 `id` 是为了让两轴的 `01` / `0101` 不撞车 |
 | `path` | 位置，由父级 `path` + 本段 slug 拼成；同父唯一；slug 为 kebab-case。16 条规则见 [`path-rules.md`](path-rules.md)，本文件不复述 |
 | `URI` | = `path` |
 | `official_code` | 官方代码原样存储（含前导零，如 `0812`）；**不得转成数字** |

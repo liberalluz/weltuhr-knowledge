@@ -31,6 +31,8 @@ content/
     └── dist/pack.json     构建产物（不入库）
 ```
 
+`content/skeleton/` 与「空间」**平级但不同类**：它是三轴骨架的**源数据**（官方目录 PDF 原件 + 抽取结果），全量内置、不走插件、不进审核。目录形态、来源、条数差异与校验方式见 [skeleton/README.md](skeleton/README.md)，判据见 [../docs/specs/skeleton-catalog.md](../docs/specs/skeleton-catalog.md)。**当前只落了学科与专业两轴**，角色轴单独一笔。
+
 > `manifest.json` 的 `version` 是包版本的**唯一事实源**（semver）。`build.py` **原样透传**到 `dist/pack.json` 的 `meta.version`，不得改写 —— 否则同一 commit 两次构建产出不同版本，而 `dist/` 不入库、tag 是唯一指针，无从比对。tag `pack/<space>/vX.Y.Z` 须与它**逐字一致**。口径见 [git-conventions §五](../docs/specs/git-conventions.md)。
 
 > `content/python/` 是**第一个真实空间**（α 参考包：150 项 · 170 条边 · 10 域），`B2` 起作为定位引擎与投影帧预算的输入。`tools/fixtures/` 下的示例源数据仍在，用 `python content/tools/build.py --root content/tools/fixtures/valid-min` 可单独验证管线本身。
