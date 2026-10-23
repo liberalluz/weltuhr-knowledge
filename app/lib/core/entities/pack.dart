@@ -154,7 +154,7 @@ class PayloadFacts {
 
 /// 载荷节点分级计数（`entity-fields` §1 `counts`）。
 ///
-/// 三个字段固定：`Item` = 行星层，所以「这个包能学多少东西」只看 [planet]。
+/// 三个字段固定：`LearnableNode` = 行星层，所以「这个包能学多少东西」只看 [planet]。
 /// 用对象而不是 `Map<String,int>` —— 后者少一个键时不报错，而 `planet` 缺失
 /// 会让「零可学项」与「计数写漏」长得一模一样。
 class PayloadCounts {
