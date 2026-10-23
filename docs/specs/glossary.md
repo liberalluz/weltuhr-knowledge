@@ -7,7 +7,7 @@
 | 术语 | 定义 |
 |---|---|
 | **KST 三元组** | 知识项 `Q` · 学习者状态 `K` · 前提偏序 `⪯`。全案的理论地基 |
-| **知识空间（`space`）** | ⛔ **已作废** —— 「一空间一包」被四类包取代（`ADR-0005` 决策 2）。容器子树的新形态见 [`entity-fields`](entity-fields.md) §1.2 八槽位表 |
+| **知识空间（`space`）** | ⛔ **已作废** —— 「一空间一包」被四类包取代（`ADR-0005` 决策 2）。容器子树的新形态见 [`entity-fields`](entity-fields.md) §2 八槽位表 |
 | **域（`domain`）** | ⛔ **已作废** —— 「域」是五档径向投影的中间容器层。新本体改由**槽位**表达，见 [`skeleton-catalog`](skeleton-catalog.md) |
 | **知识项** | 可学的最小单元，KST 中的 `Q`。实现上是 `Node` 的两分之一 —— **`LearnableNode`**（恒在 `planet` 槽位），另一分是 `StructuralNode`。见 [`ADR-0007`](../decisions/0007-node-type-shape.md) |
 | **结构节点** | 只承载树形位置、不可学的容器，五槽位（`axis` / `group` / `galaxy` / `cluster` / `star`）之一。与「可学节点」**互斥且穷尽** |

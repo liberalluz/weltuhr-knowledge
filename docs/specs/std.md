@@ -54,15 +54,15 @@
 
 | 编号 | 对应 `SPEC` | 依据 | 前置 | 步骤 | 预期 | 类型 | 自动化位置 |
 |---|---|---|---|---|---|---|---|
-| `TC-PACK-001` | — | — | 一份合法 `Item` JSON | `fromJson(toJson())` | `id`/`sixAxis`/`layer`/`type`/`requirements` 全部往返保真 | 单元 | `app/test/core/entities_test.dart` · `fromJson(toJson()) 往返保真` |
-| `TC-PACK-002` | `PACK-009` | 语义 | 同上，但 `requirements` 删掉 `tacit` 一格 | `fromJson` | 抛 `FormatException`，**不补默认值** | 单元 | 同上 · `六要件缺一格即格式错误（不补默认值）` |
+| ~~`TC-PACK-001`~~ | — | — | ~~一份合法 `Item` JSON~~ | — | **已作废**（`B13a` 笔 6）：旧 `Item` 单体的往返随 `ADR-0007` 拆成 `Node` / `NodeEntry` 两分而失去对家；且 `entities_test.dart` 里从来没有「往返保真」这条用例 —— **原落点是假话**。欠账如实登记：两分的往返保真当前无自动化，落点待补 | 单元 | — |
+| `TC-PACK-002` | `PACK-009` | 语义 | 同上，但 `requirements` 删掉 `tacit` 一格 | `fromJson` | 抛 `FormatException`，**不补默认值** | 单元 | `app/test/core/entities_test.dart` · `六要件缺一格即格式错误，不补默认值（SPEC-PACK-009）` |
 | `TC-PACK-003` | `PACK-005` | 语义 | `valid-min`（五段齐全、六要件三态齐全、含一条 `type=unknown` 边） | `verify.py` 跑该 fixture | 退出码 0；`scheme-official-tutorial` 的 `inversions` = 0 | 管线 | `fixtures/valid-min/expect.json` |
-| `TC-PACK-004` | `PACK-008` | 语义 | `neg-dupid`：两项共用同一 `Item.id` | 同上 | 退出码 1，含 `E-ID-DUP` | 管线 | `fixtures/neg-dupid/expect.json` |
+| `TC-PACK-004` | `PACK-008` | 语义 | `neg-dupid`：两项共用同一 `Node.id` | 同上 | 退出码 1，含 `E-ID-DUP` | 管线 | `fixtures/neg-dupid/expect.json` |
 | `TC-PACK-005` | `PACK-001` | **显式** | `neg-no-order`：文件在、段齐，但 `edges` 为空 | 同上 | 退出码 1，含 `E-SPACE-NO-ORDER`（无独立 `⪯` ⇒ 应降为域而非成包） | 管线 | `fixtures/neg-no-order/expect.json` |
 | `TC-PACK-006` | `PACK-009` | 语义 | `neg-req-value`：三态出现 `partial` | 同上 | 退出码 1，含 `E-REQ-VALUE`（三态只允许 present/missing/not_externalizable） | 管线 | `fixtures/neg-req-value/expect.json` |
 | `TC-PACK-007` | `PACK-009` | **显式** | `neg-requirements`：`function` 缺 `tacit`；`class` 的 `relation` 为 `null` | 同上 | 退出码 1，含 `E-REQ-KEY` **与** `E-REQ-STATE`（两者都要报，不是只报第一个） | 管线 | `fixtures/neg-requirements/expect.json` |
 | `TC-PACK-008` | `PACK-005` | 语义 | `neg-version-space`：`manifest.version` 带前导空格 | 同上 | 退出码 1，含 `E-VERSION-FORMAT`；**不得静默 strip** | 管线 | `fixtures/neg-version-space/expect.json` |
-| `TC-PACK-009` | `PACK-008` · `FND-013` | **显式** | `neg-versioned-id`：`Item.id` 写成 `python/decorator@2.1.0` | 同上 | 退出码 1，含 `E-ID-VERSIONED` | 管线 | `fixtures/neg-versioned-id/expect.json` |
+| `TC-PACK-009` | `PACK-008` · `FND-013` | **显式** | `neg-versioned-id`：`Node.id` 写成 `python/decorator@2.1.0` | 同上 | 退出码 1，含 `E-ID-VERSIONED` | 管线 | `fixtures/neg-versioned-id/expect.json` |
 | `TC-PACK-010` | `PACK-005` | **显式** | `valid-inversion`：`nodes` 把 `class` 排在 `function` 之前 | 同上 | 退出码 0（逆序**不禁止**），但 `inversions` 必须算出 = 1 | 管线 | `fixtures/valid-inversion/expect.json` |
 | `TC-PACK-011` | — | — | `neg-manifest-missing`：`drop` 掉 `manifest.json` | 同上 | 退出码 1，含 `E-MANIFEST-MISSING` | 管线 | `fixtures/neg-manifest-missing/expect.json` |
 | `TC-PACK-012` | — | — | `neg-manifest-required`：删 `name` / `accent` / `order` | 同上 | 退出码 1，含 `E-MANIFEST-FIELD`（走「缺字段」路径） | 管线 | `fixtures/neg-manifest-required/expect.json` |
@@ -115,7 +115,7 @@
 | `TC-QUANT-005` | `STEP-012` | 语义 | 六类算子枚举 | 比 `operatorMinutes.length` 与枚举长度；逐项读系数 | 等长；`read=3` `example=2` `recall=1` `practice=5` `teach=5` `build=30`（`C-14`–`C-19`） | 单元 | 同上 · `C-14…C-19` |
 | `TC-QUANT-006` | `STEP-022` | 语义 | 常量表 | 读 `scaffoldCap` | `Grade.pass`（`C-26`：脚手架封顶到「合格」，熟练档关闭） | 单元 | 同上 · `C-26 脚手架封顶` |
 | `TC-QUANT-007` | — | `C-28` | 夹具包（`装饰器` / `装饰器参数`） | 搜「饰器参」；再搜「饰器数」 | 前者命中「装饰器参数」且 `strength == fuzzy`；后者**空集** —— 连续包含才命中，不是编辑距离。这条锁的是 `C-28` 裁定的可判边界 | 单元 | `app/test/core/locate/locator_test.dart` · `模糊档 = 子串包含：连续才命中，跨字不命中（C-28：v0.1 不设相似度阈值）` |
-| `TC-QUANT-008` | `QUANT-006` | **显式** | `Item` 六要件：2 格 `complete`、1 格 `notExternalizable`、3 格 `missing` | 读 `requirements.completeCount` / `externalizableCount` | `2` / `5` —— 不可外化格**不进深度分母** | 单元 | `app/test/core/entities_test.dart` · `不可外化格不进深度分母` |
+| `TC-QUANT-008` | `QUANT-006` | **显式** | `LearnableNode` 六要件：2 格 `complete`、1 格 `notExternalizable`、3 格 `missing` | 读 `requirements.completeCount` / `externalizableCount` | `2` / `5` —— 不可外化格**不进深度分母** | 单元 | `app/test/core/entities_test.dart` · `不可外化格不进深度分母` |
 | `TC-QUANT-009` | — | — | 方法全部步骤无判据；另一步骤带 `hint` | 读 `isCheckin` / `hasAnyHint` | `isCheckin=true`、`hasAnyHint=false` | 单元 | 同上 · `全部步骤无判据 ⇒ 打卡式` |
 
 ### 3.4 `STEP` 域（3 条）
@@ -155,7 +155,7 @@
 | `TC-INF-015` | `FND-012` | 语义 | `Event` 全 `final`；`EventStore` 只有 `append` / `readAll` | 跑 `R3` | **不报**（正例：没有它，上面四条的「被拦」说明不了是规则在起作用） | 架构 | 同上 · `全 final 且只 append / readAll 不误报` |
 | `TC-INF-016` | `VIEW-004` | **显式** | `frame_painter.dart` 构造参数类型为 `SourceRef` | 跑 `R4` | 报违规 —— 源不进视觉通道 | 架构 | 同上 · `绘制层按类型收源被拦（R4）` |
 | `TC-INF-017` | `VIEW-004` | 语义 | `frame_painter.dart` 方法参数名为 `sourceRefs`，类型写 `Object?` | 跑 `R4` | 报违规 —— **只改类型躲不掉** | 架构 | 同上 · `绘制层按参数名收源被拦（R4：类型写成 Object 也躲不掉）` |
-| `TC-INF-018` | `VIEW-004` | 语义 | `core/entities/content.dart` 的 `Item` 构造参数收 `SourceRef` | 跑 `R4` | **不报**（源本来就该在核心层流转） | 架构 | 同上 · `core 实体层收源不拦（R4 只管视觉通道）` |
+| `TC-INF-018` | `VIEW-004` | 语义 | `core/entities/entry.dart` 的 `NodeEntry` 构造参数收 `SourceRef` | 跑 `R4` | **不报**（源本来就该在核心层流转） | 架构 | 同上 · `core 实体层收源不拦（R4 只管视觉通道）` |
 | `TC-INF-019` | `VIEW-004` | 语义 | 视图层参数名 `resourceId` | 跑 `R4` | **不误报** —— 判据是 `source` 不是 `resource` | 架构 | 同上 · `resourceId 不误报（R4：判据是 source 不是 resource）` |
 | `TC-INF-024` | `VIEW-004` | 语义 | `core/frame/scene.dart` 构造参数收 `SourceSegment` | 跑 `R4` | 报违规 —— **场景装配也算视觉通道**（`v0.15.0` 收窄后补的边界） | 架构 | 同上 · `场景装配层收源被拦（R4：core/frame 也算视觉通道）` |
 | `TC-INF-025` | `VIEW-004` | 语义 | `features/detail/detail_panel.dart` 构造参数收 `SourceRef` | 跑 `R4` | **不报** —— `SPEC-VIEW-004` 要求源写进详情页；收窄前这条会误判为违规 | 架构 | 同上 · `详情页显示源名不拦（R4 收窄后只管通道，SPEC-VIEW-004 要求写进详情）` |
@@ -1399,7 +1399,7 @@
 > L 级就是编的；体系的好坏是「代价小」，不是「谁说的」；源的好坏恰恰是「谁说的」。
 > 统一成一个键，只能靠把其中两种硬塞进第三种的口径里。
 >
-> ⚠️ **逆序数数的是「前提边」，不是「项对」**：`PLAN-012` 与 `entity-fields` §一.5
+> ⚠️ **逆序数数的是「前提边」，不是「项对」**：`PLAN-012` 与 `entity-fields` §10
 > 的措辞都是「倒置了多少条前提边」。整段倒过来时，`a ⪯ b ⪯ c` 的 `[c, b, a]`
 > 是 **2** 处逆序，不是 3 对 —— 后者会把「一处倒置」数成「一处半」。**两端不在
 > 序列里的边不计**：那不是倒置，是那条前置不在这份计划的范围里，与
@@ -1644,7 +1644,7 @@
 | `TC-PLAN-081` | — | — | `appliesTo = {relevance: high}` | 同上 | 抛 `FormatException` —— 与 `appliesToItem` 同一口径 | Unit | 同上 · `未认的 appliesTo 键仍抛（无 SPEC：沿用 appliesToItem 的未认键口径）` |
 | `TC-PLAN-082` | `PLAN-007` | **显式** | 名字带前后空白 / 空名字 / 空版本 | `buildUserSource` | 名字去空白；`segments` **恒空**（内容绑定落地前拿不到摘录）；空名字与空版本都抛 | Unit | 同上 · `自建的源没有摘录正文，名字与版本必填（SPEC-PLAN-007）` |
 | `TC-PLAN-083` | `PLAN-007` | **显式** | `nodes = [i3, i1, i3, i2]` | `buildUserScheme` | 结果 `[i3, i1, i2]` —— 顺序原样保留（那是学习次序），重复去重但保首次位置；空 `nodes` 抛 | Unit | 同上 · `节点顺序就是学习次序，重复节点去重保首次（SPEC-PLAN-007）` |
-| `TC-PLAN-084` | `PLAN-011` | **显式** | 两个「读 / 例」步；一个「读」步但 `phase` 覆盖成 `review` | `validateMethodRecipe` | 前者抛（`entity-fields` §一.7 校验 ②）；后者通过 —— 判据是 `effectivePhase`，不是算子名 | Unit | 同上 · `全「读 / 例」的配方被拒 —— 会静默绕过遗忘曲线（SPEC-PLAN-011）` |
+| `TC-PLAN-084` | `PLAN-011` | **显式** | 两个「读 / 例」步；一个「读」步但 `phase` 覆盖成 `review` | `validateMethodRecipe` | 前者抛（`entity-fields` §12 校验 ②）；后者通过 —— 判据是 `effectivePhase`，不是算子名 | Unit | 同上 · `全「读 / 例」的配方被拒 —— 会静默绕过遗忘曲线（SPEC-PLAN-011）` |
 | `TC-PLAN-085` | `PLAN-010` | **显式** | 空配方；`type = procedural` 的一份自建 | `validateMethodRecipe` / `buildUserMethod` | 空配方抛；产出的 bundle **只覆盖一个类型**，id 由 profile id 派生（重入时凭 `Plan.methodProfileId` 反查得到） | Unit | 同上 · `空配方被拒；一份自建只覆盖一个类型，bundle id 由 profile 派生（SPEC-PLAN-010）` |
 | `TC-PLAN-086` | `PLAN-011` | **显式** | 一份全无 `hint` / 一份带 `hint` | `bundleHasAnyHint` | 前者 `false`、后者 `true` —— 校验 ③ 只要求「说得出来」，不拦 | Unit | 同上 · `全步骤无 hint 时判得出来（不拦，但确认段要能说出来）（SPEC-PLAN-011）` |
 | `TC-PLAN-087` | `PLAN-007` | **显式** | 自建体系 `nodes = [i3, i1]` | `resolvePlanScope` 分别不传 / 传 `userSchemes` | 不传抛 `ArgumentError`；传了得 `[i1, i3]` —— `resolved` 恒按 `pack.items`，**不按 `nodes`** | Unit | `app/test/core/plan/user_scope_test.dart` · `自建体系能被解算，不传就抛（SPEC-PLAN-007）` |

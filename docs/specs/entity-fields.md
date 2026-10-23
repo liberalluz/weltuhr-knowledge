@@ -49,7 +49,7 @@
 | `payload` | `attach_to` | **节点 id**（非 path）。骨架已有该恒星时填其 id；编外节点填 `@extra/root` |
 | | `subtree_root` | `star` / `system` —— 本包提供的最上层槽位 |
 | | `level_range` | 实际覆盖的槽位区间 |
-| | `counts` | `{star, system, planet}` —— **必须分级**：`Item` = 行星层，七步能否跑取决于 planet 数 |
+| | `counts` | `{star, system, planet}` —— **必须分级**：`Node` = 行星层，七步能否跑取决于 planet 数 |
 | | `official_code_coverage` | 有无官方码，用于「自设方向·无国标码」标注 |
 | | `path_reservations[]` | `(parent_id, slug)` 清单。**装前判冲突的唯一依据**（侧载无审核） |
 | | `sources[]` · `schemes[]` | 摘要，见 §11 / §12 注 |

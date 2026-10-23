@@ -3,7 +3,7 @@
 - **状态**：已接受
 - **日期**：2026-10-20
 - **决策人**：liberal
-- **覆盖范围**：[`entity-fields.md`](../specs/entity-fields.md) §1.2 `Node` 的**字段集不变**，本 ADR 只定「这些字段在 Dart 里如何组织成类型」；`B13a` 出口判据的可观测形式
+- **覆盖范围**：[`entity-fields.md`](../specs/entity-fields.md) §2 `Node` 的**字段集不变**，本 ADR 只定「这些字段在 Dart 里如何组织成类型」；`B13a` 出口判据的可观测形式
 
 ## 背景
 
