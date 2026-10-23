@@ -86,28 +86,28 @@ class DocContext {
 /// ⚠️ **2026-10-22 `S7-1`（`ADR-0009`）后路径三分**：`scmp` / `std` / `stp` 已迁入
 /// `docs/specs/`，`str` 仍在 `docs/deliverables/`（`S7-2` 才出仓）。四份都在仓内，
 /// 只是不再同目录 —— 所以路径只能逐条写死，不能按目录拼。
+/// ⚠️ **2026-10-23 `S7-2`（`ADR-0009` §5）起是三份不是四份**：`STR` 已出仓，
+/// 仓内不再有测试报告；读数改由 [stdFile] 的 §六「当前读数」单点登记。
+/// 剩下三份都在 `docs/specs/`，但路径仍逐条写死 —— 按目录拼会在下次迁移时静默失配。
 const List<String> docFiles = <String>[
   'docs/specs/scmp.md',
   'docs/specs/std.md',
   'docs/specs/stp.md',
-  'docs/deliverables/04-test/STR-软件测试报告.md',
 ];
 
 const String scmpFile = 'docs/specs/scmp.md';
 const String stdFile = 'docs/specs/std.md';
 const String stpFile = 'docs/specs/stp.md';
-const String strFile = 'docs/deliverables/04-test/STR-软件测试报告.md';
 
-/// `SDP` 仍留在 `deliverables/`（`S7-2` 出仓），但**已退出 `D2` 的对账范围** ——
-/// 它讲里程碑与资源，与代码内容零耦合，没有「改代码时必须同时改」的读数。
-const String sdpFile = 'docs/deliverables/01-plan/SDP-软件开发计划.md';
+/// `SDP` 已出仓（`S7-2` → 仓外 `process/sdp.md`），常量随之退役 —— 仓内不再有
+/// 这个文件，留着常量只会让「读不到」与「路径写错」两种故障长得一样。
 const String sddFile = 'docs/specs/sdd.md';
 
-/// 参与**版号自洽**的五份 = [docFiles] 四份 + `SDD`。
+/// 参与**版号自洽**的四份 = [docFiles] 三份 + `SDD`。
 ///
-/// 为什么必须与 [docFiles] 分开：那条「只有四份」的理由是**它们互相登记读数**
+/// 为什么必须与 [docFiles] 分开：那条「只有三份」的理由是**它们互相登记读数**
 /// （用例数、`flutter test` 读数），`SDD` 不参与读数口径，加进去会让
-/// `D3` / `D4` / `D5` 去它身上找用例表。但**版号自洽**是另一回事 ——
+/// `D3` / `D4` 去它身上找用例表。但**版号自洽**是另一回事 ——
 /// `SDD` 同样「历史节里列一串版号」，同样会脱节，
 /// 而 `SCMP` §5.1 早就逐行登记了它。
 ///
@@ -115,8 +115,8 @@ const String sddFile = 'docs/specs/sdd.md';
 /// 而 `SDD` 头部实际停在 `v0.13.0`、树里也缺本笔落下的八份新文件 ——
 /// **两处一起没跟，`D2` 全程没报**，靠人工翻文件才发现。
 ///
-/// ⚠️ **`S7-1` 起是五份不是六份**：`SDP` 出仓在即（`S7-2`），本批先把它移出对账
-/// 范围 —— 否则「已经不算受控」的文件仍在报红，等于用旧口径卡新结构。
+/// ⚠️ **口径沿革**：六份（原）→ 五份（`S7-1` 移出 `SDP`）→ **四份（`S7-2` 移出
+/// `STR`）**。每步都是「文件先离开仓内，规则后收窄」，顺序反了就会用旧口径报新结构的红。
 const List<String> versionDocFiles = <String>[
   ...docFiles,
   sddFile,
@@ -124,39 +124,41 @@ const List<String> versionDocFiles = <String>[
 
 /// 配置项标识 → 文件。`SCMP` §5.1 第三列以此开头。
 ///
-/// `SDP` 不在表内：它已退出 [versionDocFiles]，§5.1 里那一行不再对账
-/// （仍留在表里会给「登记了却没人查」的假保障）。
+/// `SDP` / `STR` 不在表内：二者已出仓，§5.1 里不再登记它们
+/// （留在表里会给「登记了却没人查」的假保障）。
 const Map<String, String> itemIdToFile = <String, String>{
   'SCMP': scmpFile,
   'STD': stdFile,
   'STP': stpFile,
-  'STR': strFile,
   'SDD': sddFile,
 };
 
 final RegExp _versionRe = RegExp(r'^v(\d+)\.(\d+)\.(\d+)$');
-final RegExp _headVersionRe = RegExp(r'^> \*\*版号\*\*：`(v\d+\.\d+\.\d+)`');
 
-/// `D5` 的锚点：头部**状态行**。
-///
-/// ⚠️ `S7-1` 剥掉五份头部版号片段后，`_headVersionRe` 在五份里一律不命中 ——
-/// `D2` 的处置是换取值来源（改读历史节），`D5` 的处置是换锚点（改读状态行），
-/// 两条规则吃同一个正则却是**两种失效方式**（取值来源没了 vs 定位锚点没了）。
-final RegExp _headStateRe = RegExp(r'^> \*\*状态\*\*：');
-
-/// 历史节标题的两种写法：迁入 `specs/` 的用新名，仍在 `deliverables/` 的用旧名。
-final RegExp _historyHeadRe =
-    RegExp(r'^## (?:历史（迁移前版号序列）|修订历史)\s*$');
+/// 历史节标题。**只留一种写法**：`S7-2` 之前还有一支「`## 修订历史`」，专给仍留在
+/// `deliverables/` 的 `STR` —— 它出仓后，仓内参与版号自洽的四份一律是迁入 `specs/`
+/// 后的新名。留着备选等于留一条永远不命中的分支，而「永远不命中的判据」在失效时
+/// 与「没有判据」长得一样。
+final RegExp _historyHeadRe = RegExp(r'^## 历史（迁移前版号序列）\s*$');
 final RegExp _caseRowRe = RegExp(r'^\|\s*(?:~~)?`TC-[A-Z]+-\d+`');
 final RegExp _ticketRe = RegExp(r'`(TC-[A-Z]+-\d+)`');
 final RegExp _specRe = RegExp(r'([A-Z]{3,6})-\d{3}');
 
-/// `STD` 头部状态行里的 `flutter test` 读数。
-final RegExp _stdTestCountRe = RegExp(r'`flutter test`\s*\*\*(\d+)\*\*');
+/// `STD` 里那个具名节的标题形态 —— `## 六、当前读数` 与 `## 当前读数` 都收。
+///
+/// `D5` 的锚点。行号会漂（剥版号、加摘要、调格式都会挪），节名不会。
+final RegExp _readingHeadRe = RegExp(r'^##\s+.*当前读数');
 
-/// `STR` 轮次读数。两种写法都收：`` `flutter test` **572 passed** `` 与
-/// `（**572 passed** · analyze 0）` —— 后者是 `STR` 历史行的实际形态。
-final RegExp _passedRe = RegExp(r'\*\*(\d+)\s+passed\*\*');
+/// 「当前读数」**节内**的取值：`` | `flutter test` | **414 passed** | ``。
+/// 节内允许表格分隔符，故同一行任意字符都吃进来。
+final RegExp _readingValueRe = RegExp(r'`flutter test`[^\n]*?\*\*(\d+)');
+
+/// **节外**的严格读数形态：`` `flutter test` **414** ``（反引号后紧跟 `**N**`）。
+///
+/// 只认这个紧邻形态，是为了放过两类合法叙述：
+/// 「`flutter test` 748 → 414」（变化叙述，没有闭合的 `**N**`）
+/// 与「注射一处 `flutter test` 读数」（描述，数字不在紧邻位置）。
+final RegExp _stdTestCountRe = RegExp(r'`flutter test`\s*\*\*(\d+)\*\*');
 
 /// 跑全部规则。
 List<DocIssue> checkAll(DocContext ctx) {
@@ -295,29 +297,31 @@ bool _hasTestName(Map<String, String> tests, String name) {
 // D2 · 版号
 // ---------------------------------------------------------------------------
 
-/// `D2`：五份文件的版号必须自洽。
+/// `D2`：四份文件的版号必须自洽。
 ///
-/// ⚠️ **`S7-1` 起取值来源换了**（`ADR-0009` 决策 §2 ③）：四份已迁入 `docs/specs/`
-/// 并剥掉头部版号，「读头部那一行」不再成立。取值统一改为**读历史节的语义最大
-/// 版号** —— 判据语义不变（仍是「同一个版号不能两处不一致」），只是被比的两端
-/// 从「头部 vs 历史」改成「历史 vs `SCMP` §5.1」。
+/// ⚠️ **取值来源换过两次，判据本身一次没换**：
+///
+/// - 原：读**头部**那一行（四份都带头部版号）。
+/// - `S7-1`（`ADR-0009` §2 ③）：四份迁入 `docs/specs/` 并剥掉头部版号 ⇒ 改读
+///   **历史节的语义最大版号**，被比的两端从「头部 vs 历史」变成「历史 vs `SCMP` §5.1」。
+/// - `S7-2`：`STR` 出仓 ⇒ 覆盖面从五份降到**四份**，且第 1 条里「仍带头部版号的
+///   那份」那一支随之删除（见下）。
 ///
 /// 两个方向：
 ///
-/// 1. **各自内部**：历史节必须存在、版号表必须非空；**仍带头部版号的那份**
-///    （`str`，`S7-2` 才出仓）头部必须等于历史节的最大版号。
+/// 1. **各自内部**：历史节必须存在、版号表必须非空。
 ///    取最大值而不是「最后一行」—— 表的排序方向并不统一（`STD` / `STP` 升序、
-///    `SCMP` 前段降序后段升序、`STR` 中间还夹着 `v0.18.0` 在 `v0.17.0` 前面），
+///    `SCMP` 前段降序后段升序、`STR` 当年还夹着 `v0.18.0` 在 `v0.17.0` 前面），
 ///    依赖位置就得先修表；而修表是另一件事，不该挡住这条检查。
-/// 2. **`SCMP` §5.1 对五份**：表里 `SCMP` / `STD` / `STP` / `STR` / `SDD` 五行的
+/// 2. **`SCMP` §5.1 对四份**：表里 `SCMP` / `STD` / `STP` / `SDD` 四行的
 ///    版号，必须等于对应文件历史节的语义最大版号。这是**唯一一处**跨文件登记版号
 ///    的地方，它一旦滞后，读者按 §5.1 找基线就会找错。
 ///
-/// ⚠️ **本批（`S7-1`）第 2 条降为 warning**：§5.1 的六行要按新口径重算，降级是
-/// 为了不让「表还没重排完」把整条链拦红（`ADR-0009` 决策记录第三批第 3 项）。
-/// **`S7-2` 恢复 `error`** —— 恢复时删掉那处 `isWarning: true` 即可，判据本身不要再改。
+/// ⚠️ **`S7-1` 曾把第 2 条降为 warning**（§5.1 要按新口径重排，不能让「表还没排完」
+/// 拦红整条链），**`S7-2` 已恢复 `error`** —— §5.1 的三行已按出仓后重扫的结果写正，
+/// 恢复后实测 0 报。
 ///
-/// 覆盖范围是 [versionDocFiles] 五份而不是 [docFiles] 四份 —— `SDD` 同样会
+/// 覆盖范围是 [versionDocFiles] 四份而不是 [docFiles] 三份 —— `SDD` 同样会
 /// 「历史与登记脱节」，而它恰恰是最长、最少被翻的一份（详见 [versionDocFiles]）。
 List<DocIssue> checkD2Versions(DocContext c) {
   final List<DocIssue> out = <DocIssue>[];
@@ -332,8 +336,7 @@ List<DocIssue> checkD2Versions(DocContext c) {
     }
     final List<String> lines = text.split('\n');
 
-    // 1) 历史节。迁入 `specs/` 的五份叫「历史（迁移前版号序列）」，
-    //    仍在 `deliverables/` 的（`str`）还叫「修订历史」—— 两种都收。
+    // 1) 历史节。`S7-2` 起仓内四份一律是迁入 `specs/` 后的标题形态。
     int section = -1;
     for (int i = 0; i < lines.length; i++) {
       if (_historyHeadRe.hasMatch(lines[i])) {
@@ -347,7 +350,7 @@ List<DocIssue> checkD2Versions(DocContext c) {
           ruleId: 'D2',
           file: f,
           line: 0,
-          message: '找不到历史节（应为 `## 历史（迁移前版号序列）` 或 `## 修订历史`）',
+          message: '找不到历史节（应为 `## 历史（迁移前版号序列）`）',
         ),
       );
       continue;
@@ -384,7 +387,6 @@ List<DocIssue> checkD2Versions(DocContext c) {
 
     // 3) 语义最大版号。
     String? maxVer;
-    int maxLine = 0;
     int rows = 0;
     for (int i = start + 1; i < sectionEnd; i++) {
       if (!lines[i].trim().startsWith('|')) {
@@ -401,7 +403,6 @@ List<DocIssue> checkD2Versions(DocContext c) {
       rows++;
       if (maxVer == null || _compareVersion(v, maxVer) > 0) {
         maxVer = v;
-        maxLine = i + 1;
       }
     }
     if (maxVer == null || rows == 0) {
@@ -417,33 +418,18 @@ List<DocIssue> checkD2Versions(DocContext c) {
     }
     latest[f] = maxVer;
 
-    // 4) 头部仍带版号的文件（`str`）：两者必须一致。剥掉版号的那几份没有头部左值，
-    //    这一步自然跳过 —— 不是「放行」，而是「比的两端只剩历史与 §5.1」。
-    String? headVer;
-    int headLine = 0;
-    for (int i = 0; i < lines.length; i++) {
-      final RegExpMatch? m = _headVersionRe.firstMatch(lines[i]);
-      if (m != null) {
-        headVer = m.group(1);
-        headLine = i + 1;
-        break;
-      }
-    }
-    if (headVer != null && headVer != maxVer) {
-      out.add(
-        DocIssue(
-          ruleId: 'D2',
-          file: f,
-          line: headLine,
-          message: '头部版号 $headVer 与历史节最大版号 $maxVer 不一致'
-              '（后者在 $f:$maxLine）',
-        ),
-      );
-    }
+    // 4) ~~头部版号 vs 历史节最大版号~~ —— **`S7-2` 删除**。
+    //
+    //    这一步曾经只对 `STR` 生效（四份里唯一还带头部版号的一份）。`STR` 出仓后，
+    //    仓内参与版号自洽的四份**全部剥了头部版号**，循环走到这里 `headVer` 恒为
+    //    `null` —— 一个永远不执行的分支，与没有分支在失效时长得完全一样（`v0.72.0`
+    //    删 `appliesTo.sixAxis` 恒真分支是同一条理由）。判据从「两处对账」降为
+    //    「一处在表里、一处在历史节」：`§5.1` ↔ 历史节，见第 5 步。
   }
 
   // 5) SCMP §5.1：`| `vX.Y.Z` | 1 | `SCMP`（…` |
-  //    ⚠️ 本批降为 warning；`S7-2` 恢复 error（删 isWarning 即可）。
+  //    `S7-1` 那次降级为 warning 是过渡措施，`S7-2` 已恢复 error —— 恢复的前提是
+  //    §5.1 已按出仓后的实扫结果写正（22 份），否则规则一开就先红一片。
   final String? scmp = c.docs[scmpFile];
   if (scmp != null) {
     final List<String> lines = scmp.split('\n');
@@ -456,7 +442,7 @@ List<DocIssue> checkD2Versions(DocContext c) {
       if (_versionRe.firstMatch(ver) == null) {
         continue;
       }
-      // 第二列必须是纯数字（份数）；修订历史行第二列是日期，靠这个分开。
+      // 第二列必须是纯数字（份数）；历史节的版号表行第二列是日期，靠这个分开。
       if (!RegExp(r'^\d+$').hasMatch(cells[1])) {
         continue;
       }
@@ -477,8 +463,7 @@ List<DocIssue> checkD2Versions(DocContext c) {
             file: scmpFile,
             line: i + 1,
             message: '§5.1 登记 $id 为 $ver，而 ${target.split('/').last} '
-                '历史节最大版号是 $actual（本批降为 warning，`S7-2` 恢复 error）',
-            isWarning: true,
+                '历史节最大版号是 $actual',
           ),
         );
       }
@@ -904,35 +889,35 @@ List<DocIssue> checkD4SpecCoverage(DocContext c) {
 // D5 · 读数单点
 // ---------------------------------------------------------------------------
 
-/// `D5`：`flutter test` 读数**只登记一处** —— `STR` 的最新轮次。
+/// `D5`：`flutter test` 读数**只登记一处** —— `STD` §六「当前读数」节。
 ///
-/// **这条规则原来长什么样、为什么改**：先前判的是「`STD` 头部读数 == `STR` 最新
-/// 轮次」，本意是补 `D1`–`D4` 都不管头部的那一类漏改（实测 `v0.44.0` 的 561、
-/// `v0.45.0` 的 572 连续两版没写进头部）。但它有一个**结构性盲区**：两处一起
-/// 过期时两边相等，规则全绿。`B13a` 笔 2 正是如此 —— `STD` 头部与轮次 `R15a`
-/// 双双停在 `668`，真实读数 `679`，一次都没报（见 `STR` `R15a` 的「顺带修掉
-/// 一处漏登」）。
+/// **这条规则被重写过两次，每次都是「唯一来源换了地方」逼出来的：**
 ///
-/// **为什么不是「把规则写得更聪明」**：判据的可靠性取决于有没有**第三方锚**。
-/// `flutter test` 是执行读数，在文档内部无法复算 —— `D3` 数的是用例表行数，
-/// 而 608 行用例 ≠ 572 条 Dart 测试（两个口径本来就不同），硬拉在一起只会让
-/// 两条规则一起说谎。只要同一个数写两处，就存在「一起错」的窗口；窗口里任何
-/// 规则都看不见，包括更聪明的规则。
+/// 1. **初版**判「`STD` 头部读数 == `STR` 最新轮次」，本意是补 `D1`–`D4` 都不管
+///    头部的那类漏改。但它有结构性盲区：两处一起过期时两边相等，规则全绿。
+///    `B13a` 笔 2 正是如此 —— 头部与轮次双双停在 `668`，真实 `679`，一次没报。
+/// 2. **二版**改成「读数只写在 `STR` 轮次里，`STD` 头部再出现就报」，用结构消灭
+///    对账。理由仍成立：同一个数写两处就有「一起错」的窗口，窗口里任何规则都
+///    看不见，包括更聪明的规则。
+/// 3. **本版（`S7-2`）**：`STR` 按 `ADR-0009` §5 出仓到仓外 `records/`，仓内不再
+///    有测试报告 ⇒ 唯一来源必须搬回 `STD`。搬的方式不是「再写一个头部」，而是
+///    **给它一个具名节**：`## 六、当前读数`。
 ///
-/// **所以改成结构消灭**：读数只写在 `STR` 的轮次记录里，`STD` 头部再出现同形态
-/// 读数就报。这与本仓已有的先例同源 —— `STD` 头部的覆盖缺口读数早就「只在 §4.1
-/// 一处维护，本行不复制」，理由就写在同一行里：能不对账就不需要对账。
+/// **锚点为什么从「头部那一行」换成「一个具名节」**：行号会漂（剥版号、加摘要、
+/// 调格式都会挪），节名不会。`S7-1` 剥版号时「读头部版号」那条正则（`_headVersionRe`，
+/// `S7-2` 已删）在五份里一律不命中，`D5` 的锚点当场失效 —— 那次靠临时改读状态行
+/// 顶住，但状态行同样是一行、同样会改。**教训不是「换个正则」，而是「锚点不要钉在
+/// 会被人顺手重写的东西上」**。
 ///
-/// ⚠️ **允许的写法**：变化叙述「748 → 414」。它不含闭合的 `**N**`，
-/// `_stdTestCountRe` 天然不命中 —— 这不是巧合，`TC-DOC-015` 专门守这个负例。
+/// **判据两条，缺一不可：**
+/// 1. 该节必须存在，且节内登记了读数 —— 缺了等于整份文档集没人能说出当前是多少
+///    （报 warning：信息损失，不是两个数打架）。
+/// 2. **节外任何 Markdown 都不得出现严格读数形态** —— 包括 `SCMP` 头部状态、
+///    包括本文件自己的用例表。这是「结构消灭」的落点：只有一个地方能写。
+///
+/// ⚠️ **允许的写法**：变化叙述「748 → 414」与描述「注射一处 `flutter test` 读数」。
+/// 二者都不含紧邻的闭合 `**N**`，正则天然不命中 —— 这不是巧合，`TC-DOC-015` 守这个负例。
 /// 防误报比防漏报更要紧：一条会误报的规则活不过三次改动。
-///
-/// 保留另一半判据：「`STR` 最新轮次必须登记 `… passed`」。它现在是**唯一**来源，
-/// 缺了就等于整份文档集没人能说出当前读数 —— 报 warning（信息损失，不是两数打架）。
-///
-/// 权威源取 `STR` 修订历史里**语义最大版号**那一行，不取最后一行 —— 与 `D2`
-/// 同一个理由：`STR` 的历史当下是乱序的（`v0.18.0` 排在 `v0.2.0` 之后），依赖
-/// 位置就得先修表，而修表是另一件事。
 List<DocIssue> checkD5TestCount(DocContext c) {
   final List<DocIssue> out = <DocIssue>[];
   final String? stdText = c.docs[stdFile];
@@ -942,118 +927,95 @@ List<DocIssue> checkD5TestCount(DocContext c) {
     ];
   }
 
-  // 1) `STD` 头部不得再出现读数 —— 它只该在 `STR` 的轮次里。
-  //
-  // ⚠️ 锚点 `S7-1` 换过一次：原先靠「头部版号行」定位这一行，剥掉版号片段后
-  // 该正则不再命中（`D2` 与 `D5` 吃同一个正则，失效方式却不同 —— 前者是取值
-  // 来源没了、后者是定位锚点没了）。这里改用头部**状态行**，检查范围仍是
-  // 「头部那一行」。真正的判据重写（把读数收进 `STD` 的「当前读数」节）属
-  // `S7-2`，与 `STR` 出仓同批 —— 本批只换锚点，语义一字未动。
   final List<String> stdLines = stdText.split('\n');
-  int headLine = 0;
+
+  // 1) 定位「当前读数」节，并算出它的行范围。
+  int secStart = -1;
   for (int i = 0; i < stdLines.length; i++) {
-    if (!_headStateRe.hasMatch(stdLines[i])) {
-      continue;
-    }
-    headLine = i + 1;
-    break;
-  }
-  if (headLine == 0) {
-    return const <DocIssue>[
-      DocIssue(
-        ruleId: 'D5',
-        file: stdFile,
-        line: 0,
-        message: '找不到头部状态行（应为 `> **状态**：…`），无从检查读数是否只登记一处',
-      ),
-    ];
-  }
-  final RegExpMatch? dup = _stdTestCountRe.firstMatch(stdLines[headLine - 1]);
-  if (dup != null) {
-    out.add(
-      DocIssue(
-        ruleId: 'D5',
-        file: stdFile,
-        line: headLine,
-        message: '头部仍写 `flutter test` **${dup.group(1)}** —— 读数只登记在 `STR` '
-            '最新轮次一处。同一个数写两处就有「一起过期」的窗口，窗口里这条规则'
-            '看不见（`STR` `R15a` 实证：头部与轮次双双停在 668，真实 679）。'
-            '删掉本处即可；变化叙述写「748 → 414」不会被判成读数',
-      ),
-    );
-  }
-
-  // 2) `STR` 最新轮次必须登记读数 —— 它现在是唯一来源。
-  final String? strText = c.docs[strFile];
-  if (strText == null) {
-    return <DocIssue>[
-      ...out,
-      const DocIssue(ruleId: 'D5', file: strFile, line: 0, message: '文件不存在'),
-    ];
-  }
-  final List<String> strLines = strText.split('\n');
-  final int start = _findTableStart(
-    strLines,
-    (String l) => _splitRow(l).isNotEmpty && _splitRow(l).first == '版号',
-  );
-  if (start < 0) {
-    return <DocIssue>[
-      ...out,
-      const DocIssue(
-        ruleId: 'D5',
-        file: strFile,
-        line: 0,
-        message: '找不到修订历史表，无从取值',
-      ),
-    ];
-  }
-
-  String? maxVer;
-  int maxLine = 0;
-  String? maxRow;
-  for (int i = start + 1; i < strLines.length; i++) {
-    if (!strLines[i].trim().startsWith('|')) {
+    if (_readingHeadRe.hasMatch(stdLines[i])) {
+      secStart = i;
       break;
     }
-    final List<String> cells = _splitRow(strLines[i]);
-    if (cells.isEmpty) {
-      continue;
-    }
-    final String v = cells.first.replaceAll('`', '');
-    if (_versionRe.firstMatch(v) == null) {
-      continue;
-    }
-    if (maxVer == null || _compareVersion(v, maxVer) > 0) {
-      maxVer = v;
-      maxLine = i + 1;
-      maxRow = strLines[i];
-    }
   }
-  if (maxVer == null) {
+  if (secStart < 0) {
     return <DocIssue>[
-      ...out,
       DocIssue(
         ruleId: 'D5',
-        file: strFile,
-        line: start + 1,
-        message: '修订历史表里没有任何版号行',
+        file: stdFile,
+        line: 0,
+        message: '找不到「## 当前读数」节 —— 它是全仓唯一的执行读数登记处，'
+            '缺了就没有任何一处能说出 `flutter test` 当前是多少',
+        isWarning: true,
       ),
     ];
   }
+  int secEnd = stdLines.length;
+  for (int i = secStart + 1; i < stdLines.length; i++) {
+    if (stdLines[i].startsWith('## ')) {
+      secEnd = i;
+      break;
+    }
+  }
 
-  final String? actual = _passedRe.firstMatch(maxRow!)?.group(1);
-  if (actual == null) {
+  // 2) 节内必须真的登记了读数 —— 空节比没有节更坏：它让人以为登记过。
+  bool found = false;
+  for (int i = secStart; i < secEnd; i++) {
+    if (_readingValueRe.hasMatch(stdLines[i])) {
+      found = true;
+      break;
+    }
+  }
+  if (!found) {
     out.add(
       DocIssue(
         ruleId: 'D5',
-        file: strFile,
-        line: maxLine,
-        message: '`STR` 最新轮次（$maxVer）未登记 `… passed` 读数 —— 它现在是全仓'
-            '唯一的读数来源，缺了就没有任何一处能说出当前是多少。补一行'
-            '「`flutter test` **N passed**」即可',
+        file: stdFile,
+        line: secStart + 1,
+        message: '「当前读数」节里没有 `flutter test` 读数 —— 这一节是全仓唯一'
+            '来源，空着等于没人能说出当前是多少。补一行'
+            '「| `flutter test` | **N passed** | 采集方式 |」即可',
         isWarning: true,
       ),
     );
+  }
+
+  // 3) 节外不得出现严格读数形态 —— 全仓扫，不只本文件。
+  //
+  // 为什么必须全仓：读数还会出现在别的文件的**头部状态行**里（`SCMP` 就写过）。
+  // 只查 `STD` 等于把「别的文件替你登记读数的入口」留着，而那正是「一起过期」
+  // 的成因 —— 两个地方都能写，就一定会两处都写。
+  //
+  // ⚠️ 扫描面 = `markdown` ∪ `docs`，**不是**只用 `markdown`：生产里 `check.dart`
+  // 两个都给，`docs` 是 `markdown` 的子集，并集看不出差别；但调用方少喂一个
+  // （比如只构造交付物夹具）时，`STD` 自己的头部就掉出扫描面 —— 规则静默少查一份，
+  // 而它正是最容易写错的那一份。这类「输入缺一块、判据照样绿」的形态，本仓已经
+  // 在 `D5` 上一版（`STR` `R15a` 双双停在 668）付过一次代价。
+  final Map<String, String> all = <String, String>{...c.markdown};
+  c.docs.forEach((String k, String v) => all.putIfAbsent(k, () => v));
+  final List<String> keys = all.keys.toList()..sort();
+  for (final String path in keys) {
+    final List<String> lines = all[path]!.split('\n');
+    for (int i = 0; i < lines.length; i++) {
+      if (path == stdFile && i >= secStart && i < secEnd) {
+        continue;
+      }
+      final RegExpMatch? dup = _stdTestCountRe.firstMatch(lines[i]);
+      if (dup == null) {
+        continue;
+      }
+      out.add(
+        DocIssue(
+          ruleId: 'D5',
+          file: path,
+          line: i + 1,
+          message: '读数 `flutter test` **${dup.group(1)}** 出现在「当前读数」'
+              '节之外 —— 它是全仓唯一登记处（`STD` §六）。同一个数写两个地方'
+              '就有「一起过期」的窗口，窗口里这条规则看不见（`STR` `R15a` 实证：'
+              '头部与轮次双双停在 668，真实 679）。删掉本处即可；变化叙述写'
+              '「748 → 414」不会被判成读数',
+        ),
+      );
+    }
   }
 
   return out;
