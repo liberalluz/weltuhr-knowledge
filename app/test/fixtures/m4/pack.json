@@ -1,0 +1,45 @@
+{
+  "plugin_id": "m4-terrain",
+  "name": "M4 地形示例包",
+  "version": "1.0.0",
+  "kinds": ["terrain"],
+  "namespace": "m4-terrain",
+  "schema_version": 1,
+  "skeleton_requires": ">=1.0.0 <2.0.0",
+  "deps": [{ "plugin_id": "m2-demo", "range": ">=2.0.0 <3.0.0" }],
+  "license": "MIT",
+  "author": "weltuhr",
+  "origin": "fixture",
+  "review_state": "approved",
+  "signature": null,
+  "axes": ["major"],
+  "terrain": {
+    "edge_counts": { "required": 1, "recommended": 2 },
+    "axes_covered": ["major"]
+  },
+  "nodes": [],
+  "edges": [
+    {
+      "type": "prerequisite",
+      "from_id": "m2-demo:closure",
+      "to_id": "m2-demo:refactor",
+      "strength": "required"
+    },
+    {
+      "type": "prerequisite",
+      "from_id": "m2-demo:func",
+      "to_id": "m2-demo:module",
+      "strength": "recommended"
+    },
+    {
+      "type": "prerequisite",
+      "from_id": "m2-demo:var",
+      "to_id": "m2-demo:idiom",
+      "strength": "recommended"
+    }
+  ],
+  "entries": [],
+  "sources": [],
+  "schemes": [],
+  "methods": []
+}

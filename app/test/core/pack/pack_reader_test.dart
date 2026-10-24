@@ -5,6 +5,7 @@ import 'package:project_knowledge/core/enums.dart';
 import 'package:project_knowledge/core/json.dart';
 import 'package:project_knowledge/core/pack/pack_reader.dart';
 
+import '../../support/kind_packs.dart';
 import '../../support/m2_pack.dart';
 
 void main() {
@@ -221,6 +222,66 @@ void main() {
       expect(pack.schemeNodes('m2-official')!.length, 4);
       expect(pack.schemeNodes('nope'), isNull);
       expect(pack.sourceById['m2-catalog']!.isCatalog, isTrue);
+    });
+  });
+
+  group('pack_reader（非载荷两类包）', () {
+    test('overlay 包六段齐全即可装载，六段内容可以为空（无 SPEC：kind 不决定段是否非空）', () {
+      final PackContent pack = loadM3Pack();
+      expect(pack.pack.kinds, <PackKind>[PackKind.overlay]);
+      expect(pack.pack.overlay!.targetScope, Scope.s4);
+      expect(pack.pack.overlay!.patchCount, 0);
+      expect(pack.pack.payload, isNull);
+      expect(pack.nodes, isEmpty);
+      expect(pack.edges, isEmpty);
+      expect(pack.entries, isEmpty);
+    });
+
+    test('terrain 包只带边不带节点，摘要与实扫相符（无 SPEC：terrain 只贡献地形）', () {
+      final PackContent pack = loadM4Pack();
+      expect(pack.pack.kinds, <PackKind>[PackKind.terrain]);
+      expect(pack.nodes, isEmpty);
+      expect(pack.prerequisites.length, 3);
+      final int required = pack.prerequisites
+          .where((PrerequisiteEdge e) => e.isRequired)
+          .length;
+      expect(required, 1);
+      expect(pack.pack.terrain!.requiredCount, required);
+      expect(
+        pack.pack.terrain!.recommendedCount,
+        pack.prerequisites.length - required,
+      );
+      expect(pack.pack.terrain!.axesCovered, <Axis>[Axis.major]);
+    });
+
+    test('声明了 kind 却没给特化字段即拒（无 SPEC：entity-fields §1）', () {
+      final String json = mutateM3((JsonMap pack) => pack.remove('overlay'));
+      expect(
+        () => readPack(json),
+        throwsA(
+          isA<PackContentException>().having(
+            (PackContentException e) => e.problems.join('\n'),
+            'problems',
+            allOf(contains('m3-overlay'), contains('特化字段')),
+          ),
+        ),
+      );
+    });
+
+    test('带了特化字段却没声明 kind 即拒 —— 那份数据不会被任何一方读取（无 SPEC：同上）', () {
+      final String json = mutateM4((JsonMap pack) {
+        pack['kinds'] = <String>[];
+      });
+      expect(
+        () => readPack(json),
+        throwsA(
+          isA<PackContentException>().having(
+            (PackContentException e) => e.problems.join('\n'),
+            'problems',
+            allOf(contains('m4-terrain'), contains('不会被任何一方读取')),
+          ),
+        ),
+      );
     });
   });
 }
