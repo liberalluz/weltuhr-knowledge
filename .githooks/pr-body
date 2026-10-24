@@ -394,27 +394,37 @@ check_body() {
     esac
   done
 
-  # 11 —— 内仓 PR 不写外仓改动（2026-10-24 · `#151` 在 `如实登记` 列了五条 `sdp.md` 的改动）
-  # ⚠️ 外仓 `weltuhr-knowledge-docs/` 是独立 `.git`，它的改动不在 `gh pr diff` 里 ——
-  #    写进本仓正文 = 把不可核对的东西塞进本仓历史。
-  # ⚠️ **只扫「自审留痕」与「AI 参与」两节，不扫全文**：这两节写的是「本笔做了什么 /
-  #    没做什么」，外仓的改动只可能出现在这里（`#151` 是 `如实登记` + `AI 参与` 两处）。
-  #    `变更摘要` 与 `交付物` / `关联` 不扫。⚠️ `反证` **在**扫描范围内 —— 于是「本笔就在
-  #    改这条判据」时，正文里不能出现那个具体前缀，得写「外仓路径前缀」。这不是缺陷：
-  #    判据的语义在装置代码里，正文没必要复述字符串。
-  local oi nx=0
-  for sec in "## 自审留痕" "## AI 参与"; do
-    section_bounds "$sec" || continue
-    for ((oi = SA; oi < SB; oi++)); do
-      case "${BL[$oi]}" in
-        *weltuhr-knowledge-docs*)
-          bad "正文提到外仓路径（内仓 PR 只写内仓，外仓改动不在本仓 diff 里）：${BL[$oi]}"
-          nx=$((nx + 1))
-          ;;
-      esac
+  # 11 —— 正文里的文件路径必须在本仓（2026-10-24 · `#151` 在 `如实登记` 列了五条不在本仓的改动）
+  # ⚠️ 判法**不认具体目录名**：认名字就等于把那个名字写进本仓装置，而本条要的恰恰是
+  #    「哪里都不出现」。改成结构性判据 —— 路径不在 `git ls-files` 里，就说不上是本仓的文件，
+  #    写进正文读者点不进、`gh pr diff` 里也没有。
+  # ⚠️ 只扫「自审留痕」与「AI 参与」两节：这两节写的是「本笔做了什么 / 没做什么」。
+  #    `变更摘要` 里要引规格条与设计文档，扫全文必然误伤。
+  local oi pw rest pwe nx=0 trk
+  trk=$(git ls-files 2>/dev/null)
+  if [ -n "$trk" ]; then
+    for sec in "## 自审留痕" "## AI 参与"; do
+      section_bounds "$sec" || continue
+      for ((oi = SA; oi < SB; oi++)); do
+        rest="${BL[$oi]}"
+        while [[ "$rest" =~ ([A-Za-z0-9_.-]+(/[A-Za-z0-9_.-]+)+\.(md|dart|json|py|ya?ml|txt|pdf|sh|toml)) ]]; do
+          pw="${BASH_REMATCH[1]}"
+          rest="${rest#*"$pw"}"
+          pwe="${pw//\\/\\\\}"
+          pwe="${pwe//\*/\\*}"
+          pwe="${pwe//\?/\\?}"
+          case $'\n'"$trk"$'\n' in
+            *$'\n'"$pwe"$'\n'*) ;;
+            *)
+              bad "正文提到本仓没有的路径（只写本仓 diff 里能核对的东西）：$pw"
+              nx=$((nx + 1))
+              ;;
+          esac
+        done
+      done
     done
-  done
-  [ "$nx" -eq 0 ] && ok '自审留痕与 AI 参与未提外仓路径'
+  fi
+  [ "$nx" -eq 0 ] && ok '自审留痕与 AI 参与提到的文件都在本仓'
 
   if [ "$fail" -ne 0 ]; then
     printf '\npr-body：有违规，改正文后重跑（不必重开 PR）\n'
@@ -496,9 +506,9 @@ EOF
   # 负例八：字段行夹带正文（`#151` 的真实形态：`如实登记` 首行写了第一件，下面四件才是条目）
   derive "$dir/bad8.md" "- **如实登记**：" \
     "- **如实登记**：\`SPEC-PACK-018\` 的路径串未改"
-  # 负例九：内仓正文写外仓改动（`#151` 列了五条 `sdp.md`）
+  # 负例九：正文提到本仓没有的路径（`#151` 列了五条不在本仓的改动）
   derive "$dir/bad9.md" "纯人工" \
-    $'纯人工\n\n- 外仓 `weltuhr-knowledge-docs/process/sdp.md` 改了四处'
+    $'纯人工\n\n- `docs/nonexistent/file.md` 改了四处'
 
   printf -- '--- self-test 正例（应 exit 0）---\n'
   fail=0
