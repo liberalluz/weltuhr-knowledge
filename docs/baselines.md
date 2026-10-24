@@ -12,6 +12,7 @@
 | `BL-1` | `未登记` | 2026-10-17 | 交付物体系（六段 25 份）+ `.gitattributes` + `.github/PULL_REQUEST_TEMPLATE.md` + [`AGENTS.md`](AGENTS.md) | [`specs/controlled/scmp.md`](specs/controlled/scmp.md) §3.1 | 无 |
 | `BL-2` | `未登记` | 2026-10-17 | `app/` 客户端的全部已跟踪内容（三端脚手架 + `core/` 九份） | [`specs/controlled/scmp.md`](specs/controlled/scmp.md) §3.2 | **有**，见 §3.2 表（三端只验 Windows · 非 `dart format` 干净） |
 | `BL-3` | `未登记` | 2026-10-17 | `app/` 全部已跟踪内容 + `content/` 源数据与工具链 | [`specs/controlled/scmp.md`](specs/controlled/scmp.md) §3.4 | **有**，见 §3.4 表（帧率单机单窗口 · 合成场景虚线比例偏差 · `features/universe/` 是装置） |
+| `BL-4` | `1e0a7b4` | 2026-10-24 | `content/skeleton/` 的全部已跟踪内容 —— 三份官方目录原件（`source/`）+ 三份结构化 JSON + 抓取与抽取脚本；三轴 **3,375** 条（学科 199 · 专业 951 · 角色 2,225） | [`specs/controlled/scmp.md`](specs/controlled/scmp.md) §3.5 | **有**，见 §3.5 表（角色轴 `+52` 增补无法逐条证明 · 68 个小类无细类 · `skeleton` 包未构建） |
 
 ## 登记纪律
 
@@ -19,7 +20,7 @@
 
 **锚点提交 = 冻结那一刻的 `main` HEAD**，一行一个，记的是「这条基线在哪一刻被切下来」。
 
-⚠️ **锚点 ≠ 组成笔**。`specs/controlled/scmp.md` §3.1 / §3.2 / §3.4 的「合并提交」列记的是**构成该基线的每一笔**（`BL-1` 是三笔 `34dc617` / `b828172` / `74b6708`），粒度不同。把组成笔抄进本表，就是把「一句话能说清的位置」扩写成「一串需要自行排序的证据」—— 那是复制，不是登记。
+⚠️ **锚点 ≠ 组成笔**。`specs/controlled/scmp.md` §3.1 / §3.2 / §3.4 / §3.5 的「合并提交」列记的是**构成该基线的每一笔**（`BL-1` 是三笔 `34dc617` / `b828172` / `74b6708`，`BL-4` 是两笔 `aeafb8d` / `1e0a7b4`），粒度不同。把组成笔抄进本表，就是把「一句话能说清的位置」扩写成「一串需要自行排序的证据」—— 那是复制，不是登记。
 
 ### 二、四条基线的锚点为何全部是「未登记」
 
@@ -45,7 +46,7 @@
 |---|---|
 | 现在有哪些基线、哪天冻结、切在哪一刻 | **本文件** |
 | 哪些配置项受控、基线怎么切、何时该新开基线 | [`specs/controlled/scmp.md`](specs/controlled/scmp.md) §二 / §三 |
-| 某条基线具体由哪些笔组成、缺口是什么 | [`specs/controlled/scmp.md`](specs/controlled/scmp.md) §3.1 / §3.2 / §3.4 |
+| 某条基线具体由哪些笔组成、缺口是什么 | [`specs/controlled/scmp.md`](specs/controlled/scmp.md) §3.1 / §3.2 / §3.4 / §3.5 |
 | 交付物各自的版号分布 | [`specs/controlled/scmp.md`](specs/controlled/scmp.md) §5.1 |
 
 > 本文件与 `SCMP` 的分工由 [`decisions/0009-deliverables-dissolve.md`](decisions/0009-deliverables-dissolve.md) §1 定：**策略归 `SCMP`、登记归本文件**。在此之前登记写在 `SCMP` §三，两个「唯一权威处」不可能并存。
