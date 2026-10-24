@@ -687,6 +687,19 @@ const String reservedSegmentPrefix = '_';
 /// 所以它只能是后缀而不是「系统临时目录里的随机名」。
 const String atomicTempSuffix = '.tmp';
 
+/// `PathClaim` 台账的文件名（`entity-fields` §6 · `path-rules` `P-14`）。
+///
+/// 落在**可写内容区**根下，不在包目录里 —— 台账记的是本机的占用与墓碑，
+/// 而包目录是只读的（写进去就是「一次原子写改掉了分发内容」）。
+const String claimsFileName = 'claims.json';
+
+/// 台账文件的格式版本（`claims.json` 顶层的 `schema`）。
+///
+/// 台账是**用户机器上的持久文件**，会比代码活得久。没有版本号，加字段时只能
+/// 靠「猜这份文件是哪一版」，而猜错 `state` 的后果是墓碑读成现役（或反过来）——
+/// 该拦的复用拦不住，且没有任何断言会红。
+const int claimsSchemaVersion = 1;
+
 /// 事件日志的行分隔（`core/storage/store_fs.dart` 的 `appendLine`）。
 ///
 /// 固定 `\n` 而不是 `Platform.lineTerminator`：事件日志是要跨设备同步、要被
