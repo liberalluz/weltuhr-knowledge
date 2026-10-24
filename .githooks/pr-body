@@ -66,7 +66,8 @@ load_body() { mapfile -t BL < "$1"; }
 # 判据要求带分隔符与空格，免得把「3 条」「2026-10-23」判成编号。
 num_prefix() {
   local s h front sep d
-  s=$(strip_code "$1")                     # 代码跨度里的是举例，不算编号
+  strip_code "$1"                          # 代码跨度里的是举例，不算编号
+  s="$SC"
   s="${s#"${s%%[![:space:]]*}"}"           # 去前导空白
   s="${s#- }"; s="${s#\* }"; s="${s#+ }"   # 去一个列表符号
   case "$s" in
@@ -101,6 +102,9 @@ has_circled() {
 # ⚠️ 必须有这一步：正文里**讨论**规则时会写 `- [ ]`（如「一律不用 `- [ ]`」），
 #    不剥就把它当成真的任务列表 —— 本条判据首跑就是这么红在自己身上的。
 #    同理，代码跨度里的 ①②③ 也不该算编号前缀。
+# ⚠️ 结果写全局 SC、**不 printf**：`$(strip_code …)` 是 fork 一个子 shell，Git Bash 上
+#    约 0.2 s。第 8 条判据每行要剥 10 次（十个圈号各一次），`#121` 自检因此直接跑满
+#    20 s 超时、退出码 124 —— 判据没报错、是装置自己卡死，比误报更难查。
 strip_code() {
   local s="$1" out=""
   while case "$s" in *'`'*) true ;; *) false ;; esac; do
@@ -108,7 +112,7 @@ strip_code() {
     s="${s#*\`}"
     case "$s" in *'`'*) s="${s#*\`}" ;; *) s="" ;; esac
   done
-  printf '%s' "$out$s"
+  SC="$out$s"
 }
 
 has_section() {  # $1 = 整行标题，如 `## 变更摘要`
@@ -167,15 +171,35 @@ section_bounds() {
   return 0
 }
 
-# 扫 [a, b) 内的编号前缀；$1 = 报错时用的名字
+# 扫 [a, b) 内的编号前缀；$1 = 报错时用的名字；$4=1 时另判「一行压 ≥2 条圈号」
+# ⚠️ 为什么还要判「压段」：`- **反证**：① 甲；② 乙` 的圈号在行中间，行首判定看不见。
+#    但单个圈号不能判 —— 正文里会**引用**别处的编号（如「① 选源 · ② 选体系」那段
+#    七步原文），所以门槛取「同一行出现 ≥2 个」，单个引用放过。
 scan_num() {
-  local i l n=0
+  local i l n=0 c cc
   for ((i = $2; i < $3; i++)); do
     l="${BL[$i]}"
     [ -n "$l" ] || continue
     if num_prefix "$l"; then
       bad "$1 用了编号前缀（应缩进项目符号、一条一行、不加编号）：$l"
       n=$((n + 1))
+      continue
+    fi
+    if [ "${4:-0}" -eq 1 ]; then
+      # 压段的特征不是「有圈号」，而是「圈号紧跟在分隔符后」——`：① 甲；② 乙`。
+      # ⚠️ 只数圈号个数会误报**引用**：`#123` 写「（① 选源 · ② 选体系 · …）」是在引
+      #    `SPEC-STEP-001` 的条目名，7 个圈号却不是 7 条并列。判据取 `：①` / `；①`
+      #    这类「分隔符 + 圈号」的组合，≥2 处才算压段。
+      strip_code "$l"
+      cc=0
+      for c in '①' '②' '③' '④' '⑤' '⑥' '⑦' '⑧' '⑨' '⑩'; do
+        case "$SC" in *"：$c"*) cc=$((cc + 1)) ;; esac
+        case "$SC" in *"；$c"*) cc=$((cc + 1)) ;; esac
+      done
+      if [ "$cc" -ge 2 ]; then
+        bad "$1 把 ≥2 条压在同一个段落里（应一条一行）：$l"
+        n=$((n + 1))
+      fi
     fi
   done
   return 0
@@ -202,7 +226,8 @@ check_body() {
   # 3 —— 禁 task list（先剥行内代码：正文里讨论这条规则时会写 `- [ ]`）
   local l tl=0
   for l in "${BL[@]}"; do
-    case "$(strip_code "$l")" in *"- [ ]"*) tl=1; break ;; esac
+    strip_code "$l"
+    case "$SC" in *"- [ ]"*) tl=1; break ;; esac
   done
   if [ "$tl" -ne 0 ]; then
     bad '出现 `- [ ]`：勾了不代表填了，GitHub 还渲染成「未完成」'
@@ -210,20 +235,21 @@ check_body() {
     ok '无 `- [ ]`'
   fi
 
-  # 4 —— 如实登记：不压段 / 须分条
+  # 4 —— 如实登记：不压段 / 须分条（`：<一行总述>` + 缩进条目，与 `反证` 同形）
   local rl rtext nxt i
   if field_line "如实登记"; then
     rl=$FLN
     rtext="${BL[$((rl - 1))]}"
-    # ⚠️ 只对「圈号」那条剥代码跨度；结构判据（是否以「：」结尾）必须用原文，
+    # ⚠️ 只对「圈号」那条剥代码跨度；结构判据（有没有子项）必须用原文，
     #    否则 `- **如实登记**：`无`` 这类写法会被剥成只剩冒号，误判成「下无子项」。
-    if has_circled "$(strip_code "$rtext")"; then
+    strip_code "$rtext"
+    if has_circled "$SC"; then
       bad '如实登记 用 ①②③ 压段：须一条一行（§4.1）'
     fi
     rtext="${rtext%"${rtext##*[![:space:]]}"}"      # 去尾空白
     case "$rtext" in
       *：无) ok '如实登记：无（允许）' ;;
-      *：)
+      *)
         nxt=""
         for ((i = rl; i < ${#BL[@]}; i++)); do
           [ -n "${BL[$i]}" ] || continue
@@ -233,20 +259,36 @@ check_body() {
         nxt="${nxt#"${nxt%%[![:space:]]*}"}"        # 去前导空白（子项通常缩进两格）
         case "$nxt" in
           "- "*) : ;;
-          *) bad '如实登记 下无子项：一条一行，格式 `  - <事项>`' ;;
+          *) bad '如实登记 未分条：须「- **如实登记**：<一行总述>」+ 缩进 `- <一条>`' ;;
         esac
         ;;
-      *) bad '如实登记 未以「：」结尾：应写「：」后分条列' ;;
     esac
   fi
 
-  # 5 —— 改动面首行 N / M / K
-  local dl dtext
+  # 5 —— 改动面首行 N / M / K，且 N 须与真实 diff 的文件数对上
+  # ⚠️ 只判「有没有这几个字」等于没判：写「动了 5 条路径」而实际 30 条照样绿。
+  #    给了 --diff-base 就真数一遍 —— 这是本装置唯一一处判**真假**而不判形态的判据。
+  #    dn=0（已合分支 / 前缀为空）时对不上账，退回只判格式并说明，不假装验过。
+  local dl dtext dn=0
+  if [ -n "$diff_base" ]; then
+    dn=$(git diff --name-only "${diff_base}...HEAD" 2>/dev/null | grep -c . || true)
+  fi
   if field_line "改动面"; then
     dl=$FLN
     dtext="${BL[$((dl - 1))]}"
-    [[ "$dtext" =~ 动了[^0-9]{0,3}[0-9]+[^0-9]{0,3}条路径 ]] \
-      || bad '改动面 首行缺「动了 N 条路径」（N 须等于 gh pr diff --name-only 的文件数）'
+    if [[ "$dtext" =~ 动了[^0-9]{0,3}([0-9]+)[^0-9]{0,3}条路径 ]]; then
+      if [ "$dn" -gt 0 ]; then
+        if [ "${BASH_REMATCH[1]}" -ne "$dn" ]; then
+          bad "改动面 的 N=${BASH_REMATCH[1]} 与真实 diff 的 ${dn} 个文件对不上"
+        else
+          ok "改动面 N=${BASH_REMATCH[1]} 与真实 diff 一致"
+        fi
+      else
+        skip "改动面 N=${BASH_REMATCH[1]}：${diff_base:-未给}...HEAD 为空或未给，无法对账"
+      fi
+    else
+      bad '改动面 首行缺「动了 N 条路径」（N 须等于 gh pr diff --name-only 的文件数）'
+    fi
     [[ "$dtext" =~ 归为[^0-9]{0,3}[0-9]+[^0-9]{0,3}项 ]] \
       || bad '改动面 首行缺「归为 M 项」'
     [[ "$dtext" =~ 未动[^0-9]{0,3}[0-9]+[^0-9]{0,3}处 ]] \
@@ -258,7 +300,9 @@ check_body() {
     skip '跨栈表格：未给 --diff-base，无法判（CI 与本地都应给）'
   else
     local files stacks n
-    files=$(git diff --name-only "${diff_base}...HEAD" 2>/dev/null | head -500)
+    # ⚠️ 不截断：曾写 `| head -500`，超过 500 文件的 PR 会**静默漏算**技术栈 ——
+    #    把「没法判」伪装成「不需要表」，比报红更坏。
+    files=$(git diff --name-only "${diff_base}...HEAD" 2>/dev/null)
     if [ -z "$files" ]; then
       skip "跨栈表格：${diff_base}...HEAD 为空，无法判"
     else
@@ -282,9 +326,11 @@ check_body() {
   fi
 
   # 7 —— 反证：须写明未验
+  # ⚠️ 必须**连字段行自身一起扫**：五笔里有四笔把「未验」写在 `- **反证**：…` 那一行里，
+  #    只扫其后的子项会漏判（首版就是这么漏的，`#112` 明明写了 `**未验**` 却报红）。
   local a b uv=0
   if field_bounds "反证"; then
-    a=$FA; b=$FB
+    a=$((FA - 1)); b=$FB
     for ((i = a; i < b; i++)); do
       case "${BL[$i]}" in *未验*) uv=1; break ;; esac
     done
@@ -296,15 +342,36 @@ check_body() {
   fi
 
   # 8 —— 变更摘要与三字段的多行条目不得带编号前缀（§4.1 · 2026-10-24）
+  # 三字段同样**从字段行自身扫起**：`- **反证**：① 甲；② 乙` 这种压段正长在那一行。
   local before=$fail
   if section_bounds "## 变更摘要"; then
     scan_num "变更摘要" "$SA" "$SB"
   fi
   for f in "改动面" "反证" "如实登记"; do
     field_bounds "$f" || continue
-    scan_num "$f" "$FA" "$FB"
+    scan_num "$f" $((FA - 1)) "$FB" 1
   done
   [ "$fail" -eq "$before" ] && ok '变更摘要与三字段：多行条目无编号前缀'
+
+  # 9 —— 反证：≥2 件尝试不得压在同一行（§4.1 · 一件事一段，多件事分行）
+  # ⚠️ 「为推翻」只是**形式代理**：一次尝试写一个「为推翻 X」。它抓不到
+  #    「先试 A……再跑 B……另做 C」这类接续写法（`#119` / `#120` 就是这么漏的），
+  #    那类仍靠人判。本条的价值在于把最常出现的一种压段变成可判的 —— 别因为
+  #    「判不全」就不判，`#118` 三件压一段正是这条补上之前漏掉的。
+  if field_bounds "反证"; then
+    local lt nz=0
+    for ((i = FA - 1; i < FB; i++)); do
+      lt="${BL[$i]}"
+      strip_code "$lt"
+      case "$SC" in
+        *为推翻*为推翻*)
+          bad "反证 把 ≥2 件尝试压在同一个段落里（应一条一行）：$lt"
+          nz=$((nz + 1))
+          ;;
+      esac
+    done
+    [ "$nz" -eq 0 ] && ok '反证 未见多件尝试压段（单件的「为推翻」不报）'
+  fi
 
   if [ "$fail" -ne 0 ]; then
     printf '\npr-body：有违规，改正文后重跑（不必重开 PR）\n'
@@ -379,6 +446,9 @@ EOF
     '- 1. 做了什么之一：`docs/specs/git-conventions.md` 加一句'
   # 负例六：真的 task list（不在行内代码里）
   derive "$dir/bad6.md" "纯人工" $'纯人工\n\n- [ ] 未做完'
+  # 负例七：反证两件尝试压在同一行（`#118` 的真实形态：三个「为推翻」连写）
+  derive "$dir/bad7.md" "- **反证**：" \
+    "- **反证**：为推翻「甲」试了 A；为推翻「乙」试了 B。**未验**：没测丙"
 
   printf -- '--- self-test 正例（应 exit 0）---\n'
   fail=0
@@ -390,7 +460,7 @@ EOF
   fi
 
   local n=0 nf
-  for nf in "$dir/bad1.md" "$dir/bad2.md" "$dir/bad3.md" "$dir/bad4.md" "$dir/bad5.md" "$dir/bad6.md"; do
+  for nf in "$dir/bad1.md" "$dir/bad2.md" "$dir/bad3.md" "$dir/bad4.md" "$dir/bad5.md" "$dir/bad6.md" "$dir/bad7.md"; do
     n=$((n + 1))
     fail=0
     printf -- '--- self-test 负例 %d（应 exit 1）---\n' "$n"

@@ -118,7 +118,8 @@ jobs:
       #
       # ⚠️ 只在 `pull_request` 事件跑：`pull_request.body` 只有那里有。
       # ⚠️ 正文经 env 传入、不拼进 `run:` —— 正文里的引号 / 反引号 / `$` 会把 shell 拆坏。
-      # ⚠️ `--diff-base` 不可省：跨栈三列表的判据靠**真实 diff**，不认正文自述。
+      # ⚠️ `--diff-base` 不可省：跨栈三列表与 `改动面` 的 **N 对账**都靠**真实 diff**，
+      #    不认正文自述 —— 后者是全装置唯一一处判「真假」的判据（其余只判形态）。
       #    checkout 已是 `fetch-depth: 0`，再取一次 base 分支就能算三点 diff。
       - name: PR 正文形态
         if: github.event_name == 'pull_request'
