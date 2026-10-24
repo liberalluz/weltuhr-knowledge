@@ -1,0 +1,26 @@
+{
+  "plugin_id": "m3-overlay",
+  "name": "M3 覆盖补丁示例包",
+  "version": "1.0.0",
+  "kinds": ["overlay"],
+  "namespace": "m3-overlay",
+  "schema_version": 1,
+  "skeleton_requires": ">=1.0.0 <2.0.0",
+  "deps": [{ "plugin_id": "m2-demo", "range": ">=2.0.0 <3.0.0" }],
+  "license": "MIT",
+  "author": "weltuhr",
+  "origin": "fixture",
+  "review_state": "approved",
+  "signature": null,
+  "axes": ["major"],
+  "overlay": {
+    "target_scope": "S4",
+    "patch_count": 0
+  },
+  "nodes": [],
+  "edges": [],
+  "entries": [],
+  "sources": [],
+  "schemes": [],
+  "methods": []
+}
