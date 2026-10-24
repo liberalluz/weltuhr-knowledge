@@ -77,6 +77,7 @@ class PackContent {
     required this.sources,
     required this.schemes,
     required this.methods,
+    Map<String, String> skeletonPaths = const <String, String>{},
   }) : nodeById = Map<String, Node>.unmodifiable(<String, Node>{
          for (final Node node in nodes) node.id: node,
        }),
@@ -98,7 +99,8 @@ class PackContent {
          },
          // 骨架 `path` 由外部注入（`minimal-pack.md` §4.2）。载荷包自己不知道
          // 骨架长什么样，也不该内置一份假骨架 —— 那是第二份骨架数据。
-         skeletonPaths: const <String, String>{},
+         // `B14` 笔 4 起由 `PackLoader` 注入：不注入的话 `pathOf` 到骨架父就断链。
+         skeletonPaths: skeletonPaths,
        );
 
   final Pack pack;
@@ -122,8 +124,13 @@ class PackContent {
   ///
   /// **在装载时建一次**，不交给各消费点自建：`inScope`、面包屑、`Plan.subtree_root`
   /// 判定全要走父链，各写一遍就是「同一棵树有几份索引」，而它们不一致时没有任何
-  /// 断言会红。骨架 `path` 未注入（见构造体注释），故跨包场景下 `pathOf` 对骨架
-  /// 之上的部分返回 `null` —— 那是装载层的事，`B13b` 落地后由骨架包补。
+  /// 断言会红。
+  ///
+  /// 骨架 `path` 由构造体的 `skeletonPaths` 注入（`minimal-pack.md` §4.2）：
+  /// 不给注入时 `pathOf` 对「父链顶端是骨架」的节点返回 `null`，那是**如实反映**
+  /// —— 包自己不知道骨架在哪，也不该内置一份假骨架。`PackLoader` 装包时一定注入，
+  /// 所以跨包 `path` 在装载层可算；直接 `readPack` 的调用方（解析层测试、构建期
+  /// 工具）不需要它。
   final ParentIndex parents;
 
   Node? nodeOf(String id) => nodeById[id];
@@ -168,7 +175,14 @@ class PackContent {
 }
 
 /// 解析一个包的全文。任一处不合格即抛 [PackContentException]（含全部问题）。
-PackContent readPack(String packJson) {
+///
+/// [skeletonPaths] 是骨架节点 `id → path` 的注入表（`minimal-pack.md` §4.2）：
+/// 给了它，跨包 `pathOf` 才算得出来；不给则骨架那一段断链，`pathOf` 返回 `null`。
+/// **本层不校验 `path`** —— 三元校验归 `triple_validator`，这里只把它灌进索引。
+PackContent readPack(
+  String packJson, {
+  Map<String, String> skeletonPaths = const <String, String>{},
+}) {
   final List<String> problems = <String>[];
 
   final JsonMap? raw = _decodeObject(packJson, 'pack.json', problems);
@@ -248,6 +262,7 @@ PackContent readPack(String packJson) {
     sources: sources,
     schemes: schemes,
     methods: methods,
+    skeletonPaths: skeletonPaths,
   );
 }
 
