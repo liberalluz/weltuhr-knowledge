@@ -9,25 +9,29 @@ library;
 
 import '../storage/store_fs.dart';
 
-/// 一个知识空间在磁盘上的形态：同目录下 `manifest.json` + `dist/pack.json`。
+/// 一个内容包在磁盘上的形态：**一个目录 + 目录下的一个 `pack.json`**。
 ///
-/// `SPEC-PACK-018` 只钉死 `pack.json` 的位置（`<仓根>/content/<空间>/dist/pack.json`），
-/// 清单在它上一级。**清单不是可选项**：`pack.json` 的 `meta` 只承载 `space` +
-/// `version`（`SPEC-PACK-005`），而 `name` / `sixAxis` / `accent` / `order` /
-/// `domainIds` 只在清单里 —— 少了清单，主题色与 Z0 排序就无从取值。
-/// 换句话说，**分发单位是目录，不是一个 json 文件**。
+/// `SPEC-PACK-018` 钉死 `pack.json` 的位置（`<包根>/pack.json`）。
+///
+/// ⚠️ **单文件，不再有 `manifest.json` + `dist/`**（`B14` 起）。旧形态是
+/// 「清单 + 产物」两件：`meta` 还承载 `space` / `version`，而 `name` /
+/// `sixAxis` / `accent` / `order` / `domainIds` 只在清单里，所以那时**分发单位
+/// 是目录**。`ADR-0007` 取消 `meta` 段、`B13a` 笔 5c 把那批字段并进
+/// `pack.json` 的六段之后，清单已无一处独有内容 —— 再要求它，就是让
+/// **磁盘上的形状**落后于**数据在文件里的形状**：探测说「这不是包」、
+/// 解析说「这是包」，两层各说一套（`B14` 诊断 G1）。
+///
+/// ⚠️ **目录名不承载 `kind`**。一个包可以同时是载荷与地形（`Pack.kinds[]`
+/// 可多值，`M2` 就是 `payload` + `method`），把 kind 写进路径必然漏。
+/// kind 由「在哪个候选根下被探到」决定（见 [PackProbe.scanRoots]），
+/// 权威的 `kinds[]` 仍由解析层读 `pack.json` 得出。
 class PackLayout {
   const PackLayout._();
 
-  static const String manifestFileName = 'manifest.json';
-  static const String distDirName = 'dist';
   static const String packFileName = 'pack.json';
 
-  /// 清单路径（空间根目录下）。
-  static String manifestPath(String spaceRoot) => '$spaceRoot/$manifestFileName';
-
-  /// 产物路径（空间根目录的 `dist/` 下）。
-  static String packPath(String spaceRoot) => '$spaceRoot/$distDirName/$packFileName';
+  /// 包目录下**唯一**的清单兼产物文件。
+  static String packPath(String packRoot) => '$packRoot/$packFileName';
 }
 
 /// 文件系统接缝 —— 探测与解析只通过它触盘。
