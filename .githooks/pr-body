@@ -373,6 +373,59 @@ check_body() {
     [ "$nz" -eq 0 ] && ok '反证 未见多件尝试压段（单件的「为推翻」不报）'
   fi
 
+  # 10 —— `反证` / `如实登记` 的字段行只写字段名，正文一律下沉到缩进条目（§4.1 · 2026-10-24）
+  # ⚠️ 为什么要单独判：`- **如实登记**：<第一件>` 再接四条 `  - `，渲染出来是
+  #    「粗体字段名 + 正文段 + 子列表」—— 第一件与其余几件**不同级**，行内评论挂不到它。
+  #    而前九条全绿：圈号没有、`- [ ]` 没有、N 对得上、条目也没编号前缀。`#151` 就是这么漏的。
+  #    `改动面` **不受本条约束**，它的首行必须带 N/M/K（第 5 条），压不进去。
+  #    「无」放行 —— 规则允许 `如实登记` 写「无」，那不是正文。
+  local fl fr
+  for fl in "反证" "如实登记"; do
+    field_line "$fl" || continue
+    fr="${BL[$((FLN - 1))]}"
+    strip_code "$fr"
+    fr="${SC#- \*\*$fl\*\*}"
+    fr="${fr#：}"; fr="${fr#:}"
+    fr="${fr//[[:space:]]/}"
+    fr="${fr//　/}"
+    case "$fr" in
+      ""|无|无。) ;;
+      *) bad "$fl 的字段行夹带了正文（字段行只写字段名，正文下沉到缩进条目）：$fr" ;;
+    esac
+  done
+
+  # 11 —— 正文里的文件路径必须在本仓（2026-10-24 · `#151` 在 `如实登记` 列了五条不在本仓的改动）
+  # ⚠️ 判法**不认具体目录名**：认名字就等于把那个名字写进本仓装置，而本条要的恰恰是
+  #    「哪里都不出现」。改成结构性判据 —— 路径不在 `git ls-files` 里，就说不上是本仓的文件，
+  #    写进正文读者点不进、`gh pr diff` 里也没有。
+  # ⚠️ 只扫「自审留痕」与「AI 参与」两节：这两节写的是「本笔做了什么 / 没做什么」。
+  #    `变更摘要` 里要引规格条与设计文档，扫全文必然误伤。
+  local oi pw rest pwe nx=0 trk
+  trk=$(git ls-files 2>/dev/null)
+  if [ -n "$trk" ]; then
+    for sec in "## 自审留痕" "## AI 参与"; do
+      section_bounds "$sec" || continue
+      for ((oi = SA; oi < SB; oi++)); do
+        rest="${BL[$oi]}"
+        while [[ "$rest" =~ ([A-Za-z0-9_.-]+(/[A-Za-z0-9_.-]+)+\.(md|dart|json|py|ya?ml|txt|pdf|sh|toml)) ]]; do
+          pw="${BASH_REMATCH[1]}"
+          rest="${rest#*"$pw"}"
+          pwe="${pw//\\/\\\\}"
+          pwe="${pwe//\*/\\*}"
+          pwe="${pwe//\?/\\?}"
+          case $'\n'"$trk"$'\n' in
+            *$'\n'"$pwe"$'\n'*) ;;
+            *)
+              bad "正文提到本仓没有的路径（只写本仓 diff 里能核对的东西）：$pw"
+              nx=$((nx + 1))
+              ;;
+          esac
+        done
+      done
+    done
+  fi
+  [ "$nx" -eq 0 ] && ok '自审留痕与 AI 参与提到的文件都在本仓'
+
   if [ "$fail" -ne 0 ]; then
     printf '\npr-body：有违规，改正文后重跑（不必重开 PR）\n'
     return 1
@@ -450,6 +503,13 @@ EOF
   derive "$dir/bad7.md" "- **反证**：" \
     "- **反证**：为推翻「甲」试了 A；为推翻「乙」试了 B。**未验**：没测丙"
 
+  # 负例八：字段行夹带正文（`#151` 的真实形态：`如实登记` 首行写了第一件，下面四件才是条目）
+  derive "$dir/bad8.md" "- **如实登记**：" \
+    "- **如实登记**：\`SPEC-PACK-018\` 的路径串未改"
+  # 负例九：正文提到本仓没有的路径（`#151` 列了五条不在本仓的改动）
+  derive "$dir/bad9.md" "纯人工" \
+    $'纯人工\n\n- `docs/nonexistent/file.md` 改了四处'
+
   printf -- '--- self-test 正例（应 exit 0）---\n'
   fail=0
   if check_body "$b1" "" >/dev/null 2>&1; then
@@ -460,7 +520,7 @@ EOF
   fi
 
   local n=0 nf
-  for nf in "$dir/bad1.md" "$dir/bad2.md" "$dir/bad3.md" "$dir/bad4.md" "$dir/bad5.md" "$dir/bad6.md" "$dir/bad7.md"; do
+  for nf in "$dir/bad1.md" "$dir/bad2.md" "$dir/bad3.md" "$dir/bad4.md" "$dir/bad5.md" "$dir/bad6.md" "$dir/bad7.md" "$dir/bad8.md" "$dir/bad9.md"; do
     n=$((n + 1))
     fail=0
     printf -- '--- self-test 负例 %d（应 exit 1）---\n' "$n"
