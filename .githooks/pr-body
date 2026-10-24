@@ -66,7 +66,7 @@ load_body() { mapfile -t BL < "$1"; }
 # 判据要求带分隔符与空格，免得把「3 条」「2026-10-23」判成编号。
 num_prefix() {
   local s h front sep d
-  s="$1"
+  s=$(strip_code "$1")                     # 代码跨度里的是举例，不算编号
   s="${s#"${s%%[![:space:]]*}"}"           # 去前导空白
   s="${s#- }"; s="${s#\* }"; s="${s#+ }"   # 去一个列表符号
   case "$s" in
@@ -95,6 +95,20 @@ has_circled() {
     *①*|*②*|*③*|*④*|*⑤*|*⑥*|*⑦*|*⑧*|*⑨*|*⑩*) return 0 ;;
   esac
   return 1
+}
+
+# 剥掉行内代码跨度（成对反引号之间的内容），输出剩余部分。
+# ⚠️ 必须有这一步：正文里**讨论**规则时会写 `- [ ]`（如「一律不用 `- [ ]`」），
+#    不剥就把它当成真的任务列表 —— 本条判据首跑就是这么红在自己身上的。
+#    同理，代码跨度里的 ①②③ 也不该算编号前缀。
+strip_code() {
+  local s="$1" out=""
+  while case "$s" in *'`'*) true ;; *) false ;; esac; do
+    out+="${s%%\`*}"
+    s="${s#*\`}"
+    case "$s" in *'`'*) s="${s#*\`}" ;; *) s="" ;; esac
+  done
+  printf '%s' "$out$s"
 }
 
 has_section() {  # $1 = 整行标题，如 `## 变更摘要`
@@ -185,10 +199,10 @@ check_body() {
     field_line "$f" || bad "自审留痕缺字段：$f"
   done
 
-  # 3 —— 禁 task list
+  # 3 —— 禁 task list（先剥行内代码：正文里讨论这条规则时会写 `- [ ]`）
   local l tl=0
   for l in "${BL[@]}"; do
-    case "$l" in *"- [ ]"*) tl=1; break ;; esac
+    case "$(strip_code "$l")" in *"- [ ]"*) tl=1; break ;; esac
   done
   if [ "$tl" -ne 0 ]; then
     bad '出现 `- [ ]`：勾了不代表填了，GitHub 还渲染成「未完成」'
@@ -201,7 +215,9 @@ check_body() {
   if field_line "如实登记"; then
     rl=$FLN
     rtext="${BL[$((rl - 1))]}"
-    if has_circled "$rtext"; then
+    # ⚠️ 只对「圈号」那条剥代码跨度；结构判据（是否以「：」结尾）必须用原文，
+    #    否则 `- **如实登记**：`无`` 这类写法会被剥成只剩冒号，误判成「下无子项」。
+    if has_circled "$(strip_code "$rtext")"; then
       bad '如实登记 用 ①②③ 压段：须一条一行（§4.1）'
     fi
     rtext="${rtext%"${rtext##*[![:space:]]}"}"      # 去尾空白
@@ -323,6 +339,7 @@ self_test() {
   - **未验**：CI 事件里的 body 是否被截断
 - **如实登记**：
   - 只判形态，不判反证实质
+  - 正文里**讨论**这条规则时会写 `- [ ]` 与 `②`，两者都在行内代码里，不算违规（负例六守这条）
 
 ## 交付物
 
@@ -360,6 +377,8 @@ EOF
   # 负例五：变更摘要的多事项用阿拉伯序号
   derive "$dir/bad5.md" '- 做了什么之一：`docs/specs/git-conventions.md` 加一句' \
     '- 1. 做了什么之一：`docs/specs/git-conventions.md` 加一句'
+  # 负例六：真的 task list（不在行内代码里）
+  derive "$dir/bad6.md" "纯人工" $'纯人工\n\n- [ ] 未做完'
 
   printf -- '--- self-test 正例（应 exit 0）---\n'
   fail=0
@@ -371,7 +390,7 @@ EOF
   fi
 
   local n=0 nf
-  for nf in "$dir/bad1.md" "$dir/bad2.md" "$dir/bad3.md" "$dir/bad4.md" "$dir/bad5.md"; do
+  for nf in "$dir/bad1.md" "$dir/bad2.md" "$dir/bad3.md" "$dir/bad4.md" "$dir/bad5.md" "$dir/bad6.md"; do
     n=$((n + 1))
     fail=0
     printf -- '--- self-test 负例 %d（应 exit 1）---\n' "$n"
@@ -383,7 +402,7 @@ EOF
     fi
   done
 
-  rm -f "$b1" "$dir/bad1.md" "$dir/bad2.md" "$dir/bad3.md" "$dir/bad4.md" "$dir/bad5.md" 2>/dev/null || true
+  rm -f "$b1" "$dir"/bad*.md 2>/dev/null || true
   rmdir "$dir" 2>/dev/null || true
   return "$status"
 }
