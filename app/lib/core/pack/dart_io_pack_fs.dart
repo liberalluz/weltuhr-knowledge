@@ -9,6 +9,7 @@ library;
 import 'dart:io';
 
 import '../constants.dart';
+import '../enums.dart';
 import '../storage/store_fs.dart';
 import 'pack_fs.dart';
 
@@ -144,15 +145,31 @@ class DartIoPackFs implements PackFs, WritableStoreFs, AppendOnlyStoreFs {
   }
 }
 
-/// 开发期的候选根目录：`<cwd>/content` 与 `<cwd>/../content`。
+/// 开发期的候选根目录，**按 kind 分组**：`<cwd>/content` 与 `<cwd>/../content`。
 ///
-/// `SPEC-PACK-018` 钉的是「按**运行期 CWD** 找 `<仓根>/content/<空间>/dist/pack.json`」，
+/// `SPEC-PACK-018` 钉的是「按**运行期 CWD** 找 `<包根>/pack.json`」，
 /// 于是从 `app/` 内跑（`flutter run` / `flutter test`）命中后者，从仓根跑命中前者。
 /// 两条都给、先命中者优先 —— 不靠调用方记住自己在哪一层目录。
 ///
+/// ⚠️ **分组 ≠ 分子目录**（`B14`）：同一个根出现在四类的列表里是**预期**的 ——
+/// kind 是「这次查的是哪一类」，不是「文件必须放在 `<根>/<kind>/` 下」
+/// （`Pack.kinds[]` 可多值，用目录名承载 kind 必然漏）。代价是同一个包在四类
+/// 查询里各出现一次（`packRoot` 相同、`kind` 不同），装载层须按 `packRoot` 合并、
+/// 以解析出的 `Pack.kinds[]` 为准。开发期盘上尚未按 kind 物理分区，
+/// 这一层现在给不出更细的答案 —— 但它给了调用方**一个可改的位置**：
+/// 将来某类包单独落目录，只改这里，探测与解析一行不动（`R-04`）。
+///
 /// **制品形态的候选根不在这里**（exe 同级 `packs/`、iOS bundle 资源）：
-/// 那是 `B8` 要补的，补法是往候选列表加一项，解析层不动（`R-04`）。
-List<String> devPackRoots({String? cwd}) {
+/// 那是 `B8` 要补的，补法是往候选列表加一项，解析层不动。
+Map<PackKind, List<String>> devPackRoots({String? cwd}) {
   final String base = cwd ?? Directory.current.path;
-  return <String>['$base/content', '$base/../content'];
+  // `unmodifiable`：四个 key 共用一份列表，任一处被就地修改都会让另外三类
+  // 悄悄换掉搜索路径 —— 那种错查起来要跨两层。
+  final List<String> shared = List<String>.unmodifiable(<String>[
+    '$base/content',
+    '$base/../content',
+  ]);
+  return <PackKind, List<String>>{
+    for (final PackKind kind in PackKind.values) kind: shared,
+  };
 }
