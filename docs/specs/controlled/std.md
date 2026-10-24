@@ -1,6 +1,6 @@
 # 软件测试说明（STD）
 
-> **状态**：**5c 收口 —— 旧本体四份删除，用例落点随之重指（`B13a` 笔 5c）** —— `pack_parse` / `entities/content` / `plan/method_bundle` / `plan/plan_target` 与 α 包夹具删除，9 条包解析用例改指 `pack_reader_test`（5 条改名对齐 · 2 条随 `ADR-0007` 取消 `meta` 段而作废 · 2 条重写夹具时未带上，落点标 `—` 待补）；α 包 4 条与 `PlanTarget` 6 条作废保留行，三条欠账已登记。`appliesTo` 键集 `{spaceId, type, layer}` → **`{type, axes, layer}`**，5 条契约用例拆到 `applies_to_test.dart`。§三 用例表 **794 条**（含 65 条作废保留行）。逐版摘要见文末「历史（迁移前版号序列）」表。
+> **状态**：**`B14` 笔 1 —— 探测层切单文件、按 `kind` 分组候选根** —— `PackLayout` 去掉 `manifest.json` + `dist/`，一个包 = 目录 + 一个 `pack.json`；`PackProblemKind` 三值降两值（`missingManifest` 与 `missingPack` 合并 —— 单文件形态下「清单在、产物不在」没有表达形式）；`PackLocation` 加 `kind`、`spaceRoot` → `packRoot`；`scanRoots` 改收 `Map<PackKind, List<String>>` —— 分组是**查询维度**，不是 `<根>/<kind>/` 子目录（`kinds[]` 可多值，用目录名承载必然漏）。§3.7.2 路径探测 6 → 8 条（`TC-LOAD-006` 作废保留行 · 新增 041 / 042），§三 用例表 **796 条**（含 66 条作废保留行）。逐版摘要见文末「历史（迁移前版号序列）」表。
 > 本文件是**用例正文**。测什么与通过判据见 [`STP`](stp.md)；**仓内当前读数见 §六**。
 > **追溯补录**：2026-10-17 · §三 依据 `app/test/` 与 `content/tools/fixtures/` 的既有测试逐条反推，非当时所写。
 
@@ -193,22 +193,24 @@
 | `TC-LOAD-002` | — | — | `ItemType` / `Layer` 的取值 | `fromWire('declarative')` / `('procedural')` / `('ephemeral')`；再试 `'statement'` / `'quick'` | 前三个通过；后两个抛错 —— 旧枚举名不得再被接受 | 单元 | 同上 · `项的 type 与 layer 取数据里的值` |
 | `TC-LOAD-003` | — | — | 一条 `type: "unknown"` 的边 | `Edge.fromJson` 再 `toJson` | 解析为 `EdgeType.unknown`，回写仍是 `unknown` | 单元 | 同上 · `边类型 unknown 能解析` |
 
-#### 3.7.2 路径探测（6 条）
+#### 3.7.2 路径探测（8 条）
 
 | 编号 | 对应 `SPEC` | 依据 | 前置 | 步骤 | 预期 | 类型 | 自动化位置 |
 |---|---|---|---|---|---|---|---|
-| `TC-LOAD-004` | `PACK-018` | 语义 | 两个空间目录，各有 `manifest.json` + `dist/pack.json` | `PackProbe.scanRoot('content')` | 两个位置，按目录名排序，无问题 | 单元 | `app/test/core/pack/pack_probe_test.dart` · `清单与产物都在才算一个包` |
-| `TC-LOAD-005` | `PACK-018` | 语义 | 只有 `dist/pack.json`，缺清单 | 同上 | 不产出位置，报 `missingManifest` 并指名清单路径 | 单元 | 同上 · `缺清单报 missingManifest` |
-| `TC-LOAD-006` | `PACK-018` | 语义 | 只有清单，缺产物（= 忘了跑 `build.py`） | 同上 | 报 `missingPack` 并指名 `dist/pack.json` | 单元 | 同上 · `清单在、产物不在报 missingPack` |
+| `TC-LOAD-004` | `PACK-018` | 语义 | 两个包目录，各有 `pack.json` | `PackProbe.scanRoot('content', PackKind.payload)` | 两个位置，按目录名排序，无问题，`kind` 均为 `payload` | 单元 | `app/test/core/pack/pack_probe_test.dart` · `目录下有 pack.json 才算一个包` |
+| `TC-LOAD-005` | `PACK-018` | 语义 | 旧形态目录：有 `manifest.json` + `dist/pack.json`，没有 `pack.json` | 同上 | 不产出位置，报 `missingPack` 并指名 `pack.json` 路径 | 单元 | 同上 · `目录里没有 pack.json ⇒ 报 missingPack` |
+| ~~`TC-LOAD-006`~~ | `PACK-018` | 语义 | ~~只有清单，缺产物（= 忘了跑 `build.py`）~~ | — | **已作废**（`B14` 笔 1）：单文件形态下没有「清单在、产物不在」的形状，与 `TC-LOAD-005` 合并 | — | — |
 | `TC-LOAD-007` | `PACK-018` | 语义 | 文件在但读不出（模拟权限 / 非 UTF-8） | 同上 | 报 `unreadable`，**不与「缺文件」混为一谈** | 单元 | 同上 · `文件在但读不出来报 unreadable` |
-| `TC-LOAD-008` | `PACK-018` | 语义 | 三个候选根：第一个不存在，后两个各有同名空间 | `scanRoots([...])` | 同名空间只取**先出现**的那个；各自独有的空间都保留 | 单元 | 同上 · `候选根依次探测` |
+| `TC-LOAD-008` | `PACK-018` | 语义 | 三类候选根（`payload` 一组）：第一个不存在，后两个各有同名目录 | `scanRoots({payload: [...]})` | 同名目录只取**先出现**的那个；各自独有的目录都保留 | 单元 | 同上 · `同一个 kind 内，候选根依次探测` |
 | `TC-LOAD-009` | — | — | 根目录不存在 | 同上 | 空结果、**零问题** —— 空根不是错误，缺文件才是 | 单元 | 同上 · `根目录不存在` |
+| `TC-LOAD-041` | — | — | 一个包分别落在 `payload` 与 `method` 两组候选根下 | `scanRoots({payload:[…], method:[…]})` | 两条位置，`kind` 各自正确，`packRoot` 各指各的 | 单元 | 同上 · `同一包在两类候选根各探到一次` |
+| `TC-LOAD-042` | — | — | 同一个根列给两个 `kind` | 同上 | 两条位置，`packRoot` 相同、`kind` 各一 —— `kind` 是查询维度，不是存储位置 | 单元 | 同上 · `同一个根列给两个 kind` |
 
 #### 3.7.3 包解析（9 条）
 
 | 编号 | 对应 `SPEC` | 依据 | 前置 | 步骤 | 预期 | 类型 | 自动化位置 |
 |---|---|---|---|---|---|---|---|
-| `TC-LOAD-010` | `PACK-005` | 语义 | 最小包：六段 + 清单 | `readPack` | 解析成功，`nodeOf` / `scheme.nodes` 可用 | 单元 | `app/test/core/pack/pack_reader_test.dart` · `M2 六段齐全即可解析（SPEC-PACK-005）` |
+| `TC-LOAD-010` | `PACK-005` | 语义 | 最小包：六段（`pack.json` 单文件，无清单） | `readPack` | 解析成功，`nodeOf` / `scheme.nodes` 可用 | 单元 | `app/test/core/pack/pack_reader_test.dart` · `M2 六段齐全即可解析（SPEC-PACK-005）` |
 | ~~`TC-LOAD-011`~~ | `PACK-005` | **显式** | ~~`meta.space` 与清单 `id` 不同~~ | — | **已作废**（`B13a` 笔 5c）：`ADR-0007` 取消 `meta` 段，包身份改由 `Pack.pluginId` 自带，「包与清单不是同一空间」这类错不再有表达形式 | 单元 | — |
 | ~~`TC-LOAD-012`~~ | `PACK-005` | **显式** | ~~`meta.version` 与清单 `version` 不同~~ | — | **已作废**（`B13a` 笔 5c）：`meta.version` 并入 `PackVersions`，版本一致性改由该复合值承载 | 单元 | — |
 | `TC-LOAD-013` | `PACK-007` | **显式** | 包多出 `notes` 段 | 同上 | 抛错 —— 笔记模板不进包 | 单元 | 同上 · `顶层出现六段与清单字段之外的键即拒（SPEC-PACK-007）` |
@@ -1954,6 +1956,7 @@
 
 | 版号 | 日期 | 修订摘要 |
 |---|---|---|
+| `v0.64.0` | 2026-10-24 | **`B14` 笔 1：探测层切单文件 + 按 `kind` 分组候选根** —— `PackLayout` 删 `manifestFileName` / `distDirName` / `manifestPath`，`packPath(包根)` 直指 `<包根>/pack.json`（旧形态「清单 + 产物」两件自 `ADR-0007` 取消 `meta` 段后已无清单独有内容 ⇒ 探测说「不是包」、解析说「是包」，两层各说一套）；`PackProblemKind` 三值降两值；`PackLocation` 加 `kind`、`spaceRoot` 改名 `packRoot`；`probeSpace` → `probePack(包根, kind)` · `scanRoot` 加 `kind` 入参 · `scanRoots` 改收 `Map<PackKind, List<String>>`。⚠️ **分组 ≠ 分子目录**：同一个根可列给多个 kind，同一个包在各类查询里各出现一次（`packRoot` 相同、`kind` 不同）—— kind 是查询维度，权威 `kinds[]` 仍由解析层读；去重只在同一 kind 内按目录名进行。§3.7.2 路径探测 6 → **8 条**（`TC-LOAD-004` / `005` / `008` 重写 · `007` / `009` 改签名 · `TC-LOAD-006` 作废保留行 · 新增 `TC-LOAD-041` / `042`）；两条新用例标「无 SPEC」—— `SPEC-PACK-018` 只钉 `pack.json` 位置，未定义多 kind 探测。`TC-LOAD-010` 的「六段 + 清单」改「六段（`pack.json` 单文件，无清单）」。**§三 用例表 794 → 796 条**（含 66 条作废保留行）；`flutter test` 419 → **420**。⚠️ **如实登记：`SPEC-PACK-018` 的路径串 `<仓根>/content/<空间>/dist/pack.json` 仍指旧形态** —— 规格重写归 `B14` 笔 5，本笔不动 |
 | `v0.63.0` | 2026-10-23 | §三 新增 `TC-DOC-023`–`025` 三条（`D7` 头部状态行：堆叠词报 1 处 · 历史表「此前」零报 · 超 `600` 字报并给实测值）；**§三 用例表 791 → 794**。同批把 §3.46 标题的条数从停在 **15** 条改准到 **25** 条（`v0.44.0` / `v0.52.0` / `v0.55.0` / `v0.63.0` 四次增量相加），此前标题与实际不符 |
 | `v0.62.1` | 2026-10-22 | **勘误**：`ADR-0008` 换轨后目录名过时 —— `entity-fields` / `constants` 回指 3 处 + 批次归属说明。只改路径指向，**用例仍 789 条**、断言与判据零改动。 |
 | `v0.62.0` | 2026-10-21 | **用例数不变（789）**：`B13a` 笔 5c 收口同步。§3.7.3 包解析 9 条落点从已删的 `pack_parse_test` 改指 `pack_reader_test` —— `TC-LOAD-010` / `013` / `014` / `015` / `016` 五条逐字换成新用例名并同步前置与预期（`items` → `nodes`、`parsePack` → `readPack`）；`TC-LOAD-011` / `012` 作废（`ADR-0007` 取消 `meta` 段，包身份改由 `Pack.pluginId` 自带、版本并入 `PackVersions`）；`TC-LOAD-017` / `018` 落点 `—` 标**待补**（坏 JSON 与「一次报全部」两条行为仍在，重写夹具时未带上）。§3.7.5 真实 α 包 4 条（`TC-LOAD-037`–`040`）与 §3.26 `TC-PACK-042` / `043` 作废 —— α 包夹具 `support/alpha_pack.dart` 随 `pack_parse.dart` 删除，且 `pack.space` / `sixAxis` / `primaryAxis` 已随 `ADR-0005` / `ADR-0007` 消失；**欠账如实登记**：真实内容包的四数校验、150 项自定位、题库悬空引用校验当前无自动化。§3.50 `TC-PLAN-062`–`067` 作废 —— `PlanSelector` / `PlanTarget` 由 `ADR-0007` 决策 2 废除，范围只落 `Plan.subtreeRoot`，四种解算式不再有入口。§3.45 五条逐字改名对齐（`TC-PLAN-019` / `020` / `025` / `027` / `031`，`L0`–`L4` 口径改五档 `AuthorityLevel`）。作废行按 `D3` 口径保留（删除线 + 落点 `—`），行数与编号集合不变 |
