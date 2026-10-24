@@ -267,13 +267,15 @@
 | `authority_level` | enum | 五档语义值（见 §11） |
 | `inversions` | int | **派生**：违反 `required` 先修边的处数 |
 
-**三条校验**（全部可机器判）：
+**校验**：只有一条，而且是「不作检查」。
 
-1. `nodes[]` 相邻两项之间**必须存在** `ParentEdge` 或 `WormholeEdge` —— 否则那不是路线，只是一张清单
-2. 不得违反 `required` 先修边：`A --required--> B` 时 B 不得排在 A 之前（`recommended` 不构成约束）
-3. **不校验同轴**
+- **不校验同轴** —— 跨轴是体系的合法形态
 
-> 旧定义「`nodes` 必须是 `⪯` 的线性扩展」随 `⪯` 并入地形 DAG 而失效，由上述三条替代。
+> 旧定义「`nodes` 必须是 `⪯` 的线性扩展」随 `⪯` 并入地形 DAG 而失效。
+> **曾替代它的两条已删**（2026-10-25 裁定，`B14` 笔 2）：
+> ①「相邻项须有 `ParentEdge` 或 `WormholeEdge`」—— `nodes[]` 的消费语义是**集合**（`plan/scope.dart` 取 `toSet()` 后顺序即丢弃），整包清单型体系会被误判成非法；
+> ②「不得违反 `required` 先修边」—— 与 `SPEC-PLAN-012`「逆序不禁止，但必须算清并显示」冲突，`SchemeOrderCost.isLinearExtension` 是代价档位，不是准入条件。
+> **顺序仍有语义，只是不设闸门**：`nodes[]` 的书写顺序是排序建议，代价由 `SchemeOrderCost` 现算，装包时不拒。
 > 跨轴体系不需要新机制：它本质就是**按顺序排好的一串虫洞跳转**。
 
 ### 11. `SourceRef` —— 源（材料）
