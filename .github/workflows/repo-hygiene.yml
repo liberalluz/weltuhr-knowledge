@@ -1,6 +1,7 @@
 name: repo-hygiene
 
-# 全仓级、**不判改动面**的判据。目前一条：构建产物不得入库。
+# 全仓级的仓级判据：**不判「该不该跑」**（刻意不设 `paths`，每次都有结论）。
+# 目前四条：构建产物不得入库 · 提交信息格式 · PR 正文形态 · main 只接受 PR。
 #
 # 为什么不并进 `content-checks`：那支的改动面是 `content/`，只改 `app/` 的 PR
 # 不触发它，而「有没有把 `dist/` 提交进去」跟改哪个目录无关 —— 挂着走就会漏。
@@ -98,6 +99,36 @@ jobs:
           fi
           echo "区间：$range"
           bash .githooks/commit-msg --range "$range"
+
+      # ── PR 正文形态 ────────────────────────────────────────────────
+      # 判据在 `.githooks/pr-body`，与本地自检**同一个文件**（沿用上段那条：
+      # 「判据一旦有两份，就等于没有判据」）。
+      #
+      # 为什么需要这一步：`#143` ~ `#147` 五笔正文全部违规，且**同一个错重复五次**
+      # —— `如实登记` 用 ①②③ 压在同一个段落里。当时这一环**没有任何装置**：模板
+      # 那行是单行占位（照它填必然压段）、`gh pr create` 不校验正文、`commit-msg`
+      # 只管提交信息。规则只活在 `git-conventions` §4.1 正文里，读它才生效 ⇒ 连续
+      # 失效五次。
+      #
+      # ⚠️ 这段原写作「…**且** `改动面` 跨两个技术栈目录却没列三列表」，**是错的**：
+      #    技术栈目录只含 `app/` `server/` `content/` `infra/`（§4.1 原文），五笔里
+      #    `#143`/`#145` 只动 `docs/`、`#144`/`#146`/`#147` 各只动 1 个技术栈目录 ⇒
+      #    没有一笔达到表格条件。曾据这个错判给三笔各补了一张表 —— **表是多加的**，
+      #    与「逐项一行」两档口径不符，见 §4.1 末条。
+      #
+      # ⚠️ 只在 `pull_request` 事件跑：`pull_request.body` 只有那里有。
+      # ⚠️ 正文经 env 传入、不拼进 `run:` —— 正文里的引号 / 反引号 / `$` 会把 shell 拆坏。
+      # ⚠️ `--diff-base` 不可省：跨栈三列表的判据靠**真实 diff**，不认正文自述。
+      #    checkout 已是 `fetch-depth: 0`，再取一次 base 分支就能算三点 diff。
+      - name: PR 正文形态
+        if: github.event_name == 'pull_request'
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          body="$(mktemp)"
+          printf '%s' "$PR_BODY" > "$body"
+          git fetch --no-tags origin "${{ github.event.pull_request.base.ref }}"
+          bash .githooks/pr-body --file "$body" --diff-base "origin/${{ github.event.pull_request.base.ref }}"
 
       # ── main 只接受 PR ──────────────────────────────────────────────
       # 判据在 `.githooks/pre-push`，与本地 hook **同一个文件**、同一个 `--range` 入口。
