@@ -14,7 +14,8 @@
 `build.py` 那侧一整套要随三包重建一并删除（见 `SPEC-PACK-005` 的「迁移状态」段）。
 在那之前先把产品链路接通：客户端探的是 `<包根>/pack.json`，`dist/` 下那个它不认。
 
-派生口径 —— **旧数据没有的字段一律机械派生，不撰写内容**：
+派生口径 —— **旧数据没有的字段一律机械派生，不撰写内容**；
+真正撰写出来的内容另有独立源 `entries.json`（见末行）：
 
 | 新字段 | 来源 | 说明 |
 |---|---|---|
@@ -22,13 +23,22 @@
 | `nodes[].level_slot` | `domainId` | 每个 `domainId` 一个 `system` 节点，其下 150 条为 `planet` |
 | `nodes[].axis` | 常量 `AXIS` | 旧 `sixAxis` 已废（`ADR-0005`），三轴里只 `occupation` 表达「岗位技能」 |
 | `edges[]` | `edges[].type` | `strong`→`required`；`weak`/`unknown`→`recommended`（旧 `unknown` 表达不了强度，取最近的一档并在下方登记） |
-| `entries[].criteria[].statement` | `questions[].answer` | `"能说出：" + answer`。**模板 + 原文**，不是新写的句子 |
+| `entries[].criteria[].statement` | `questions[].answer` | `"能说出：" + answer`。**模板 + 原文**，不是新写的句子；`entries.json` 给了断言就覆盖它 |
 | `entries[].quiz[]` | `questions[]` | 原题无选项、无判定形式 ⇒ `type=freeform`、`judge=self` |
 | `sources[].appliesTo.node_scope` | `items[].sourceRefs` | 反查：引用了这份源的节点 id |
 | `payload.counts` | 实扫 | 不手填 —— `readPack` 会拿它和 `nodes[]` 对账 |
 
-**不派生的两项**：`entries[].steps` 与 `entries[].body`。旧数据里根本没有，编不出来；
-106 条没有题目的节点连 `entry` 都不建（界面如实显示「暂无」）。
+**`entries.json`（内容侧，可选）** —— 同目录下的独立文件，`itemId → {summary, body, steps,
+selfCheck, estMinutes, criteria[]}`。它是**写出来的内容**，不是派生结果，所以与源数据分开：
+`items.json` 只承载编目事实（标题、域、层级），正文与步骤不往那儿塞。
+
+- 缺这个文件时行为与以前一致：只有带题的节点建 `entry`，`steps` / `body` 为 `null`。
+- 有步骤的节点**即使没有题**也建 `entry`（`criteria` 空 = 打卡式，`entity-fields` §9.2 允许）。
+- `criteria[]` 用 `{"quiz": "<题 id>", "statement": "..."}` 覆盖派生断言：按题 id 对，不按
+  `c1` / `c2` 这种生成序号对 —— 序号会随题量重排，题 id 不会。
+- 装配期只查**输入契约**（枚举值、步骤非空时至少一个复习类算子、断言指向的题存在），
+  不做包内自洽校验 —— 那是 `validator.py` 的事。查的理由很实在：写错的 `operator`
+  不会让装配失败，只会在客户端 `readPack` 抛错，或者渲染成一个说不清的空步骤。
 """
 
 from __future__ import annotations
@@ -59,6 +69,16 @@ AUTHORITY = {"L0": "official", "L1": "standard", "L2": "textbook", "L4": "commun
 # 旧边类型 → 先修强度。`unknown`（指向未知）在旧模型里不表达强度，
 # 归到 `recommended`：它不参与 `⪯` 闭包，与「指向未知」一样不构成硬约束。
 EDGE_STRENGTH = {"strong": "required", "weak": "recommended", "unknown": "recommended"}
+
+# 内容侧的手写源（可选）。与 `items.json` 分开：那份只放编目事实，正文与步骤不往里塞。
+ENTRIES_NAME = "entries.json"
+
+# `entity-fields` §9.1 的六类执行算子。写错一个不会让装配失败，只会让客户端
+# `readPack` 在 `ExecutionOperator.fromWire` 那里整包被拒 —— 所以在搬运期先拦下来。
+OPERATORS = ("read", "example", "recall", "practice", "explain", "do")
+
+# `entity-fields` §9.1 的相位：`first` 首学 / `review` 复习 / `both` 两者都要。
+STEP_PHASES = ("first", "review", "both")
 
 # 与 `build.py` 同一组序列化参数：换任何一项，同一 commit 两次装配就 byte 不等。
 _JSON_KWARGS = {"ensure_ascii": False, "sort_keys": True, "indent": 2, "separators": (",", ": ")}
@@ -181,12 +201,71 @@ def build_edges(manifest: dict, items: list, edges: list, node_of: dict[str, str
     return out, dropped
 
 
-def build_entries(items: list, questions: list, node_of: dict[str, str]) -> list[dict]:
-    """有题目的节点才建 entry。
+def _effective_phase(operator: str, phase: str | None) -> str:
+    """`entity-fields` §9.1：未声明时由算子派生 —— `read` / `example` → `first`，其余 → `both`。
+
+    与客户端 `EntryStep.effectivePhase` 同一张表。**装配时只用它来做判据**（要求至少一步
+    复习），不把派生结果写进 `pack.json`：写了就是同一件事在两处表达，改一处必漏另一处。
+    """
+    if phase is not None:
+        return phase
+    return "first" if operator in ("read", "example") else "both"
+
+
+def load_entries(root: str) -> dict[str, dict]:
+    """读同目录的 `entries.json`（可选，缺了返回空表）。
+
+    只做**输入契约检查**，不做包内自洽校验（那是 `validator.py` 的职责）。查的三件事
+    都属于「写错了不会报错、只会在别处炸」：枚举值、步骤里没有复习算子、断言指向
+    不存在的题。报错带 `itemId` 与前缀，是为了让人一眼看出该改哪个文件的哪一条。
+    """
+    path = os.path.join(root, ENTRIES_NAME)
+    if not os.path.isfile(path):
+        return {}
+    with open(path, encoding="utf-8") as handle:
+        try:
+            data = json.load(handle)
+        except json.JSONDecodeError as exc:
+            raise AssembleError(f"{ENTRIES_NAME} 不是合法 JSON：{exc}") from exc
+    if not isinstance(data, dict):
+        raise AssembleError(f"{ENTRIES_NAME} 顶层必须是 object（`itemId` → 内容）")
+
+    for item_id, entry in data.items():
+        if not isinstance(entry, dict):
+            raise AssembleError(f"{ENTRIES_NAME} {item_id} 的值必须是 object")
+        for index, step in enumerate(entry.get("steps") or [], start=1):
+            operator = step.get("operator")
+            if operator not in OPERATORS:
+                raise AssembleError(
+                    f"{ENTRIES_NAME} {item_id} 第 {index} 步的 operator 不在六类里：{operator!r}"
+                    f"（允许：{' / '.join(OPERATORS)}）"
+                )
+            phase = step.get("phase")
+            if phase is not None and phase not in STEP_PHASES:
+                raise AssembleError(
+                    f"{ENTRIES_NAME} {item_id} 第 {index} 步的 phase 不合法：{phase!r}"
+                    f"（允许：{' / '.join(STEP_PHASES)}）"
+                )
+            if not isinstance(step.get("instruction"), str) or not step["instruction"].strip():
+                raise AssembleError(f"{ENTRIES_NAME} {item_id} 第 {index} 步缺 instruction")
+        steps = entry.get("steps") or []
+        # 「至少一个 review（含 both）步骤」= 至多不能全是首学算子，否则遗忘曲线被静默绕过。
+        if steps and all(_effective_phase(s["operator"], s.get("phase")) == "first" for s in steps):
+            raise AssembleError(
+                f"{ENTRIES_NAME} {item_id} 的步骤全是首学算子，至少要有一步 review / both"
+                "（`entity-fields` §9.1）"
+            )
+    return data
+
+
+def build_entries(
+    items: list, questions: list, node_of: dict[str, str], authored: dict[str, dict]
+) -> list[dict]:
+    """有题目的节点、或有手写内容的节点才建 entry。
 
     `criteria` 与 `quiz` 必须 1:1（`entity-fields` §9.3）：旧题目没有能力断言这一栏，
-    于是断言由答案原文 + 固定前缀派生。**这是模板，不是撰写** —— 想要真正的断言，
-    得重写题目，那是内容工作。
+    于是断言由答案原文 + 固定前缀派生。`entries.json` 给了 `{"quiz": ..., "statement": ...}`
+    就用它覆盖 —— 那是**真的断言**，模板只是没有断言时的兜底。
 
     一个条目可以有多道题（`python/fn-default-arg` 就有两条），所以按 `itemId`
     **分组**而不是建 1:1 字典 —— 后者会静默吞掉同一条目上的第二道题。
@@ -198,14 +277,37 @@ def build_entries(items: list, questions: list, node_of: dict[str, str]) -> list
 
     out: list[dict] = []
     for item in items:
-        group = by_item.get(item["id"])
-        if not group:
+        item_id = item["id"]
+        if item_id not in node_of:
             continue
+        group = by_item.get(item_id) or []
+        own = authored.get(item_id) or {}
+        if not group and not own:
+            continue
+
+        # 断言覆盖按**题 id** 对，不按 `c1` / `c2` 这种生成序号对：序号随题量重排，题 id 不会。
+        statements: dict[str, str] = {}
+        for override in own.get("criteria") or []:
+            quiz_id = override.get("quiz")
+            if quiz_id in statements:
+                raise AssembleError(f"{ENTRIES_NAME} {item_id} 的 {quiz_id} 断言写了两次")
+            statements[quiz_id] = override.get("statement") or ""
+        unknown = sorted(set(statements) - {q["id"] for q in group})
+        if unknown:
+            raise AssembleError(
+                f"{ENTRIES_NAME} {item_id} 的断言指向本条目没有的题：{', '.join(unknown)}"
+            )
+
         criteria: list[dict] = []
         quiz: list[dict] = []
         for index, question in enumerate(group, start=1):
             criterion_id = f"c{index}"
-            criteria.append({"id": criterion_id, "statement": f"能说出：{question['answer']}"})
+            criteria.append(
+                {
+                    "id": criterion_id,
+                    "statement": statements.get(question["id"]) or f"能说出：{question['answer']}",
+                }
+            )
             quiz.append(
                 {
                     "id": question["id"],
@@ -216,20 +318,33 @@ def build_entries(items: list, questions: list, node_of: dict[str, str]) -> list
                     "judge": "self",
                 }
             )
+
+        steps: list[dict] = []
+        for step in own.get("steps") or []:
+            steps.append(
+                {
+                    "operator": step["operator"],
+                    # 没声明就留 `null`，相位由客户端 `effectivePhase` 派生（见 `_effective_phase`）。
+                    "phase": step.get("phase"),
+                    "instruction": step["instruction"],
+                }
+            )
+
         out.append(
             {
-                "node_id": node_of[item["id"]],
-                "summary": None,
-                "outcomes": [],
+                "node_id": node_of[item_id],
+                "summary": own.get("summary"),
+                "outcomes": list(own.get("outcomes") or []),
                 "resources": [],
                 "aliases": [],
                 "keywords": [],
-                "body": None,
-                "steps": [],
-                "selfCheck": [],
+                "body": own.get("body"),
+                "steps": steps,
+                "selfCheck": list(own.get("selfCheck") or []),
                 "criteria": criteria,
                 "quiz": quiz,
                 "source_refs": list(item.get("sourceRefs") or []),
+                "estMinutes": own.get("estMinutes"),
             }
         )
     return out
@@ -302,15 +417,25 @@ def assemble(root: str) -> tuple[dict, list[str]]:
     schemes = segments.get("schemes") or []
 
     plugin_id = manifest["id"]
+    authored = load_entries(root)
+    stranded = sorted(set(authored) - {item["id"] for item in items})
+    if stranded:
+        raise AssembleError(
+            f"{ENTRIES_NAME} 里的 itemId 在 items.json 找不到：{', '.join(stranded)}"
+            "（多半是错字 —— 静默丢掉就等于内容白写）"
+        )
+
     nodes, node_of = build_nodes(manifest, items)
     new_edges, dropped = build_edges(manifest, items, edges, node_of)
-    entries = build_entries(items, questions, node_of)
+    entries = build_entries(items, questions, node_of, authored)
     sources = build_sources(excerpts, items, node_of)
     mapped_schemes = build_schemes(schemes, node_of)
 
     counts = {"star": 0, "system": 0, "planet": 0}
     for node in nodes:
         counts[node["level_slot"]] = counts.get(node["level_slot"], 0) + 1
+
+    with_minutes = sum(1 for e in entries if e["estMinutes"] is not None)
 
     pack = {
         "plugin_id": plugin_id,
@@ -346,7 +471,11 @@ def assemble(root: str) -> tuple[dict, list[str]]:
             "has_criteria": any(e["criteria"] for e in entries),
             "has_quiz": any(e["quiz"] for e in entries),
             "quiz_types": sorted({q["type"] for e in entries for q in e["quiz"]}),
-            "est_minutes_coverage": 0.0,
+            # 有 `estMinutes` 的条目占多少 —— 分母是**可学节点**数（`planet`），不是条目数：
+            # 拿条目数当分母，覆盖率会随「写了多少条正文」一起虚高。
+            "est_minutes_coverage": round(with_minutes / counts["planet"], 4)
+            if counts["planet"]
+            else 0.0,
         },
         "nodes": nodes,
         "edges": new_edges,
@@ -359,7 +488,14 @@ def assemble(root: str) -> tuple[dict, list[str]]:
     notes: list[str] = []
     if dropped:
         notes.append(f"{dropped} 条边的端点不在 nodes 里，未搬（旧数据自身问题）")
-    notes.append(f"{len(items) - len(entries)} 条节点无题目，未建 entry（不编造步骤与正文）")
+    no_entry = counts["planet"] - len(entries)
+    if no_entry:
+        notes.append(
+            f"{no_entry} 条节点既没有题、也没有手写内容，未建 entry（不编造步骤与正文）："
+            f"{ENTRIES_NAME} 已覆盖 {len(authored)} 条"
+        )
+    if entries and not authored:
+        notes.append(f"没有 {ENTRIES_NAME}：所有 entry 的 steps / body 都是 null")
     return pack, notes
 
 
