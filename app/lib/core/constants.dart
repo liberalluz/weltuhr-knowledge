@@ -241,6 +241,48 @@ const Map<AuthorityLevel, String> authorityLabels = <AuthorityLevel, String>{
   AuthorityLevel.community: '社区',
 };
 
+/// 六类执行算子的中文名（`SPEC-STEP-012`）。理由同 [learnableTypeLabels]。
+///
+/// 详情页原写 `step.operator.wire`，界面上就是 `read` / `do` 这类英文标识 ——
+/// 与 `authorityLabels` 那条注释是同一个坑：枚举名是代码的标识，不是给人读的。
+const Map<ExecutionOperator, String> operatorLabels =
+    <ExecutionOperator, String>{
+      ExecutionOperator.read: '读',
+      ExecutionOperator.example: '例',
+      ExecutionOperator.recall: '忆',
+      ExecutionOperator.practice: '练',
+      ExecutionOperator.explain: '讲',
+      ExecutionOperator.doStep: '做',
+    };
+
+/// 步骤相位的中文名（`entity-fields` §9.1）。
+///
+/// `both` 写「首次与复习」而不写「都」：另两档是「只在首次」与「只在复习」，
+/// 一个「都」看不出在跟谁对比。
+const Map<StepPhase, String> stepPhaseLabels = <StepPhase, String>{
+  StepPhase.first: '首次',
+  StepPhase.review: '复习',
+  StepPhase.both: '首次与复习',
+};
+
+/// 题型的中文名（`entity-fields` §9.3）。理由同 [operatorLabels]。
+const Map<QuizType, String> quizTypeLabels = <QuizType, String>{
+  QuizType.choice: '选择',
+  QuizType.fill: '填空',
+  QuizType.code: '代码',
+  QuizType.audio: '听辨',
+  QuizType.freeform: '自由作答',
+};
+
+/// 判定方的中文名（`entity-fields` §9.3）。
+///
+/// `auto` 写「机器判」而不写「自动」：前者说清是**谁来判**，后者容易被读成
+/// 「自动跳过」。
+const Map<QuizJudge, String> quizJudgeLabels = <QuizJudge, String>{
+  QuizJudge.auto: '机器判',
+  QuizJudge.self: '自评',
+};
+
 /// `C-34` 虚实通道判据：六要件里「不可外化」格 **≥ 3** 即判「虚」（默会类）。
 ///
 /// 阈值由 α 包分布决定，不是调手感（`ADR-0003` §决策 2）：不可外化只有
