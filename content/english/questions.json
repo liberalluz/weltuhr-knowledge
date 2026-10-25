@@ -142,5 +142,341 @@
     "itemId": "english/co-connective-adversative",
     "prompt": "however 与 although 在句法位置上有什么不同？",
     "answer": "however 是副词，可置句首、句中或句末并用逗号隔开；although 是从属连词，引导从句且不能与 but 连用"
+  },
+  {
+    "id": "q-wc-noun",
+    "itemId": "english/wc-noun",
+    "prompt": "专有名词什么时候会带上不定冠词？",
+    "answer": "当它失去唯一性、表示「某一个」时，就退化成普通名词：a certain Mr Smith（某个叫史密斯的人）。集合名词的谓语单复数取决于说话人把它看成一个整体还是一群人：the team is / the team are。"
+  },
+  {
+    "id": "q-wc-pronoun",
+    "itemId": "english/wc-pronoun",
+    "prompt": "this 是限定词还是代词，怎么判断？",
+    "answer": "看它在句里做什么成分：this book 里是限定词（限定名词），This is mine 里是指示代词（独立作主语）。判断类别看成分，不看词形。"
+  },
+  {
+    "id": "q-wc-verb",
+    "itemId": "english/wc-verb",
+    "prompt": "have 在 I have a car 与 I have finished 里分别是哪类动词？",
+    "answer": "前者是实义动词（后接宾语 a car），后者是助动词（后接过去分词 finished）。判据是看它后面接的是宾语，还是另一个动词的非谓语形式。"
+  },
+  {
+    "id": "q-wc-adjective",
+    "itemId": "english/wc-adjective",
+    "prompt": "the present members 与 the members present 意思一样吗？",
+    "answer": "不一样：前者是「现任成员」（定语位），后者是「在场的成员」（后置位）。同类还有 responsible：a responsible person（负责可靠）与 the person responsible（当事负责人）。"
+  },
+  {
+    "id": "q-wc-adverb",
+    "itemId": "english/wc-adverb",
+    "prompt": "频率副词 often 在句子里的位置有规矩吗？",
+    "answer": "中位：实义动词前（She often goes there），be 动词后（She is often there）；也可放句末但语气不同。位置会改意思：Only she can do it 与 She can only do it 差别全在 only 站哪儿。"
+  },
+  {
+    "id": "q-wc-preposition",
+    "itemId": "english/wc-preposition",
+    "prompt": "between you and me 为什么不能用 I？",
+    "answer": "介词后面接代词要用宾格，between 是介词，所以用 me。介词与动词的搭配（depend on、consist of、apologize for）不能靠规则推出，只能记。"
+  },
+  {
+    "id": "q-wc-suffix",
+    "itemId": "english/wc-suffix",
+    "prompt": "economic 与 economical 能互换吗？",
+    "answer": "不能。两个词同出 economy 但意义分化：economic 是「经济领域的」，economical 是「省钱的」。historical（历史的）与 historic（有历史意义的）同理。"
+  },
+  {
+    "id": "q-np-plural",
+    "itemId": "english/np-plural",
+    "prompt": "boy 与 city 的复数为什么一个加 s、一个变 ies？",
+    "answer": "-y 前是辅音才变 ies：city → cities（t 是辅音），boy → boys（o 是元音）。另注意 roof → roofs 是 -f 变 ves 的例外，photo → photos 而 potato → potatoes。"
+  },
+  {
+    "id": "q-np-article-definite",
+    "itemId": "english/np-article-definite",
+    "prompt": "Tigers are dangerous 为什么不能说成 the tigers are dangerous？",
+    "answer": "the 要求听者能定位到具体对象；泛指一类时复数名词不加 the，加了只能指「特定的那群老虎」。类指也可用单数：The tiger is a mammal。"
+  },
+  {
+    "id": "q-np-article-indefinite",
+    "itemId": "english/np-article-indefinite",
+    "prompt": "a university 与 an hour 的选择依据是什么？",
+    "answer": "看读音不看字母：university 以辅音音素 /j/ 开头用 a；hour 的 h 不发音、以元音开头用 an。"
+  },
+  {
+    "id": "q-np-quantifier",
+    "itemId": "english/np-quantifier",
+    "prompt": "A number of students are here 与 The number of students is rising 为什么谓语不同？",
+    "answer": "中心词不同：a number of 的中心是 students（复数，用 are），the number of 的中心是 number（单数，用 is）。这一对的判据在 the / a 上，不在 number 上。"
+  },
+  {
+    "id": "q-np-possessive",
+    "itemId": "english/np-possessive",
+    "prompt": "a friend of mine 与 my friend 有什么不同？",
+    "answer": "a friend of mine 是双重所有格，表「我朋友中的一个」；my friend 可能指唯一那个。另注意 Tom and Mary's house（共同拥有一套）与 Tom's and Mary's houses（各有一套）。"
+  },
+  {
+    "id": "q-np-of-genitive",
+    "itemId": "english/np-of-genitive",
+    "prompt": "the legs of the table 与 the table's legs 哪个更常用？选择时先看什么？",
+    "answer": "前者更常用，后者口语里也成立但 less 正式。选择次序：先看是不是固定搭配（the end of the story 不说 the story's end），再看中心词是不是人（人的用 's），最后看长度（长而带从句的放 of 后面）。"
+  },
+  {
+    "id": "q-np-modifier-order",
+    "itemId": "english/np-modifier-order",
+    "prompt": "a five-year plan 里 year 为什么不是 years？",
+    "answer": "名词定语不带复数：a five-year plan、two ten-year-old boys。那条 OSASCOMP 顺序是倾向，真正的硬规则只有两条 —— 名词定语用单数、修饰 -thing / -body / -one 的形容词必须后置。"
+  },
+  {
+    "id": "q-tense-simple-present",
+    "itemId": "english/tense-simple-present",
+    "prompt": "When he arrives, we will start 为什么从句用现在时？",
+    "answer": "时间与条件从句用现在时表将来，主句用将来时，这是英语的固定分工，不是时态混用。一般现在时的核心是「不限定时段内重复成立」，不是「此刻正在做」。"
+  },
+  {
+    "id": "q-tense-present-progressive",
+    "itemId": "english/tense-present-progressive",
+    "prompt": "I live in Berlin 与 I am living in Berlin 区别在哪？",
+    "answer": "后者是临时状态（暂住），前者是长期。现在进行时真正带的语义是「临时 vs 永久」；状态动词（know / believe / own / contain）一般不用进行时。"
+  },
+  {
+    "id": "q-tense-simple-past",
+    "itemId": "english/tense-simple-past",
+    "prompt": "I lost my keys 与 I have lost my keys 差在哪？",
+    "answer": "一般过去时与现在断开（可能已找到，或不说结果）；现在完成时的结果是现在找不到。带 yesterday / last week / in 2019 这类确定时间状语时一律用一般过去时。"
+  },
+  {
+    "id": "q-tense-past-progressive",
+    "itemId": "english/tense-past-progressive",
+    "prompt": "I was reading when he called 里两个动作是什么关系？",
+    "answer": "不是先后，而是包含：电话落在读书的时间段里。长动作（进行时）作背景，短动作（过去时）是打断事件。"
+  },
+  {
+    "id": "q-tense-perfect-progressive",
+    "itemId": "english/tense-perfect-progressive",
+    "prompt": "I have read the book 与 I have been reading the book 差在哪？",
+    "answer": "前者读完（有结果），后者在读、未必读完。完成进行时排斥次数与数量：I have been reading it three times 不成立，要说 I have read it three times。"
+  },
+  {
+    "id": "q-tense-future-will",
+    "itemId": "english/tense-future-will",
+    "prompt": "I will visit him 与 I am going to visit him 在语境上差在哪？",
+    "answer": "will 是此刻作出的决定或主观预测；be going to 带「已计划」或「已有迹象」。will 不用于时间与条件从句。"
+  },
+  {
+    "id": "q-tense-future-perfect",
+    "itemId": "english/tense-future-perfect",
+    "prompt": "By the time you arrive 为什么不能用 will arrive？",
+    "answer": "时间与条件从句不用将来时，仍用现在时。by + 时间 是将来完成时的典型标记（By next June, I will have finished），at + 时间 配将来进行时。"
+  },
+  {
+    "id": "q-av-passive-use",
+    "itemId": "english/av-passive-use",
+    "prompt": "被动语态的动因是什么？学术写作大量用被动是为了「显得客观」吗？",
+    "answer": "动因在语篇：施事未知、不重要，或要让受事承接上文话题占主语位。学术写作让方法与结果占话题位置，不是为了显得客观 —— 判断该不该用，看这一段的话题是谁。"
+  },
+  {
+    "id": "q-av-get-passive",
+    "itemId": "english/av-get-passive",
+    "prompt": "My bike got stolen 与 My bike was stolen 差在哪？",
+    "answer": "get 被动突出「发生了变化」，常带说话人态度（意外、不满、庆幸），语体偏口语，很少带 by 短语；be 被动是中性陈述。"
+  },
+  {
+    "id": "q-av-causative",
+    "itemId": "english/av-causative",
+    "prompt": "I had my hair cut 与 I had him cut my hair 差在哪？",
+    "answer": "前者是 have + 宾语 + 过去分词，动作由别人完成（我被剪发）；后者是 have + 宾语 + 原形，宾语自己动手。make / let 后接不带 to 的不定式，变被动时 to 要回来：He was made to apologize。"
+  },
+  {
+    "id": "q-av-modal-ability",
+    "itemId": "english/av-modal-ability",
+    "prompt": "will can 为什么错？将来的能力怎么表达？",
+    "answer": "can 只有现在与过去两套形式，无将来与非限定形式；将来、完成、不定式位置一律换成 be able to：will be able to、have been able to、to be able to。"
+  },
+  {
+    "id": "q-av-modal-obligation",
+    "itemId": "english/av-modal-obligation",
+    "prompt": "You mustn't go 与 You don't have to go 差在哪？",
+    "answer": "mustn't 是禁止（不许去），don't have to 是无义务（不必去），两者不是同义。must 没有过去形式，过去义务用 had to；推测义的否定用 can't，不用 mustn't。"
+  },
+  {
+    "id": "q-av-modal-past",
+    "itemId": "english/av-modal-past",
+    "prompt": "You should have told me 除了指向过去，还带了什么？",
+    "answer": "带反事实评价：事实是你没告诉我。should have / could have / might have 都含「事实并非如此」，所以不能说 You should have passed（会被理解成「居然没通过」）。过去义务不用 must have，用 had to。"
+  },
+  {
+    "id": "q-av-subjunctive",
+    "itemId": "english/av-subjunctive",
+    "prompt": "If I were you 为什么用 were 而不是 was？",
+    "answer": "虚拟语气表与现在事实相反，were 通用于各人称；口语里 If I was you 常见，正式写作仍用 were。mandative 虚拟用原形：It is essential that he be informed。"
+  },
+  {
+    "id": "q-nf-infinitive-form",
+    "itemId": "english/nf-infinitive-form",
+    "prompt": "He asked me not to go 为什么不能写成 to not go？",
+    "answer": "不定式的否定词放在 to 之前。形式有三：to do、to have done（先于主句）、to be done（被动），如 She seems to have left。"
+  },
+  {
+    "id": "q-nf-infinitive-function",
+    "itemId": "english/nf-infinitive-function",
+    "prompt": "It takes time to learn a language 里 it 是什么成分？",
+    "answer": "形式主语，真正的主语是不定式（后置）。长不定式作主语几乎总被后置：It is hard to stay calm 比 To stay calm is hard 常见。"
+  },
+  {
+    "id": "q-nf-gerund",
+    "itemId": "english/nf-gerund",
+    "prompt": "Swimming is good exercise 与 the swimming boy 里的 -ing 一样吗？",
+    "answer": "不一样：前者是动名词（作名词成分），后者是现在分词（作定语）。动名词可带逻辑主语（his coming）与完成式（having finished）。"
+  },
+  {
+    "id": "q-nf-present-participle",
+    "itemId": "english/nf-present-participle",
+    "prompt": "She came running 里 running 的隐含主语是谁？不一致会怎样？",
+    "answer": "隐含主语是 she（既 came 又 ran），必须与主句主语一致；不一致就成了悬垂分词。"
+  },
+  {
+    "id": "q-nf-past-participle",
+    "itemId": "english/nf-past-participle",
+    "prompt": "the fallen leaves 为什么不能理解成「被落下的叶子」？",
+    "answer": "过去分词的语义是「被动 + 完成」，但不及物动词的过去分词（fallen / grown / risen）只表完成状态，不表被动；只有及物动词的过去分词才表被动（the broken window）。"
+  },
+  {
+    "id": "q-nf-absolute",
+    "itemId": "english/nf-absolute",
+    "prompt": "The meeting over, we went home 为什么不算悬垂分词？",
+    "answer": "它自带主语 the meeting，与主句主语不同，所以不违反「隐含主语一致」这条。独立主格可表时间、原因、条件、伴随：His work finished, he left。"
+  },
+  {
+    "id": "q-nf-perfect-infinitive",
+    "itemId": "english/nf-perfect-infinitive",
+    "prompt": "Having finished the report, he left 与 Finishing the report, he left 差在哪？",
+    "answer": "完成式表动作先于主句（写完才走）；换成 Finishing 会被理解成一边写一边走。判据是时间先后：先于主句谓语才用完成式。"
+  },
+  {
+    "id": "q-cl-relative-defining",
+    "itemId": "english/cl-relative-defining",
+    "prompt": "The book I bought is expensive 里省掉了什么？什么时候不能省？",
+    "answer": "省掉了作宾语的关系词（that / which）；关系词在从句里作宾语可省，作主语不可省。先行词是物不能用 who。"
+  },
+  {
+    "id": "q-cl-noun-that",
+    "itemId": "english/cl-noun-that",
+    "prompt": "The problem is that we have no time 里的 that 能省吗？",
+    "answer": "不能，表语从句的 that 不可省；主语从句、同位语从句同样不可省，只有宾语从句的 that 可省（I know he lied）。连接词 that 在从句里不作成分，关系代词 that 要作成分。"
+  },
+  {
+    "id": "q-cl-noun-wh",
+    "itemId": "english/cl-noun-wh",
+    "prompt": "What did he say surprised me 为什么错？",
+    "answer": "wh- 名词性从句用陈述语序，不倒装：What he said surprised me。缺成分用 what，不缺成分用 that。"
+  },
+  {
+    "id": "q-cl-comparative",
+    "itemId": "english/cl-comparative",
+    "prompt": "The population of Tokyo is larger than London 错在哪？",
+    "answer": "比较对象不对齐：拿人口比城市，应改成 …larger than that of London（that = the population）。判据是把省略部分补回来，看两边比的是不是同一类东西。"
+  },
+  {
+    "id": "q-cl-adverbial-condition",
+    "itemId": "english/cl-adverbial-condition",
+    "prompt": "If it will rain, we will cancel 为什么错？will 在条件句里什么时候能出现？",
+    "answer": "条件从句用现在时表将来；例外是 will 表意愿 —— If you will wait a moment, I will check。unless 等于 if not，但带「除非」的预期，不能随意互换。"
+  },
+  {
+    "id": "q-cl-adverbial-concession",
+    "itemId": "english/cl-adverbial-concession",
+    "prompt": "Although it rained, but we went out 为什么错？",
+    "answer": "英语里 although 与 but 不能同现（汉语「虽然…但是…」可以）。三个词位置不同：although 是从属连词、however 是连接副词、despite 是介词后接名词。"
+  },
+  {
+    "id": "q-cl-adverbial-reason",
+    "itemId": "english/cl-adverbial-reason",
+    "prompt": "He left, so he was tired 为什么错？",
+    "answer": "so 表结果不表原因；原因用 because / since / as（强度递减）。目的从句 so that 常带情态，结果从句 so … that 不带。"
+  },
+  {
+    "id": "q-wo-basic-svo",
+    "itemId": "english/wo-basic-svo",
+    "prompt": "The dog bit the man 换成 The man bit the dog，说明了什么？",
+    "answer": "意思全变。英语几乎没有格标记，语序承担语法功能 —— 谁在前谁就是主语；倒装与前置都是有标记语序，只在需要转移焦点时用。"
+  },
+  {
+    "id": "q-wo-question",
+    "itemId": "english/wo-question",
+    "prompt": "Who bought it 为什么不写成 Who did buy it？",
+    "answer": "who 本身就是主语，主语疑问句不需要操作词，也不借 do；Who did call? 只在强调时出现。其他疑问句要靠操作词倒装：Does he work here?"
+  },
+  {
+    "id": "q-wo-there-be",
+    "itemId": "english/wo-there-be",
+    "prompt": "There is a book on the table 里的 there 是「那里」的意思吗？",
+    "answer": "不是，它是虚位主语，无实义，真主语在 be 之后。谓语与后接名词一致（There are books）；there be 不能用 the 引导已知信息作真主语。"
+  },
+  {
+    "id": "q-wo-adverb-position",
+    "itemId": "english/wo-adverb-position",
+    "prompt": "He naturally answered 与 Naturally, he answered 差在哪？",
+    "answer": "辖域不同：前者 naturally 修饰动作（自然地回答），后者修饰整句（当然，他回答了）。句末最无标记，句首最强调。"
+  },
+  {
+    "id": "q-wo-inversion-conditional",
+    "itemId": "english/wo-inversion-conditional",
+    "prompt": "Were I you, I would apologize 由哪句变来？哪些词能前置？",
+    "answer": "由 If I were you 省略 if 变来。只有 were / had / should 三个操作词能前置：Had he known, … / Should you need help, …。"
+  },
+  {
+    "id": "q-wo-object-fronting",
+    "itemId": "english/wo-object-fronting",
+    "prompt": "This book, I really enjoyed 是倒装吗？",
+    "answer": "不是倒装，是话题化：只把宾语提到句首，操作词不上提（不是 This book did I enjoy）。它是有标记语序，用于衔接上文。"
+  },
+  {
+    "id": "q-wo-cleft-wh",
+    "itemId": "english/wo-cleft-wh",
+    "prompt": "What he broke was the window 的焦点在哪？",
+    "answer": "焦点在句末（the window），这是 wh- 分裂句的常规形态；也可说 The window is what he broke。它专把受事或事件放到句末作新信息，多用于回答 what 问题。"
+  },
+  {
+    "id": "q-co-ellipsis",
+    "itemId": "english/co-ellipsis",
+    "prompt": "She ordered tea and he coffee 省了什么？前提是什么？",
+    "answer": "省了 ordered（动词省略）。前提是能唯一恢复，读者必须能准确填回被删成分；若有两种填法就别省。替代常与之并用：… and he did（did = ordered）。"
+  },
+  {
+    "id": "q-co-connective-additive",
+    "itemId": "english/co-connective-additive",
+    "prompt": "moreover 与 in addition 有什么区别？",
+    "answer": "moreover 暗示「更强的一点」（论证推进），in addition 只表示「还有」。besides 常带「反正也」的语气，also 多居句中。"
+  },
+  {
+    "id": "q-co-connective-causal",
+    "itemId": "english/co-connective-causal",
+    "prompt": "He was late, therefore he missed the bus 为什么算 run-on？",
+    "answer": "结果侧连接词（therefore / thus / consequently）是副词，不能把两个分句连成一个句子，正式写作要改成分号或句号。"
+  },
+  {
+    "id": "q-co-connective-temporal",
+    "itemId": "english/co-connective-temporal",
+    "prompt": "eventually 与 finally 能互换吗？",
+    "answer": "不能。eventually 是「终于（经历长时间后）」，finally 是「最后一步」或「总算」；in the end 表最终结果，at the end 指某段时间末尾。"
+  },
+  {
+    "id": "q-co-information-structure",
+    "itemId": "english/co-information-structure",
+    "prompt": "为什么说句末位置最重？",
+    "answer": "句末是默认焦点位、放新信息（末端重量：长成分也放句末）。被动与分裂句都是把已知信息提到句首、让受事承接上文的工具。"
+  },
+  {
+    "id": "q-co-paragraph-topic",
+    "itemId": "english/co-paragraph-topic",
+    "prompt": "英语段落主要靠什么衔接？为什么连接词堆太多反而生硬？",
+    "answer": "靠「关键词重复 + 指代链」为主，连接词只管句间逻辑；一段里成串堆叠 firstly / moreover / therefore 会显得机械。段落结构是主题句 → 支撑 → 收束。"
+  },
+  {
+    "id": "q-co-register",
+    "itemId": "english/co-register",
+    "prompt": "find out 与 ascertain 的区别属于哪个层面？",
+    "answer": "语域层面：短语动词偏口语，单个拉丁词偏正式（get / obtain / acquire 同理）。正式度还看缩写（don't / do not）与名词化（decide → make a decision）；一段里混用 ascertain 与 gotta 是硬伤。"
   }
 ]
