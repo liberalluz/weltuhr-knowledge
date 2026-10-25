@@ -17,7 +17,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释为什么 freedom 不能说 a freedom，而 decision 可以 —— 差别落在哪一类上"
+        "instruction": "为什么 freedom 不能说 a freedom，而 decision 可以 —— 差别落在哪一类上"
       },
       {
         "operator": "recall",
@@ -58,7 +58,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释为什么 It is raining 里的 it 不能换成 this 或 that"
+        "instruction": "为什么 It is raining 里的 it 不能换成 this 或 that"
       },
       {
         "operator": "recall",
@@ -99,7 +99,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释情态动词为什么没有第三人称单数形式，而不只是「习惯上不加」"
+        "instruction": "情态动词为什么没有第三人称单数形式，而不只是「习惯上不加」"
       },
       {
         "operator": "recall",
@@ -140,7 +140,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释为什么 something nice 不能说成 nice something"
+        "instruction": "为什么 something nice 不能说成 nice something"
       },
       {
         "operator": "recall",
@@ -189,7 +189,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释为什么频率副词中位时站在 be 之后、实义动词之前"
+        "instruction": "为什么频率副词中位时站在 be 之后、实义动词之前"
       },
       {
         "operator": "recall",
@@ -234,7 +234,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释 in front of 为什么算一个介词而不是三个词"
+        "instruction": "in front of 为什么算一个介词而不是三个词"
       },
       {
         "operator": "recall",
@@ -275,7 +275,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释并列连词与从属连词在「能不能前置」上的根本差别"
+        "instruction": "并列连词与从属连词在「能不能前置」上的根本差别"
       },
       {
         "operator": "recall",
@@ -316,7 +316,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释限定词与形容词为什么能同时出现、而两个中位限定词不能"
+        "instruction": "限定词与形容词为什么能同时出现、而两个中位限定词不能"
       },
       {
         "operator": "recall",
@@ -361,7 +361,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释 -tion 与 -ic 为什么都把重音往后拉"
+        "instruction": "-tion 与 -ic 为什么都把重音往后拉"
       },
       {
         "operator": "recall",
@@ -402,7 +402,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释为什么代词宾语必须中置，而名词宾语可以后置"
+        "instruction": "为什么代词宾语必须中置，而名词宾语可以后置"
       },
       {
         "operator": "recall",
@@ -447,7 +447,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释为什么 coffee 在不同语境下可数性会变，而不只是「口语例外」"
+        "instruction": "为什么 coffee 在不同语境下可数性会变，而不只是「口语例外」"
       },
       {
         "operator": "recall",
@@ -492,7 +492,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释 -y 变 ies 的条件为什么是「前接辅音」而不是「所有 -y」"
+        "instruction": "-y 变 ies 的条件为什么是「前接辅音」而不是「所有 -y」"
       },
       {
         "operator": "recall",
@@ -541,7 +541,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释 the tiger 表类指与 a tiger 表类指的差别"
+        "instruction": "the tiger 表类指与 a tiger 表类指的差别"
       },
       {
         "operator": "recall",
@@ -590,7 +590,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释为什么 a books 不成立，而不是「习惯上不说」"
+        "instruction": "为什么 a books 不成立，而不是「习惯上不说」"
       },
       {
         "operator": "recall",
@@ -635,7 +635,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释零冠词为什么在泛指复数上成立，而在单数可数名词上不成立"
+        "instruction": "零冠词为什么在泛指复数上成立，而在单数可数名词上不成立"
       },
       {
         "operator": "recall",
@@ -684,7 +684,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释 some / any 的分工为什么不是「肯定 / 否定」这么简单"
+        "instruction": "some / any 的分工为什么不是「肯定 / 否定」这么简单"
       },
       {
         "operator": "recall",
@@ -729,7 +729,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释 a friend of mine 与 my friend 的差别落在哪"
+        "instruction": "a friend of mine 与 my friend 的差别落在哪"
       },
       {
         "operator": "recall",
@@ -774,7 +774,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释称号 the Queen of England 为什么不能改成 's 形式"
+        "instruction": "称号 the Queen of England 为什么不能改成 's 形式"
       },
       {
         "operator": "recall",
@@ -815,7 +815,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释 Ten miles is 为什么用单数，而不是按复数形式"
+        "instruction": "Ten miles is 为什么用单数，而不是按复数形式"
       },
       {
         "operator": "recall",
@@ -860,7 +860,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释为什么修饰 something 的形容词必须后置"
+        "instruction": "为什么修饰 something 的形容词必须后置"
       },
       {
         "operator": "recall",
@@ -905,7 +905,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释第三人称单数 -s 在疑问句里跑到哪去了"
+        "instruction": "第三人称单数 -s 在疑问句里跑到哪去了"
       },
       {
         "operator": "recall",
@@ -950,7 +950,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释为什么 seeing 进进行时后意思会变"
+        "instruction": "为什么 seeing 进进行时后意思会变"
       },
       {
         "operator": "recall",
@@ -995,7 +995,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释为什么 yesterday 只能配一般过去时"
+        "instruction": "为什么 yesterday 只能配一般过去时"
       },
       {
         "operator": "recall",
@@ -1040,7 +1040,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释 when 与 while 在这组时态里分别倾向接哪种"
+        "instruction": "when 与 while 在这组时态里分别倾向接哪种"
       },
       {
         "operator": "recall",
@@ -1085,7 +1085,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释为什么 recently 能配完成时而 yesterday 不能"
+        "instruction": "为什么 recently 能配完成时而 yesterday 不能"
       },
       {
         "operator": "recall",
@@ -1130,7 +1130,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释为什么完成进行时不能带次数状语"
+        "instruction": "为什么完成进行时不能带次数状语"
       },
       {
         "operator": "recall",
@@ -1175,7 +1175,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释为什么没有参照点时过去完成时读起来别扭"
+        "instruction": "为什么没有参照点时过去完成时读起来别扭"
       },
       {
         "operator": "recall",
@@ -1220,7 +1220,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释 will 与 be going to 在「依据来源」上的差别"
+        "instruction": "will 与 be going to 在「依据来源」上的差别"
       },
       {
         "operator": "recall",
@@ -1265,7 +1265,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释为什么看见乌云时 be going to 比 will 更贴"
+        "instruction": "为什么看见乌云时 be going to 比 will 更贴"
       },
       {
         "operator": "recall",
@@ -1310,7 +1310,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释 by 与 at 在语义上的差别，为什么一个配完成一个配进行"
+        "instruction": "by 与 at 在语义上的差别，为什么一个配完成一个配进行"
       },
       {
         "operator": "recall",
@@ -1355,7 +1355,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释为什么不及物动词不能变被动"
+        "instruction": "为什么不及物动词不能变被动"
       },
       {
         "operator": "recall",
@@ -1400,7 +1400,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释为什么被动不等于更正式"
+        "instruction": "为什么被动不等于更正式"
       },
       {
         "operator": "recall",
@@ -1445,7 +1445,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释 get dressed 为什么不算被动语态"
+        "instruction": "get dressed 为什么不算被动语态"
       },
       {
         "operator": "recall",
@@ -1490,7 +1490,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释 have + 过去分词与 have + 原形在施事上的差别"
+        "instruction": "have + 过去分词与 have + 原形在施事上的差别"
       },
       {
         "operator": "recall",
@@ -1531,7 +1531,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释 could 表委婉请求时为什么不带过去义"
+        "instruction": "could 表委婉请求时为什么不带过去义"
       },
       {
         "operator": "recall",
@@ -1576,7 +1576,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释 mustn't 与 don't have to 为什么不能互换"
+        "instruction": "mustn't 与 don't have to 为什么不能互换"
       },
       {
         "operator": "recall",
@@ -1621,7 +1621,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释推测义的否定为什么换成 can't 而不是 mustn't"
+        "instruction": "推测义的否定为什么换成 can't 而不是 mustn't"
       },
       {
         "operator": "recall",
@@ -1666,7 +1666,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释 should have 为什么自带反事实意味"
+        "instruction": "should have 为什么自带反事实意味"
       },
       {
         "operator": "recall",
@@ -1715,7 +1715,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释 wish 后面为什么用过去时表现在、过去完成时表过去"
+        "instruction": "wish 后面为什么用过去时表现在、过去完成时表过去"
       },
       {
         "operator": "recall",
@@ -1760,7 +1760,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释为什么条件从句里不用 will"
+        "instruction": "为什么条件从句里不用 will"
       },
       {
         "operator": "recall",
@@ -1809,7 +1809,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释不定式为什么只带体和态、不带时"
+        "instruction": "不定式为什么只带体和态、不带时"
       },
       {
         "operator": "recall",
@@ -1854,7 +1854,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释为什么长不定式作主语时要后置"
+        "instruction": "为什么长不定式作主语时要后置"
       },
       {
         "operator": "recall",
@@ -1895,7 +1895,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释为什么变被动后 to 会回来"
+        "instruction": "为什么变被动后 to 会回来"
       },
       {
         "operator": "recall",
@@ -1940,7 +1940,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释动名词与现在分词形式相同、靠什么区分"
+        "instruction": "动名词与现在分词形式相同、靠什么区分"
       },
       {
         "operator": "recall",
@@ -1989,7 +1989,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释 look forward to 后面为什么必须接 -ing"
+        "instruction": "look forward to 后面为什么必须接 -ing"
       },
       {
         "operator": "recall",
@@ -2038,7 +2038,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释现在分词的隐含主语必须与主句主语一致"
+        "instruction": "现在分词的隐含主语必须与主句主语一致"
       },
       {
         "operator": "recall",
@@ -2087,7 +2087,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释为什么不及物动词的过去分词不能表被动"
+        "instruction": "为什么不及物动词的过去分词不能表被动"
       },
       {
         "operator": "recall",
@@ -2132,7 +2132,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释 generally speaking 为什么不受这条约束"
+        "instruction": "generally speaking 为什么不受这条约束"
       },
       {
         "operator": "recall",
@@ -2177,7 +2177,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释独立主格与悬垂分词的根本区别"
+        "instruction": "独立主格与悬垂分词的根本区别"
       },
       {
         "operator": "recall",
@@ -2218,7 +2218,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释非谓语为什么要靠形式表先后，而汉语靠词汇"
+        "instruction": "非谓语为什么要靠形式表先后，而汉语靠词汇"
       },
       {
         "operator": "recall",
@@ -2263,7 +2263,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释删掉从句后指代对象改变为什么能判定限制性"
+        "instruction": "删掉从句后指代对象改变为什么能判定限制性"
       },
       {
         "operator": "recall",
@@ -2308,7 +2308,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释逗号为什么能改变「兄弟的数量」这层意思"
+        "instruction": "逗号为什么能改变「兄弟的数量」这层意思"
       },
       {
         "operator": "recall",
@@ -2353,7 +2353,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释先行词是不定代词时为什么倾向用 that"
+        "instruction": "先行词是不定代词时为什么倾向用 that"
       },
       {
         "operator": "recall",
@@ -2398,7 +2398,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释连接词 that 与关系代词 that 的判别方法"
+        "instruction": "连接词 that 与关系代词 that 的判别方法"
       },
       {
         "operator": "recall",
@@ -2443,7 +2443,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释 wh- 从句为什么在疑问语境里也不倒装"
+        "instruction": "wh- 从句为什么在疑问语境里也不倒装"
       },
       {
         "operator": "recall",
@@ -2488,7 +2488,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释比较对象不对齐为什么是错误而不只是「不严谨」"
+        "instruction": "比较对象不对齐为什么是错误而不只是「不严谨」"
       },
       {
         "operator": "recall",
@@ -2533,7 +2533,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释时间从句为什么不用将来时"
+        "instruction": "时间从句为什么不用将来时"
       },
       {
         "operator": "recall",
@@ -2578,7 +2578,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释 unless 与 if not 为什么不能无条件互换"
+        "instruction": "unless 与 if not 为什么不能无条件互换"
       },
       {
         "operator": "recall",
@@ -2623,7 +2623,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释 although 与 but 为什么不能同现"
+        "instruction": "although 与 but 为什么不能同现"
       },
       {
         "operator": "recall",
@@ -2668,7 +2668,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释 since 与 because 的强度差别为什么要紧"
+        "instruction": "since 与 because 的强度差别为什么要紧"
       },
       {
         "operator": "recall",
@@ -2713,7 +2713,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释为什么英语能靠语序定主宾语，而汉语更依赖标记词"
+        "instruction": "为什么英语能靠语序定主宾语，而汉语更依赖标记词"
       },
       {
         "operator": "recall",
@@ -2758,7 +2758,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释疑问词作主语时为什么不倒装"
+        "instruction": "疑问词作主语时为什么不倒装"
       },
       {
         "operator": "recall",
@@ -2803,7 +2803,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释 There is the book 为什么通常不成立"
+        "instruction": "There is the book 为什么通常不成立"
       },
       {
         "operator": "recall",
@@ -2848,7 +2848,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释评注副词为什么位置一变就换了修饰对象"
+        "instruction": "评注副词为什么位置一变就换了修饰对象"
       },
       {
         "operator": "recall",
@@ -2893,7 +2893,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释为什么 Everybody doesn't like him 不合习惯"
+        "instruction": "为什么 Everybody doesn't like him 不合习惯"
       },
       {
         "operator": "recall",
@@ -2942,7 +2942,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释为什么 not until 句里从句不倒装、主句才倒装"
+        "instruction": "为什么 not until 句里从句不倒装、主句才倒装"
       },
       {
         "operator": "recall",
@@ -2991,7 +2991,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释为什么不能把 If he knew 倒装成 Knew he"
+        "instruction": "为什么不能把 If he knew 倒装成 Knew he"
       },
       {
         "operator": "recall",
@@ -3036,7 +3036,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释宾语前置与倒装的操作词差别"
+        "instruction": "宾语前置与倒装的操作词差别"
       },
       {
         "operator": "recall",
@@ -3081,7 +3081,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释为什么不能把谓语动词放进焦点位"
+        "instruction": "为什么不能把谓语动词放进焦点位"
       },
       {
         "operator": "recall",
@@ -3126,7 +3126,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释 wh- 分裂句为何更适合回答 what 疑问"
+        "instruction": "wh- 分裂句为何更适合回答 what 疑问"
       },
       {
         "operator": "recall",
@@ -3171,7 +3171,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释 this 为什么能指一整句而 that 更常指已完结的内容"
+        "instruction": "this 为什么能指一整句而 that 更常指已完结的内容"
       },
       {
         "operator": "recall",
@@ -3216,7 +3216,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释替代与指代在「替换的是什么」上的区别"
+        "instruction": "替代与指代在「替换的是什么」上的区别"
       },
       {
         "operator": "recall",
@@ -3261,7 +3261,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释跨句省略为什么容易造成歧义"
+        "instruction": "跨句省略为什么容易造成歧义"
       },
       {
         "operator": "recall",
@@ -3306,7 +3306,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释 moreover 与 in addition 为什么不能完全互换"
+        "instruction": "moreover 与 in addition 为什么不能完全互换"
       },
       {
         "operator": "recall",
@@ -3351,7 +3351,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释 however 前面为什么必须断句或加分号"
+        "instruction": "however 前面为什么必须断句或加分号"
       },
       {
         "operator": "recall",
@@ -3396,7 +3396,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释 therefore 为什么不能像 but 那样直接连接两个分句"
+        "instruction": "therefore 为什么不能像 but 那样直接连接两个分句"
       },
       {
         "operator": "recall",
@@ -3441,7 +3441,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释 in the end 与 at the end 的差别"
+        "instruction": "in the end 与 at the end 的差别"
       },
       {
         "operator": "recall",
@@ -3486,7 +3486,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释被动语态为什么能用来调整信息结构"
+        "instruction": "被动语态为什么能用来调整信息结构"
       },
       {
         "operator": "recall",
@@ -3535,7 +3535,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释连接词堆太多为什么会显得生硬"
+        "instruction": "连接词堆太多为什么会显得生硬"
       },
       {
         "operator": "recall",
@@ -3580,7 +3580,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释正式文本为什么倾向名词化与被动"
+        "instruction": "正式文本为什么倾向名词化与被动"
       },
       {
         "operator": "recall",
