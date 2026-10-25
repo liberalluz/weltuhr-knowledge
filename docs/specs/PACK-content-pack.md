@@ -57,7 +57,18 @@
 
 **作废登记**：`B13a` 笔 5c 之前是「内容五段（`items` / `edges` / `schemes` / `questions` / `excerpts`）+ `meta` 信封」。`ADR-0007` 的三轴两型落地后，那五段由本条的六段取代 —— `items` 拆成 `nodes` + `entries`，`questions` / `excerpts` 分别并进 `entries` 与 `sources`，新增 `methods`。
 
-> ⚠️ **迁移状态（2026-10-25）**：`content/tools/` 的管线**仍是旧形态** —— `validator.py` 的 `SEGMENTS` 是那五段、`build.py` 仍拼 `meta` 信封，三个内容空间（`python` / `english` / `german`）也还是旧格式。三包已裁定「弃用重建」（不手改数据），管线随重建一并迁到本条；在那之前，**本条的判据由 `PackLoader` / `readPack` 一侧执行**，Python 侧执行的是作废形态。读到 `content/tools/` 里的「五段」时按这段理解，不要据此判本条未实现。
+> ⚠️ **迁移状态（2026-10-25 第二次更新）**：管线现在是**两条线并存** ——
+>
+> | 脚本 | 产出 | 形态 |
+> |---|---|---|
+> | `content/tools/assemble_pack.py` | `<空间>/pack.json`（**客户端探的就是这个**） | 本条：单文件 = 清单 + 六段 |
+> | `content/tools/build.py` | `<空间>/dist/pack.json` | 作废的「五段 + `meta` 信封」，只服务 `verify.py --suite` 的 37 个 fixture |
+>
+> 也就是说**客户端链路上的产物已经符合本条**，`python` 空间已能装出 10 个行星系 + 150 个行星 + 43 条内容。
+> 尚未迁移的是 `build.py` 那一侧与它的 fixture —— 它们连同 `validator.py` 的字段级判据随三包重建一起走，那时 `assemble_pack.py` 与 `build.py` 合成一个。
+> 读到 `content/tools/` 里的「五段」时按这段理解，不要据此判本条未实现。
+>
+> **本笔不关闭的差距**（如实登记）：三份源数据仍是旧格式（`english` / `german` 装配出来同样能读，但内容未审）；`entries` 里的 `steps` / `body` 一栏旧数据根本没有，装配器写 `null` 而不补写。
 
 `src:` 第 48 轮 · E3 · V-1 · `ADR-0005` 决策 2 · `ADR-0007`
 

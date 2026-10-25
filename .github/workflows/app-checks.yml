@@ -97,16 +97,26 @@ jobs:
         if: steps.scope.outputs.run == 'true'
         run: dart run tool/docs/check.dart
 
-      # 定位引擎与加载器的用例读的是**真实产物**（`content/<空间>/dist/pack.json`），
-      # 而 `dist/` 不入库（`SPEC-PACK-018`）⇒ 这里现场构建一遍。
+      # 用例读的是**真实产物** `content/<空间>/pack.json`（单文件形态，`B14` 起），
+      # 而它不入库（`SPEC-PACK-018`）⇒ 这里现场装配一遍。缺了它
+      # `real_content_pack_test.dart` 会 fail（**不 skip**：skip 会让「忘了跑装配」
+      # 表现成绿灯）。
+      #
+      # 两条都跑，理由不同：
+      #   - `assemble_pack.py` 产目标形态 `pack.json`，是客户端测试的输入；
+      #   - `build.py` 产作废形态 `dist/pack.json`，跑它是在验「旧源数据仍能被旧
+      #     校验器接受」—— 源数据本身的问题归它报，装配器只负责搬运。
+      #     `build.py` 与其 fixtures 随管线迁移那一笔一并删除。
+      #
       # **不指定空间**：哪个空间有源数据就构建哪个，与本地一致。只构建 python 的
-      # 后果是 CI 上「多根」退化成单根，那条 `english / german 各自装得出` 会红 ——
-      # 而「CI 只验了一个包」这件事本身也不会有人发现。
-      # 正因为它读 `content/`，`scopes.json` 里 `app` 的输入闭包才含 `content/`。
+      # 后果是 CI 上「多根」退化成单根，而「CI 只验了一个包」这件事本身也不会有人发现。
+      # 正因为它们读 `content/`，`scopes.json` 里 `app` 的输入闭包才含 `content/`。
       - name: 构建内容包（测试输入）
         if: steps.scope.outputs.run == 'true'
         working-directory: ${{ github.workspace }}
-        run: python3 content/tools/build.py
+        run: |
+          python3 content/tools/build.py
+          python3 content/tools/assemble_pack.py
 
       - name: 单元测试
         if: steps.scope.outputs.run == 'true'

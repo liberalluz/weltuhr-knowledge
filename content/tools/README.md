@@ -1,11 +1,17 @@
 # content/tools
 
-源数据（`content/<空间>/`）→ 构建产物（`dist/pack.json`）的管线。**纯标准库，无第三方依赖**。
+源数据（`content/<空间>/`）→ 产物的管线。**纯标准库，无第三方依赖**。
 
-> ⚠️ **本文件描述的是管线当前实现**（旧五段 + `meta` 信封），不是包格式的目标形态。目标形态见 `SPEC-PACK-005`「单文件 = 清单 + 六段」，差距与迁移时机写在那条的「迁移状态」段，此处不复述 —— 同一件事记两处，改一处就会留一句假话。
+> ⚠️ **两个产出脚本并存，因为格式正在换代**：
+> - `assemble_pack.py` 产**目标形态** `<空间>/pack.json`（单文件 = 清单 + 六段，`SPEC-PACK-005`）—— **客户端探的就是这一个**；
+> - `build.py` 仍产**作废形态** `<空间>/dist/pack.json`（旧五段 + `meta` 信封）—— 它服务的 37 个 fixture 还在 `verify.py --suite` 里跑，源数据层面的判据也仍归它报。
+>
+> 迁移时机写在 `SPEC-PACK-005` 的「迁移状态」段，此处不复述 —— 同一件事记两处，改一处就会留一句假话。
 
 ```bash
-python content/tools/build.py                      # 构建全部空间
+python content/tools/assemble_pack.py              # 装配全部空间 → <空间>/pack.json（客户端读这个）
+python content/tools/assemble_pack.py python       # 只装配 content/python/
+python content/tools/build.py                      # 旧形态 → <空间>/dist/pack.json（迁移期保留）
 python content/tools/build.py python               # 只构建 content/python/
 python content/tools/build.py --root <目录> --out <文件>   # 构建任意目录（fixtures / 临时）
 python content/tools/build.py --root <目录> --check       # 确定性检查，不落盘
@@ -14,15 +20,18 @@ python content/tools/verify.py --pack <pack.json>   # 校验已构建的产出
 python content/tools/verify.py --suite              # 全部 fixtures（源层 + 产物层）+ 错误码覆盖自检
 ```
 
-## 三个文件
+## 四个文件
 
 | 文件 | 职责 |
 |---|---|
 | `validator.py` | 所有判据。只读、不改写数据，一次报全部问题 |
-| `build.py` | 拼 `meta` 信封、固定序列化、原子落盘、确定性检查 |
+| `assemble_pack.py` | 旧五段源 → 单文件 `pack.json`（目标形态）。字段映射一栏一栏写在文件头的表里 |
+| `build.py` | 拼 `meta` 信封、固定序列化、原子落盘、确定性检查（**旧形态，迁移期保留**） |
 | `verify.py` | 独立校验 + fixtures 回归 |
 
-`build.py` 与 `verify.py` 共用 `validator.py`：构建前先校验，校验不过不落盘 —— 避免 `dist/` 里躺着半合规的包。
+三个构建 / 校验脚本共用 `validator.py`：装配前先校验，校验不过不落盘 —— 避免盘上躺着半合规的包。
+
+`assemble_pack.py` **不校验、只搬运**：它把源数据映射成目标形态，判据全在 `validator.py`。映射里凡旧数据没有的字段，一律写 `null` 或空数组，不编造 —— 例外只有两处，且都写在那张表里（`criteria[].statement` 由答案原文加固定前缀派生、`quiz[].type` 定为 `freeform`）。
 
 ## 取值域
 
@@ -43,7 +52,7 @@ python content/tools/verify.py --suite              # 全部 fixtures（源层 +
 | `methods` 段 | `entity-fields.md` §12 `MethodProfile` |
 | 三态语义：`null` 不是合法取值 | `SPEC-PACK-009` |
 
-⚠️ **本表是新形态的索引，而本目录的 Python 管线还没迁过去** —— 迁移状态写在 `SPEC-PACK-005` 的说明里，别在两处各记一份。当前的对应关系：
+⚠️ **`assemble_pack.py` 已经在按新形态产出**（下表右列即它的实际落点），`build.py` 那侧还是左列。迁移状态写在 `SPEC-PACK-005` 的说明里，别在两处各记一份。当前的对应关系：
 
 | 管线现在产出 | 迁移后落在 |
 |---|---|
@@ -56,7 +65,7 @@ python content/tools/verify.py --suite              # 全部 fixtures（源层 +
 | `meta{space, version}`（信封） | 清单字段的 `plugin_id` / `version` |
 | — | `methods`（旧五段无处安放，这也是旧形态「方法档为空」的根因） |
 
-**别把左列当现状读、也别把右列当已实现读** —— 那是一张迁移清单，不是完成报告。
+左列是 `build.py` 与 `verify.py` 的 fixture 还在用的形态；右列是 `assemble_pack.py` 的实际落点。**两边都真实存在**，读的时候先看清说的是哪个脚本 —— 这张表的作用正是让「哪个字段去哪」只有一处可查。
 
 ## 序列化约定
 

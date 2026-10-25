@@ -44,7 +44,8 @@ cd ../app && flutter run -d windows
 |---|---|
 | `cd app && flutter run -d windows` | 启动客户端 |
 | `cd app && flutter test --reporter compact` | 跑客户端测试套件 |
-| `python content/tools/build.py` | 生成内容包产物 |
+| `python content/tools/assemble_pack.py` | 装配 `<空间>/pack.json` —— **客户端读的是这个** |
+| `python content/tools/build.py` | 旧五段产物到 `<空间>/dist/`（迁移期保留，供 `verify.py` 的 fixture） |
 | `python content/tools/verify.py --suite` | 按 schema 校验内容包 |
 | `cd app && flutter analyze && dart run tool/lint/check.dart && dart run tool/docs/check.dart` | 静态检查：分析器、仓库 lint 规则、文档链接与一致性 |
 

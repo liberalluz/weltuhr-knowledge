@@ -43,7 +43,8 @@ cd ../app && flutter run -d windows
 |---|---|
 | `cd app && flutter run -d windows` | Start the client |
 | `cd app && flutter test --reporter compact` | Run the client test suite |
-| `python content/tools/build.py` | Build content-pack output |
+| `python content/tools/assemble_pack.py` | Assemble `<space>/pack.json` — **this is what the client reads** |
+| `python content/tools/build.py` | Legacy five-segment output to `<space>/dist/` (kept for `verify.py` fixtures) |
 | `python content/tools/verify.py --suite` | Verify content packs against their schema |
 | `cd app && flutter analyze && dart run tool/lint/check.dart && dart run tool/docs/check.dart` | Static checks: analyzer, repository lint rules, docs links and consistency |
 

@@ -45,7 +45,8 @@ cd ../app && flutter run -d windows
 |---|---|
 | `cd app && flutter run -d windows` | Client starten |
 | `cd app && flutter test --reporter compact` | Testsuite des Clients ausführen |
-| `python content/tools/build.py` | Content-Paket erzeugen |
+| `python content/tools/assemble_pack.py` | `<space>/pack.json` erzeugen — **diese Datei liest der Client** |
+| `python content/tools/build.py` | Altformat (fünf Segmente) nach `<space>/dist/` — nur für die `verify.py`-Fixtures |
 | `python content/tools/verify.py --suite` | Content-Pakete gegen ihr Schema prüfen |
 | `cd app && flutter analyze && dart run tool/lint/check.dart && dart run tool/docs/check.dart` | Statische Prüfungen: Analyzer, Lint-Regeln des Repositories, Dokumentlinks und Konsistenz |
 
