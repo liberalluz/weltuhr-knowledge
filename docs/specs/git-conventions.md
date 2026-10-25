@@ -185,7 +185,7 @@ git config --get core.hooksPath       # 自查：应回显 .githooks
 | `style`    | 不影响语义的格式调整     |
 | `test`     | 新增或修改测试        |
 
-### 3.2 scope（6 值，与顶层目录一一对应）
+### 3.2 scope（必填，6 值，与顶层目录一一对应）
 
 | scope    | 覆盖                              |
 | -------- | ------------------------------- |
@@ -198,6 +198,7 @@ git config --get core.hooksPath       # 自查：应回显 .githooks
 
 > **子维度不进 scope**：写成 `feat(pack/python)` 会破坏 Conventional Commits 解析；空间 / 语种等子维度放 subject 或 body。
 > **一笔只落一个 scope**：确实同时动两个顶层单元时（如改规范 + 同步钩子），取**主改动方**作 scope，另一处写进 body —— 不写 `docs(repo,docs):`，Conventional Commits 不支持多 scope。
+> **必填的理由**：漏了 scope 的标题（`docs: …`）与规范形态（`docs(docs): …`）在 `git log` 里只差五个字符，扫一眼看不出、`grep` 也分不出哪条是漏的 ⇒ 判据不拦，就等于全凭手写时记不记得。`scope` 与 `type` 同级，同样必填。
 
 ### 3.3 subject / body / footer
 
@@ -240,13 +241,13 @@ git config --get core.hooksPath       # 自查：应回显 .githooks
 
 **tag 判据的取法**：不判「是不是 tag」就拒 —— §五 要求发布时打 tag，一律拒会把正事挡掉。取**命名白名单**：只有 §五 那两种形态放行，其余拒；删除远端 tag 放行（误推要能回收，拒删除只会逼人 `--no-verify`）。⚠️ **原写法有个静默漏洞**：`case "$remote_ref" in refs/heads/main) ;; *) continue ;;` 把 tag 一起丢进了「不是 main 就跳过」的分支 —— 于是备份 tag 一路无阻。现在先分引用类型，再谈 `main`。
 
-校验项：`type` 11 值 · `scope` 6 值（可省略，给了就必须在值内）· `subject` 非空、≤ 72 字符、句尾不加句号 · header 与 body 之间空一行。
+校验项：`type` 11 值 · `scope` **必填**、6 值之一 · `subject` 非空、≤ 72 字符、句尾不加句号 · header 与 body 之间空一行。
 
 > **按字符数计，不按显示宽度**。72 个汉字的 subject 合规，而它在等宽字体下占 144 列 —— 这是刻意的：显示宽度随字体变化，进不了判据。
 
 跳过形态：`Merge …` · `Revert "…"` · `fixup!` / `squash!` / `amend!` —— 前两者由 git 与平台生成，后三者是 rebase 中间态，最终都会被合掉。
 
-> ⚠️ **判据只拦「新写的」提交**。规范 2026-10-17 进仓到判据上线之间产生的越界提交（`view` / `plan` / `core` / `tool` / `test` / `content` / `b13a` / `deliverables` 共 37 条）已于 2026-10-21 统一改为六值；**历史不再因格式问题重写**——改错往前走，靠提交前拦。
+> ⚠️ **判据只拦「新写的」提交**。规范 2026-10-17 进仓到判据上线之间产生的越界提交（`view` / `plan` / `core` / `tool` / `test` / `content` / `b13a` / `deliverables` 共 37 条）已于 2026-10-21 统一改为六值；**历史不再因格式问题重写**——改错往前走，靠提交前拦。同样地，`scope` 改为必填**之前**已合并的无 scope 提交**不追改**：改一条标题要重写 `main`，并让区间内所有提交的 committer 从平台变成本地，代价远大于收益。判据只校验 PR 新增提交，这些历史提交不会让 CI 变红。
 
 ---
 

@@ -3,7 +3,7 @@
 #
 # 只认 docs/specs/git-conventions.md §3：
 #   §3.1 type 11 值（必填）
-#   §3.2 scope 6 值（可省略；给了就必须是这六个，且**子维度不进 scope**）
+#   §3.2 scope 6 值（**必填**；必须是这六个之一，且**子维度不进 scope**）
 #   §3.3 subject ≤72 字符、句尾不加句号；有 body 时 header 与 body 之间空一行
 #        footer 必带 DCO 签署：行首 `Signed-off-by: 姓名 <邮箱>`（`git commit -s`）
 #
@@ -29,10 +29,15 @@ TYPES='build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test'
 SCOPES='app|server|pack|docs|infra|repo'
 MAX=72
 
-# ⚠️ 三个正则必须放进变量再用。直接写进 `[[ s =~ ... ]]` 时，bash 会把正则里的
+# ⚠️ 四个正则必须放进变量再用。直接写进 `[[ s =~ ... ]]` 时，bash 会把正则里的
 # `[^)]` 当成条件表达式的右括号来解析，报 `syntax error ... unexpected token )`
 # —— 这个坑只在对 `[[ ]]` 里内联的正则成立，走变量就绕开了。
-HEADER_RE="^(${TYPES})(\([a-z/]+\))?!?:\ .+\$"
+# scope 段**没有** `?`：§3.2 自 2026-10-25 起必填。可省略的写法放行了
+# `docs: …` 这类标题，而它与 `docs(docs): …` 在 `git log` 里看不出区别，
+# 只能靠 review 发现 —— 判据不拦的东西，就是没有判据。
+HEADER_RE="^(${TYPES})\([a-z/]+\)!?:\ .+\$"
+# 只为「缺 scope」这一种失败给准确的错误信息：形态匹配不上时再用它分一次流。
+NO_SCOPE_RE="^(${TYPES})!?:\ .+\$"
 SCOPE_RE='^[a-z]+\(([^)]+)\)'
 SCOPE_OK_RE="^(${SCOPES})\$"
 
@@ -90,10 +95,18 @@ check_msg() {
     return
   fi
 
-  # ① header 形态：<type>(<scope>)?!?: <subject>
+  # ① header 形态：<type>(<scope>): <subject>（scope 必填）
   #    scope 先用 `[a-z/]+` 做形态匹配，再单独判取值 —— 两步分开，错误信息才准：
-  #    「形态不对」和「取值不在六值内」是两种改法。
+  #    「形态不对」和「取值不在六值内」是两种改法。「缺 scope」再单独一条：
+  #    它与「形态不对」只差一对括号，混在一句报错里改不对。
   if [[ ! $first =~ $HEADER_RE ]]; then
+    if [[ $first =~ $NO_SCOPE_RE ]]; then
+      echo "FAIL $label: 缺 scope —— 形态是 \`<type>(<scope>): <subject>\`，§3.2 中 scope 必填" >&2
+      echo "      实得：$first" >&2
+      echo "      取值：app / server / pack / docs / infra / repo（子维度不进 scope）" >&2
+      FAIL=1
+      return
+    fi
     echo "FAIL $label: header 不符合 \`<type>(<scope>): <subject>\`" >&2
     echo "      实得：$first" >&2
     case "$first" in
