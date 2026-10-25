@@ -1,9 +1,27 @@
 [
   {
+    "id": "q-wc-determiner-three-slots",
+    "itemId": "english/wc-determiner",
+    "prompt": "限定词分哪三层？每层举三个词。",
+    "answer": "前位（all / both / half）· 中位（the / my / some / every）· 后位（many / few / first / three）"
+  },
+  {
+    "id": "q-wc-determiner-exclusion",
+    "itemId": "english/wc-determiner",
+    "prompt": "两个中位限定词要同时表达时怎么写？",
+    "answer": "中位互斥，the my book 不成立；改用 of 结构 —— this book of mine"
+  },
+  {
     "id": "q-wc-determiner",
     "itemId": "english/wc-determiner",
     "prompt": "限定词与形容词能不能同时出现在名词前？",
     "answer": "能，但占两个位次 —— 限定词在限定位（the / my / some），形容词在描写位（big / red），次序是「限定词 + 形容词 + 名词」"
+  },
+  {
+    "id": "q-wc-conjunction-fronting",
+    "itemId": "english/wc-conjunction",
+    "prompt": "because 从句能前置吗？for 为什么不能？",
+    "answer": "because 是从属连词，前置后置都行 —— Because it was late, he left；for 是并列连词，引导的分句只能后置 —— He left, for it was late，For it was late, he left 不成立"
   },
   {
     "id": "q-wc-conjunction",
@@ -12,10 +30,34 @@
     "answer": "for 是并列连词，引导的分句只能后置且不能回答 why；because 是从属连词，可前置也可后置"
   },
   {
+    "id": "q-wc-compound-stress",
+    "itemId": "english/wc-compound",
+    "prompt": "ˈblackbird 与 black ˈbird 的重音差别说明什么？",
+    "answer": "重音落在第一个词上是复合词，语义专指一种鸟（ˈblackbird）；重音在后是短语，指「黑色的鸟」（black ˈbird）"
+  },
+  {
+    "id": "q-wc-compound-insertion",
+    "itemId": "english/wc-compound",
+    "prompt": "怎么判断一个动词短语可不可分？",
+    "answer": "用插入测试 —— 宾语能插进中间的是短语动词（look the word up / look it up），不能插的是介词动词（look after it，不说 look it after）"
+  },
+  {
     "id": "q-wc-compound",
     "itemId": "english/wc-compound",
     "prompt": "look up 的宾语是代词时放在哪里？",
     "answer": "放中间：look it up。名词宾语两个位置都行：look up the word / look the word up"
+  },
+  {
+    "id": "q-np-countability-tests",
+    "itemId": "english/np-countability",
+    "prompt": "判断名词可数性有哪三个测试？",
+    "answer": "能不能加 -s（two informations 错）、能不能配 a/an（a information 错）、能不能直接接数词（two books 对）"
+  },
+  {
+    "id": "q-np-countability-abstract",
+    "itemId": "english/np-countability",
+    "prompt": "举两个不可数抽象名词与一个「可数化」的抽象名词。",
+    "answer": "不可数：information / advice；可数化：decision / suggestion / proposal 这类「一次具体行为」，所以 a decision 成立"
   },
   {
     "id": "q-np-countability",
@@ -24,10 +66,40 @@
     "answer": "没有 —— 它是不可数名词，计数量用 a piece of information"
   },
   {
+    "id": "q-np-zero-article-three-cases",
+    "itemId": "english/np-zero-article",
+    "prompt": "零冠词有哪三类场合？",
+    "answer": "泛指复数（Tigers are dangerous）· 泛指不可数（Water boils at 100 °C）· 机构的功能用途（go to school / in prison）"
+  },
+  {
+    "id": "q-np-zero-article-pairs",
+    "itemId": "english/np-zero-article",
+    "prompt": "举两对「制度性活动 vs 具体建筑」的对比。",
+    "answer": "go to school（去上学）与 go to the school（去那栋校舍）；in prison（服刑）与 in the prison（在那座监狱里）；at table（在吃饭）与 at the table（在桌边）"
+  },
+  {
+    "id": "q-np-zero-article-fixed",
+    "itemId": "english/np-zero-article",
+    "prompt": "举三个固定零冠词搭配。",
+    "answer": "by bus（交通）· at noon（时间）· at home"
+  },
+  {
     "id": "q-np-zero-article",
     "itemId": "english/np-zero-article",
     "prompt": "go to school 与 go to the school 差在哪？",
     "answer": "前者指「上学」这一制度性活动，后者指「去那栋校舍」这个具体地点"
+  },
+  {
+    "id": "q-np-agreement-center",
+    "itemId": "english/np-agreement",
+    "prompt": "含介词短语的主语怎么定谓语？判据是什么？",
+    "answer": "找到中心词、忽略介词短语 —— The list of items was long，谓语跟 list 不跟 items"
+  },
+  {
+    "id": "q-np-agreement-exceptions",
+    "itemId": "english/np-agreement",
+    "prompt": "举两个例外情形。",
+    "answer": "距离作整体用单数（Ten miles is a long way）；集合名词用复数（The police are coming）；另有 each / neither 作主语用单数、there be 按后面的名词定"
   },
   {
     "id": "q-np-agreement",
@@ -36,10 +108,34 @@
     "answer": "is —— 主语中心词是 the number，of students 只是修饰成分"
   },
   {
+    "id": "q-tense-present-perfect-uses",
+    "itemId": "english/tense-present-perfect",
+    "prompt": "现在完成时有哪两种用法？各举一例。",
+    "answer": "完成（I have finished the report，结果现在有效）· 持续（I have lived here for ten years，从过去延续到现在）"
+  },
+  {
+    "id": "q-tense-present-perfect-markers",
+    "itemId": "english/tense-present-perfect",
+    "prompt": "举五个可与现在完成时共现的「与现在关联」标记词。",
+    "answer": "already / yet / just / ever / never"
+  },
+  {
     "id": "q-tense-present-perfect",
     "itemId": "english/tense-present-perfect",
     "prompt": "I have seen him yesterday 为什么不对？",
     "answer": "现在完成时不能与确定的过去时间状语连用 —— 应改为 I saw him yesterday"
+  },
+  {
+    "id": "q-tense-past-perfect-form",
+    "itemId": "english/tense-past-perfect",
+    "prompt": "过去完成时的形式是什么？",
+    "answer": "had + 过去分词 —— When I arrived, he had left"
+  },
+  {
+    "id": "q-tense-past-perfect-standalone",
+    "itemId": "english/tense-past-perfect",
+    "prompt": "单独一句 He had left 没有参照点时该怎么改？",
+    "answer": "改成一般过去时 He left —— 没有参照点，读者会问「比什么时候更早」"
   },
   {
     "id": "q-tense-past-perfect",
@@ -48,10 +144,34 @@
     "answer": "要 —— 它表示「过去的过去」，参照点是另一个过去的事件或时刻"
   },
   {
+    "id": "q-tense-future-going-to-grounds",
+    "itemId": "english/tense-future-going-to",
+    "prompt": "be going to 的两类依据是什么？各举一例。",
+    "answer": "既有迹象（Look at those clouds. It is going to rain）· 已计划（I am going to buy a car next month）"
+  },
+  {
+    "id": "q-tense-future-going-to-form",
+    "itemId": "english/tense-future-going-to",
+    "prompt": "be going to 的形式是什么？",
+    "answer": "am / is / are going to + 原形"
+  },
+  {
     "id": "q-tense-future-going-to",
     "itemId": "english/tense-future-going-to",
     "prompt": "Look at those clouds. It ___ rain. 用 will 还是 be going to？",
     "answer": "be going to —— 有既存迹象（乌云）时用它；will 偏预测与临时决定"
+  },
+  {
+    "id": "q-av-passive-form-five",
+    "itemId": "english/av-passive-form",
+    "prompt": "举五个时态的被动形式各一例。",
+    "answer": "一般现在（The letter is written）· 一般过去（She was invited）· 现在完成（It has been signed）· 现在进行（It is being repaired）· 将来完成（It will have been finished）"
+  },
+  {
+    "id": "q-av-passive-form-be-vs-participle",
+    "itemId": "english/av-passive-form",
+    "prompt": "被动语态里 be 与过去分词各管什么？",
+    "answer": "be 变时态，过去分词不动 —— 时态信息全在 be 上"
   },
   {
     "id": "q-av-passive-form",
@@ -60,10 +180,40 @@
     "answer": "have / has been + 过去分词"
   },
   {
+    "id": "q-av-modal-epistemic-scale",
+    "itemId": "english/av-modal-epistemic",
+    "prompt": "推测义的强度阶梯从高到低怎么排？",
+    "answer": "must（几乎确定）> may / might / could（有可能）> can't（几乎不可能）"
+  },
+  {
+    "id": "q-av-modal-epistemic-negation",
+    "itemId": "english/av-modal-epistemic",
+    "prompt": "推测义的否定与疑问用什么形式？",
+    "answer": "否定用 can't（He can't be tired 不可能是累了），疑问用 Can he…?；不用 mustn't —— 那是「不许累」"
+  },
+  {
     "id": "q-av-modal-epistemic",
     "itemId": "english/av-modal-epistemic",
     "prompt": "He must be tired. 与 He must rest. 里的 must 有何不同？",
     "answer": "前者是认知情态（推测「一定」），后者是道义情态（义务「必须」）"
+  },
+  {
+    "id": "q-av-conditional-three-types",
+    "itemId": "english/av-conditional",
+    "prompt": "条件句三型的形式配对分别是什么？",
+    "answer": "第一型（真实可能）if + 现在时, will + 原形 · 第二型（与现在相反）if + 过去时, would + 原形 · 第三型（与过去相反）if + had done, would have done"
+  },
+  {
+    "id": "q-av-conditional-mixed",
+    "itemId": "english/av-conditional",
+    "prompt": "混合条件的两半时段怎么配形式？举一例。",
+    "answer": "各自按时段配 —— If I had studied medicine, I would be a doctor now（前半指过去、后半指现在）"
+  },
+  {
+    "id": "q-av-conditional-iron-rule",
+    "itemId": "english/av-conditional",
+    "prompt": "条件从句里的那条铁律是什么？有例外吗？",
+    "answer": "从句里不用 will 与 would；例外是表意愿的 will（If you will wait a moment）"
   },
   {
     "id": "q-av-conditional",
@@ -72,10 +222,40 @@
     "answer": "第三型 —— 与过去事实相反的虚拟条件"
   },
   {
+    "id": "q-nf-bare-infinitive-help",
+    "itemId": "english/nf-bare-infinitive",
+    "prompt": "help 后面接带 to 还是不带 to 的不定式？",
+    "answer": "两者都行 —— help me do / help me to do，help 是唯一可以自由选择的"
+  },
+  {
+    "id": "q-nf-bare-infinitive-sense",
+    "itemId": "english/nf-bare-infinitive",
+    "prompt": "感官动词后接原形与接 -ing 差别在哪？",
+    "answer": "原形看到全过程（I saw him leave）；-ing 看到正在进行（I saw him leaving）"
+  },
+  {
     "id": "q-nf-bare-infinitive",
     "itemId": "english/nf-bare-infinitive",
     "prompt": "make him ___ (go) 填什么？",
     "answer": "go —— 使役动词 make / let / have 后接不带 to 的不定式"
+  },
+  {
+    "id": "q-nf-gerund-vs-infinitive-lists",
+    "itemId": "english/nf-gerund-vs-infinitive",
+    "prompt": "只接 -ing 与只接 to do 的动词各举三个。",
+    "answer": "只接 -ing：enjoy / mind / avoid / suggest / look forward to · 只接 to do：decide / hope / promise / refuse / manage"
+  },
+  {
+    "id": "q-nf-gerund-vs-infinitive-three-pairs",
+    "itemId": "english/nf-gerund-vs-infinitive",
+    "prompt": "举三组「接 -ing 与接 to do 意义不同」的对比。",
+    "answer": "remember doing（记得做过）与 remember to do（记得去做）· stop doing（停止该动作）与 stop to do（停下来去做另一件事）· try doing（试着做一种办法）与 try to do（努力去做，不一定成功）"
+  },
+  {
+    "id": "q-nf-gerund-vs-infinitive-to-preposition",
+    "itemId": "english/nf-gerund-vs-infinitive",
+    "prompt": "什么时候 to 后面要接 -ing？",
+    "answer": "to 作介词时 —— look forward to seeing you，此时 to 不是不定式符号"
   },
   {
     "id": "q-nf-gerund-vs-infinitive",
@@ -84,10 +264,34 @@
     "answer": "remember doing 是「记得做过」，remember to do 是「记得要去做」"
   },
   {
+    "id": "q-nf-participle-clause-fixes",
+    "itemId": "english/nf-participle-clause",
+    "prompt": "悬垂分词有哪三种改法？各举一例。",
+    "answer": "补出主语（As I was walking down the street, the tower came into view）· 换成分词（Seen from the street, the tower came into view）· 改独立主格（With the sun setting, we went home）"
+  },
+  {
+    "id": "q-nf-participle-clause-frozen",
+    "itemId": "english/nf-participle-clause",
+    "prompt": "举四个已固化的分词插入语。",
+    "answer": "generally speaking · judging from · considering · provided that"
+  },
+  {
     "id": "q-nf-participle-clause",
     "itemId": "english/nf-participle-clause",
     "prompt": "Walking down the street, the tower came into view. 有什么问题？",
     "answer": "悬垂分词 —— walking 的逻辑主语应是人，主句主语却是 the tower"
+  },
+  {
+    "id": "q-cl-relative-nondefining-rules",
+    "itemId": "english/cl-relative-nondefining",
+    "prompt": "非限制性关系从句有哪两条硬规则？",
+    "answer": "只用 who / which / whose，不用 that；关系词即使作宾语也不能省"
+  },
+  {
+    "id": "q-cl-relative-nondefining-comma",
+    "itemId": "english/cl-relative-nondefining",
+    "prompt": "逗号会带来什么意义差别？",
+    "answer": "My brother, who lives in Berlin, is a doctor 说明「我只有一个兄弟」；My brother who lives in Berlin is a doctor 暗示「我有多个兄弟，说的是住在柏林那个」"
   },
   {
     "id": "q-cl-relative-nondefining",
@@ -96,10 +300,34 @@
     "answer": "不能 —— 逗号隔开的从句用 which / who，that 只用于限制性从句"
   },
   {
+    "id": "q-cl-relative-pronoun-choice-table",
+    "itemId": "english/cl-relative-pronoun-choice",
+    "prompt": "四栏先行词各对应哪些关系词？",
+    "answer": "人 → who / whom / that · 物 → which / that · 所属 → whose · 地点 / 时间 / 原因 → where / when / why"
+  },
+  {
+    "id": "q-cl-relative-pronoun-choice-omission",
+    "itemId": "english/cl-relative-pronoun-choice",
+    "prompt": "关系代词什么时候可以省？",
+    "answer": "限制性从句里作宾语时可省（The book I bought）；作主语时不可省"
+  },
+  {
     "id": "q-cl-relative-pronoun-choice",
     "itemId": "english/cl-relative-pronoun-choice",
     "prompt": "先行词是 everything 时关系代词用什么？",
     "answer": "只能用 that，不用 which"
+  },
+  {
+    "id": "q-cl-adverbial-time-connectives",
+    "itemId": "english/cl-adverbial-time",
+    "prompt": "时间状语从句的六个连接词是什么？",
+    "answer": "when / while / before / after / as soon as / until（另有 by the time）"
+  },
+  {
+    "id": "q-cl-adverbial-time-perfect",
+    "itemId": "english/cl-adverbial-time",
+    "prompt": "从句表「已完成」时用什么形式？",
+    "answer": "用现在完成 —— I will call you when I have finished"
   },
   {
     "id": "q-cl-adverbial-time",
@@ -108,10 +336,40 @@
     "answer": "用一般现在时表将来：When he arrives, we will start"
   },
   {
+    "id": "q-wo-inversion-negative-triggers",
+    "itemId": "english/wo-inversion-negative",
+    "prompt": "举五个触发主谓倒装的否定或半否定词。",
+    "answer": "never / rarely / seldom / hardly / no sooner（另有 not until / not only / little / nowhere / under no circumstances）"
+  },
+  {
+    "id": "q-wo-inversion-negative-no-sooner",
+    "itemId": "english/wo-inversion-negative",
+    "prompt": "no sooner 后面接什么？举一例。",
+    "answer": "接 than —— No sooner had he arrived than it began to rain"
+  },
+  {
+    "id": "q-wo-inversion-negative-scope",
+    "itemId": "english/wo-inversion-negative",
+    "prompt": "倒装发生在主句还是从句？",
+    "answer": "只发生在主句 —— Not until he left did I realize，he left 本身仍是正常语序"
+  },
+  {
     "id": "q-wo-inversion-negative",
     "itemId": "english/wo-inversion-negative",
     "prompt": "Never ___ I seen such a thing. 填什么？",
     "answer": "have —— 否定词前置触发主谓倒装"
+  },
+  {
+    "id": "q-wo-cleft-it-who-that",
+    "itemId": "english/wo-cleft-it",
+    "prompt": "it 分裂句里 who 与 that 怎么选？",
+    "answer": "人被强调时 who / that 都可用（It was Tom who / that broke the window）；物用 that"
+  },
+  {
+    "id": "q-wo-cleft-it-verb",
+    "itemId": "english/wo-cleft-it",
+    "prompt": "想强调谓语动词本身该怎么办？",
+    "answer": "不能分裂谓语动词，改用 wh- 分裂句或 do 强调 —— He did break it"
   },
   {
     "id": "q-wo-cleft-it",
@@ -120,10 +378,40 @@
     "answer": "It was Tom who broke the window"
   },
   {
+    "id": "q-wo-negation-scope-three",
+    "itemId": "english/wo-negation-scope",
+    "prompt": "否定有哪三类？各举一例。",
+    "answer": "部分否定（All that glitters is not gold）· 全部否定（Nobody likes him）· 否定转移（I don't think he is right）"
+  },
+  {
+    "id": "q-wo-negation-scope-partial",
+    "itemId": "english/wo-negation-scope",
+    "prompt": "部分否定有哪两种写法？",
+    "answer": "All that glitters is not gold（not 在谓语）与 Not all that glitters is gold（not 提到 all 前，更清楚）"
+  },
+  {
+    "id": "q-wo-negation-scope-transfer",
+    "itemId": "english/wo-negation-scope",
+    "prompt": "否定转移的判据是什么？",
+    "answer": "想否定的是整个命题，就把 not 提前到主句 —— I don't think he is right，而不是 I think he is not right"
+  },
+  {
     "id": "q-wo-negation-scope",
     "itemId": "english/wo-negation-scope",
     "prompt": "All that glitters is not gold. 该怎样理解？",
     "answer": "是部分否定「并非所有发光的都是金子」，不是「所有发光的都不是金子」"
+  },
+  {
+    "id": "q-co-reference-chain",
+    "itemId": "english/co-reference",
+    "prompt": "指代链的判据是什么？",
+    "answer": "每个代词都要有唯一可找回的先行词，且中间不能插入同类竞争者"
+  },
+  {
+    "id": "q-co-reference-disambiguation",
+    "itemId": "english/co-reference",
+    "prompt": "指代有歧义时有哪两种消歧手段？",
+    "answer": "重复姓名（不说 he，直接说 Tom）· 改写语序，让先行词与代词靠近"
   },
   {
     "id": "q-co-reference",
@@ -132,10 +420,34 @@
     "answer": "this 偏指刚刚说过的那一段（近指），that 偏指更远或对方已知的内容"
   },
   {
+    "id": "q-co-substitution-three",
+    "itemId": "english/co-substitution",
+    "prompt": "替代有哪三类形式？各举一例。",
+    "answer": "one 替代名词（Do you have one? = a pen）· so 替代谓语（so can he = can swim）· do so 替代动作（I did so = left）"
+  },
+  {
+    "id": "q-co-substitution-so-inversion",
+    "itemId": "english/co-substitution",
+    "prompt": "so 的倒装结构与否定附和分别怎么写？",
+    "answer": "肯定用 so + 助动词 + 主语（so can he）；否定用 neither / nor + 助动词 + 主语（Neither can I）"
+  },
+  {
     "id": "q-co-substitution",
     "itemId": "english/co-substitution",
     "prompt": "She can swim and so can he. 里的 so 起什么作用？",
     "answer": "替代前文的谓语部分（can swim），避免重复并保持衔接"
+  },
+  {
+    "id": "q-co-connective-adversative-tiers",
+    "itemId": "english/co-connective-adversative",
+    "prompt": "转折有哪三档？各举一例。",
+    "answer": "直接对立 but（It was cheap, but it broke quickly）· 书面转折 however（It was cheap. However, …）· 强转折 nevertheless / nonetheless"
+  },
+  {
+    "id": "q-co-connective-adversative-other-hand",
+    "itemId": "english/co-connective-adversative",
+    "prompt": "on the other hand 属于转折吗？",
+    "answer": "不是 —— 它是对比（对比两个不同方面），同类还有 whereas；转折是「同向却说反」，对比是「两件事并列着看」"
   },
   {
     "id": "q-co-connective-adversative",
@@ -144,10 +456,22 @@
     "answer": "however 是副词，可置句首、句中或句末并用逗号隔开；although 是从属连词，引导从句且不能与 but 连用"
   },
   {
+    "id": "q-wc-noun-four-types",
+    "itemId": "english/wc-noun",
+    "prompt": "名词按指称方式分哪四类？各举一个例词。",
+    "answer": "专有（London / Mary，指唯一对象，通常不带冠词）· 普通（dog / table，一类中的可数个体）· 集合（the team / the committee，形式单数、内部是多人）· 抽象（freedom / advice，多数不可数）"
+  },
+  {
     "id": "q-wc-noun",
     "itemId": "english/wc-noun",
     "prompt": "专有名词什么时候会带上不定冠词？",
     "answer": "当它失去唯一性、表示「某一个」时，就退化成普通名词：a certain Mr Smith（某个叫史密斯的人）。集合名词的谓语单复数取决于说话人把它看成一个整体还是一群人：the team is / the team are。"
+  },
+  {
+    "id": "q-wc-pronoun-nine",
+    "itemId": "english/wc-pronoun",
+    "prompt": "代词按语法功能分哪九类？各举一个代表词。",
+    "answer": "人称（I / me）· 物主（my / mine）· 反身（myself）· 指示（this / that）· 疑问（who / what）· 关系（which / who）· 不定（someone / anything）· 相互（each other）· 虚位（it / there）"
   },
   {
     "id": "q-wc-pronoun",
@@ -156,10 +480,34 @@
     "answer": "看它在句里做什么成分：this book 里是限定词（限定名词），This is mine 里是指示代词（独立作主语）。判断类别看成分，不看词形。"
   },
   {
+    "id": "q-wc-verb-four-types",
+    "itemId": "english/wc-verb",
+    "prompt": "动词按功能分哪四类？各举一个代表词。",
+    "answer": "实义（run / eat，有词汇意义、可独立作谓语）· 助动（be / do / have，构成时态、语态、否定与疑问）· 情态（can / must，表可能与否，无第三人称 -s、无 to）· 系动（seem / become，后接主语补足语）"
+  },
+  {
     "id": "q-wc-verb",
     "itemId": "english/wc-verb",
     "prompt": "have 在 I have a car 与 I have finished 里分别是哪类动词？",
     "answer": "前者是实义动词（后接宾语 a car），后者是助动词（后接过去分词 finished）。判据是看它后面接的是宾语，还是另一个动词的非谓语形式。"
+  },
+  {
+    "id": "q-wc-adjective-positions",
+    "itemId": "english/wc-adjective",
+    "prompt": "形容词的两个主要位置分别叫什么？各举一例。",
+    "answer": "定语位（名词前，the red car）与表语位（系动词后，the car is red）；另有后置位 —— 修饰 -thing / -body 类不定代词（something nice）、少数源自法语的固定说法（the president elect）"
+  },
+  {
+    "id": "q-wc-adjective-only",
+    "itemId": "english/wc-adjective",
+    "prompt": "只能作定语与只能作表语的形容词各举一个，并说明错用为什么不成立。",
+    "answer": "main 只能作定语 —— the reason is main 不成立；asleep 只能作表语 —— an asleep child 不成立，要用 a sleeping child"
+  },
+  {
+    "id": "q-wc-adjective-postpose",
+    "itemId": "english/wc-adjective",
+    "prompt": "形容词必须后置的两种情形是什么？",
+    "answer": "修饰 -thing / -body / -one 类不定代词（something nice）；形容词带自己的补足语时必须后置（a man proud of his son）"
   },
   {
     "id": "q-wc-adjective",
@@ -168,10 +516,28 @@
     "answer": "不一样：前者是「现任成员」（定语位），后者是「在场的成员」（后置位）。同类还有 responsible：a responsible person（负责可靠）与 the person responsible（当事负责人）。"
   },
   {
+    "id": "q-wc-adverb-four-types",
+    "itemId": "english/wc-adverb",
+    "prompt": "副词分哪四类？各举一个代表词与典型位置。",
+    "answer": "方式（quickly / carefully，常在句末，也可中位）· 地点（here / outside，句末）· 时间（now / yesterday，句末或句首）· 程度频率（very / often，中位）"
+  },
+  {
+    "id": "q-wc-adverb-meaning",
+    "itemId": "english/wc-adverb",
+    "prompt": "举三个「位置改变句义」的例子。",
+    "answer": "Only she can do it（只有她能）与 She can only do it（她只能做这件事）· clearly 在中位常表判断（He clearly lied），在句末倾向方式（He spoke clearly）· already / yet / still 的中位与句末各带不同预设"
+  },
+  {
     "id": "q-wc-adverb",
     "itemId": "english/wc-adverb",
     "prompt": "频率副词 often 在句子里的位置有规矩吗？",
     "answer": "中位：实义动词前（She often goes there），be 动词后（She is often there）；也可放句末但语气不同。位置会改意思：Only she can do it 与 She can only do it 差别全在 only 站哪儿。"
+  },
+  {
+    "id": "q-wc-preposition-functions",
+    "itemId": "english/wc-preposition",
+    "prompt": "介词短语能作哪几种句子成分？各举一例。",
+    "answer": "时间状语（in the morning）· 表语（in trouble，表状态）· 后置定语（the man in black）；此外还有简单介词 + 宾语（in the box），复杂介词三词一体、不能拆（in front of the house）"
   },
   {
     "id": "q-wc-preposition",
@@ -180,10 +546,34 @@
     "answer": "介词后面接代词要用宾格，between 是介词，所以用 me。介词与动词的搭配（depend on、consist of、apologize for）不能靠规则推出，只能记。"
   },
   {
+    "id": "q-wc-suffix-four-groups",
+    "itemId": "english/wc-suffix",
+    "prompt": "后缀按词性分哪四组？各组举三个。",
+    "answer": "名词（-ness / -ity / -tion / -ment）· 形容词（-able / -ive / -ous / -ful）· 动词（-ize / -ify / -en）· 副词（-ly）"
+  },
+  {
     "id": "q-wc-suffix",
     "itemId": "english/wc-suffix",
     "prompt": "economic 与 economical 能互换吗？",
     "answer": "不能。两个词同出 economy 但意义分化：economic 是「经济领域的」，economical 是「省钱的」。historical（历史的）与 historic（有历史意义的）同理。"
+  },
+  {
+    "id": "q-np-plural-irregular",
+    "itemId": "english/np-plural",
+    "prompt": "举四个不规则复数。",
+    "answer": "child → children · foot → feet · mouse → mice · criterion → criteria（外来复数，同列还有 datum → data）"
+  },
+  {
+    "id": "q-np-plural-zero",
+    "itemId": "english/np-plural",
+    "prompt": "举两个零复数名词，并说明怎么表数。",
+    "answer": "sheep / deer / series 单复数同形，靠量词或上下文表数 —— two sheep 里的 sheep 不变"
+  },
+  {
+    "id": "q-np-plural-data",
+    "itemId": "english/np-plural",
+    "prompt": "data 有哪两种用法？",
+    "answer": "学术写作里常作复数（the data are），日常英语已多作不可数"
   },
   {
     "id": "q-np-plural",
@@ -192,10 +582,40 @@
     "answer": "-y 前是辅音才变 ies：city → cities（t 是辅音），boy → boys（o 是元音）。另注意 roof → roofs 是 -f 变 ves 的例外，photo → photos 而 potato → potatoes。"
   },
   {
+    "id": "q-np-article-definite-four-grounds",
+    "itemId": "english/np-article-definite",
+    "prompt": "the 的四类定位依据是什么？各举一例。",
+    "answer": "上文提及（I bought a book. The book was expensive）· 情境唯一（Close the door, please）· 后置修饰限定（the man in the black coat）· 共享常识的唯一对象（the sun / the moon）"
+  },
+  {
+    "id": "q-np-article-definite-fixed",
+    "itemId": "english/np-article-definite",
+    "prompt": "the 的三个固定用法是什么？",
+    "answer": "最高级与序数（the best / the first）· 乐器（play the piano）· 部分专有名词（the Thames / the Alps / the Netherlands）"
+  },
+  {
+    "id": "q-np-article-definite-blocked",
+    "itemId": "english/np-article-definite",
+    "prompt": "the 不能用在哪些场合？",
+    "answer": "泛指的复数（Tigers are dangerous，不能说 the tigers，除非指特定那群）与泛指的不可数名词前"
+  },
+  {
     "id": "q-np-article-definite",
     "itemId": "english/np-article-definite",
     "prompt": "Tigers are dangerous 为什么不能说成 the tigers are dangerous？",
     "answer": "the 要求听者能定位到具体对象；泛指一类时复数名词不加 the，加了只能指「特定的那群老虎」。类指也可用单数：The tiger is a mammal。"
+  },
+  {
+    "id": "q-np-article-indefinite-tricky",
+    "itemId": "english/np-article-indefinite",
+    "prompt": "举三个 a/an 易错词，并说明判断依据。",
+    "answer": "university（拼写元音、读音以 /j/ 开头，用 a）· European（同，a European）· hour（h 不发音、以元音开头，用 an），honest 同 hour"
+  },
+  {
+    "id": "q-np-article-indefinite-blocked",
+    "itemId": "english/np-article-indefinite",
+    "prompt": "不定冠词不能配哪两类名词？",
+    "answer": "复数与不可数 —— a books / a water 都不成立，要用 some books / some water"
   },
   {
     "id": "q-np-article-indefinite",
@@ -204,10 +624,34 @@
     "answer": "看读音不看字母：university 以辅音音素 /j/ 开头用 a；hour 的 h 不发音、以元音开头用 an。"
   },
   {
+    "id": "q-np-quantifier-three-columns",
+    "itemId": "english/np-quantifier",
+    "prompt": "量词按可数性分哪三栏？各举三个。",
+    "answer": "只可数（many / few / several / both / each）· 只不可数（much / little / a great deal of / a bit of）· 两者皆可（a lot of / some / any）"
+  },
+  {
+    "id": "q-np-quantifier-some-any",
+    "itemId": "english/np-quantifier",
+    "prompt": "some 与 any 怎么分工？",
+    "answer": "some 用于肯定句与期待肯定回答的疑问（Do you have some money? 预期「有」）；any 用于否定句与开放疑问（Do you have any money? 不知道有没有）"
+  },
+  {
     "id": "q-np-quantifier",
     "itemId": "english/np-quantifier",
     "prompt": "A number of students are here 与 The number of students is rising 为什么谓语不同？",
     "answer": "中心词不同：a number of 的中心是 students（复数，用 are），the number of 的中心是 number（单数，用 is）。这一对的判据在 the / a 上，不在 number 上。"
+  },
+  {
+    "id": "q-np-possessive-objects",
+    "itemId": "english/np-possessive",
+    "prompt": "'s 属格适用于哪几类对象？各举一例。",
+    "answer": "人与动物（Tom's car / the dog's tail）· 时间（a day's work / two hours' delay）· 机构（the government's decision）"
+  },
+  {
+    "id": "q-np-possessive-joint",
+    "itemId": "english/np-possessive",
+    "prompt": "共同拥有与各自拥有怎么区分？",
+    "answer": "Tom and Mary's house 是共同拥有一套；Tom's and Mary's houses 是各自拥有，各一套"
   },
   {
     "id": "q-np-possessive",
@@ -216,10 +660,28 @@
     "answer": "a friend of mine 是双重所有格，表「我朋友中的一个」；my friend 可能指唯一那个。另注意 Tom and Mary's house（共同拥有一套）与 Tom's and Mary's houses（各有一套）。"
   },
   {
+    "id": "q-np-of-genitive-word-order",
+    "itemId": "english/np-of-genitive",
+    "prompt": "of 结构与 's 结构里两个名词的先后是什么关系？",
+    "answer": "正好相反 —— the legs of the table = the table's legs"
+  },
+  {
     "id": "q-np-of-genitive",
     "itemId": "english/np-of-genitive",
     "prompt": "the legs of the table 与 the table's legs 哪个更常用？选择时先看什么？",
     "answer": "前者更常用，后者口语里也成立但 less 正式。选择次序：先看是不是固定搭配（the end of the story 不说 the story's end），再看中心词是不是人（人的用 's），最后看长度（长而带从句的放 of 后面）。"
+  },
+  {
+    "id": "q-np-modifier-order-eight",
+    "itemId": "english/np-modifier-order",
+    "prompt": "前置修饰语的八个位置按什么顺序排？",
+    "answer": "评价 大小 年龄 形状 颜色 来源 材料 用途（OSASCOMP），例：a lovely little old rectangular green French silver whittling knife"
+  },
+  {
+    "id": "q-np-modifier-order-numeral",
+    "itemId": "english/np-modifier-order",
+    "prompt": "序数与基数同时出现时谁在前？",
+    "answer": "序数在前 —— the first two chapters"
   },
   {
     "id": "q-np-modifier-order",
@@ -228,10 +690,34 @@
     "answer": "名词定语不带复数：a five-year plan、two ten-year-old boys。那条 OSASCOMP 顺序是倾向，真正的硬规则只有两条 —— 名词定语用单数、修饰 -thing / -body / -one 的形容词必须后置。"
   },
   {
+    "id": "q-tense-simple-present-uses",
+    "itemId": "english/tense-simple-present",
+    "prompt": "一般现在时有哪三种典型用法？各举一例。",
+    "answer": "习惯（She walks to work every day）· 恒常事实（Water boils at 100 °C）· 时刻表（The train leaves at 8）"
+  },
+  {
+    "id": "q-tense-simple-present-third-person-s",
+    "itemId": "english/tense-simple-present",
+    "prompt": "第三人称单数的 -s 在否定句与疑问句里落到哪里？",
+    "answer": "落到助动词 does 上，动词回原形 —— She does not walk / Does she walk?；肯定句才在动词上加 -s（he walks / she watches / it goes）"
+  },
+  {
     "id": "q-tense-simple-present",
     "itemId": "english/tense-simple-present",
     "prompt": "When he arrives, we will start 为什么从句用现在时？",
     "answer": "时间与条件从句用现在时表将来，主句用将来时，这是英语的固定分工，不是时态混用。一般现在时的核心是「不限定时段内重复成立」，不是「此刻正在做」。"
+  },
+  {
+    "id": "q-tense-present-progressive-uses",
+    "itemId": "english/tense-present-progressive",
+    "prompt": "现在进行时有哪三种典型用法？各举一例。",
+    "answer": "说话时刻正在发生（She is reading）· 临时状态（I am living in Berlin，暂住）· 带感情色彩的习惯（He is always losing his keys）"
+  },
+  {
+    "id": "q-tense-present-progressive-state-verbs",
+    "itemId": "english/tense-present-progressive",
+    "prompt": "举四个一般不用进行时的状态动词。",
+    "answer": "know / believe / own / contain —— I am knowing the answer 不成立，要说 I know the answer"
   },
   {
     "id": "q-tense-present-progressive",
@@ -240,10 +726,34 @@
     "answer": "后者是临时状态（暂住），前者是长期。现在进行时真正带的语义是「临时 vs 永久」；状态动词（know / believe / own / contain）一般不用进行时。"
   },
   {
+    "id": "q-tense-simple-past-irregular",
+    "itemId": "english/tense-simple-past",
+    "prompt": "举两个不规则变化的动词过去式。",
+    "answer": "go → went · see → saw（还有 write → wrote 这类，只能记，不能靠 -ed 推）"
+  },
+  {
+    "id": "q-tense-simple-past-did-base",
+    "itemId": "english/tense-simple-past",
+    "prompt": "did 后面的动词用什么形式？",
+    "answer": "原形 —— Did you see him? / I did not see him，不再加 -ed"
+  },
+  {
     "id": "q-tense-simple-past",
     "itemId": "english/tense-simple-past",
     "prompt": "I lost my keys 与 I have lost my keys 差在哪？",
     "answer": "一般过去时与现在断开（可能已找到，或不说结果）；现在完成时的结果是现在找不到。带 yesterday / last week / in 2019 这类确定时间状语时一律用一般过去时。"
+  },
+  {
+    "id": "q-tense-past-progressive-form",
+    "itemId": "english/tense-past-progressive",
+    "prompt": "过去进行时的形式是什么？",
+    "answer": "was / were + -ing —— At 8 last night I was working"
+  },
+  {
+    "id": "q-tense-past-progressive-when-while",
+    "itemId": "english/tense-past-progressive",
+    "prompt": "when 与 while 在引导过去背景时倾向有什么不同？",
+    "answer": "when 常带短动作打断背景（I was reading when he called）；while 常带两个同时进行的背景（While I was cooking, she was tidying）"
   },
   {
     "id": "q-tense-past-progressive",
@@ -252,10 +762,34 @@
     "answer": "不是先后，而是包含：电话落在读书的时间段里。长动作（进行时）作背景，短动作（过去时）是打断事件。"
   },
   {
+    "id": "q-tense-perfect-progressive-form",
+    "itemId": "english/tense-perfect-progressive",
+    "prompt": "现在完成进行时的形式是什么？",
+    "answer": "have / has been + -ing（过去某点之前持续则用 had been + -ing）"
+  },
+  {
+    "id": "q-tense-perfect-progressive-features",
+    "itemId": "english/tense-perfect-progressive",
+    "prompt": "完成进行时有哪些特征？",
+    "answer": "持续到现在、可能还在进行（I have been reading for two hours）；也能指出已见痕迹的持续动作（Your eyes are red. Have you been crying?）"
+  },
+  {
     "id": "q-tense-perfect-progressive",
     "itemId": "english/tense-perfect-progressive",
     "prompt": "I have read the book 与 I have been reading the book 差在哪？",
     "answer": "前者读完（有结果），后者在读、未必读完。完成进行时排斥次数与数量：I have been reading it three times 不成立，要说 I have read it three times。"
+  },
+  {
+    "id": "q-tense-future-will-uses",
+    "itemId": "english/tense-future-will",
+    "prompt": "will 有哪三种典型用法？各举一例。",
+    "answer": "承诺（I will help you）· 主观预测（I think it will rain）· 临时决定（The phone is ringing. I will get it）"
+  },
+  {
+    "id": "q-tense-future-will-clause",
+    "itemId": "english/tense-future-will",
+    "prompt": "时间与条件从句里要用 will 吗？该怎么写？",
+    "answer": "不用 —— 从句用现在时，主句用将来时：When he comes, I will tell him"
   },
   {
     "id": "q-tense-future-will",
@@ -264,10 +798,34 @@
     "answer": "will 是此刻作出的决定或主观预测；be going to 带「已计划」或「已有迹象」。will 不用于时间与条件从句。"
   },
   {
+    "id": "q-tense-future-perfect-forms",
+    "itemId": "english/tense-future-perfect",
+    "prompt": "将来完成与将来完成进行的形式各是什么？",
+    "answer": "将来完成 will have + 过去分词（By next June, I will have finished the book）；将来完成进行 will have been + -ing（持续到那时）"
+  },
+  {
+    "id": "q-tense-future-perfect-clause",
+    "itemId": "english/tense-future-perfect",
+    "prompt": "By the time 从句里为什么不能用 will arrive？",
+    "answer": "时间与条件从句不用将来时，仍用现在时 —— By the time you arrive, I will have cooked dinner"
+  },
+  {
     "id": "q-tense-future-perfect",
     "itemId": "english/tense-future-perfect",
     "prompt": "By the time you arrive 为什么不能用 will arrive？",
     "answer": "时间与条件从句不用将来时，仍用现在时。by + 时间 是将来完成时的典型标记（By next June, I will have finished），at + 时间 配将来进行时。"
+  },
+  {
+    "id": "q-av-passive-use-grounds",
+    "itemId": "english/av-passive-use",
+    "prompt": "被动语态有哪三种动因？各举一例。",
+    "answer": "施事未知或不重要（The bridge was built in 1890）· 施事有意隐去（Mistakes were made）· 让受事承接上文话题占主语位（The results were analyzed）"
+  },
+  {
+    "id": "q-av-passive-use-by-phrase",
+    "itemId": "english/av-passive-use",
+    "prompt": "by 短语什么时候必须出现？",
+    "answer": "施事有必要交代时 —— The results were analyzed by the team；施事未知或不重要时通常省掉"
   },
   {
     "id": "q-av-passive-use",
@@ -276,10 +834,28 @@
     "answer": "动因在语篇：施事未知、不重要，或要让受事承接上文话题占主语位。学术写作让方法与结果占话题位置，不是为了显得客观 —— 判断该不该用，看这一段的话题是谁。"
   },
   {
+    "id": "q-av-get-passive-state",
+    "itemId": "english/av-get-passive",
+    "prompt": "举一个 get + 过去分词表状态（不表被动）的结构。",
+    "answer": "get dressed（穿衣）· get lost（迷路）—— 此时过去分词接近形容词，说的是状态不是被谁怎么样"
+  },
+  {
+    "id": "q-av-get-passive-no-by",
+    "itemId": "english/av-get-passive",
+    "prompt": "get 被动能带 by 短语吗？",
+    "answer": "很少带 —— He got fired by the manager 会很别扭，be 被动才自然"
+  },
+  {
     "id": "q-av-get-passive",
     "itemId": "english/av-get-passive",
     "prompt": "My bike got stolen 与 My bike was stolen 差在哪？",
     "answer": "get 被动突出「发生了变化」，常带说话人态度（意外、不满、庆幸），语体偏口语，很少带 by 短语；be 被动是中性陈述。"
+  },
+  {
+    "id": "q-av-causative-types",
+    "itemId": "english/av-causative",
+    "prompt": "使役结构有哪三类？各举一例。",
+    "answer": "have / get + 宾语 + 过去分词（I had my hair cut，别人做）· make / let + 宾语 + 原形（She made him apologize / Let me go）· have + 宾语 + 原形（I had him fix it，安排某人做）"
   },
   {
     "id": "q-av-causative",
@@ -288,10 +864,34 @@
     "answer": "前者是 have + 宾语 + 过去分词，动作由别人完成（我被剪发）；后者是 have + 宾语 + 原形，宾语自己动手。make / let 后接不带 to 的不定式，变被动时 to 要回来：He was made to apologize。"
   },
   {
+    "id": "q-av-modal-ability-meanings",
+    "itemId": "english/av-modal-ability",
+    "prompt": "can 有哪两种意义？各举一例。",
+    "answer": "能力（She can swim）· 许可（Can I borrow this?，口语）"
+  },
+  {
+    "id": "q-av-modal-ability-could",
+    "itemId": "english/av-modal-ability",
+    "prompt": "could 有哪两副面孔？",
+    "answer": "过去的能力（She could swim at five）· 委婉请求（Could you help me?，与过去无关，只是把语气放软）"
+  },
+  {
     "id": "q-av-modal-ability",
     "itemId": "english/av-modal-ability",
     "prompt": "will can 为什么错？将来的能力怎么表达？",
     "answer": "can 只有现在与过去两套形式，无将来与非限定形式；将来、完成、不定式位置一律换成 be able to：will be able to、have been able to、to be able to。"
+  },
+  {
+    "id": "q-av-modal-obligation-past",
+    "itemId": "english/av-modal-obligation",
+    "prompt": "must 有过去形式吗？过去的义务怎么写？",
+    "answer": "没有 —— must 只有现在形式，表过去的义务改用 had to（must have left 是对过去的推测，不是过去义务）"
+  },
+  {
+    "id": "q-av-modal-obligation-source",
+    "itemId": "english/av-modal-obligation",
+    "prompt": "must 与 have to 的义务来源有什么差别？",
+    "answer": "must 是说话人强调的义务（You must wear a seatbelt）；have to 偏外部规定（法律、规章）"
   },
   {
     "id": "q-av-modal-obligation",
@@ -300,10 +900,40 @@
     "answer": "mustn't 是禁止（不许去），don't have to 是无义务（不必去），两者不是同义。must 没有过去形式，过去义务用 had to；推测义的否定用 can't，不用 mustn't。"
   },
   {
+    "id": "q-av-modal-past-form",
+    "itemId": "english/av-modal-past",
+    "prompt": "「情态 + 对过去的推测」用什么结构？",
+    "answer": "情态动词 + have + 过去分词 —— He must have left / She may have forgotten"
+  },
+  {
+    "id": "q-av-modal-past-four",
+    "itemId": "english/av-modal-past",
+    "prompt": "举四种情态的过去义各一句。",
+    "answer": "must have left（一定走了）· may have forgotten（可能忘了）· should have told me（本该告诉我）· could have helped（本来能帮）"
+  },
+  {
+    "id": "q-av-modal-past-obligation",
+    "itemId": "english/av-modal-past",
+    "prompt": "过去的义务能用 must have 吗？该用什么？",
+    "answer": "不能 —— 用 had to；must have left 是推测，不是过去义务"
+  },
+  {
     "id": "q-av-modal-past",
     "itemId": "english/av-modal-past",
     "prompt": "You should have told me 除了指向过去，还带了什么？",
     "answer": "带反事实评价：事实是你没告诉我。should have / could have / might have 都含「事实并非如此」，所以不能说 You should have passed（会被理解成「居然没通过」）。过去义务不用 must have，用 had to。"
+  },
+  {
+    "id": "q-av-subjunctive-cases",
+    "itemId": "english/av-subjunctive",
+    "prompt": "虚拟语气有哪三种场合？各举一例。",
+    "answer": "与现在事实相反（If I were you, I would apologize）· 现在做不到的愿望（I wish I knew the answer）· 对过去的遗憾（I wish I had studied harder）"
+  },
+  {
+    "id": "q-av-subjunctive-mandative-forms",
+    "itemId": "english/av-subjunctive",
+    "prompt": "mandative 虚拟在美式与英式各是什么形态？",
+    "answer": "美式用原形（It is essential that he be informed）；英式常用 should + 原形（that he should be informed）"
   },
   {
     "id": "q-av-subjunctive",
@@ -312,10 +942,28 @@
     "answer": "虚拟语气表与现在事实相反，were 通用于各人称；口语里 If I was you 常见，正式写作仍用 were。mandative 虚拟用原形：It is essential that he be informed。"
   },
   {
+    "id": "q-nf-infinitive-form-three",
+    "itemId": "english/nf-infinitive-form",
+    "prompt": "不定式有哪三种形态？",
+    "answer": "to do（一般式）· to have done（完成式，动作先于主句）· to be done（被动式）；另有少见的 to be writing（进行式）"
+  },
+  {
+    "id": "q-nf-infinitive-form-perfect-meaning",
+    "itemId": "english/nf-infinitive-form",
+    "prompt": "to have done 的语义是什么？",
+    "answer": "动作先于主句谓语 —— She seems to have left（看上去已经走了）"
+  },
+  {
     "id": "q-nf-infinitive-form",
     "itemId": "english/nf-infinitive-form",
     "prompt": "He asked me not to go 为什么不能写成 to not go？",
     "answer": "不定式的否定词放在 to 之前。形式有三：to do、to have done（先于主句）、to be done（被动），如 She seems to have left。"
+  },
+  {
+    "id": "q-nf-infinitive-function-four",
+    "itemId": "english/nf-infinitive-function",
+    "prompt": "不定式能作哪四种成分？各举一例。",
+    "answer": "主语（To learn a language takes time）· 宾语（She wants to leave）· 定语（something to eat，带「尚未做」义）· 状语（He came to help，目的）；另有表语（The hard part is to stay calm）"
   },
   {
     "id": "q-nf-infinitive-function",
@@ -324,10 +972,46 @@
     "answer": "形式主语，真正的主语是不定式（后置）。长不定式作主语几乎总被后置：It is hard to stay calm 比 To stay calm is hard 常见。"
   },
   {
+    "id": "q-nf-gerund-three-positions",
+    "itemId": "english/nf-gerund",
+    "prompt": "动名词能作哪三种成分？各举一例。",
+    "answer": "主语（Swimming is good exercise）· 宾语（I enjoy swimming）· 介词宾语（She is good at swimming）"
+  },
+  {
+    "id": "q-nf-gerund-subject-forms",
+    "itemId": "english/nf-gerund",
+    "prompt": "动名词的逻辑主语有哪两种写法？",
+    "answer": "物主代词（I don't mind his coming late，正式）· 宾格（I don't mind him coming late，口语）"
+  },
+  {
+    "id": "q-nf-gerund-perfect",
+    "itemId": "english/nf-gerund",
+    "prompt": "动名词的完成式怎么写？",
+    "answer": "having + 过去分词 —— having finished，表动作先于主句"
+  },
+  {
     "id": "q-nf-gerund",
     "itemId": "english/nf-gerund",
     "prompt": "Swimming is good exercise 与 the swimming boy 里的 -ing 一样吗？",
     "answer": "不一样：前者是动名词（作名词成分），后者是现在分词（作定语）。动名词可带逻辑主语（his coming）与完成式（having finished）。"
+  },
+  {
+    "id": "q-nf-present-participle-four",
+    "itemId": "english/nf-present-participle",
+    "prompt": "现在分词能作哪四种成分？各举一例。",
+    "answer": "定语（the boiling water）· 状语（She came running）· 宾语补足语（I found him sleeping）· 表语（The film is boring）"
+  },
+  {
+    "id": "q-nf-present-participle-perfect",
+    "itemId": "english/nf-present-participle",
+    "prompt": "现在分词的完成式怎么写？",
+    "answer": "Having + 过去分词 —— Having finished, he left（先于主句）"
+  },
+  {
+    "id": "q-nf-present-participle-vs-gerund",
+    "itemId": "english/nf-present-participle",
+    "prompt": "现在分词与动名词怎么分？",
+    "answer": "分词保留动作性、可带自己的宾语（reading the letter, he smiled）；动名词整体当名词用，不再直接带宾语作谓语"
   },
   {
     "id": "q-nf-present-participle",
@@ -336,10 +1020,28 @@
     "answer": "隐含主语是 she（既 came 又 ran），必须与主句主语一致；不一致就成了悬垂分词。"
   },
   {
+    "id": "q-nf-past-participle-two-layers",
+    "itemId": "english/nf-past-participle",
+    "prompt": "过去分词带哪两层语义？",
+    "answer": "被动 + 完成 —— the broken window（被打破的）；不及物动词的过去分词只有完成义（the fallen leaves）"
+  },
+  {
+    "id": "q-nf-past-participle-four",
+    "itemId": "english/nf-past-participle",
+    "prompt": "过去分词能作哪四种成分？各举一例。",
+    "answer": "定语（the broken window）· 后置定语带自己的状语（a letter written in 1890）· 状语（Seen from above, the town looks small）· 宾语补足语（I had it repaired）"
+  },
+  {
     "id": "q-nf-past-participle",
     "itemId": "english/nf-past-participle",
     "prompt": "the fallen leaves 为什么不能理解成「被落下的叶子」？",
     "answer": "过去分词的语义是「被动 + 完成」，但不及物动词的过去分词（fallen / grown / risen）只表完成状态，不表被动；只有及物动词的过去分词才表被动（the broken window）。"
+  },
+  {
+    "id": "q-nf-absolute-four-forms",
+    "itemId": "english/nf-absolute",
+    "prompt": "独立主格有哪四种构成？各举一例。",
+    "answer": "名词 + 副词（The meeting over, we went home）· 名词 + 过去分词（His work finished, he left）· 名词 + 完成式分词（Nobody having any questions, the class ended）· with + 名词 + 分词（With the sun setting, we packed up）"
   },
   {
     "id": "q-nf-absolute",
@@ -348,10 +1050,34 @@
     "answer": "它自带主语 the meeting，与主句主语不同，所以不违反「隐含主语一致」这条。独立主格可表时间、原因、条件、伴随：His work finished, he left。"
   },
   {
+    "id": "q-nf-perfect-infinitive-omission",
+    "itemId": "english/nf-perfect-infinitive",
+    "prompt": "该用完成式却漏了，读者会理解成什么？",
+    "answer": "理解成同时发生 —— Having finished the report, he left 写成 Finishing the report, he left，就成了「一边写一边走」"
+  },
+  {
+    "id": "q-nf-perfect-infinitive-forms",
+    "itemId": "english/nf-perfect-infinitive",
+    "prompt": "非谓语的四种完成形态分别怎么写？",
+    "answer": "不定式完成 to have done · 分词完成 having done · 不定式被动完成 to have been done · 分词被动完成 having been done"
+  },
+  {
     "id": "q-nf-perfect-infinitive",
     "itemId": "english/nf-perfect-infinitive",
     "prompt": "Having finished the report, he left 与 Finishing the report, he left 差在哪？",
     "answer": "完成式表动作先于主句（写完才走）；换成 Finishing 会被理解成一边写一边走。判据是时间先后：先于主句谓语才用完成式。"
+  },
+  {
+    "id": "q-cl-relative-defining-features",
+    "itemId": "english/cl-relative-defining",
+    "prompt": "限制性关系从句有哪两个特征？",
+    "answer": "不加逗号；删掉后指代对象会变（The book that I bought is expensive 删掉从句就不再是「我买的那本」）"
+  },
+  {
+    "id": "q-cl-relative-defining-where",
+    "itemId": "english/cl-relative-defining",
+    "prompt": "where 在这种从句里等于什么？",
+    "answer": "等于 in which —— The house where I grew up = the house in which I grew up"
   },
   {
     "id": "q-cl-relative-defining",
@@ -360,10 +1086,34 @@
     "answer": "省掉了作宾语的关系词（that / which）；关系词在从句里作宾语可省，作主语不可省。先行词是物不能用 who。"
   },
   {
+    "id": "q-cl-noun-that-four-positions",
+    "itemId": "english/cl-noun-that",
+    "prompt": "that 引导的名词性从句有哪四种位置？各举一例。",
+    "answer": "主语（That he lied is obvious）· 宾语（I know that he lied）· 表语（The problem is that we have no time）· 同位语（The fact that he lied surprised us）"
+  },
+  {
+    "id": "q-cl-noun-that-formal-subject",
+    "itemId": "english/cl-noun-that",
+    "prompt": "主语从句太长时怎么写？",
+    "answer": "用 it 作形式主语、从句后置 —— It is obvious that he lied"
+  },
+  {
     "id": "q-cl-noun-that",
     "itemId": "english/cl-noun-that",
     "prompt": "The problem is that we have no time 里的 that 能省吗？",
     "answer": "不能，表语从句的 that 不可省；主语从句、同位语从句同样不可省，只有宾语从句的 that 可省（I know he lied）。连接词 that 在从句里不作成分，关系代词 that 要作成分。"
+  },
+  {
+    "id": "q-cl-noun-wh-what-vs-that",
+    "itemId": "english/cl-noun-wh",
+    "prompt": "what 与 that 在名词性从句里怎么分？",
+    "answer": "从句缺成分用 what（What he said 缺宾语）、不缺成分用 that（That he said it 成分完整）"
+  },
+  {
+    "id": "q-cl-noun-wh-whether",
+    "itemId": "english/cl-noun-wh",
+    "prompt": "whether 有哪两处只能用它的位置？",
+    "answer": "介词后（取决于 / 关于是否）与主语位 —— Whether he agrees matters，这两处不能用 if"
   },
   {
     "id": "q-cl-noun-wh",
@@ -372,10 +1122,34 @@
     "answer": "wh- 名词性从句用陈述语序，不倒装：What he said surprised me。缺成分用 what，不缺成分用 that。"
   },
   {
+    "id": "q-cl-comparative-omission",
+    "itemId": "english/cl-comparative",
+    "prompt": "比较句里的省略规则是什么？",
+    "answer": "重复的谓语与主语可省 —— She is taller than I am → than me（口语）；The weather here is better than in Berlin（省略 it is）；可用 does 替代重复谓语（than his brother does）"
+  },
+  {
+    "id": "q-cl-comparative-than",
+    "itemId": "english/cl-comparative",
+    "prompt": "than 有哪两种词性？",
+    "answer": "连词（She is taller than I am）与介词（She is taller than me，口语）"
+  },
+  {
     "id": "q-cl-comparative",
     "itemId": "english/cl-comparative",
     "prompt": "The population of Tokyo is larger than London 错在哪？",
     "answer": "比较对象不对齐：拿人口比城市，应改成 …larger than that of London（that = the population）。判据是把省略部分补回来，看两边比的是不是同一类东西。"
+  },
+  {
+    "id": "q-cl-adverbial-condition-unless",
+    "itemId": "english/cl-adverbial-condition",
+    "prompt": "unless 等于什么？能随意换成 if not 吗？",
+    "answer": "等于 if not，但带「除非」的预期 —— Unless it rains 不等于单纯的 if it does not rain，不能随意互换"
+  },
+  {
+    "id": "q-cl-adverbial-condition-variants",
+    "itemId": "english/cl-adverbial-condition",
+    "prompt": "举四个正式的「如果」变体。",
+    "answer": "provided / as long as / on condition that / in case（in case 后接现在时表「以防」，不表将来预测）"
   },
   {
     "id": "q-cl-adverbial-condition",
@@ -384,10 +1158,34 @@
     "answer": "条件从句用现在时表将来；例外是 will 表意愿 —— If you will wait a moment, I will check。unless 等于 if not，但带「除非」的预期，不能随意互换。"
   },
   {
+    "id": "q-cl-adverbial-concession-even-though",
+    "itemId": "english/cl-adverbial-concession",
+    "prompt": "even though 比 although 强在哪里？",
+    "answer": "让步更强、事实性更强 —— Even though it rained, we went out 的「确实下雨」比 although 更明确"
+  },
+  {
+    "id": "q-cl-adverbial-concession-despite",
+    "itemId": "english/cl-adverbial-concession",
+    "prompt": "despite 后面接什么？",
+    "answer": "接名词或 -ing —— Despite the rain, we went out；despite it rained 不成立"
+  },
+  {
     "id": "q-cl-adverbial-concession",
     "itemId": "english/cl-adverbial-concession",
     "prompt": "Although it rained, but we went out 为什么错？",
     "answer": "英语里 although 与 but 不能同现（汉语「虽然…但是…」可以）。三个词位置不同：although 是从属连词、however 是连接副词、despite 是介词后接名词。"
+  },
+  {
+    "id": "q-cl-adverbial-reason-groups",
+    "itemId": "english/cl-adverbial-reason",
+    "prompt": "原因、目的、结果三类从句各用哪些连接词？",
+    "answer": "原因：because / since / as · 目的：so that（常带情态）· 结果：so … that（不带情态）"
+  },
+  {
+    "id": "q-cl-adverbial-reason-for-limits",
+    "itemId": "english/cl-adverbial-reason",
+    "prompt": "for 表原因有哪三个限制？",
+    "answer": "它是并列连词、引导的分句只能后置、不能回答 why"
   },
   {
     "id": "q-cl-adverbial-reason",
@@ -396,10 +1194,34 @@
     "answer": "so 表结果不表原因；原因用 because / since / as（强度递减）。目的从句 so that 常带情态，结果从句 so … that 不带。"
   },
   {
+    "id": "q-wo-basic-svo-adverb-slots",
+    "itemId": "english/wo-basic-svo",
+    "prompt": "状语的两个常规位置是什么？各举一例。",
+    "answer": "句首（Yesterday the dog bit the man）与句末（The dog bit the man yesterday）"
+  },
+  {
+    "id": "q-wo-basic-svo-marked",
+    "itemId": "english/wo-basic-svo",
+    "prompt": "倒装、前置、分裂句这些有标记语序什么时候用？",
+    "answer": "只在需要转移焦点时用 —— 无标记语序（主 + 谓 + 宾）是默认，不承载额外含义"
+  },
+  {
     "id": "q-wo-basic-svo",
     "itemId": "english/wo-basic-svo",
     "prompt": "The dog bit the man 换成 The man bit the dog，说明了什么？",
     "answer": "意思全变。英语几乎没有格标记，语序承担语法功能 —— 谁在前谁就是主语；倒装与前置都是有标记语序，只在需要转移焦点时用。"
+  },
+  {
+    "id": "q-wo-question-inversion",
+    "itemId": "english/wo-question",
+    "prompt": "特殊疑问句的语序是什么？",
+    "answer": "疑问词 + 助动词 + 主语 + 动词 —— What did he buy?"
+  },
+  {
+    "id": "q-wo-question-do",
+    "itemId": "english/wo-question",
+    "prompt": "什么时候要借 do？",
+    "answer": "句子里没有助动词时 —— He works here 要借 does：Does he work here?；do / does / did 后接原形"
   },
   {
     "id": "q-wo-question",
@@ -408,10 +1230,34 @@
     "answer": "who 本身就是主语，主语疑问句不需要操作词，也不借 do；Who did call? 只在强调时出现。其他疑问句要靠操作词倒装：Does he work here?"
   },
   {
+    "id": "q-wo-there-be-agreement",
+    "itemId": "english/wo-there-be",
+    "prompt": "there be 的谓语跟什么一致？几项并列时怎么办？",
+    "answer": "跟后面的名词一致（There are books）；并列时口语常按最近的名词定 —— There is a book and two pens"
+  },
+  {
+    "id": "q-wo-there-be-variants",
+    "itemId": "english/wo-there-be",
+    "prompt": "举三个 there be 的变体结构。",
+    "answer": "there seems to be · there used to be · there might be"
+  },
+  {
     "id": "q-wo-there-be",
     "itemId": "english/wo-there-be",
     "prompt": "There is a book on the table 里的 there 是「那里」的意思吗？",
     "answer": "不是，它是虚位主语，无实义，真主语在 be 之后。谓语与后接名词一致（There are books）；there be 不能用 the 引导已知信息作真主语。"
+  },
+  {
+    "id": "q-wo-adverb-position-three",
+    "itemId": "english/wo-adverb-position",
+    "prompt": "副词有哪三个句法位置？各举一例。",
+    "answer": "句首（Quickly he left）· 句中（He quickly left）· 句末（He left quickly）；句末最无标记、句首最强调"
+  },
+  {
+    "id": "q-wo-adverb-position-middle",
+    "itemId": "english/wo-adverb-position",
+    "prompt": "中位副词的三条位置规则是什么？",
+    "answer": "实义动词前（She always arrives early）· be 后（She is always late）· 助动词后（She has always known）"
   },
   {
     "id": "q-wo-adverb-position",
@@ -420,10 +1266,34 @@
     "answer": "辖域不同：前者 naturally 修饰动作（自然地回答），后者修饰整句（当然，他回答了）。句末最无标记，句首最强调。"
   },
   {
+    "id": "q-wo-inversion-conditional-negation",
+    "itemId": "english/wo-inversion-conditional",
+    "prompt": "省略 if 的倒装里否定怎么放？",
+    "answer": "not 放在主语之后 —— Had I not known 对；Hadn't I known 少见"
+  },
+  {
+    "id": "q-wo-inversion-conditional-register",
+    "itemId": "english/wo-inversion-conditional",
+    "prompt": "这种倒装的语体倾向是什么？",
+    "answer": "很正式；日常与商务写作里保留 if 更常见"
+  },
+  {
     "id": "q-wo-inversion-conditional",
     "itemId": "english/wo-inversion-conditional",
     "prompt": "Were I you, I would apologize 由哪句变来？哪些词能前置？",
     "answer": "由 If I were you 省略 if 变来。只有 were / had / should 三个操作词能前置：Had he known, … / Should you need help, …。"
+  },
+  {
+    "id": "q-wo-object-fronting-three",
+    "itemId": "english/wo-object-fronting",
+    "prompt": "宾语前置有哪三种情形？各举一例。",
+    "answer": "话题化（This book, I really enjoyed）· 否定宾语前置（That I cannot accept）· 感叹性前置（A fine teacher he is，少见）"
+  },
+  {
+    "id": "q-wo-object-fronting-pronoun",
+    "itemId": "english/wo-object-fronting",
+    "prompt": "话题化时加代词复指行不行？",
+    "answer": "This book, I really enjoyed it 口语里常见，但是冗余，正式写作视为重复"
   },
   {
     "id": "q-wo-object-fronting",
@@ -432,10 +1302,34 @@
     "answer": "不是倒装，是话题化：只把宾语提到句首，操作词不上提（不是 This book did I enjoy）。它是有标记语序，用于衔接上文。"
   },
   {
+    "id": "q-wo-cleft-wh-form",
+    "itemId": "english/wo-cleft-wh",
+    "prompt": "wh- 分裂句的结构是什么？举两例。",
+    "answer": "What + 从句 + be + 焦点 —— What Tom broke was the window；也可倒过来：The window is what Tom broke"
+  },
+  {
+    "id": "q-wo-cleft-wh-division",
+    "itemId": "english/wo-cleft-wh",
+    "prompt": "wh- 分裂句与 it 分裂句分工在哪？",
+    "answer": "it 分裂句可强调主语、宾语、状语；wh- 分裂句专把受事或事件放到句末作新信息，多用于回答 what 问题"
+  },
+  {
     "id": "q-wo-cleft-wh",
     "itemId": "english/wo-cleft-wh",
     "prompt": "What he broke was the window 的焦点在哪？",
     "answer": "焦点在句末（the window），这是 wh- 分裂句的常规形态；也可说 The window is what he broke。它专把受事或事件放到句末作新信息，多用于回答 what 问题。"
+  },
+  {
+    "id": "q-co-ellipsis-three",
+    "itemId": "english/co-ellipsis",
+    "prompt": "省略有哪三类？各举一例。",
+    "answer": "动词省略（She ordered tea and he coffee）· 助动词共享（I can and will finish it）· 关系词省略（The man I met yesterday）"
+  },
+  {
+    "id": "q-co-ellipsis-with-substitution",
+    "itemId": "english/co-ellipsis",
+    "prompt": "举一个省略与替代并用的例子。",
+    "answer": "I asked him to leave and he did —— did 替代 leave，同时省掉了重复的宾语"
   },
   {
     "id": "q-co-ellipsis",
@@ -444,10 +1338,34 @@
     "answer": "省了 ordered（动词省略）。前提是能唯一恢复，读者必须能准确填回被删成分；若有两种填法就别省。替代常与之并用：… and he did（did = ordered）。"
   },
   {
+    "id": "q-co-connective-additive-four",
+    "itemId": "english/co-connective-additive",
+    "prompt": "增补连接词有哪四个？",
+    "answer": "moreover · in addition · also · besides（另有 furthermore）"
+  },
+  {
+    "id": "q-co-connective-additive-position",
+    "itemId": "english/co-connective-additive",
+    "prompt": "这几个词的位置倾向分别是什么？",
+    "answer": "moreover / furthermore 常置句首带逗号；also 多居句中（also needs / is also）；besides 可作介词（besides the cost）"
+  },
+  {
     "id": "q-co-connective-additive",
     "itemId": "english/co-connective-additive",
     "prompt": "moreover 与 in addition 有什么区别？",
     "answer": "moreover 暗示「更强的一点」（论证推进），in addition 只表示「还有」。besides 常带「反正也」的语气，also 多居句中。"
+  },
+  {
+    "id": "q-co-connective-causal-two-sides",
+    "itemId": "english/co-connective-causal",
+    "prompt": "原因侧与结果侧各举三个连接词。",
+    "answer": "原因侧：because / since / as · 结果侧：therefore / thus / consequently（另有 hence / accordingly / so）"
+  },
+  {
+    "id": "q-co-connective-causal-for",
+    "itemId": "english/co-connective-causal",
+    "prompt": "for 表原因有什么限制？",
+    "answer": "它是并列连词、引导的分句只能后置、不能回答 why，表推断性理由"
   },
   {
     "id": "q-co-connective-causal",
@@ -456,10 +1374,40 @@
     "answer": "结果侧连接词（therefore / thus / consequently）是副词，不能把两个分句连成一个句子，正式写作要改成分号或句号。"
   },
   {
+    "id": "q-co-connective-temporal-in-at-end",
+    "itemId": "english/co-connective-temporal",
+    "prompt": "in the end 与 at the end 差在哪？",
+    "answer": "in the end 表最终结果（相当于 finally）；at the end 指某段时间的末尾（at the end of the film）"
+  },
+  {
+    "id": "q-co-connective-temporal-groups",
+    "itemId": "english/co-connective-temporal",
+    "prompt": "时间衔接词有哪三组？各举一例。",
+    "answer": "序列（First, preheat the oven）· 同时（Meanwhile, prepare the sauce）· 之后（Afterwards, let it cool）"
+  },
+  {
     "id": "q-co-connective-temporal",
     "itemId": "english/co-connective-temporal",
     "prompt": "eventually 与 finally 能互换吗？",
     "answer": "不能。eventually 是「终于（经历长时间后）」，finally 是「最后一步」或「总算」；in the end 表最终结果，at the end 指某段时间末尾。"
+  },
+  {
+    "id": "q-co-information-structure-principles",
+    "itemId": "english/co-information-structure",
+    "prompt": "信息结构有哪两条原则？",
+    "answer": "句末是默认焦点位、放新信息；末端重量 —— 长成分也放句末（She gave the book to the boy who had been waiting all morning）"
+  },
+  {
+    "id": "q-co-information-structure-tools",
+    "itemId": "english/co-information-structure",
+    "prompt": "调整信息结构有哪两种工具？",
+    "answer": "被动（把受事提为主语、让已知信息占句首）与分裂句（把焦点拆出来放 is 之后）"
+  },
+  {
+    "id": "q-co-information-structure-criterion",
+    "itemId": "english/co-information-structure",
+    "prompt": "写作时用什么判据检查信息结构？",
+    "answer": "一段话里每句的主语应当承接上一句的信息，读起来才连得上"
   },
   {
     "id": "q-co-information-structure",
@@ -468,10 +1416,34 @@
     "answer": "句末是默认焦点位、放新信息（末端重量：长成分也放句末）。被动与分裂句都是把已知信息提到句首、让受事承接上文的工具。"
   },
   {
+    "id": "q-co-paragraph-topic-three-parts",
+    "itemId": "english/co-paragraph-topic",
+    "prompt": "英语段落的三段式是什么？",
+    "answer": "主题句（主张，通常在段首）→ 支撑（理由 / 例证 / 数据）→ 收束（回到主张或给结论）"
+  },
+  {
+    "id": "q-co-paragraph-topic-cohesion",
+    "itemId": "english/co-paragraph-topic",
+    "prompt": "三类衔接手段各管什么？",
+    "answer": "指代与替代管句内衔接 · 连接词管句间逻辑 · 重复关键词管段落连贯"
+  },
+  {
     "id": "q-co-paragraph-topic",
     "itemId": "english/co-paragraph-topic",
     "prompt": "英语段落主要靠什么衔接？为什么连接词堆太多反而生硬？",
     "answer": "靠「关键词重复 + 指代链」为主，连接词只管句间逻辑；一段里成串堆叠 firstly / moreover / therefore 会显得机械。段落结构是主题句 → 支撑 → 收束。"
+  },
+  {
+    "id": "q-co-register-markers",
+    "itemId": "english/co-register",
+    "prompt": "判断正式度有哪三个标记？",
+    "answer": "词汇（get / obtain / acquire）· 缩写（don't / do not）· 句法（短语动词 vs 单个拉丁词：find out / ascertain）"
+  },
+  {
+    "id": "q-co-register-legal",
+    "itemId": "english/co-register",
+    "prompt": "契约与规格类文档的用语与普通正式英语有什么不同？",
+    "answer": "契约与规格类文档有自己的一套固定用语（shall / herein），与普通正式英语不同"
   },
   {
     "id": "q-co-register",
