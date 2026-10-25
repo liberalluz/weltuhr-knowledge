@@ -1,6 +1,6 @@
 # 软件测试说明（STD）
 
-> **状态**：**`B14` 笔 4 —— 装 / 卸载落地** —— 新增 `app/lib/core/pack/pack_loader.dart` 与 `app/lib/core/storage/claim_ledger.dart`：装包走「探测 → 解析 → 三元校验 → 台账冲突 → 落盘」五段，**任一阶段有问题就一个字节都不写**（半装比不装更糟）；台账落 `<可写内容区>/claims.json` = `{"schema":1,"claims":[…]}`，一次原子写落全部 claim。此前「四类包可装可卸」这条出口判据**零承载代码**（`readPack` 与 `PackProbe` 都零生产调用方）。卸载只把 claim 转墓碑、**不删条目**（`P-14`）；冲突按算出来的 `path` 全表查，而不是只查 `path_reservations[]`（后者是同一张表的声明子集，见 §3.57 说明）；`attach_to` 的跨包 `main` 边**不在此处物化** —— 它本来就在包数据里，装载器只验证它存在且唯一（`validatePack` 第 ⑦ 步）。§三 用例表 **815 条**（含 66 条作废保留行）。逐版摘要见文末「历史（迁移前版号序列）」表。
+> **状态**：**`B14` 笔 5 —— `pack` 格式的规格与引用对齐（用例与断言零改动）** —— §3.2 的 `TC-PACK-010` 改标 `SPEC-PLAN-012`：`PACK-005` 讲包形态、从不承载逆序语义，原标号把「逆序不禁止」挂在了错的规格上；fixture note 与本行同步，§五 待核项第 3 条据此闭环。§三 用例表 **815 条**（含 66 条作废保留行）。逐版摘要见文末「历史（迁移前版号序列）」表。
 > 本文件是**用例正文**。测什么与通过判据见 [`STP`](stp.md)；**仓内当前读数见 §六**。
 > **追溯补录**：2026-10-17 · §三 依据 `app/test/` 与 `content/tools/fixtures/` 的既有测试逐条反推，非当时所写。
 
@@ -63,7 +63,7 @@
 | `TC-PACK-007` | `PACK-009` | **显式** | `neg-requirements`：`function` 缺 `tacit`；`class` 的 `relation` 为 `null` | 同上 | 退出码 1，含 `E-REQ-KEY` **与** `E-REQ-STATE`（两者都要报，不是只报第一个） | 管线 | `fixtures/neg-requirements/expect.json` |
 | `TC-PACK-008` | `PACK-005` | 语义 | `neg-version-space`：`manifest.version` 带前导空格 | 同上 | 退出码 1，含 `E-VERSION-FORMAT`；**不得静默 strip** | 管线 | `fixtures/neg-version-space/expect.json` |
 | `TC-PACK-009` | `PACK-008` · `FND-013` | **显式** | `neg-versioned-id`：`Node.id` 写成 `python/decorator@2.1.0` | 同上 | 退出码 1，含 `E-ID-VERSIONED` | 管线 | `fixtures/neg-versioned-id/expect.json` |
-| `TC-PACK-010` | `PACK-005` | **显式** | `valid-inversion`：`nodes` 把 `class` 排在 `function` 之前 | 同上 | 退出码 0（逆序**不禁止**），但 `inversions` 必须算出 = 1 | 管线 | `fixtures/valid-inversion/expect.json` |
+| `TC-PACK-010` | `PLAN-012` | **显式** | `valid-inversion`：`nodes` 把 `class` 排在 `function` 之前 | 同上 | 退出码 0（逆序**不禁止**），但 `inversions` 必须算出 = 1 | 管线 | `fixtures/valid-inversion/expect.json` |
 | `TC-PACK-011` | — | — | `neg-manifest-missing`：`drop` 掉 `manifest.json` | 同上 | 退出码 1，含 `E-MANIFEST-MISSING` | 管线 | `fixtures/neg-manifest-missing/expect.json` |
 | `TC-PACK-012` | — | — | `neg-manifest-required`：删 `name` / `accent` / `order` | 同上 | 退出码 1，含 `E-MANIFEST-FIELD`（走「缺字段」路径） | 管线 | `fixtures/neg-manifest-required/expect.json` |
 | `TC-PACK-013` | — | — | `neg-manifest-field`：`name` 空串 · `accent` 缺 `#` · `order=true` · `domainIds` 重复 | 同上 | 退出码 1，含 `E-MANIFEST-FIELD`（走「值非法」路径，**`order` 为 bool 也须拒**） | 管线 | `fixtures/neg-manifest-field/expect.json` |
@@ -96,9 +96,9 @@
 | `TC-PACK-040` | `PACK-005` | 语义 | `pack-meta-version-mismatch`：`meta.version=0.1.1`，源为 `0.1.0` | 同上 | 退出码 1，含 `E-META-VERSION` | 管线 | `fixtures/pack/pack-meta-version-mismatch/expect.json` |
 | `TC-PACK-041` | `PACK-005` | 语义 | `pack-meta-version-format`：`meta.version=0.1`（两段式） | 同上 | 退出码 1，含 `E-META-VERSION`（非三段 semver） | 管线 | `fixtures/pack/pack-meta-version-format/expect.json` |
 
-> **`TC-PACK-011`–`041` 的「对应 `SPEC`」多为 `—`，这是有意的**：这 31 条测的是**字段级判据**，其权威处是 [`docs/specs/entity-fields.md`](../entity-fields.md) 的各节，不是 `SPEC-*`。硬凑一个编号会让追溯表看起来完整、实际指错地方 —— 那正是 `R-09` 要防的形态。能确定对应的（`PACK-005` 五段与 `meta`、`PACK-007` 段集合、`FND-002` 六轴、`FND-003` 三层、`FND-013` 稳定 id）已如实填。
+> **`TC-PACK-011`–`041` 的「对应 `SPEC`」多为 `—`，这是有意的**：这 31 条测的是**字段级判据**，其权威处是 [`docs/specs/entity-fields.md`](../entity-fields.md) 的各节，不是 `SPEC-*`。硬凑一个编号会让追溯表看起来完整、实际指错地方 —— 那正是 `R-09` 要防的形态。能确定对应的（`PACK-005` 的**旧五段形态**与 `meta` 信封、`PACK-007` 段集合、`FND-002` 六轴、`FND-003` 三层、`FND-013` 稳定 id）已如实填。
 
-> ⚠️ **`TC-PACK-010` 的标号待核**：fixture 的 note 写「`SPEC-PACK-005`：逆序不禁止，但必须算出 inversions」，而 `PACK-005` 标题是「pack 五段 + `meta` 信封」；逆序语义更贴近 `SPEC-PLAN-012`「逆序不禁止，但必须算清并显示」。此处按 **note 原文**登记（不擅自改源码），并列入 §五 待核项。
+> ✅ **`TC-PACK-010` 的标号已核（2026-10-25）**：fixture 的 note 原写「`SPEC-PACK-005`：逆序不禁止」，而 `PACK-005` 讲的是**包形态**、从不承载逆序语义。已改标 `SPEC-PLAN-012`（同一句语义的权威处），fixture note 与本行同步 —— 原挂 §五 的待核项据此关闭。
 
 ### 3.3 `QUANT` 域（9 条）
 
@@ -254,7 +254,7 @@
 
 #### 3.7.6 真实 α 包（4 条）
 
-> 这四条读 `../content/python/dist/pack.json`，`dist/` 不入库 ⇒ 缺失时**明确失败而非跳过**（`dist/` 由 `build.py` 生成，CI 在跑测试前先构建）。
+> ⚠️ **这四条已于 `B13a` 笔 5c 全部作废**（保留编号，不删行）：原读 `../content/python/dist/pack.json`（真实 α 包产物），而 α 包夹具随 `pack_parse.dart` 一并删除。⇒ **真实内容包的端到端校验当前无自动化**，各行的「欠账」即为缺口登记；别再按「缺失时明确失败而非跳过」去找这几条用例，它们已不在跑。
 
 | 编号 | 对应 `SPEC` | 依据 | 前置 | 步骤 | 预期 | 类型 | 自动化位置 |
 |---|---|---|---|---|---|---|---|
@@ -1959,7 +1959,7 @@
 |---|---|---|---|
 | 1 | ~~`FND-012` 加 lint 规则（禁 `copyWith` / 禁非 `final` 字段）~~ —— **已处置**（`R3`，`TC-INF-011`–`015`） | 补断言 | ✅ 2026-10-17 闭环 |
 | 2 | ~~`VIEW-004` 加架构规则（`sourceRefs` 不得出现在视图层入参）~~ —— **已处置**（`R4`，`TC-INF-016`–`019`） | 补断言 | ✅ 2026-10-17 闭环 |
-| 3 | `TC-PACK-010` 的 `SPEC` 标号待核（note 写 `PACK-005`，语义更像 `PLAN-012`） | 待核 | 本轮登记，`B2` 前定 |
+| 3 | ~~`TC-PACK-010` 的 `SPEC` 标号待核（note 写 `PACK-005`，语义更像 `PLAN-012`）~~ —— **已处置**：fixture note 与 §3.2 该行均改标 `SPEC-PLAN-012`（`PACK-005` 讲包形态，从不承载逆序语义） | 待核 | ✅ 2026-10-25 闭环 |
 | 4 | ~~28 个错误码无 fixture 覆盖~~ —— **已处置**（`TC-PACK-011`–`041`，37/37 + 覆盖对账自检，见 `STP` §六） | 补用例 | ✅ 2026-10-17 闭环 |
 | 5 | ~~C 类 13 处补 `SPEC` 标号~~ —— **已处置**（7 条标号进测试名 + 5 条降级进 B 类，`R5` 强制此后不漏） | 补标号 | ✅ 2026-10-17 闭环 |
 | 6 | ~~B 类其余 6 条补断言~~ —— **已处置**：`FND-012` / `VIEW-004` 已补机制；余 10 条转入存量 `B2` 起逐批补 | 补断言 | ✅ 2026-10-17 已重分类 |
@@ -1995,6 +1995,7 @@
 
 | 版号 | 日期 | 修订摘要 |
 |---|---|---|
+| `v0.67.0` | 2026-10-25 | **`B14` 笔 5：`pack` 格式的规格与引用对齐（用例与断言零改动）** —— §3.2 的 `TC-PACK-010` 改标 `SPEC-PLAN-012`：`PACK-005` 讲的是包形态、从不承载逆序语义，原标号把「逆序不禁止」挂在了错的规格上（fixture `valid-inversion` 的 `note` 一并改）。§3.2 说明句里「`PACK-005` 五段与 `meta`」改「**旧**五段形态与 `meta` 信封」——`SPEC-PACK-005` 已改为单文件六段，旧五段只是 `content/tools/` 尚未迁移的实现。§五 待核项第 3 条据此闭环。**用例仍 815 条、`flutter test` 读数不变** |
 | `v0.66.0` | 2026-10-25 | **`B14` 笔 4：装 / 卸载与 `PathClaim` 台账** —— §三 新增 §3.57 十五条（`TC-LOADER-001`–`015`）：装包五段（探测 → 解析 → 三元校验 → 台账冲突 → 落盘，**任一阶段有问题就一个字节都不写**）· 卸载把 claim 转墓碑、**不删条目**（`P-14`）· 冲突按算出来的 `path` 全表查（`P-16` 的 `path_reservations[]` 是同一张表的声明子集）· 台账落 `<可写内容区>/claims.json`（`{"schema":1,"claims":[…]}`，一次原子写落全部 claim）· `attach_to` 的跨包 `main` 边**不在此处物化**（它本来就在包数据里，装载器只验证唯一）。**用例表 800 → 815**、`flutter test` 424 → **439**。同批修两处账面：§3.7 节头「40 条」→ **46 条**（笔 1 / 笔 3 之后没跟）· §3.7.3 的表被一条空行断成两截（`TC-LOAD-043`–`046` 落在表外），接回同一张表。⚠️ **如实登记：`deps` 区间与 `PathAlias` 都不在本笔** —— 前者要一张已安装清单（其落盘形态规格未定义），后者归骨架版本迁移 |
 | `v0.65.0` | 2026-10-25 | **`B14` 笔 3：非载荷两类包的样本入库** —— 新增夹具 `m3`（`kinds: ["overlay"]`，六段全空）与 `m4`（`kinds: ["terrain"]`，`nodes` 空、3 条先修边指向另一包的节点），配套加载器与 4 条用例。**动机**：`Pack` 的 `kinds` 与四个 facts 是**双向**校验，但此前只有载荷样本跑过 —— 「声明了却没给」（`TC-LOAD-045`）与「给了却没声明」（`TC-LOAD-046`）两侧都没被非载荷 kind 覆盖过。§3.7.3 包解析 9 → **13 条**（`TC-LOAD-043`–`046`，四条均标「无 SPEC」：`entity-fields` §1 只定字段集，未定「六段是否可空」与双向校验）；**§三 用例表 796 → 800 条**。⚠️ **如实登记：`overlay` 类包的补丁正文在 `pack.json` 里没有落点**（六段中无 `patches`）⇒ `overlay.patchCount` 目前**无对家**，`m3` 取 0 而不声明不存在的补丁；落点定下后 `m3` 与该摘要要一起改。`flutter test` 420 → **424** |
 | `v0.64.0` | 2026-10-24 | **`B14` 笔 1：探测层切单文件 + 按 `kind` 分组候选根** —— `PackLayout` 删 `manifestFileName` / `distDirName` / `manifestPath`，`packPath(包根)` 直指 `<包根>/pack.json`（旧形态「清单 + 产物」两件自 `ADR-0007` 取消 `meta` 段后已无清单独有内容 ⇒ 探测说「不是包」、解析说「是包」，两层各说一套）；`PackProblemKind` 三值降两值；`PackLocation` 加 `kind`、`spaceRoot` 改名 `packRoot`；`probeSpace` → `probePack(包根, kind)` · `scanRoot` 加 `kind` 入参 · `scanRoots` 改收 `Map<PackKind, List<String>>`。⚠️ **分组 ≠ 分子目录**：同一个根可列给多个 kind，同一个包在各类查询里各出现一次（`packRoot` 相同、`kind` 不同）—— kind 是查询维度，权威 `kinds[]` 仍由解析层读；去重只在同一 kind 内按目录名进行。§3.7.2 路径探测 6 → **8 条**（`TC-LOAD-004` / `005` / `008` 重写 · `007` / `009` 改签名 · `TC-LOAD-006` 作废保留行 · 新增 `TC-LOAD-041` / `042`）；两条新用例标「无 SPEC」—— `SPEC-PACK-018` 只钉 `pack.json` 位置，未定义多 kind 探测。`TC-LOAD-010` 的「六段 + 清单」改「六段（`pack.json` 单文件，无清单）」。**§三 用例表 794 → 796 条**（含 66 条作废保留行）；`flutter test` 419 → **420**。⚠️ **如实登记：`SPEC-PACK-018` 的路径串 `<仓根>/content/<空间>/dist/pack.json` 仍指旧形态** —— 规格重写归 `B14` 笔 5，本笔不动 |

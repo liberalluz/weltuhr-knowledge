@@ -2,6 +2,8 @@
 
 源数据（`content/<空间>/`）→ 构建产物（`dist/pack.json`）的管线。**纯标准库，无第三方依赖**。
 
+> ⚠️ **本文件描述的是管线当前实现**（旧五段 + `meta` 信封），不是包格式的目标形态。目标形态见 `SPEC-PACK-005`「单文件 = 清单 + 六段」，差距与迁移时机写在那条的「迁移状态」段，此处不复述 —— 同一件事记两处，改一处就会留一句假话。
+
 ```bash
 python content/tools/build.py                      # 构建全部空间
 python content/tools/build.py python               # 只构建 content/python/
@@ -26,21 +28,41 @@ python content/tools/verify.py --suite              # 全部 fixtures（源层 +
 
 **唯一权威处是 [`docs/specs/entity-fields.md`](../../docs/specs/entity-fields.md)**。本表只做索引，不重述取值 —— 同一批字面量若在这里再写一遍，就成了第二份事实源。要改取值，先改那份，再改代码。
 
+表按 `pack.json` 的**目标形态**索引（`SPEC-PACK-005`：单文件 = 清单 + 六段）：
+
 | 用到的地方 | 权威处 |
 |---|---|
-| `manifest.json` 的字段（`KnowledgeSpace`） | `entity-fields.md` §1 |
-| `sixAxis` · `requirements` · `layer` · `type` 的键与值 | `entity-fields.md` §2 取值域 |
-| `Edge.type` 三值，及 `unknown` 可指向包外项 | `entity-fields.md` §3 |
-| `Question` 四字段（`questions` 段） | `entity-fields.md` §4 |
-| `Scheme` 字段与 `authorityLevel`（`L3` 不存在） | `entity-fields.md` §5 |
-| `SourceRef`（= `excerpts` 段） | `entity-fields.md` §6 |
+| 清单字段（`plugin_id` · `kinds[]` · `version` · `deps[]` · 四个可空 facts …） | `entity-fields.md` §1 `Pack` |
+| `nodes` 段（`level_slot` · `slug` · `type` · `layer` · `requirements`） | `entity-fields.md` §2 `Node` |
+| `edges` 段的 `parent` 类（主父唯一 · 附加归属） | `entity-fields.md` §3 |
+| `edges` 段的 `wormhole` 类 | `entity-fields.md` §4 |
+| `edges` 段的 `prerequisite` 类（`strength` 两档） | `entity-fields.md` §5 |
+| `entries` 段（`steps[]` · `criteria[]` · `quiz[]`） | `entity-fields.md` §9 `NodeEntry` |
+| `schemes` 段 | `entity-fields.md` §10 `Scheme` |
+| `sources` 段 | `entity-fields.md` §11 `SourceRef` |
+| `methods` 段 | `entity-fields.md` §12 `MethodProfile` |
 | 三态语义：`null` 不是合法取值 | `SPEC-PACK-009` |
+
+⚠️ **本表是新形态的索引，而本目录的 Python 管线还没迁过去** —— 迁移状态写在 `SPEC-PACK-005` 的说明里，别在两处各记一份。当前的对应关系：
+
+| 管线现在产出 | 迁移后落在 |
+|---|---|
+| `manifest.json` | `pack.json` 顶层清单字段 |
+| `items.json` | `nodes` + `entries` |
+| `edges.json` | `edges` |
+| `schemes.json` | `schemes` |
+| `questions.json` | `entries[].quiz[]` |
+| `excerpts.json` | `sources` |
+| `meta{space, version}`（信封） | 清单字段的 `plugin_id` / `version` |
+| — | `methods`（旧五段无处安放，这也是旧形态「方法档为空」的根因） |
+
+**别把左列当现状读、也别把右列当已实现读** —— 那是一张迁移清单，不是完成报告。
 
 ## 序列化约定
 
 `sort_keys=True` · `indent=2` · `ensure_ascii=False` · 分隔符 `(",", ": ")` · 末尾单换行。
 
-这五项是 `SPEC-PACK-005`「`meta` 不含构建时间戳」的**唯一实现**。换任何一项，同一 commit 的两次构建就会 byte 不等，而 `dist/` 不入库、tag 是产物唯一指针 —— 事后无从比对。
+这五项是 `SPEC-PACK-005`「`version` 不含构建时间戳」的**唯一实现**。换任何一项，同一 commit 的两次构建就会 byte 不等，而 `pack.json` 不入库、tag 是产物唯一指针 —— 事后无从比对。
 
 `--check` 用四项实证这一点：
 
