@@ -316,7 +316,9 @@ git config --get core.hooksPath       # 自查：应回显 .githooks
 1. **删源分支** —— 远端与本地**都要删**。远端由仓库开关自动删除（开关现状见 §4.3）；**本地不自动**。用 `gh pr merge --delete-branch` 时它会连**本地段**一起删，故随后的 `git branch -D` 报 `not found` 属正常，不是没删。
 2. **`git fetch --prune origin`** —— 只清 `origin/*` 跟踪引用、给本地分支打上 `[gone]` 标记，**不删本地分支**，故须另跑 `git branch -D <branch>`。
 3. **本地 `main` 前进** —— `git switch main` → `git merge --ff-only origin/main`。**`fetch` 只更新 `origin/main` 引用，本地 `main` 不会自己走**；漏这步，下一次从 `main` 切分支就切到合并前的旧点，PR 里的「分支基线」sha 随之失真。
-4. **收尾判据** —— 四项全核：`git branch` 只剩 `main`（**`[gone]` 不等于已删除**）· `git rev-parse main` == `git rev-parse origin/main`（只比分支列表**看不出**本地 `main` 是否真的前进了）· `git log --oneline -1` 的标题带 `(#NNN)` · `git log -1 --format=%cn` 回显 **`GitHub`**。最后一项不是重复：标题是**纯文本**，本地提交完全可以写得一模一样；`--squash` 合出来的提交 committer 恒为 `GitHub`，被本地改写过的提交 committer 是操作者 ⇒ **这一项才是「这笔是不是平台合的」的直接证据，也是历史被重写过的唯一痕迹**。
+4. **收尾判据** —— **五项全核**：① `git branch` 与 `git branch -r` 都只剩 `main`（远端 `origin/HEAD` 是符号引用，不计；**`[gone]` 不等于已删除**）② `git rev-parse main` == `git rev-parse origin/main`（只比分支列表**看不出**本地 `main` 是否真的前进了）③ `git log --oneline -1` 的标题带 `(#NNN)` ④ `git log -1 --format=%cn` 回显 **`GitHub`** ⑤ **本批手工造的 ref 一个不剩**。第 ④ 项不是重复：标题是**纯文本**，本地提交完全可以写得一模一样；`--squash` 合出来的提交 committer 恒为 `GitHub`，被本地改写过的提交 committer 是操作者 ⇒ **这一项才是「这笔是不是平台合的」的直接证据，也是历史被重写过的唯一痕迹**。
+   - ⚠️ **只查本地分支是这套判据的固有盲区**：`--delete-branch` 只删**该 PR 的头分支**；为强推兜底、归档、对照而手工造的 ref（`refs/heads/backup/…`、`refs/heads/archive/…`）**从来没有对应的 PR**，上面四步里没有任何一步会碰它们，而「只剩 `main`」这句又隐含「所有分支都由 PR 产生」的假设 ⇒ 这类 ref 既不会被自动删、也不会被判据拦住。故判据第 ① 项要求两侧都查，第 ⑤ 项单独立一条。
+   - **手工 ref 只允许在当批内存在，且同批清理**：造它的那一刻就定好删除时点，与造它的命令写在同一个会话里。不接受「先留着，以后再说」—— **无主的例外等于永久遗留**：没人负责、没有到期时间，下一个会话只会把它当成既有状态。
 
 评审意见落 PR 正文 / 评论，`main` 只留里程碑结论。
 

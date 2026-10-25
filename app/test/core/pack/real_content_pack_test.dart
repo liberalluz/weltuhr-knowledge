@@ -1,6 +1,8 @@
 import 'dart:io';
 
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:project_knowledge/core/entities/entry.dart';
 import 'package:project_knowledge/core/entities/node.dart';
 import 'package:project_knowledge/core/enums.dart';
 import 'package:project_knowledge/core/pack/pack_reader.dart';
@@ -86,5 +88,102 @@ void main() {
 
     expect(find.text('尚未载入任何知识空间'), findsNothing);
     expect(find.text(content.pack.name), findsOneWidget);
+  });
+
+  test('写出来的内容真的进了 entries 段：摘要 / 正文 / 步骤 / 时长（SPEC-PACK-005）', () {
+    // 这一条盯的是 `entries.json` → `pack.json` 这一跳。跳丢了不会有人发现：
+    // 界面对空内容一律显示「暂无」，看起来跟「还没写」一模一样。
+    final PackContent content = _load();
+    final List<NodeEntry> filled =
+        content.entries.where((NodeEntry e) => e.steps.isNotEmpty).toList();
+
+    expect(filled, isNotEmpty, reason: '一个带步骤的条目都没有 —— entries.json 没进产物');
+    for (final NodeEntry entry in filled) {
+      expect(entry.summary, isNotNull, reason: '${entry.nodeId} 有步骤却没有摘要');
+      expect(entry.body, isNotNull, reason: '${entry.nodeId} 有步骤却没有正文');
+      expect(entry.estMinutes, isNotNull, reason: '${entry.nodeId} 有步骤却没有预计时长');
+      expect(
+        entry.steps.every((EntryStep step) => step.instruction.trim().isNotEmpty),
+        isTrue,
+        reason: '${entry.nodeId} 有空指令的步骤',
+      );
+    }
+  });
+
+  test('每条带步骤的条目至少一步复习，且算子合法'
+      '（无 SPEC：这条校验在 entity-fields §9.1，尚无 SPEC 编号）', () {
+    // 全是「读 / 例」的配方跑得通、进度也涨，只是「学过就忘」不会被任何东西发现
+    // ⇒ 只能在装载这一侧拦（同 `SPEC-STEP-027` 对自建方法的处置）。
+    final PackContent content = _load();
+    final List<NodeEntry> withSteps =
+        content.entries.where((NodeEntry e) => e.steps.isNotEmpty).toList();
+
+    expect(withSteps, isNotEmpty);
+    for (final NodeEntry entry in withSteps) {
+      expect(
+        entry.hasReviewStep,
+        isTrue,
+        reason: '${entry.nodeId} 的步骤全是首学算子（read / example），遗忘曲线被静默绕过',
+      );
+      for (final EntryStep step in entry.steps) {
+        expect(
+          ExecutionOperator.values.contains(step.operator),
+          isTrue,
+          reason: '${entry.nodeId} 出现六类之外的算子',
+        );
+      }
+    }
+  });
+
+  test('能力断言与题目严格 1:1，且存在真写的断言而不是模板兜底'
+      '（无 SPEC：1:1 是 entity-fields §9.3 的注，尚无 SPEC 编号）', () {
+    // 上一笔如实登记过「`criteria` 与 `quiz` 的 1:1 没有任何用例锁住」，
+    // 拆开两者的配对四条用例仍全绿。这一条把它补上。
+    //
+    // 过滤条件是**两侧任一非空**，不是「有题才算」：只剩断言没有题的条目同样是
+    // 1:1 被破坏，按「有题」筛会把它整个跳过 —— 判据漏在最该抓的那一侧。
+    final PackContent content = _load();
+    final List<NodeEntry> paired = content.entries
+        .where((NodeEntry e) => e.quiz.isNotEmpty || e.criteria.isNotEmpty)
+        .toList();
+
+    expect(paired, isNotEmpty);
+    for (final NodeEntry entry in paired) {
+      expect(
+        entry.criteria.length,
+        entry.quiz.length,
+        reason: '${entry.nodeId} 的断言数与题目数不等 —— 1:1 被破坏',
+      );
+      final Set<String> criteriaIds =
+          entry.criteria.map((Criterion c) => c.id).toSet();
+      for (final QuizItem item in entry.quiz) {
+        expect(
+          criteriaIds.contains(item.criterionId),
+          isTrue,
+          reason: '${entry.nodeId} 的题 ${item.id} 指向不存在的断言 ${item.criterionId}',
+        );
+      }
+    }
+
+    // 「能说出：」是装配器在源数据没写断言时的兜底前缀。它还能出现，但不该
+    // 一个人都不剩 —— 全剩说明没有一句断言是写出来的。
+    final bool hasAuthored = paired.any(
+      (NodeEntry e) => e.criteria.any((Criterion c) => !c.statement.startsWith('能说出：')),
+    );
+    expect(hasAuthored, isTrue, reason: '所有断言都是「能说出：+答案」的模板兜底，没人写真的断言');
+  });
+
+  testWidgets('详情页渲染真实步骤，不是「暂无」（SPEC-PACK-005）', (WidgetTester tester) async {
+    final PackContent content = _load();
+    final NodeEntry entry = content.entries.firstWhere(
+      (NodeEntry e) => e.steps.isNotEmpty,
+      orElse: () => throw StateError('没有带步骤的条目'),
+    );
+    final Node node = content.nodeById[entry.nodeId]!;
+
+    await tester.pumpWidget(MaterialApp(home: PlanetScreen(content: content, node: node)));
+
+    expect(find.text('暂无（本包不含步骤）'), findsNothing);
+    expect(find.textContaining(entry.steps.first.instruction), findsOneWidget);
   });
 }

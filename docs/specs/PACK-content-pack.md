@@ -64,11 +64,13 @@
 > | `content/tools/assemble_pack.py` | `<空间>/pack.json`（**客户端探的就是这个**） | 本条：单文件 = 清单 + 六段 |
 > | `content/tools/build.py` | `<空间>/dist/pack.json` | 作废的「五段 + `meta` 信封」，只服务 `verify.py --suite` 的 37 个 fixture |
 >
-> 也就是说**客户端链路上的产物已经符合本条**，`python` 空间已能装出 10 个行星系 + 150 个行星 + 43 条内容。
+> 也就是说**客户端链路上的产物已经符合本条**，`python` 空间已能装出 10 个行星系 + 150 个行星 + 53 条内容（其中 15 条带步骤与正文）。
 > 尚未迁移的是 `build.py` 那一侧与它的 fixture —— 它们连同 `validator.py` 的字段级判据随三包重建一起走，那时 `assemble_pack.py` 与 `build.py` 合成一个。
 > 读到 `content/tools/` 里的「五段」时按这段理解，不要据此判本条未实现。
 >
-> **本笔不关闭的差距**（如实登记）：三份源数据仍是旧格式（`english` / `german` 装配出来同样能读，但内容未审）；`entries` 里的 `steps` / `body` 一栏旧数据根本没有，装配器写 `null` 而不补写。
+> **内容侧的源是另一个文件**：`content/<空间>/entries.json`（可选，`itemId → summary / body / steps[] / selfCheck[] / estMinutes / criteria[]`）。它是**写出来的内容**，与 `items.json`（编目事实）分开 —— 字段集仍取 `entity-fields` §9，本条不新增字段，只说明这些字段从哪来。
+>
+> **本笔不关闭的差距**（如实登记）：三份源数据仍是旧格式（`english` / `german` 装配出来同样能读，但内容未审）；`entries.json` 目前只覆盖 `python/func` 一域 15 条，其余九域 97 条节点既无题也无内容（不建 `entry`）；`payload.est_minutes_coverage` 因而是 **0.1**。
 
 `src:` 第 48 轮 · E3 · V-1 · `ADR-0005` 决策 2 · `ADR-0007`
 
