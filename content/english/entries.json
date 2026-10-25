@@ -28,7 +28,13 @@
       "能说出专有名词在什么情况下会带上不定冠词",
       "能判断一个抽象名词是抽象还是普通，并给出可数性结论"
     ],
-    "estMinutes": 7
+    "estMinutes": 7,
+    "criteria": [
+      {
+        "quiz": "q-wc-noun",
+        "statement": "能说出名词四类，并解释专有名词失去唯一性时为何要加不定冠词"
+      }
+    ]
   },
   "english/wc-pronoun": {
     "summary": "代词按语法功能分九类，同一形式可跨类（this 既是指示代词也是限定词）。",
@@ -59,7 +65,13 @@
       "能区分反身代词与宾格代词的指称差别",
       "能说明 this 在名词前与单独使用时的词性变化"
     ],
-    "estMinutes": 7
+    "estMinutes": 7,
+    "criteria": [
+      {
+        "quiz": "q-wc-pronoun",
+        "statement": "能按句中成分判断 this 是限定词还是指示代词"
+      }
+    ]
   },
   "english/wc-verb": {
     "summary": "动词分四类：实义、助动、情态、系动；分类决定它能带什么、能不能独立作谓语。",
@@ -90,7 +102,13 @@
       "能靠后接成分为 have / do 定性，而不是靠词形",
       "能说出系动词后接形容词而不接副词的原因"
     ],
-    "estMinutes": 7
+    "estMinutes": 7,
+    "criteria": [
+      {
+        "quiz": "q-wc-verb",
+        "statement": "能按后接成分判断 have / do 是实义动词还是助动词"
+      }
+    ]
   },
   "english/wc-adjective": {
     "summary": "形容词有定语与表语两个位置，少数字只能占其中一处，位置差别不只是语序。",
@@ -121,7 +139,13 @@
       "能说出至少两个只作表语的形容词和一个只作定语的形容词",
       "能解释 same 形在不同位置带来意义差别的原因"
     ],
-    "estMinutes": 8
+    "estMinutes": 8,
+    "criteria": [
+      {
+        "quiz": "q-wc-adjective",
+        "statement": "能说出形容词定语位与表语位的差别，并解释 present 前置与后置的意义差"
+      }
+    ]
   },
   "english/wc-adverb": {
     "summary": "副词分方式、地点、时间、程度频率四类，类别决定它站句中、句末还是句首。",
@@ -152,7 +176,13 @@
       "能说出频率副词的中位规则，并能给 often 摆出三个位置",
       "能说明 only 位置不同时句子意思怎么变"
     ],
-    "estMinutes": 7
+    "estMinutes": 7,
+    "criteria": [
+      {
+        "quiz": "q-wc-adverb",
+        "statement": "能说出频率副词的中位规则，并解释 only 站不同位置如何改变句义"
+      }
+    ]
   },
   "english/wc-preposition": {
     "summary": "介词带宾语构成介词短语；短语的整体功能由它在句中作什么成分决定。",
@@ -183,7 +213,13 @@
       "能说出介词后接代词用宾格的原因",
       "能给同一个介词造出三种不同成分的短语"
     ],
-    "estMinutes": 6
+    "estMinutes": 6,
+    "criteria": [
+      {
+        "quiz": "q-wc-preposition",
+        "statement": "能说出介词后代词用宾格的理由，并举三个动词与介词的固定搭配"
+      }
+    ]
   },
   "english/wc-conjunction": {
     "summary": "并列连词连接同级成分，从属连词引导分句作状语或定语；for 只能后置且不回答 why。",
@@ -288,7 +324,13 @@
       "能靠后缀判断派生词的词性",
       "能说出至少一对同词干不同义的派生形容词"
     ],
-    "estMinutes": 7
+    "estMinutes": 7,
+    "criteria": [
+      {
+        "quiz": "q-wc-suffix",
+        "statement": "能区分 economic 与 economical、historical 与 historic 的意义分工"
+      }
+    ]
   },
   "english/wc-compound": {
     "summary": "复合词是一个词（重音前置），短语是两个词；短语动词的宾语是代词时必须插在中间。",
@@ -393,7 +435,13 @@
       "能说出 -y 变 ies 的完整条件",
       "能举出三个零复数名词"
     ],
-    "estMinutes": 6
+    "estMinutes": 6,
+    "criteria": [
+      {
+        "quiz": "q-np-plural",
+        "statement": "能说出 -y 变 ies 的条件，并举出 -f / -o 结尾的例外"
+      }
+    ]
   },
   "english/np-article-definite": {
     "summary": "定冠词标记「听者能定位」，定位依据有四类：上文提及、情境唯一、限定修饰、共享常识。",
@@ -424,7 +472,13 @@
       "能用「听者能否定位」这一条判据判断该不该用 the",
       "能说出单数可数名词表类指的两种写法"
     ],
-    "estMinutes": 8
+    "estMinutes": 8,
+    "criteria": [
+      {
+        "quiz": "q-np-article-definite",
+        "statement": "能说出定冠词的四类定位依据，并解释泛指复数为何不加 the"
+      }
+    ]
   },
   "english/np-article-indefinite": {
     "summary": "不定冠词用于首次提及与「某一类中的一个」，形式由后接词的读音决定。",
@@ -455,7 +509,13 @@
       "能靠音素而不是字母选对 a / an",
       "能说明不定冠词为什么不能配复数名词"
     ],
-    "estMinutes": 6
+    "estMinutes": 6,
+    "criteria": [
+      {
+        "quiz": "q-np-article-indefinite",
+        "statement": "能按读音而不按字母选择 a 还是 an"
+      }
+    ]
   },
   "english/np-zero-article": {
     "summary": "零冠词出现在三类场合：泛指复数与不可数、机构的功能用法、以及多数专有名词。",
@@ -523,7 +583,13 @@
       "能按可数性给量词归类",
       "能说清 a number of 与 the number of 的谓语为什么不同"
     ],
-    "estMinutes": 7
+    "estMinutes": 7,
+    "criteria": [
+      {
+        "quiz": "q-np-quantifier",
+        "statement": "能解释 a number of 与 the number of 谓语不一致的原因"
+      }
+    ]
   },
   "english/np-possessive": {
     "summary": "名词属格用于人、动物、时间与机构；无生命名词多用 of 结构，双重所有格表「其中之一」。",
@@ -554,7 +620,13 @@
       "能判断一个无生命名词该用 's 还是 of",
       "能说清双重所有格比物主限定词多带了什么意思"
     ],
-    "estMinutes": 8
+    "estMinutes": 8,
+    "criteria": [
+      {
+        "quiz": "q-np-possessive",
+        "statement": "能区分 a friend of mine 与 my friend，并说出共同拥有与各自拥有的属格写法"
+      }
+    ]
   },
   "english/np-of-genitive": {
     "summary": "of 结构与名词属格可互换的只有一部分；分工由生命度、短语长度与固定搭配决定。",
@@ -585,7 +657,13 @@
       "能按三条次序给出一句该用 of 还是 's",
       "能说出 of 结构与 's 结构中两个名词的顺序关系"
     ],
-    "estMinutes": 7
+    "estMinutes": 7,
+    "criteria": [
+      {
+        "quiz": "q-np-of-genitive",
+        "statement": "能说出 of 结构与名词属格的选择次序（固定搭配 → 生命度 → 长度）"
+      }
+    ]
   },
   "english/np-agreement": {
     "summary": "主谓一致看主语中心词，不看离谓语最近的修饰语；the number of 与 a number of 分属单复数。",
@@ -653,7 +731,13 @@
       "能把三个以上修饰语按正确顺序排好",
       "能说出复合定语里名词不带复数的理由"
     ],
-    "estMinutes": 7
+    "estMinutes": 7,
+    "criteria": [
+      {
+        "quiz": "q-np-modifier-order",
+        "statement": "能说出前置修饰语的顺序，并指出「名词定语不带复数」这条硬规则"
+      }
+    ]
   },
   "english/tense-simple-present": {
     "summary": "一般现在时表示习惯、规律与恒常事实，而不是「现在正在做」。",
@@ -684,7 +768,13 @@
       "能区分一般现在时与现在进行时的时段含义",
       "能说出第三人称单数 -s 在否定与疑问句中的位置变化"
     ],
-    "estMinutes": 6
+    "estMinutes": 6,
+    "criteria": [
+      {
+        "quiz": "q-tense-simple-present",
+        "statement": "能解释时间与条件从句用现在时表将来的分工"
+      }
+    ]
   },
   "english/tense-present-progressive": {
     "summary": "现在进行时表示说话时刻正在发生、或近期临时状态；状态动词通常不用进行时。",
@@ -715,7 +805,13 @@
       "能说出 I live 与 I am living 的语义差别",
       "能列出三个通常不用进行时的状态动词"
     ],
-    "estMinutes": 7
+    "estMinutes": 7,
+    "criteria": [
+      {
+        "quiz": "q-tense-present-progressive",
+        "statement": "能说出进行时的「临时 vs 永久」语义，并列出一般不用进行时的状态动词"
+      }
+    ]
   },
   "english/tense-simple-past": {
     "summary": "一般过去时表示与现在断开的确定过去事件，通常带或隐含确定时间。",
@@ -746,7 +842,13 @@
       "能用「是否与现在关联」区分一般过去时和现在完成时",
       "能说出 did 之后动词用原形的原因"
     ],
-    "estMinutes": 6
+    "estMinutes": 6,
+    "criteria": [
+      {
+        "quiz": "q-tense-simple-past",
+        "statement": "能区分一般过去时与现在完成时在「与现在是否关联」上的差别"
+      }
+    ]
   },
   "english/tense-past-progressive": {
     "summary": "过去进行时画背景动作，被一般过去时的事件打断或衬托。",
@@ -777,7 +879,13 @@
       "能说出进行时与一般过去时在叙事的相对长度关系",
       "能判断一段连续动作该不该用进行时"
     ],
-    "estMinutes": 7
+    "estMinutes": 7,
+    "criteria": [
+      {
+        "quiz": "q-tense-past-progressive",
+        "statement": "能解释过去进行时作背景、一般过去时作打断事件的关系"
+      }
+    ]
   },
   "english/tense-present-perfect": {
     "summary": "现在完成时把过去事件与现在连起来，因此不能与确定的过去时间状语共现。",
@@ -845,7 +953,13 @@
       "能说出完成进行时与现在完成时的进度差别",
       "能解释为什么持续体不能数次数"
     ],
-    "estMinutes": 7
+    "estMinutes": 7,
+    "criteria": [
+      {
+        "quiz": "q-tense-perfect-progressive",
+        "statement": "能区分 have done 与 have been doing，并说出后者不数次数与数量"
+      }
+    ]
   },
   "english/tense-past-perfect": {
     "summary": "过去完成时是「过去的过去」，必须有一个过去参照点，否则不成立。",
@@ -913,7 +1027,13 @@
       "能说出 will 与 be going to 的预设差别",
       "能解释时间从句里为什么不用 will"
     ],
-    "estMinutes": 7
+    "estMinutes": 7,
+    "criteria": [
+      {
+        "quiz": "q-tense-future-will",
+        "statement": "能区分 will 与 be going to 各自带的预设（此刻决定 / 已计划或已有迹象）"
+      }
+    ]
   },
   "english/tense-future-going-to": {
     "summary": "be going to 表已计划或有既有迹象的将来，与 will 的分界在「依据从哪来」。",
@@ -981,7 +1101,13 @@
       "能区分 by 与 at 引导的时间锚点",
       "能说出将来完成与将来进行的形式"
     ],
-    "estMinutes": 7
+    "estMinutes": 7,
+    "criteria": [
+      {
+        "quiz": "q-tense-future-perfect",
+        "statement": "能说出 by + 时间 与将来完成时的搭配，以及从句不用将来时"
+      }
+    ]
   },
   "english/av-passive-form": {
     "summary": "被动语态 = be + 过去分词；be 承担时态与数，过去分词不变。",
@@ -1049,7 +1175,13 @@
       "能说出被动语态的语篇动因而非风格理由",
       "能判断一句话改成被动后话题是否更连贯"
     ],
-    "estMinutes": 7
+    "estMinutes": 7,
+    "criteria": [
+      {
+        "quiz": "q-av-passive-use",
+        "statement": "能说出被动语态的语篇动因，而不把它当成「更正式」的替换"
+      }
+    ]
   },
   "english/av-get-passive": {
     "summary": "get 被动强调变化与意外，通常不带 by 短语，语体偏口语。",
@@ -1080,7 +1212,13 @@
       "能说出 get 被动比 be 被动多带了什么",
       "能区分 get + 过去分词表被动与表状态两种用法"
     ],
-    "estMinutes": 7
+    "estMinutes": 7,
+    "criteria": [
+      {
+        "quiz": "q-av-get-passive",
+        "statement": "能说出 get 被动与 be 被动在语义色彩与语体上的差别"
+      }
+    ]
   },
   "english/av-causative": {
     "summary": "使役结构分三类：have/get 表「让别人做」，make/let 表强迫与允许，形式各不同。",
@@ -1111,7 +1249,13 @@
       "能区分「别人做」与「宾语自己做」两类使役",
       "能说出 make/let 变被动时的不定式变化"
     ],
-    "estMinutes": 8
+    "estMinutes": 8,
+    "criteria": [
+      {
+        "quiz": "q-av-causative",
+        "statement": "能按「谁动手」区分 have / get + 过去分词与 have / make / let + 原形"
+      }
+    ]
   },
   "english/av-modal-ability": {
     "summary": "can 表现在的能力与许可，could 表过去能力或委婉请求；be able to 补足不能用的时态。",
@@ -1142,7 +1286,13 @@
       "能说出 can 缺少哪三种形式、各自怎么补",
       "能区分 could 表过去与表委婉两种用法"
     ],
-    "estMinutes": 7
+    "estMinutes": 7,
+    "criteria": [
+      {
+        "quiz": "q-av-modal-ability",
+        "statement": "能解释 can 无将来形式，并说出 be able to 的补位用法"
+      }
+    ]
   },
   "english/av-modal-obligation": {
     "summary": "must 是说话人施加的义务，have to 是外部规定；否定形式意思完全不同。",
@@ -1173,7 +1323,13 @@
       "能说出 must 与 have to 的义务来源差别",
       "能正确使用 mustn't 与 don't have to"
     ],
-    "estMinutes": 8
+    "estMinutes": 8,
+    "criteria": [
+      {
+        "quiz": "q-av-modal-obligation",
+        "statement": "能区分 mustn't 与 don't have to，并说出过去义务用 had to"
+      }
+    ]
   },
   "english/av-modal-epistemic": {
     "summary": "must 有两义：义务（你去休息）与推测（他一定累了）；推测义的否定换成 can't。",
@@ -1241,7 +1397,13 @@
       "能把现在的情态句改写成对过去的推测",
       "能说出 should have 的反事实含义"
     ],
-    "estMinutes": 8
+    "estMinutes": 8,
+    "criteria": [
+      {
+        "quiz": "q-av-modal-past",
+        "statement": "能说出「情态 + have + 过去分词」的反事实含义与它的使用禁区"
+      }
+    ]
   },
   "english/av-subjunctive": {
     "summary": "虚拟语气表达与事实相反的愿望、建议与假设，形式比陈述语气「退一步」。",
@@ -1272,7 +1434,13 @@
       "能说出 wish 后面时态「退一步」的规则",
       "能写出一个 mandative 虚拟的例句"
     ],
-    "estMinutes": 9
+    "estMinutes": 9,
+    "criteria": [
+      {
+        "quiz": "q-av-subjunctive",
+        "statement": "能说出虚拟语气用 were 的理由，并举一例 mandative 虚拟"
+      }
+    ]
   },
   "english/av-conditional": {
     "summary": "条件句按真实度分三型，另加混合条件；形式与时态严格配对。",
@@ -1340,7 +1508,13 @@
       "能写出不定式的完成式与被动式",
       "能说清不定式不承载时的原因"
     ],
-    "estMinutes": 7
+    "estMinutes": 7,
+    "criteria": [
+      {
+        "quiz": "q-nf-infinitive-form",
+        "statement": "能说出不定式的三种形式，并解释否定词为什么放 to 之前"
+      }
+    ]
   },
   "english/nf-infinitive-function": {
     "summary": "不定式可作主语、宾语、定语、状语四种成分，作主语时常用 it 后置。",
@@ -1371,7 +1545,13 @@
       "能判断一个不定式在句中作什么成分",
       "能说出后置主语的理由"
     ],
-    "estMinutes": 8
+    "estMinutes": 8,
+    "criteria": [
+      {
+        "quiz": "q-nf-infinitive-function",
+        "statement": "能说出不定式作主语时用 it 后置的规则"
+      }
+    ]
   },
   "english/nf-bare-infinitive": {
     "summary": "情态动词后、使役与感官动词后、以及固定搭配里用不带 to 的不定式。",
@@ -1439,7 +1619,13 @@
       "能判断一个 -ing 形式是动名词还是分词",
       "能写出带逻辑主语和完成式的动名词短语"
     ],
-    "estMinutes": 7
+    "estMinutes": 7,
+    "criteria": [
+      {
+        "quiz": "q-nf-gerund",
+        "statement": "能区分动名词与现在分词同形不同用"
+      }
+    ]
   },
   "english/nf-gerund-vs-infinitive": {
     "summary": "有些动词只接动名词、有些只接不定式；两者都能接时，意义常不同。",
@@ -1507,7 +1693,13 @@
       "能判断现在分词作什么成分",
       "能说出隐含主语一致这条要求"
     ],
-    "estMinutes": 8
+    "estMinutes": 8,
+    "criteria": [
+      {
+        "quiz": "q-nf-present-participle",
+        "statement": "能判断分词状语的隐含主语，并说出悬垂分词错在哪"
+      }
+    ]
   },
   "english/nf-past-participle": {
     "summary": "过去分词表被动与完成，作定语时常后置，作状语时隐含主语要一致。",
@@ -1538,7 +1730,13 @@
       "能区分现在分词与过去分词的语义差别",
       "能说出不及物过去分词只表完成的原因"
     ],
-    "estMinutes": 8
+    "estMinutes": 8,
+    "criteria": [
+      {
+        "quiz": "q-nf-past-participle",
+        "statement": "能解释不及物动词的过去分词为何只表完成、不表被动"
+      }
+    ]
   },
   "english/nf-participle-clause": {
     "summary": "分词短语作状语时，隐含主语必须等于主句主语，否则是悬垂分词。",
@@ -1606,7 +1804,13 @@
       "能说出独立主格为什么不违反分词的主语一致要求",
       "能写出一个 with 复合结构"
     ],
-    "estMinutes": 8
+    "estMinutes": 8,
+    "criteria": [
+      {
+        "quiz": "q-nf-absolute",
+        "statement": "能说出独立主格与悬垂分词的分界：自带主语"
+      }
+    ]
   },
   "english/nf-perfect-infinitive": {
     "summary": "非谓语的完成式表动作先于主句，被动完成式两层叠加。",
@@ -1637,7 +1841,13 @@
       "能写出不定式与分词的被动完成式",
       "能判断什么时候该用完成式"
     ],
-    "estMinutes": 8
+    "estMinutes": 8,
+    "criteria": [
+      {
+        "quiz": "q-nf-perfect-infinitive",
+        "statement": "能按时间先后判断非谓语该不该用完成式"
+      }
+    ]
   },
   "english/cl-relative-defining": {
     "summary": "限制性关系从句界定先行词的范围，不能随意删除，关系词可作宾语时省略。",
@@ -1668,7 +1878,13 @@
       "能用「删掉后指代是否改变」判定限制性",
       "能说出关系词可省略的两种条件"
     ],
-    "estMinutes": 8
+    "estMinutes": 8,
+    "criteria": [
+      {
+        "quiz": "q-cl-relative-defining",
+        "statement": "能说出关系词作宾语可省、作主语不可省"
+      }
+    ]
   },
   "english/cl-relative-nondefining": {
     "summary": "非限制性关系从句只补充信息，用逗号隔开，不能用 that，关系词不能省。",
@@ -1773,7 +1989,13 @@
       "能区分连接词 that 与关系代词 that",
       "能说出哪几类从句的 that 不能省"
     ],
-    "estMinutes": 8
+    "estMinutes": 8,
+    "criteria": [
+      {
+        "quiz": "q-cl-noun-that",
+        "statement": "能说出哪几类名词性从句的 that 不可省"
+      }
+    ]
   },
   "english/cl-noun-wh": {
     "summary": "wh- 名词性从句用陈述语序，连接词在从句里充当成分且有词义。",
@@ -1804,7 +2026,13 @@
       "能保持 wh- 从句的陈述语序",
       "能用「缺不缺成分」区分 what 与 that"
     ],
-    "estMinutes": 8
+    "estMinutes": 8,
+    "criteria": [
+      {
+        "quiz": "q-cl-noun-wh",
+        "statement": "能解释 wh- 名词性从句为何不倒装，并区分 what 与 that 的分工"
+      }
+    ]
   },
   "english/cl-comparative": {
     "summary": "比较从句常省略与主句重复的部分，但省略后不能改变比较对象。",
@@ -1835,7 +2063,13 @@
       "能把省略部分补回来检查比较对象是否对齐",
       "能说出 than 作连词与作介词的差别"
     ],
-    "estMinutes": 8
+    "estMinutes": 8,
+    "criteria": [
+      {
+        "quiz": "q-cl-comparative",
+        "statement": "能找出比较对象不对齐的错误并改正（than that of …）"
+      }
+    ]
   },
   "english/cl-adverbial-time": {
     "summary": "时间状语从句用现在时表将来，不用 will；主从时态按时段搭配。",
@@ -1903,7 +2137,13 @@
       "能在条件从句里避开 will",
       "能说出 unless 与 if not 的差别"
     ],
-    "estMinutes": 7
+    "estMinutes": 7,
+    "criteria": [
+      {
+        "quiz": "q-cl-adverbial-condition",
+        "statement": "能说出条件从句不用将来时的例外：will 表意愿"
+      }
+    ]
   },
   "english/cl-adverbial-concession": {
     "summary": "让步从句承认对立事实：although 引导从句，however 作副词，despite 后接名词。",
@@ -1934,7 +2174,13 @@
       "能按后接成分选对 although / however / despite",
       "能说出汉式双连词为什么不成立"
     ],
-    "estMinutes": 8
+    "estMinutes": 8,
+    "criteria": [
+      {
+        "quiz": "q-cl-adverbial-concession",
+        "statement": "能解释 although 与 but 不能同现，并说出 however / despite 的词性"
+      }
+    ]
   },
   "english/cl-adverbial-reason": {
     "summary": "原因从句用 because / since / as，目的用 so that，结果用 so … that。",
@@ -1965,7 +2211,13 @@
       "能区分原因、目的、结果三类从句",
       "能说出 since / as / because 的强度次序"
     ],
-    "estMinutes": 8
+    "estMinutes": 8,
+    "criteria": [
+      {
+        "quiz": "q-cl-adverbial-reason",
+        "statement": "能区分原因、目的与结果三类从句各自的连接词"
+      }
+    ]
   },
   "english/wo-basic-svo": {
     "summary": "英语基本语序是主—谓—宾，位置变化几乎都带语篇或强调动因。",
@@ -1996,7 +2248,13 @@
       "能说明英语语序为什么承担语法功能",
       "能说出状语的两个无标记位置"
     ],
-    "estMinutes": 6
+    "estMinutes": 6,
+    "criteria": [
+      {
+        "quiz": "q-wo-basic-svo",
+        "statement": "能说出语序在英语里承担语法功能，并举一例换位换义"
+      }
+    ]
   },
   "english/wo-question": {
     "summary": "一般疑问句靠操作词倒装，特殊疑问句在此之上把疑问词前置。",
@@ -2027,7 +2285,13 @@
       "能把陈述句改造成一般疑问句与特殊疑问句",
       "能说出主语疑问句不倒装的原因"
     ],
-    "estMinutes": 8
+    "estMinutes": 8,
+    "criteria": [
+      {
+        "quiz": "q-wo-question",
+        "statement": "能解释主语疑问句为何不借 do"
+      }
+    ]
   },
   "english/wo-there-be": {
     "summary": "there be 存在句把新信息放在 be 之后，谓语与后接名词一致。",
@@ -2058,7 +2322,13 @@
       "能说出 there be 句的真主语在哪里",
       "能说出 there be 为什么不能带 the 引导真主语"
     ],
-    "estMinutes": 7
+    "estMinutes": 7,
+    "criteria": [
+      {
+        "quiz": "q-wo-there-be",
+        "statement": "能说出 there 是虚位主语，以及谓语与后接名词的一致规则"
+      }
+    ]
   },
   "english/wo-adverb-position": {
     "summary": "状语位置分句首、句中、句末三种，位置改变会改变强调与语义辖域。",
@@ -2089,7 +2359,13 @@
       "能正确放置频率副词",
       "能说出评注副词在句首与句末的辖域差别"
     ],
-    "estMinutes": 8
+    "estMinutes": 8,
+    "criteria": [
+      {
+        "quiz": "q-wo-adverb-position",
+        "statement": "能解释评注副词放句首与放句末的辖域差别"
+      }
+    ]
   },
   "english/wo-negation-scope": {
     "summary": "否定词的位置决定辖域：not all 是部分否定，all … not 有歧义。",
@@ -2194,7 +2470,13 @@
       "能把虚拟条件句改成倒装形态并还原",
       "能说出哪三个词可以前置"
     ],
-    "estMinutes": 7
+    "estMinutes": 7,
+    "criteria": [
+      {
+        "quiz": "q-wo-inversion-conditional",
+        "statement": "能说出只有 were / had / should 能前置以省略 if"
+      }
+    ]
   },
   "english/wo-object-fronting": {
     "summary": "宾语前置把受事提到句首作话题，语序仍保留主谓，不倒装。",
@@ -2225,7 +2507,13 @@
       "能区分宾语前置与倒装",
       "能说出话题化在语篇里的作用"
     ],
-    "estMinutes": 7
+    "estMinutes": 7,
+    "criteria": [
+      {
+        "quiz": "q-wo-object-fronting",
+        "statement": "能区分话题化与倒装：看操作词有没有上提"
+      }
+    ]
   },
   "english/wo-cleft-it": {
     "summary": "it 分裂句用 It is/was … that/who … 把某一成分单独拎出来作焦点。",
@@ -2293,7 +2581,13 @@
       "能写出 wh- 分裂句",
       "能说出两类分裂句各自擅长强调什么"
     ],
-    "estMinutes": 7
+    "estMinutes": 7,
+    "criteria": [
+      {
+        "quiz": "q-wo-cleft-wh",
+        "statement": "能说出 wh- 分裂句的焦点位置与它的使用场景"
+      }
+    ]
   },
   "english/co-reference": {
     "summary": "指代靠代词与指示词把后句挂到前文；this 偏近指与概括，that 偏远指与已完结。",
@@ -2398,7 +2692,13 @@
       "能判断一省略是否可唯一恢复",
       "能写出助动词共享的句子"
     ],
-    "estMinutes": 7
+    "estMinutes": 7,
+    "criteria": [
+      {
+        "quiz": "q-co-ellipsis",
+        "statement": "能说出省略的前提是「能唯一恢复」"
+      }
+    ]
   },
   "english/co-connective-additive": {
     "summary": "增补类连接词分递进与并列：moreover 递进、in addition 添一项、also 常句中。",
@@ -2429,7 +2729,13 @@
       "能按论证强度选对增补连接词",
       "能说出 also 的句中位置规则"
     ],
-    "estMinutes": 7
+    "estMinutes": 7,
+    "criteria": [
+      {
+        "quiz": "q-co-connective-additive",
+        "statement": "能区分 moreover 与 in addition 的论证强度"
+      }
+    ]
   },
   "english/co-connective-adversative": {
     "summary": "转折类分三档：but 直接对立，however 书面转折，although 引导从句让步。",
@@ -2497,7 +2803,13 @@
       "能分清原因侧与结果侧连接词",
       "能避免 therefore 造成的 run-on"
     ],
-    "estMinutes": 8
+    "estMinutes": 8,
+    "criteria": [
+      {
+        "quiz": "q-co-connective-causal",
+        "statement": "能说出结果侧连接词是副词，不能把两个分句连成一个句子"
+      }
+    ]
   },
   "english/co-connective-temporal": {
     "summary": "时间连接词按先后、同时、之后三类分工，位置影响强调。",
@@ -2528,7 +2840,13 @@
       "能区分 eventually 与 finally",
       "能正确使用 in the end 与 at the end"
     ],
-    "estMinutes": 7
+    "estMinutes": 7,
+    "criteria": [
+      {
+        "quiz": "q-co-connective-temporal",
+        "statement": "能区分 eventually / finally / in the end / at the end"
+      }
+    ]
   },
   "english/co-information-structure": {
     "summary": "已知信息在前、新信息在后；句末位置最重，是默认焦点位。",
@@ -2559,7 +2877,13 @@
       "能判断一句话的信息重心落在哪",
       "能说出末端重量的处理办法"
     ],
-    "estMinutes": 8
+    "estMinutes": 8,
+    "criteria": [
+      {
+        "quiz": "q-co-information-structure",
+        "statement": "能说出句末焦点位与末端重量，并说明被动为何是信息结构工具"
+      }
+    ]
   },
   "english/co-paragraph-topic": {
     "summary": "段落靠主题句定中心，后续句子用衔接手段展开同一个中心。",
@@ -2590,7 +2914,13 @@
       "能写出覆盖全段的主题句",
       "能说出英语段落靠什么维持连贯"
     ],
-    "estMinutes": 7
+    "estMinutes": 7,
+    "criteria": [
+      {
+        "quiz": "q-co-paragraph-topic",
+        "statement": "能说出段落的主题句—支撑—收束结构与主要衔接手段"
+      }
+    ]
   },
   "english/co-register": {
     "summary": "语域按正式度与场合选择：同义表达在学术、商务、口语里不通用。",
@@ -2621,6 +2951,12 @@
       "能识别一段文字的语域是否统一",
       "能把口语表述改成书面表述"
     ],
-    "estMinutes": 7
+    "estMinutes": 7,
+    "criteria": [
+      {
+        "quiz": "q-co-register",
+        "statement": "能按词汇、缩写、句法三个标记判断语域是否统一"
+      }
+    ]
   }
 }
