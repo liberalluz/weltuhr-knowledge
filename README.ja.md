@@ -45,7 +45,8 @@ cd ../app && flutter run -d windows
 |---|---|
 | `cd app && flutter run -d windows` | クライアントを起動する |
 | `cd app && flutter test --reporter compact` | クライアントのテストスイートを実行する |
-| `python content/tools/build.py` | コンテンツパックを生成する |
+| `python content/tools/assemble_pack.py` | `<space>/pack.json` を組み立てる（**クライアントが読むのはこちら**） |
+| `python content/tools/build.py` | 旧五段の成果物を `<space>/dist/` に出力（`verify.py` の fixture 用に移行期だけ残す） |
 | `python content/tools/verify.py --suite` | コンテンツパックをスキーマに照らして検証する |
 | `cd app && flutter analyze && dart run tool/lint/check.dart && dart run tool/docs/check.dart` | 静的チェック：アナライザー、リポジトリの lint 規則、ドキュメントのリンクと整合性 |
 

@@ -13,9 +13,13 @@ dart run tool/lint/check.dart   # 架构规则 R1–R5（见下）
 flutter run -d windows        # 必须在 app/ 目录内运行（内容包按运行期 CWD 查找）
 ```
 
-> ⚠️ 包解析与探测的用例一律读 `test/fixtures/` 下的**合成夹具**（`m1`–`m4`），不读真实产物 ——
-> 夹具只覆盖**形态**、不覆盖三包的真实数据 ⇒ 别把「夹具绿」当成「对真实包验过」。
-> 包产物形态见 `SPEC-PACK-005`（单文件 = 清单 + 六段），不入库（`SPEC-PACK-018`）。
+> ⚠️ **两类用例，别混着读**：
+> - 解析与探测的用例读 `test/fixtures/` 下的**合成夹具**（`m1`–`m4`）—— 夹具只覆盖**形态**，
+>   不覆盖三份源数据的真实内容，别把「夹具绿」当成「对真实包验过」；
+> - `test/core/pack/real_content_pack_test.dart` 读**盘上的真实产物** `../content/<空间>/pack.json`，
+>   缺产物时 **fail 不 skip**。跑它之前先 `python content/tools/assemble_pack.py`
+>   （产物不入库，`SPEC-PACK-018`；CI 由 app-checks 的「构建内容包」步骤现场装配）。
+> 包产物形态见 `SPEC-PACK-005`（单文件 = 清单 + 六段）。
 
 ## 分层
 
