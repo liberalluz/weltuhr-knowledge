@@ -1,18 +1,102 @@
 import 'package:flutter/material.dart';
 
+import 'core/entities/entry.dart';
+import 'core/entities/node.dart';
+import 'core/enums.dart';
+import 'core/pack/dart_io_pack_fs.dart';
+import 'core/pack/pack_fs.dart';
+import 'core/pack/pack_probe.dart';
+import 'core/pack/pack_reader.dart';
+
 void main() {
   runApp(const WeltuhrApp());
 }
 
+/// 启动期装载的结果。**三态，不是一个 `bool`**：
+///
+/// - 有包：渲染内容；
+/// - 一个包都没探到：候选根下没有 `pack.json`（多半是没跑装配脚本）；
+/// - 探到了但读不出来：文件在，解析或 IO 有问题。
+///
+/// 后两种的修法完全不同，所以 [problems] 原样带到界面上，不塌成一句「加载失败」
+/// （`SPEC-FND-014`：没数据不许补默认值）。
+class PackBoot {
+  const PackBoot({
+    this.packs = const <PackContent>[],
+    this.problems = const <String>[],
+  });
+
+  final List<PackContent> packs;
+  final List<String> problems;
+
+  bool get isEmpty => packs.isEmpty;
+}
+
+/// 开发期装载：按 `devPackRoots()` 的候选根探测，再逐个解析。
+///
+/// 探测层按 `kind` 分组，同一个包会在四类查询里各出现一次（`Pack.kinds[]` 可多值，
+/// 目录名不承载 kind）—— 这里按 `packRoot` 合并，权威的类别以解析出的 `kinds[]`
+/// 为准，与 [PackLocation] 的注释同口径。
+PackBoot loadDevPacks() {
+  const PackFs fs = DartIoPackFs();
+  const PackProbe probe = PackProbe(fs);
+
+  final ProbeResult probed = probe.scanRoots(devPackRoots());
+  final Map<String, PackLocation> byRoot = <String, PackLocation>{};
+  for (final PackLocation location in probed.locations) {
+    byRoot.putIfAbsent(location.packRoot, () => location);
+  }
+
+  final List<PackContent> packs = <PackContent>[];
+  final List<String> problems = <String>[
+    // 只报「没探到」的那一类：每个包会在四类查询里各报一次，全列出来是噪音。
+    for (final PackProblem problem in probed.problems)
+      if (!byRoot.containsKey(_parentOf(problem.path))) problem.toString(),
+  ];
+
+  for (final String root in byRoot.keys.toList()..sort()) {
+    final PackLocation location = byRoot[root]!;
+    final String? text = fs.readString(location.packPath);
+    if (text == null) {
+      problems.add('读不出来：${location.packPath}');
+      continue;
+    }
+    try {
+      packs.add(readPack(text));
+    } on PackContentException catch (error) {
+      // 只带前三条：一个包坏了通常坏一片，界面不是日志。
+      final String head = error.problems.take(3).join('；');
+      problems.add(
+        '${location.packPath}：${error.problems.length} 处不合格'
+        '${head.isEmpty ? '' : '（$head）'}',
+      );
+    }
+  }
+
+  return PackBoot(packs: packs, problems: problems);
+}
+
+/// `a/b/pack.json` → `a/b`。探测层报的是文件路径，装载层按目录合并，得回退一级。
+String _parentOf(String filePath) {
+  final int cut = filePath.lastIndexOf('/');
+  return cut < 0 ? filePath : filePath.substring(0, cut);
+}
+
 /// 应用外壳。
 ///
-/// 只有空态：`features/universe/` 的六轴五档渲染随 `ADR-0005` 在 `B13a`
-/// 笔 5a 整层删除，容器树界面归 `B17a`。这里保留「没有数据就不补默认值」
-/// 的最朴素形态（`SPEC-FND-014`）。
-class WeltuhrApp extends StatelessWidget {
-  const WeltuhrApp({super.key});
+/// [boot] 可注入：`test` 里不碰真实磁盘（`flutter test` 的 CWD 下没有内容包，
+/// 真去读只会得到一条「探不到」—— 那样测的就不是界面，而是本机目录结构）。
+class WeltuhrApp extends StatefulWidget {
+  const WeltuhrApp({super.key, this.boot});
 
-  static const Color _accent = Color(0xFF534AB7);
+  final PackBoot Function()? boot;
+
+  @override
+  State<WeltuhrApp> createState() => _WeltuhrAppState();
+}
+
+class _WeltuhrAppState extends State<WeltuhrApp> {
+  late final PackBoot _boot = (widget.boot ?? loadDevPacks)();
 
   @override
   Widget build(BuildContext context) {
@@ -20,32 +104,261 @@ class WeltuhrApp extends StatelessWidget {
       title: 'Weltuhr',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorSchemeSeed: _accent,
+        colorSchemeSeed: const Color(0xFF534AB7),
         useMaterial3: true,
         brightness: Brightness.light,
       ),
-      home: const EmptySpaceScreen(),
+      home: _boot.isEmpty
+          ? EmptySpaceScreen(problems: _boot.problems)
+          : (_boot.packs.length == 1
+                ? SpaceScreen(content: _boot.packs.first)
+                : PackListScreen(packs: _boot.packs)),
     );
   }
 }
 
-/// 空态页（`B17a` 容器树就位前，本页是唯一界面）。
+/// 空态页。
+///
+/// 两句话是分开的：「尚未载入」是常态，`problems` 是**具体原因**。把两者合成
+/// 一句「加载失败」，用户就分不清该去跑装配脚本，还是该查那个文件为什么读不出。
 class EmptySpaceScreen extends StatelessWidget {
-  const EmptySpaceScreen({super.key});
+  const EmptySpaceScreen({super.key, this.problems = const <String>[]});
+
+  final List<String> problems;
 
   @override
   Widget build(BuildContext context) {
     final TextTheme text = Theme.of(context).textTheme;
     return Scaffold(
       body: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            Text('Weltuhr', style: text.headlineMedium),
-            const SizedBox(height: 12),
-            Text('尚未载入任何知识空间', style: text.bodyLarge),
-          ],
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Text('Weltuhr', style: text.headlineMedium),
+              const SizedBox(height: 12),
+              Text('尚未载入任何知识空间', style: text.bodyLarge),
+              if (problems.isNotEmpty) ...<Widget>[
+                const SizedBox(height: 24),
+                Text(
+                  '候选根下没有可用的包：',
+                  style: text.labelLarge?.copyWith(
+                    color: Theme.of(context).colorScheme.error,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                for (final String problem in problems)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 2),
+                    child: Text(problem, style: text.bodySmall),
+                  ),
+                const SizedBox(height: 16),
+                Text(
+                  '先跑 python content/tools/assemble_pack.py',
+                  style: text.bodySmall,
+                ),
+              ],
+            ],
+          ),
         ),
+      ),
+    );
+  }
+}
+
+/// 装了多个包时才出现的一层：先选包，再进它的树。
+class PackListScreen extends StatelessWidget {
+  const PackListScreen({super.key, required this.packs});
+
+  final List<PackContent> packs;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Weltuhr')),
+      body: ListView.builder(
+        itemCount: packs.length,
+        itemBuilder: (BuildContext context, int index) {
+          final PackContent content = packs[index];
+          return ListTile(
+            title: Text(content.pack.name),
+            subtitle: Text('${content.learnableNodes.length} 个可学节点'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (BuildContext context) => SpaceScreen(content: content),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+/// 一个包的树：行星系 → 行星。
+class SpaceScreen extends StatelessWidget {
+  const SpaceScreen({super.key, required this.content});
+
+  final PackContent content;
+
+  @override
+  Widget build(BuildContext context) {
+    // 只取 `system` 槽位当分组：`subtree_root = system` 是本包的声明，
+    // 再往上的父（`attach_to` 指向的编外根）不在本包数据里，界面没有它可画。
+    final List<Node> systems = content.nodes
+        .where((Node node) => node.levelSlot == LevelSlot.system)
+        .toList()
+      ..sort((Node a, Node b) => a.slug.compareTo(b.slug));
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(content.pack.name),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(20),
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Text(
+              '${content.pack.version} · ${content.learnableNodes.length} 个可学节点',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ),
+        ),
+      ),
+      body: ListView.builder(
+        itemCount: systems.length,
+        itemBuilder: (BuildContext context, int index) {
+          final Node system = systems[index];
+          final List<Node> planets = content.nodes
+              .where(
+                (Node node) =>
+                    node.levelSlot == LevelSlot.planet &&
+                    content.parents.mainParentOf(node.id) == system.id,
+              )
+              .toList()
+            ..sort((Node a, Node b) => a.slug.compareTo(b.slug));
+
+          return ExpansionTile(
+            title: Text(system.name),
+            subtitle: Text('${planets.length} 个节点'),
+            children: <Widget>[
+              for (final Node planet in planets)
+                ListTile(
+                  dense: true,
+                  title: Text(planet.name),
+                  subtitle: Text(
+                    content.entryOf(planet.id) == null ? '暂无内容' : '有题目',
+                  ),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (BuildContext context) =>
+                          PlanetScreen(content: content, node: planet),
+                    ),
+                  ),
+                ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+/// 单个可学节点：能力断言、步骤、题目。
+///
+/// **空缺照实显示**（「暂无步骤」），不倒推一个默认值：旧数据里 steps / body
+/// 一栏都没有，界面若补上"看起来有内容"的占位，读者会把缺数据当成已完成。
+class PlanetScreen extends StatelessWidget {
+  const PlanetScreen({super.key, required this.content, required this.node});
+
+  final PackContent content;
+  final Node node;
+
+  @override
+  Widget build(BuildContext context) {
+    final NodeEntry? entry = content.entryOf(node.id);
+    final TextTheme text = Theme.of(context).textTheme;
+    // 先落成局部变量再判类型：`node` 是公开字段，Dart 不对它做类型提升。
+    final Node current = node;
+    final LearnableNode? learnable = current is LearnableNode ? current : null;
+
+    return Scaffold(
+      appBar: AppBar(title: Text(node.name)),
+      body: ListView(
+        padding: const EdgeInsets.all(20),
+        children: <Widget>[
+          Text(node.id, style: text.bodySmall),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            children: <Widget>[
+              Chip(label: Text(node.levelSlot.name)),
+              Chip(label: Text(node.scope.wire)),
+              if (learnable != null) ...<Widget>[
+                Chip(label: Text(learnable.type.name)),
+                Chip(label: Text(learnable.layer.name)),
+              ],
+            ],
+          ),
+          const Divider(height: 32),
+          _Section(title: '概要', body: entry?.summary ?? '暂无'),
+          _Section(title: '正文', body: entry?.body ?? '暂无'),
+          _Section(
+            title: '学习步骤',
+            body: (entry == null || entry.steps.isEmpty)
+                ? '暂无（本包不含步骤）'
+                : entry.steps
+                      .map(
+                        (EntryStep step) =>
+                            '· ${step.operator.wire}（${step.effectivePhase.name}）${step.instruction}',
+                      )
+                      .join('\n'),
+          ),
+          _Section(
+            title: '能力断言',
+            body: (entry == null || entry.criteria.isEmpty)
+                ? '暂无（无断言的条目按打卡式处理，永不毕业）'
+                : entry.criteria
+                      .map((Criterion criterion) => '· ${criterion.statement}')
+                      .join('\n'),
+          ),
+          _Section(
+            title: '题目',
+            body: (entry == null || entry.quiz.isEmpty)
+                ? '暂无'
+                : entry.quiz
+                      .map(
+                        (QuizItem item) =>
+                            '问：${item.prompt}\n答：${item.answer}\n（${item.type.name} · ${item.judge.name}）',
+                      )
+                      .join('\n\n'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _Section extends StatelessWidget {
+  const _Section({required this.title, required this.body});
+
+  final String title;
+  final String body;
+
+  @override
+  Widget build(BuildContext context) {
+    final TextTheme text = Theme.of(context).textTheme;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text(title, style: text.titleMedium),
+          const SizedBox(height: 6),
+          Text(body, style: text.bodyMedium),
+        ],
       ),
     );
   }

@@ -18,6 +18,13 @@ content/*/dist/
 # fixtures 也是源目录，同样可能被直接构建；上面那条只覆盖一层，故单列
 content/tools/fixtures/*/dist/
 
+# 单文件 pack（`content/tools/assemble_pack.py` 生成）。**不落库**：它是源数据的
+# 投影，进库就是第二份事实源 —— 改了源忘了重跑，没有任何断言会红。
+# 客户端按运行期 CWD 探 `<包根>/pack.json`（`SPEC-PACK-018`），所以每次先跑一遍。
+# 带前导斜杠锚定在仓根，只匹配 `content/<空间>/pack.json` 一层；
+# `content/tools/fixtures/*/pack.json` 是手写夹具，**必须留在库里**。
+/content/*/pack.json
+
 # 服务端密钥（生产经环境变量注入，不入库）
 config/passwords.yaml
 config/development.yaml
