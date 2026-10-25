@@ -33,6 +33,23 @@ python content/tools/verify.py --suite              # 全部 fixtures（源层 +
 
 `assemble_pack.py` **不校验、只搬运**：它把源数据映射成目标形态，判据全在 `validator.py`。映射里凡旧数据没有的字段，一律写 `null` 或空数组，不编造 —— 例外只有两处，且都写在那张表里（`criteria[].statement` 由答案原文加固定前缀派生、`quiz[].type` 定为 `freeform`）。
 
+### 内容侧的源：`content/<空间>/entries.json`
+
+正文、步骤与时长**不派生**，是写出来的，所以不往 `items.json` 里塞（那份只放编目事实），单独一个文件：
+
+| 键 | 说明 |
+|---|---|
+| `summary` | 一句话 |
+| `body` | Markdown 整块；本仓的源用纯文本 + 缩进代码块，避免 `**` 原样显示 |
+| `steps[]` | `{operator, phase?, instruction}`，`operator` **只能取六类**：`read` / `example` / `recall` / `practice` / `explain` / `do`；`phase` 省略则由算子派生（`read`·`example` → `first`，其余 → `both`） |
+| `selfCheck[]` | 步内自检（形成性，不写判定） |
+| `estMinutes` | 项级预计时长 |
+| `criteria[]` | `{quiz: "<题 id>", statement: "..."}`，覆盖由答案派生的兜底断言。**按题 id 对，不按 `c1` / `c2` 这种生成序号对**——序号会随题量重排 |
+
+顶层是 `itemId → 内容`。**写错了会在装配期直接 `fail`**，四类：算子不在六类里 · 步骤全是首学算子（`entity-fields` §9.1 要求至少一步复习）· 断言指向本条目没有的题 · `itemId` 在 `items.json` 里找不到。查这四类不是越权做包内校验，是因为它们**写错了不会自己报错**：一路走到客户端才在 `readPack` 那里整包被拒，或者渲染成一个说不清的空步骤。
+
+节点没有题也可以有内容（`criteria` 空 = 打卡式，永不毕业，但进得去、看得见）；反过来只有题没有内容也照旧建 `entry`。
+
 ## 取值域
 
 **唯一权威处是 [`docs/specs/entity-fields.md`](../../docs/specs/entity-fields.md)**。本表只做索引，不重述取值 —— 同一批字面量若在这里再写一遍，就成了第二份事实源。要改取值，先改那份，再改代码。

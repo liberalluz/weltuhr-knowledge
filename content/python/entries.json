@@ -1,0 +1,258 @@
+{
+  "python/fn-def-call": {
+    "summary": "def 执行时创建函数对象并绑定名字，函数体要等调用才执行。",
+    "body": "def greet(name):\n    return f'hello {name}'\n\ngreet('世界')   # 此刻才执行函数体\nfn = greet      # 只是再绑一个名字，不执行\n\ndef 是语句：跑到它那一行才创建函数对象。形参是名字绑定 —— 调用时按「位置 → 关键字」把实参绑到形参上，绑完才进函数体。每次调用现场建一个栈帧，本地名字都在帧里，返回时帧销毁。不写 return 与只写 return，值都是 None。",
+    "steps": [
+      {"operator": "read", "instruction": "读官方教程 §4.7 函数定义，分清「定义」与「调用」是两件事"},
+      {"operator": "example", "instruction": "抄上面那段，先调 greet('世界')，再打印 greet 本身（会看到 <function ...>）—— 名字背后是对象"},
+      {"operator": "practice", "instruction": "写一个两参数函数，先用位置实参、再用关键字实参各调一次，确认结果一致"},
+      {"operator": "explain", "instruction": "合上材料，向自己解释：为什么 def 之后函数体里的代码没有立刻执行"},
+      {"operator": "recall", "instruction": "说出 def 执行时做的两件事（建对象、绑名字），以及每次调用新建的是什么"}
+    ],
+    "selfCheck": [
+      "能不看材料说出「定义」与「调用」各发生什么",
+      "能解释 fn = greet 为什么没有再执行一次"
+    ],
+    "estMinutes": 6
+  },
+  "python/fn-default-arg": {
+    "summary": "默认值在函数定义时求值一次，之后每次调用复用同一个对象。",
+    "body": "def f(x, acc=[]):\n    acc.append(x)\n    return acc\n\nf(1)   # [1]\nf(2)   # [1, 2] —— 不是 [2]\n\n默认值表达式只在 def 执行时求值一次，结果存在函数对象的 __defaults__ 里；求值发生在定义所在的作用域，不是调用方作用域。可变默认值被所有调用共享，惯用写法是 acc=None 再在体内 if acc is None: acc = []。",
+    "steps": [
+      {"operator": "read", "instruction": "读 §4.8.1 Default Argument Values，注意「求值时机」与「求值作用域」是两个断言"},
+      {"operator": "example", "instruction": "跑 body 里的 f，先 f(1) 再 f(2)，然后把默认值改成 None 哨兵写法再跑一次，对比两次结果"},
+      {"operator": "practice", "instruction": "写一个 acc=None 的版本，让两次调用互不影响"},
+      {"operator": "explain", "instruction": "解释为什么默认值写在 def 那一行会带来共享，而不是每次调用一个新列表"},
+      {"operator": "recall", "instruction": "说出默认值的求值时机、求值作用域，以及可变默认值的标准规避写法"}
+    ],
+    "selfCheck": [
+      "能只凭函数定义预测 f(1) 之后 f(2) 的返回值",
+      "能不看材料写出 None 哨兵那两行"
+    ],
+    "estMinutes": 8,
+    "criteria": [
+      {"quiz": "q-fn-default-eval", "statement": "能说清默认值在何时、在哪个作用域求值一次，并能预测两次调用共享同一可变对象的结果"},
+      {"quiz": "q-fn-default-arg-mutable", "statement": "能只凭函数定义预测连续两次调用的返回值，并写出 acc=None 的哨兵替代写法"}
+    ]
+  },
+  "python/fn-keyword-only": {
+    "summary": "「/」之前只能按位置传，「*」之后只能按关键字传。",
+    "body": "def f(a, /, b, *, c):\n    return a, b, c\n\nf(1, 2, c=3)      # 可以\nf(a=1, b=2, c=3)  # TypeError：a 是仅位置参数\nf(1, 2, 3)        # TypeError：c 是仅关键字参数\n\n/ 是仅位置分隔符（3.8 起），* 之后是仅关键字参数。仅关键字常用来给可选开关加名字：def open(path, *, encoding='utf-8')，调用方就不会按位置误传。*args 本身也起分隔作用。",
+    "steps": [
+      {"operator": "read", "instruction": "读函数定义的参数分隔符一节，认出 / 与 * 各自出现在签名哪个位置"},
+      {"operator": "example", "instruction": "照 body 敲三行调用逐个跑，看哪两行抛 TypeError、错在哪一侧"},
+      {"operator": "practice", "instruction": "给一个已有函数加一个仅关键字开关，把原来按位置传的调用改掉"},
+      {"operator": "explain", "instruction": "说明为什么仅关键字参数能防住「按位置误传」这类事故"},
+      {"operator": "recall", "instruction": "写出一个同时含 / 与 * 的签名，并说出三段各接受什么"}
+    ],
+    "selfCheck": [
+      "能只看看签名说出哪种调用会报错",
+      "能说出仅关键字参数挡住了哪一类传参错误"
+    ],
+    "estMinutes": 7
+  },
+  "python/fn-varargs": {
+    "summary": "定义处 *args 收成 tuple、**kwargs 收成 dict；调用处 * / ** 是解包。",
+    "body": "def log(fmt, *args, **kwargs):\n    return fmt.format(*args, **kwargs)\n\nlog('{}-{}', 1, 2)   # args=(1, 2)，是 tuple\nlog('{a}', a=1)      # kwargs={'a': 1}，是 dict\n\n参数顺序固定：位置 → *args → 仅关键字 → **kwargs。同一个 * 在定义处是收集、在调用处是解包，方向相反。只想收关键字时不要写成 def f(*, **kw)（语法错误），正确是 def f(**kw)。",
+    "steps": [
+      {"operator": "read", "instruction": "读 *args / **kwargs 一节，分清「定义处收集」与「调用处解包」"},
+      {"operator": "example", "instruction": "跑 body 两行，用 type(args)、type(kwargs) 确认是 tuple 与 dict"},
+      {"operator": "practice", "instruction": "写一个包装函数，把收到的 *args / **kwargs 原样转发给 print"},
+      {"operator": "explain", "instruction": "解释为什么 *args 收成 tuple 而不是 list"},
+      {"operator": "recall", "instruction": "把参数顺序的四个位置一次说全，并说出只想收关键字时要怎么写"}
+    ],
+    "selfCheck": [
+      "能说出 args 与 kwargs 各自的实际类型",
+      "能默写参数顺序四段"
+    ],
+    "estMinutes": 8
+  },
+  "python/fn-legb": {
+    "summary": "名字查找按 本地 → 外层函数 → 全局 → 内置 逐层找，都不在才 NameError。",
+    "body": "x = 'global'\n\ndef outer():\n    x = 'enclosing'\n    def inner():\n        return x        # 拿到 enclosing\n    return inner()\n\n查找顺序 LEGB：Local 当前帧 → Enclosing 外层函数（闭包链）→ Global 模块 → Builtin 内置。只读时才按这个顺序找；赋值永远写当前作用域，想改外层要 global / nonlocal。函数体内只要出现过对某名字的赋值，该名字在整个函数体内都是本地名 —— 所以「先读后赋值」抛 UnboundLocalError，而不是去外层找。",
+    "steps": [
+      {"operator": "read", "instruction": "读作用域与命名空间一节，记下 LEGB 四层"},
+      {"operator": "example", "instruction": "跑 body 那段，再把 inner 里改成 x = 1; return x，看错误怎么变"},
+      {"operator": "practice", "instruction": "写三层嵌套各绑同一个名字，分别打印，确认取到的是哪一层"},
+      {"operator": "explain", "instruction": "解释 UnboundLocalError 与 NameError 的差别，以及前者为什么更常撞上"},
+      {"operator": "recall", "instruction": "按顺序说出 LEGB，并说出「赋值让名字变本地」这条编译期规则"}
+    ],
+    "selfCheck": [
+      "能按顺序背出 LEGB 四层",
+      "能解释为什么函数内赋值会让同名读取报 UnboundLocalError"
+    ],
+    "estMinutes": 8,
+    "criteria": [
+      {"quiz": "q-fn-legb", "statement": "能按 LEGB 说出逐层查找顺序，并解释为什么函数内的一次赋值会让同名读取变成 UnboundLocalError"}
+    ]
+  },
+  "python/fn-global-nonlocal": {
+    "summary": "global 指向模块级绑定，nonlocal 指向最近的外层函数绑定；两者都只是声明，不创建新绑定。",
+    "body": "count = 0\ndef bump():\n    global count\n    count += 1\n\ndef make():\n    n = 0\n    def inc():\n        nonlocal n\n        n += 1\n        return n\n    return inc\n\n声明要写在函数体内、且在该名字被使用之前。nonlocal 找不到外层绑定是编译期 SyntaxError，不是运行期；模块级没有外层函数可指，所以 nonlocal 在那里非法。同一作用域里不能既 global 又 nonlocal 同一个名字。声明会让数据流变隐式，能返回新值或用可变容器时优先那样写。",
+    "steps": [
+      {"operator": "read", "instruction": "读 global / nonlocal 语句一节，注意两者搜的层不同"},
+      {"operator": "example", "instruction": "跑 body 两段，然后去掉 inc 里的 nonlocal，看报的是编译期还是运行期错误"},
+      {"operator": "practice", "instruction": "把一个用 global 的计数器改写成返回值版本，比较两种写法的可读性"},
+      {"operator": "explain", "instruction": "说明为什么 nonlocal 的错误出现在编译期"},
+      {"operator": "recall", "instruction": "说出 global 与 nonlocal 各自指向哪一层，以及各自什么时候非法"}
+    ],
+    "selfCheck": [
+      "能说出两个声明各自搜到哪一层",
+      "能说出 nonlocal 在模块级为什么非法"
+    ],
+    "estMinutes": 9
+  },
+  "python/fn-closure": {
+    "summary": "闭包捕获的是变量不是值，变量在调用时才求值 —— 循环里直接引用会全部取到最后一个值。",
+    "body": "fs = [lambda: i for i in range(3)]\n[f() for f in fs]        # [2, 2, 2]\n\nfs = [lambda i=i: i for i in range(3)]\n[f() for f in fs]        # [0, 1, 2]\n\n闭包 = 函数对象 + 它引用的外层变量（存在 __closure__ 的 cell 里）。函数体在调用时才去读 cell，而循环那时早已结束，所以三个函数读到的是同一个 i。用默认参数 i=i 在定义时把当前值绑进函数对象，是固定当前值的标准手法。",
+    "steps": [
+      {"operator": "read", "instruction": "读闭包一节，分清「自由变量」与「捕获的值」"},
+      {"operator": "example", "instruction": "跑 body 两段，再打印 fs[0].__closure__[0].cell_contents 看 cell 里到底是什么"},
+      {"operator": "practice", "instruction": "把 [2,2,2] 那段改用 functools.partial 修好，与默认参数写法对比"},
+      {"operator": "explain", "instruction": "向自己解释「延迟绑定」这四个字具体延迟到哪一刻"},
+      {"operator": "recall", "instruction": "说出闭包为什么导致 [2,2,2]，以及两种修法各自在什么时机求值"}
+    ],
+    "selfCheck": [
+      "能预测 [lambda: i for i in range(3)] 的调用结果",
+      "能说出默认参数写法在哪个时机把值固定下来"
+    ],
+    "estMinutes": 9,
+    "criteria": [
+      {"quiz": "q-fn-closure-late", "statement": "能预测循环中创建的多个闭包的调用结果，并说出用默认参数在定义时固定当前值的原理"}
+    ]
+  },
+  "python/fn-lambda": {
+    "summary": "lambda 是表达式，只能有一个表达式体，不能有语句与注解 —— 它的位置是内联短回调。",
+    "body": "rows = [('a', 2), ('b', 1)]\nsorted(rows, key=lambda r: r[1])\n\nlambda 参数: 表达式 —— 返回表达式的值，不用写 return。不能含语句（赋值、if 语句块、try），不能有类型注解，不能跨多行。赋给名字（f = lambda: 1）PEP 8 不推荐：直接 def 更好读，traceback 里也有名字。适用场景是 key= / map / 一次性回调。",
+    "steps": [
+      {"operator": "read", "instruction": "读 lambda 表达式一节，数清它禁止哪些语法成分"},
+      {"operator": "example", "instruction": "跑 body 那行排序，再改写成 def 版本，比较两者可读性"},
+      {"operator": "practice", "instruction": "用 lambda 写一个按元组两列排序的 key，再改写成 def"},
+      {"operator": "explain", "instruction": "说出 lambda 不能做而 def 能做的三件事"},
+      {"operator": "recall", "instruction": "一句话说出 lambda 的适用边界与不适用场景"}
+    ],
+    "selfCheck": [
+      "能列出 lambda 禁止的三类语法成分",
+      "能说出为什么 PEP 8 不推荐把 lambda 赋给名字"
+    ],
+    "estMinutes": 5
+  },
+  "python/fn-decorator": {
+    "summary": "装饰器是「收函数、返替换函数」的可调用对象，@ 只是把 f = deco(f) 写在定义处。",
+    "body": "def traced(fn):\n    def wrapper(*a, **kw):\n        print('call', fn.__name__)\n        return fn(*a, **kw)\n    return wrapper\n\n@traced\ndef add(a, b):\n    return a + b\n\n@a 与 @b 叠在同一函数上，等价于 add = a(b(add))：离函数最近的先应用，外层装饰器最后应用，所以最终名字指向最外那层 wrapper。装饰发生在定义时、只执行一次。装饰器返回的必须是可调用对象，返回别的东西就把调用能力丢了。",
+    "steps": [
+      {"operator": "read", "instruction": "读装饰器一节，把 @ 展开成赋值的那一步写下来"},
+      {"operator": "example", "instruction": "跑 body 那段，调 add(1, 2)，确认 wrapper 先打印再转调"},
+      {"operator": "practice", "instruction": "写一个计时装饰器，用 time.perf_counter 包住被装饰函数"},
+      {"operator": "explain", "instruction": "把 @a / @b 叠加展开成赋值链，说出哪个先执行、add 最后指向谁"},
+      {"operator": "recall", "instruction": "说出装饰发生在什么时机、执行几次，以及装饰器返回非函数会怎样"}
+    ],
+    "selfCheck": [
+      "能写出 @a/@b 叠加的等价赋值式",
+      "能说出装饰只在定义时执行一次"
+    ],
+    "estMinutes": 10,
+    "criteria": [
+      {"quiz": "q-fn-decorator-order", "statement": "能写出 @a/@b 叠加的等价展开式，说明哪个先应用、最终名字指向哪一层"}
+    ]
+  },
+  "python/fn-decorator-params": {
+    "summary": "带参装饰器比无参多一层：外层收装饰器参数，返回真正的装饰器。",
+    "body": "def retry(times=3):\n    def deco(fn):\n        def wrapper(*a, **kw):\n            for _ in range(times):\n                try:\n                    return fn(*a, **kw)\n                except Exception:\n                    pass\n            raise RuntimeError('retries exhausted')\n        return wrapper\n    return deco\n\n@retry(times=5)\ndef fetch(): ...\n\n求值顺序：先 retry(times=5) 得到 deco，再 deco(fetch) 得到 wrapper。少一层时，不带括号的 @retry 会把函数本身当成 times 传进去、返回的是 deco —— 装饰那一刻不报错，第一次调用才抛 TypeError: deco() missing 1 required positional argument: 'fn'。",
+    "steps": [
+      {"operator": "read", "instruction": "读带参装饰器的三层结构，标出每层收什么、返什么"},
+      {"operator": "example", "instruction": "跑 body 那段，把 times=5 改成 1，观察重试次数变化"},
+      {"operator": "practice", "instruction": "写一个 takes(n) 装饰器，校验被装饰函数的参数个数是否为 n"},
+      {"operator": "explain", "instruction": "解释为什么 @retry 少写括号会报缺参数"},
+      {"operator": "recall", "instruction": "默写三层结构，说出每层的入参与返回值"}
+    ],
+    "selfCheck": [
+      "能默写三层结构并说出每层职责",
+      "能解释少一层的报错形态"
+    ],
+    "estMinutes": 11
+  },
+  "python/fn-functools-wraps": {
+    "summary": "functools.wraps 把被包装函数的元信息复制到 wrapper 上，并留 __wrapped__ 反向引用。",
+    "body": "import functools\n\ndef traced(fn):\n    @functools.wraps(fn)\n    def wrapper(*a, **kw):\n        return fn(*a, **kw)\n    return wrapper\n\n它复制 __module__ / __name__ / __qualname__ / __annotations__ / __doc__ 五个属性，用 update 合并 __dict__，并写 __wrapped__ 指回原件。不加的后果：help() 显示 wrapper、日志里分不清是谁、测试框架按名字收集用例会失败、依赖签名的工具链认错函数。",
+    "steps": [
+      {"operator": "read", "instruction": "读 functools.wraps 文档，列出它更新哪五个属性、写哪个反向引用"},
+      {"operator": "example", "instruction": "各写一个带 wraps 与不带 wraps 的装饰器，分别打印 __name__ 与 __doc__"},
+      {"operator": "practice", "instruction": "给已有装饰器补上 wraps，再用 inspect.signature 对比加之前后的签名"},
+      {"operator": "explain", "instruction": "说出不加 wraps 会让哪些工具链出错，为什么它们依赖 __name__"},
+      {"operator": "recall", "instruction": "把五个属性与 __wrapped__ 一次说全"}
+    ],
+    "selfCheck": [
+      "能说出五个被更新的属性名",
+      "能举出一个因此失效的工具链"
+    ],
+    "estMinutes": 8,
+    "criteria": [
+      {"quiz": "q-fn-wraps", "statement": "能说出 wraps 复制了哪些元信息、写了哪个反向引用，并指出不加会影响哪些工具链"}
+    ]
+  },
+  "python/fn-first-class": {
+    "summary": "函数是普通对象：能赋值、传参、返回、存容器 —— 收或返函数的就是高阶函数。",
+    "body": "def apply(fn, value):\n    return fn(value)\n\nops = {'inc': lambda x: x + 1, 'dec': lambda x: x - 1}\nops['inc'](1)        # 函数存在 dict 里\n\n一等 = 与其它值的地位相同：可放进 list / dict、可作默认值、可比较身份。高阶 = 入参或出参是函数（sorted 的 key=、装饰器、map 都是）。区分 fn（对象）与 fn()（调用结果）—— 传参时不要多写括号。",
+    "steps": [
+      {"operator": "read", "instruction": "读「函数是一等对象」一节，记下可赋值 / 可传参 / 可返回 / 可存容器四条"},
+      {"operator": "example", "instruction": "跑 body 那段，再写一个接受函数并返回新函数的高阶函数"},
+      {"operator": "practice", "instruction": "用 dict 建一张运算符表，按字符串取函数并调用"},
+      {"operator": "explain", "instruction": "解释 sorted(key=) 为什么要求传函数而不是传调用结果"},
+      {"operator": "recall", "instruction": "说出「一等」与「高阶」各自的判据，各举一例"}
+    ],
+    "selfCheck": [
+      "能区分 fn 与 fn() 在传参时的差别",
+      "能举一个把函数存进容器的例子"
+    ],
+    "estMinutes": 7
+  },
+  "python/fn-recursion": {
+    "summary": "Python 不做尾调用优化，递归深度受 sys.getrecursionlimit() 限制（默认 1000），超了抛 RecursionError。",
+    "body": "import sys\nsys.getrecursionlimit()   # 1000\n\ndef depth(n):\n    return 0 if n == 0 else 1 + depth(n - 1)\n\n每层递归占一个栈帧，超过上限抛 RecursionError（RuntimeError 的子类）。没有尾调用优化：写成尾递归不会被优化，深度一样受限。调高 setrecursionlimit 只是把崩点推后、可能真把栈打爆，正解是改迭代或用显式栈。递归必须有一个会收敛的基准情形。",
+    "steps": [
+      {"operator": "read", "instruction": "读递归限制相关文档，记下默认值与异常类型"},
+      {"operator": "example", "instruction": "跑 depth(100) 与 depth(2000)，看第二个抛什么异常"},
+      {"operator": "practice", "instruction": "把 depth 改写成迭代版本，比较 n 很大时的表现"},
+      {"operator": "explain", "instruction": "解释为什么尾递归写法在 Python 里省不了栈帧"},
+      {"operator": "recall", "instruction": "说出默认上限、异常类型（及其父类），以及为什么调高上限不算解"}
+    ],
+    "selfCheck": [
+      "能说出默认递归上限与异常类型",
+      "能解释为什么不靠调高上限解决"
+    ],
+    "estMinutes": 7
+  },
+  "python/fn-return-none": {
+    "summary": "没有 return、或 return 后面没有值，返回值都是 None。",
+    "body": "def a():\n    pass          # 隐式 return None\n\ndef b():\n    return        # 显式返回，值仍是 None\n\na() is None       # True\n\n三种写法等价：pass 结束、return、return None。None 是单例，判空用 is None 而不是 == None。常见坑：函数某条分支忘了 return，那条分支返回 None，直到有人对它取属性才炸。",
+    "steps": [
+      {"operator": "read", "instruction": "读 return 语句一节，确认「无值 return」的语义"},
+      {"operator": "example", "instruction": "跑 body 两段并打印返回值，用 is None 判断"},
+      {"operator": "practice", "instruction": "写一个有两条分支的函数，故意漏掉一条的 return，再写出修好的版本"},
+      {"operator": "explain", "instruction": "解释为什么判空该用 is None"},
+      {"operator": "recall", "instruction": "说出三种等价写法，以及忘 return 会在哪一步暴露"}
+    ],
+    "selfCheck": [
+      "能说出三种返回 None 的写法",
+      "能说出漏 return 通常在哪一步炸"
+    ],
+    "estMinutes": 5
+  },
+  "python/fn-docstring": {
+    "summary": "函数体第一条语句若是字符串字面量，它就是文档字符串 —— 存进 __doc__，help() 读它。",
+    "body": "def area(r):\n    '返回半径为 r 的圆面积。'\n    return 3.14159 * r * r\n\narea.__doc__      # '返回半径为 r 的圆面积。'\n\n必须是函数体第一条语句；放在别处只是一个不起作用的表达式（它不会被优化掉，所以别当注释用）。PEP 257 约定：首行一句话、命令式、句末带句号；多行时摘要行与正文之间空一行。模块、类、方法同样有 __doc__；用 -OO 运行时文档字符串会被剥离，所以别把逻辑依赖写进 docstring。",
+    "steps": [
+      {"operator": "read", "instruction": "读文档字符串约定（PEP 257），记下首行写法与多行格式"},
+      {"operator": "example", "instruction": "跑 body 那段，打印 area.__doc__，再在解释器里 help(area)"},
+      {"operator": "practice", "instruction": "给自己写的函数补 docstring，再用 -OO 跑一次看 __doc__ 变成什么"},
+      {"operator": "explain", "instruction": "解释 docstring 与普通字符串表达式的区别在哪"},
+      {"operator": "recall", "instruction": "说出 docstring 的判定条件（位置 + 类型）与两条格式约定"}
+    ],
+    "selfCheck": [
+      "能说出成为 docstring 的两个条件",
+      "能说出 -OO 对 __doc__ 的影响"
+    ],
+    "estMinutes": 6
+  }
+}
