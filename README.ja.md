@@ -32,7 +32,7 @@ cd app && flutter pub get
 # サーバーの依存関係 + DB
 cd ../server && dart pub get
 
-# コンテンツパックの生成（クライアント実行より先に行う：クライアントは実行時の CWD から content/<space>/dist/pack.json を探します）
+# コンテンツパックの生成（生成物はリポジトリに含めない；クライアントは実行時の CWD から <候補ルート>/<パックディレクトリ>/pack.json を探します）
 cd ../content && python tools/build.py
 
 # 実行

@@ -30,7 +30,7 @@ cd app && flutter pub get
 # server dependencies + database
 cd ../server && dart pub get
 
-# build content-pack output (must precede running the client: the client looks up content/<space>/dist/pack.json relative to the runtime CWD)
+# build content packs (output is not committed; the client probes <candidate root>/<pack dir>/pack.json relative to the runtime CWD)
 cd ../content && python tools/build.py
 
 # run

@@ -34,21 +34,32 @@
 
 ## 二、pack 格式
 
-### SPEC-PACK-005 pack 五段 + `meta` 信封
-**裁定**：`pack.json` 由**内容五段**加一个 **`meta` 信封**组成。`meta` 是信封而非内容段 —— 它只回答「这是哪个空间的哪一版」，不含任何知识内容，因此**不构成 `SPEC-PACK-006` 所禁的第三次 schema 扩张**。
+### SPEC-PACK-005 pack 单文件：清单 + 六段
+**裁定**：一个包 = **一个 `pack.json`**，顶层同时承载**清单字段**与**内容六段**。没有 `manifest.json`、没有 `dist/`、没有 `meta` 信封。
 
-| 段 | 内容 | 备注 |
+| 部分 | 内容 | 备注 |
 |---|---|---|
-| `meta` | 信封：`space`（= `KnowledgeSpace.id`）+ `version`（semver） | ⚠️ **不含构建时间戳**：`dist/` 不入库、tag 是唯一指针，时间戳会让同一 commit 两次构建 byte 不等 |
-| `items` | 知识项（id / title / sixAxis / layer / type / requirements / sourceRefs / domainId / inScope） | — |
-| `edges` | 前提边（有限类型） | `⪯` 必须无环 |
-| `schemes` | 体系（`nodes[]` 是 `⪯` 的线性扩展） | 含 `inversions` |
-| `questions` | **声明式题库** —— 为 ⑤ 提供可离线、可复现的题 | ⚠️ 第二次扩 schema |
-| `excerpts` | **源摘录** —— 最小结构化摘录，带出处与许可标记 | ⚠️ 第三次扩 schema |
+| 清单字段 | `plugin_id` · `name` · `version` · `kinds[]` · `namespace` · `schema_version` · `skeleton_requires` · `deps[]` · `license` · `author` · `origin` · `review_state` · `signature`（可空）· `axes[]`，加四个**可空** facts（`payload` / `terrain` / `overlay` / `method`） | 字段集与取值**唯一权威处**是 [`entity-fields.md`](entity-fields.md) §1，此处不重述 |
+| `nodes` | 树节点（`StructuralNode` / `LearnableNode` 两型） | 派生三项 `path` / `inScope` / `depth` **不入库** |
+| `edges` | 三类边同段，每条带判别符 `type`（`parent` / `wormhole` / `prerequisite`） | `⪯` 必须无环（`SPEC-FND-005`） |
+| `entries` | 载荷内容，键 = `node_id` | 骨架节点**没有** entry，故为稀疏表 |
+| `sources` | 源（材料） | 摘录逐字准确并带许可 |
+| `schemes` | 体系 | `nodes[]` 是**集合不是路线**，见 `SPEC-PLAN-012` |
+| `methods` | 方法（配方） | — |
 
-`meta.version` 的源是源数据 `manifest.json` 的 `version`，`build.py` **原样透传、不改写**；tag `pack/<space>/vX.Y.Z` 须与之逐字一致。
+**顶层只有这两类键**：清单字段与六段之外的任何键都是非法（旧形态的 `meta` 即此列）。
 
-`src:` 第 48 轮 · E3 · V-1
+**六段缺一即格式错误**，不补空数组 —— 补默认值会把「坏了」读成「空的」，而两者的修法完全不同。
+
+**为什么没有 `meta` 信封**：旧形态吃两段文本（清单 + 产物），需要 `meta{space, version}` 回答「这两份是不是同一批」。单文件里「同一批」由「同一个文件」保证，信封失去对象；`version` 直接是清单字段。
+
+**`version` 不含构建时间戳**：`pack.json` 不入库、tag 是唯一指针，时间戳会让同一 commit 两次构建 byte 不等。`version` 的源是源数据的版本声明，构建器**原样透传、不改写**；tag `pack/<plugin>/vX.Y.Z` 须与之逐字一致。
+
+**作废登记**：`B13a` 笔 5c 之前是「内容五段（`items` / `edges` / `schemes` / `questions` / `excerpts`）+ `meta` 信封」。`ADR-0007` 的三轴两型落地后，那五段由本条的六段取代 —— `items` 拆成 `nodes` + `entries`，`questions` / `excerpts` 分别并进 `entries` 与 `sources`，新增 `methods`。
+
+> ⚠️ **迁移状态（2026-10-25）**：`content/tools/` 的管线**仍是旧形态** —— `validator.py` 的 `SEGMENTS` 是那五段、`build.py` 仍拼 `meta` 信封，三个内容空间（`python` / `english` / `german`）也还是旧格式。三包已裁定「弃用重建」（不手改数据），管线随重建一并迁到本条；在那之前，**本条的判据由 `PackLoader` / `readPack` 一侧执行**，Python 侧执行的是作废形态。读到 `content/tools/` 里的「五段」时按这段理解，不要据此判本条未实现。
+
+`src:` 第 48 轮 · E3 · V-1 · `ADR-0005` 决策 2 · `ADR-0007`
 
 ### SPEC-PACK-006 schema v0 冻结范围的两次扩大（排期提示）
 **裁定**：M0 的 schema v0 冻结范围原只含 item / edge / 归位四件套 / overlay 合并规则。**两次扩大**：
@@ -59,7 +70,10 @@
 | 第二次 | `excerpts` + `license` | 「选源」必须是真实动作，源须离线可读 |
 
 **两次都落在关键路径上，M0 排期须重估。** 第三次扩 schema 应暂停 —— 这也是「别名 / 拼音延后」的理由。
-`src:` 第 48 轮 · 第 66 轮
+
+**`methods` 段不属「第三次扩」**：它随 `ADR-0007` 的两型重构一并落地（`SPEC-PACK-005` 六段之一），不是往旧五段上再凿一格。本条禁的是**在既定段集合之外**临时加段。
+
+`src:` 第 48 轮 · 第 66 轮 · `ADR-0007`
 
 ### SPEC-PACK-007 笔记模板不进 pack
 **裁定**：`pack.json` **不新增 `notes` 段**。笔记模板在**平台层声明式**定义，pack 只提供六要件内容。
@@ -137,9 +151,20 @@
 `src:` 推论（`event-types.md` 幂等）
 
 ### SPEC-PACK-018 内容包不进客户端资产
-**裁定**：`dist/pack.json` 由 `content/tools/build.py` 生成，被 `.gitignore`。客户端 `PackLoader` 按**运行期 CWD** 查找 `<仓根>/content/<空间>/dist/pack.json`。
-**连带**：`flutter run` 必须在 `app/` 目录内执行，否则找不到包。
-`src:` 第 5 轮 · `app/AGENTS.md`
+**裁定**：`pack.json` 由内容管线从源数据生成，**不入库**。客户端按**运行期 CWD** 在**候选根下的包目录**里探测它：
+
+```text
+<候选根>/<包目录>/pack.json
+```
+
+**候选根按 `kind` 分组**（`scanRoots(Map<PackKind, List<String>>)`）：`kind` 是**查询维度、不是存储位置** —— 同一个根可以同时列给多个 `kind`，同一个包因此在各 `kind` 的查询里**各出现一次**（`packRoot` 相同、`kind` 不同）；去重只在**同一 `kind` 内**按目录名进行。**目录名不承载 `kind`**：`Pack.kinds[]` 可多值（一个包既是载荷又带方法是合法形态），把 kind 写进路径必然漏掉其中一类。
+
+**连带**：
+
+- `flutter run` 必须在 `app/` 目录内执行，否则相对 CWD 的候选根找不到包。
+- **旧形态取消**：`<仓根>/content/<空间>/dist/pack.json` 与同级 `manifest.json` 均已不再是包形态（`B14` 笔 5）。目录里**只有 `pack.json`** 才算一个包，探测的失败原因因此只剩两种 —— `missingPack`（文件不在，要么没构建、要么没随包分发）与 `unreadable`（在但读不出来）。**拆清单与产物两条失败原因已无对象**：单文件下它们是同一件事。
+
+`src:` 第 5 轮 · `app/AGENTS.md` · `R-04` · `B14` 笔 5
 
 ---
 
@@ -149,8 +174,11 @@
 |---|---|---|---|
 | PACK-001 | 缺一条判据的粒度不能独立成包 | 提交只含「items 无 edges」的包 | 校验失败，提示缺独立 `⪯` |
 | PACK-001 | 三判据齐全可独立成包 | `python` 包 | 校验通过 |
-| PACK-005 | schemes 必须是 `⪯` 线性扩展 | 提交 `nodes` 中前置排在后继之后 | 校验通过但 `inversions > 0`（不禁止） |
+| PACK-005 | 六段缺一即格式错误，**不补空数组** | 删掉 `pack.json` 的 `entries` 段 | 解析失败并指名 `entries`，不产出空表 |
+| PACK-005 | 顶层只允许清单字段与六段 | 加入 `meta` 或 `notes` 键 | 解析失败，报出那个键 |
+| PLAN-012 | 体系顺序**不禁止**逆序，但代价必须算得出 | `nodes` 中前置排在后继之后 | 校验通过但 `inversions > 0` |
 | PACK-005 | 含环的 edges 被拒 | `A→B, B→A` | 校验失败 |
+| PACK-018 | 旧形态目录不算包 | 只有 `manifest.json` + `dist/pack.json`、无 `pack.json` | 不产出位置，报 `missingPack` 并指名 `pack.json` 路径 |
 | PACK-007 | pack 无 notes 段 | 检索 `pack.json` 结构 | 无 `notes` 键 |
 | PACK-008 | 带版本号的 id 被拒 | `id = "decorator@2.1.0"` | 校验失败 |
 | PACK-011 | 提交后立即可学 | 提交一项后立即在宇宙中查找 | 该项可见（标「待审」），可建 Plan |
