@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'core/constants.dart';
 import 'core/entities/entry.dart';
 import 'core/entities/node.dart';
 import 'core/enums.dart';
@@ -187,7 +188,8 @@ class PackListScreen extends StatelessWidget {
             trailing: const Icon(Icons.chevron_right),
             onTap: () => Navigator.of(context).push(
               MaterialPageRoute<void>(
-                builder: (BuildContext context) => SpaceScreen(content: content),
+                builder: (BuildContext context) =>
+                    SpaceScreen(content: content),
               ),
             ),
           );
@@ -207,10 +209,11 @@ class SpaceScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     // 只取 `system` 槽位当分组：`subtree_root = system` 是本包的声明，
     // 再往上的父（`attach_to` 指向的编外根）不在本包数据里，界面没有它可画。
-    final List<Node> systems = content.nodes
-        .where((Node node) => node.levelSlot == LevelSlot.system)
-        .toList()
-      ..sort((Node a, Node b) => a.slug.compareTo(b.slug));
+    final List<Node> systems =
+        content.nodes
+            .where((Node node) => node.levelSlot == LevelSlot.system)
+            .toList()
+          ..sort((Node a, Node b) => a.slug.compareTo(b.slug));
 
     return Scaffold(
       appBar: AppBar(
@@ -230,14 +233,15 @@ class SpaceScreen extends StatelessWidget {
         itemCount: systems.length,
         itemBuilder: (BuildContext context, int index) {
           final Node system = systems[index];
-          final List<Node> planets = content.nodes
-              .where(
-                (Node node) =>
-                    node.levelSlot == LevelSlot.planet &&
-                    content.parents.mainParentOf(node.id) == system.id,
-              )
-              .toList()
-            ..sort((Node a, Node b) => a.slug.compareTo(b.slug));
+          final List<Node> planets =
+              content.nodes
+                  .where(
+                    (Node node) =>
+                        node.levelSlot == LevelSlot.planet &&
+                        content.parents.mainParentOf(node.id) == system.id,
+                  )
+                  .toList()
+                ..sort((Node a, Node b) => a.slug.compareTo(b.slug));
 
           return ExpansionTile(
             title: Text(system.name),
@@ -307,12 +311,7 @@ class PlanetScreen extends StatelessWidget {
             title: '学习步骤',
             body: (entry == null || entry.steps.isEmpty)
                 ? '暂无（本包不含步骤）'
-                : entry.steps
-                      .map(
-                        (EntryStep step) =>
-                            '· ${step.operator.wire}（${step.effectivePhase.name}）${step.instruction}',
-                      )
-                      .join('\n'),
+                : entry.steps.map(stepLine).join('\n'),
           ),
           _Section(
             title: '能力断言',
@@ -326,12 +325,7 @@ class PlanetScreen extends StatelessWidget {
             title: '题目',
             body: (entry == null || entry.quiz.isEmpty)
                 ? '暂无'
-                : entry.quiz
-                      .map(
-                        (QuizItem item) =>
-                            '问：${item.prompt}\n答：${item.answer}\n（${item.type.name} · ${item.judge.name}）',
-                      )
-                      .join('\n\n'),
+                : entry.quiz.map(quizLine).join('\n\n'),
           ),
         ],
       ),
@@ -360,6 +354,33 @@ class _Section extends StatelessWidget {
       ),
     );
   }
+}
+
+/// 一步的显示行：`· 读（首次）读 get 被动一节，记下两条…`
+///
+/// 抽成函数是为了**锁得住**：判据是「界面上不出现 `read` / `first` 这类内部
+/// 枚举」，写在 `build` 里就只能靠 widget 测试翻渲染树去凑，改回 `.name`
+/// 也可能因为测试只挑了一条而漏掉。现在它是个纯函数，负例直接打在这上面。
+///
+/// 兜底写 `?? …wire` / `?? …name` 与 `detail_panel` 的 `?? …name` 同形：
+/// 表是覆盖全集的，兜底永不触发；真触发了说明新增了枚举值没补表 ——
+/// 那种情形由 `planet_screen_labels_test.dart` 的全集遍历用例先红。
+String stepLine(EntryStep step) {
+  final String operatorName =
+      operatorLabels[step.operator] ?? step.operator.wire;
+  final StepPhase phase = step.effectivePhase;
+  final String phaseName = stepPhaseLabels[phase] ?? phase.name;
+  return '· $operatorName（$phaseName）${step.instruction}';
+}
+
+/// 一题的显示块：问 / 答 / 来源括号 `（自由作答 · 自评）`。
+///
+/// 括号里原本是 `（${item.type.name} · ${item.judge.name}）`，界面上直接露出
+/// `freeform` 与 `self` —— 与 [stepLine] 同一个病，同一个修法。
+String quizLine(QuizItem item) {
+  final String typeName = quizTypeLabels[item.type] ?? item.type.name;
+  final String judgeName = quizJudgeLabels[item.judge] ?? item.judge.name;
+  return '问：${item.prompt}\n答：${item.answer}\n（$typeName · $judgeName）';
 }
 
 /// 节点副标题：**只报 entry 里真有的东西**。
