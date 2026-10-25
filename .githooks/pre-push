@@ -106,6 +106,41 @@ check_range() {
   echo "pre-push: 校验 ${n} 条"
 }
 
+# ── 第三条：非快进推送 ─────────────────────────────────────────────
+# 上面那条判据只看标题，挡不住 `git commit --amend` 改完标题再强推 ——
+# 提交仍带 `(#NNN)`，而远端原有的提交被换掉了。号在、历史已不是原来那条：
+# sha 一变，PR 记录、CI 结论、别人已 clone 的分支全部对不上，且从 `main`
+# 的 `git log` 上**看不出来**。判据取祖先关系，与标题无关。
+#
+# 为什么拒绝「对象不在本地」而不是放行：没 fetch 时既判不了祖先，也不该
+# 猜「大概是快进」。放行猜错的代价是可能真的改写掉已发布历史，拒掉的代价
+# 只是多跑一次 `git fetch`。两个代价不对称，就按不对称的来。
+check_fast_forward() {
+  local before=$1 after=$2
+
+  # 远端还没有这个引用（首推 / 新分支）：没有历史可改写。
+  if [[ $before =~ $ZERO_RE ]]; then
+    return 0
+  fi
+
+  if ! git cat-file -e "${before}^{commit}" 2>/dev/null; then
+    echo "FAIL 本地没有远端 main 的提交 \`$before\` —— 先 \`git fetch origin\` 再重试" >&2
+    mark_main
+    return 1
+  fi
+
+  if git merge-base --is-ancestor "$before" "$after" 2>/dev/null; then
+    return 0
+  fi
+
+  echo "FAIL 非快进推送 —— 远端 \`${before:0:7}\` 不是 \`${after:0:7}\` 的祖先（§4.3 Allow force pushes ❌）" >&2
+  echo '     这次推送会删掉远端已有的提交，等于改写已发布的历史。' >&2
+  echo '     要改已合入的提交信息：开新 PR，不要 amend 后强推。' >&2
+  echo '     已合 PR 的正文或标题用 `gh pr edit` 改，那不会动提交。' >&2
+  mark_main
+  return 1
+}
+
 # tag 判据。删除放行、规范命名放行、其余拒。
 check_tag() {
   local ref=$1 sha=$2 name=${1#refs/tags/}
@@ -165,6 +200,10 @@ else
       echo 'pre-push: 远端 main 尚不存在，按初始化首提放行'
       continue
     fi
+
+    # 先判祖先关系，再判标题：被改写的推送里标题可能照样带号，顺序反了会先
+    # 放过标题、再去解释一件与标题无关的事。
+    check_fast_forward "$remote_sha" "$local_sha" || continue
 
     check_range "$remote_sha..$local_sha"
   done
