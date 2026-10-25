@@ -31,8 +31,12 @@
     "estMinutes": 7,
     "criteria": [
       {
+        "quiz": "q-wc-noun-four-types",
+        "statement": "能说出名词四类（专有 / 普通 / 集合 / 抽象）并各举一个例词"
+      },
+      {
         "quiz": "q-wc-noun",
-        "statement": "能说出名词四类，并解释专有名词失去唯一性时为何要加不定冠词"
+        "statement": "能说出集合名词谓语的两种取向（看整体用单数、看成员用复数，the team is / the team are），并能说明专有名词失去唯一性时为什么会带不定冠词（a certain Mr Smith）"
       }
     ]
   },
@@ -67,6 +71,10 @@
     ],
     "estMinutes": 7,
     "criteria": [
+      {
+        "quiz": "q-wc-pronoun-nine",
+        "statement": "能说出代词九类并各举一个代表词"
+      },
       {
         "quiz": "q-wc-pronoun",
         "statement": "能按句中成分判断 this 是限定词还是指示代词"
@@ -105,6 +113,10 @@
     "estMinutes": 7,
     "criteria": [
       {
+        "quiz": "q-wc-verb-four-types",
+        "statement": "能说出动词四类（实义 / 助动 / 情态 / 系动）并各举一个代表词"
+      },
+      {
         "quiz": "q-wc-verb",
         "statement": "能按后接成分判断 have / do 是实义动词还是助动词"
       }
@@ -142,8 +154,20 @@
     "estMinutes": 8,
     "criteria": [
       {
+        "quiz": "q-wc-adjective-positions",
+        "statement": "能说出形容词的定语位（名词前）与表语位（系动词后）并各举一例"
+      },
+      {
+        "quiz": "q-wc-adjective-only",
+        "statement": "能举出 main 只作定语、asleep 只作表语，并说明错用为什么不成立"
+      },
+      {
+        "quiz": "q-wc-adjective-postpose",
+        "statement": "能说出形容词必须后置的两种情形：修饰不定代词、带自己的补足语"
+      },
+      {
         "quiz": "q-wc-adjective",
-        "statement": "能说出形容词定语位与表语位的差别，并解释 present 前置与后置的意义差"
+        "statement": "能说出同一个形容词换位置会换意义（the present members 与 the members present）"
       }
     ]
   },
@@ -179,8 +203,16 @@
     "estMinutes": 7,
     "criteria": [
       {
+        "quiz": "q-wc-adverb-four-types",
+        "statement": "能说出副词四类并各举一个代表词与典型位置"
+      },
+      {
         "quiz": "q-wc-adverb",
-        "statement": "能说出频率副词的中位规则，并解释 only 站不同位置如何改变句义"
+        "statement": "能说出频率副词的中位规则：实义动词前、be 动词后"
+      },
+      {
+        "quiz": "q-wc-adverb-meaning",
+        "statement": "能举出三组位置改义的例子（only / clearly / already-yet-still）"
       }
     ]
   },
@@ -216,8 +248,12 @@
     "estMinutes": 6,
     "criteria": [
       {
+        "quiz": "q-wc-preposition-functions",
+        "statement": "能说出介词短语作时间状语、表语、后置定语各一例，并指出复杂介词不能拆"
+      },
+      {
         "quiz": "q-wc-preposition",
-        "statement": "能说出介词后代词用宾格的理由，并举三个动词与介词的固定搭配"
+        "statement": "能说出介词后代词用宾格的理由（between you and me），并举出三个动词与介词的固定搭配"
       }
     ]
   },
@@ -254,7 +290,11 @@
     "criteria": [
       {
         "quiz": "q-wc-conjunction",
-        "statement": "能说出 for 是并列连词、分句只能后置且不能回答 why；because 是从属连词，可前置也可后置"
+        "statement": "能说出 for 是并列连词、分句只能后置且不能回答 why；because 是从属连词、可前置也可后置"
+      },
+      {
+        "quiz": "q-wc-conjunction-fronting",
+        "statement": "能举出 because 前置的例子，并说出 for 不能前置是因为它是并列连词"
       }
     ]
   },
@@ -290,8 +330,16 @@
     "estMinutes": 8,
     "criteria": [
       {
+        "quiz": "q-wc-determiner-three-slots",
+        "statement": "能说出前位 / 中位 / 后位三层限定词并各举三个词"
+      },
+      {
         "quiz": "q-wc-determiner",
-        "statement": "能说出限定词与形容词占两个不同位次、次序为「限定词 + 形容词 + 名词」，并指出中位限定词彼此排斥"
+        "statement": "能说出限定词与形容词占两个不同位次、次序为「限定词 + 形容词 + 名词」"
+      },
+      {
+        "quiz": "q-wc-determiner-exclusion",
+        "statement": "能说出两个中位限定词不能共现，要同时表达时改用 of 结构（this book of mine）"
       }
     ]
   },
@@ -326,6 +374,10 @@
     ],
     "estMinutes": 7,
     "criteria": [
+      {
+        "quiz": "q-wc-suffix-four-groups",
+        "statement": "能说出四组后缀（名词 / 形容词 / 动词 / 副词）并各组举三个"
+      },
       {
         "quiz": "q-wc-suffix",
         "statement": "能区分 economic 与 economical、historical 与 historic 的意义分工"
@@ -364,8 +416,16 @@
     "estMinutes": 8,
     "criteria": [
       {
+        "quiz": "q-wc-compound-stress",
+        "statement": "能说出复合词重音在第一个词、短语重音在后，并据此分辨 ˈblackbird 与 black ˈbird"
+      },
+      {
         "quiz": "q-wc-compound",
-        "statement": "能说出 look up 这类短语动词的宾语是代词时必须插在中间（look it up），而介词动词 look after 不可插入"
+        "statement": "能说出 look up 这类短语动词的宾语是代词时必须插在中间（look it up）"
+      },
+      {
+        "quiz": "q-wc-compound-insertion",
+        "statement": "能用插入测试区分短语动词与介词动词（look after 不可插入）"
       }
     ]
   },
@@ -401,8 +461,16 @@
     "estMinutes": 7,
     "criteria": [
       {
+        "quiz": "q-np-countability-tests",
+        "statement": "能说出判断可数性的三个测试：加 -s、配 a/an、直接接数词"
+      },
+      {
         "quiz": "q-np-countability",
-        "statement": "能说出 information 没有复数形式、不配 a/an，计数要用 a piece of information 这类量词结构"
+        "statement": "能说出 information 没有复数、不配 a/an，计数要用 a piece of information 这类量词结构"
+      },
+      {
+        "quiz": "q-np-countability-abstract",
+        "statement": "能举出 information / advice 这类不可数抽象名词，并说出 decision / suggestion / proposal 是可数化的抽象名词"
       }
     ]
   },
@@ -438,8 +506,20 @@
     "estMinutes": 6,
     "criteria": [
       {
+        "quiz": "q-np-plural-irregular",
+        "statement": "能举出四个不规则复数（children / feet / mice / criteria）"
+      },
+      {
+        "quiz": "q-np-plural-zero",
+        "statement": "能举出零复数名词（sheep / deer / series）并说明靠量词或上下文表数"
+      },
+      {
+        "quiz": "q-np-plural-data",
+        "statement": "能说出 data 在学术写作里作复数、在日常英语里多作不可数"
+      },
+      {
         "quiz": "q-np-plural",
-        "statement": "能说出 -y 变 ies 的条件，并举出 -f / -o 结尾的例外"
+        "statement": "能说出 -y 变 ies 的条件（前为辅音），并举出 -f / -o 结尾的例外（roofs / photos）"
       }
     ]
   },
@@ -475,8 +555,20 @@
     "estMinutes": 8,
     "criteria": [
       {
+        "quiz": "q-np-article-definite-four-grounds",
+        "statement": "能说出 the 的四类定位依据：上文提及、情境唯一、后置修饰限定、共享常识"
+      },
+      {
         "quiz": "q-np-article-definite",
-        "statement": "能说出定冠词的四类定位依据，并解释泛指复数为何不加 the"
+        "statement": "能说出泛指复数不加 the，加了只能指特定的那一群"
+      },
+      {
+        "quiz": "q-np-article-definite-fixed",
+        "statement": "能说出 the 的三个固定用法：最高级与序数、乐器、部分专有名词"
+      },
+      {
+        "quiz": "q-np-article-definite-blocked",
+        "statement": "能说出 the 不能用于泛指复数与泛指不可数名词"
       }
     ]
   },
@@ -514,6 +606,14 @@
       {
         "quiz": "q-np-article-indefinite",
         "statement": "能按读音而不按字母选择 a 还是 an"
+      },
+      {
+        "quiz": "q-np-article-indefinite-tricky",
+        "statement": "能举出 university / European / hour / honest 这类拼写与读音不一致的易错词"
+      },
+      {
+        "quiz": "q-np-article-indefinite-blocked",
+        "statement": "能说出不定冠词不能配复数与不可数名词，要改用 some 这类量词"
       }
     ]
   },
@@ -549,8 +649,20 @@
     "estMinutes": 7,
     "criteria": [
       {
+        "quiz": "q-np-zero-article-three-cases",
+        "statement": "能说出零冠词的三类场合：泛指复数、泛指不可数、机构的功能用途"
+      },
+      {
         "quiz": "q-np-zero-article",
-        "statement": "能说出 go to school 是零冠词、指机构的功能用途（去上学），go to the school 用定冠词、指那座具体建筑"
+        "statement": "能说出 go to school 指制度性活动、go to the school 指那座具体建筑"
+      },
+      {
+        "quiz": "q-np-zero-article-pairs",
+        "statement": "能举出两对以上「功能用途 vs 具体建筑」的对比（in prison / in the prison、at table / at the table）"
+      },
+      {
+        "quiz": "q-np-zero-article-fixed",
+        "statement": "能举出三个固定零冠词搭配（by bus / at noon / at home）"
       }
     ]
   },
@@ -586,8 +698,16 @@
     "estMinutes": 7,
     "criteria": [
       {
+        "quiz": "q-np-quantifier-three-columns",
+        "statement": "能按可数性把量词分三栏并各举三个"
+      },
+      {
         "quiz": "q-np-quantifier",
-        "statement": "能解释 a number of 与 the number of 谓语不一致的原因"
+        "statement": "能解释 a number of 与 the number of 谓语不一致的原因是中心词不同"
+      },
+      {
+        "quiz": "q-np-quantifier-some-any",
+        "statement": "能说出 some 用于肯定与预期肯定的疑问、any 用于否定与开放疑问"
       }
     ]
   },
@@ -623,8 +743,16 @@
     "estMinutes": 8,
     "criteria": [
       {
+        "quiz": "q-np-possessive-objects",
+        "statement": "能说出 's 属格适用于人、动物、时间、机构，并各举一例"
+      },
+      {
         "quiz": "q-np-possessive",
-        "statement": "能区分 a friend of mine 与 my friend，并说出共同拥有与各自拥有的属格写法"
+        "statement": "能区分 a friend of mine 与 my friend（前者是双重所有格、表「其中一个」）"
+      },
+      {
+        "quiz": "q-np-possessive-joint",
+        "statement": "能说出共同拥有写 Tom and Mary's house、各自拥有写 Tom's and Mary's houses"
       }
     ]
   },
@@ -661,7 +789,11 @@
     "criteria": [
       {
         "quiz": "q-np-of-genitive",
-        "statement": "能说出 of 结构与名词属格的选择次序（固定搭配 → 生命度 → 长度）"
+        "statement": "能说出 of 结构与 's 的选择次序（固定搭配 → 生命度 → 长度）"
+      },
+      {
+        "quiz": "q-np-of-genitive-word-order",
+        "statement": "能说出 of 结构与 's 结构中两个名词的先后正好相反"
       }
     ]
   },
@@ -698,7 +830,15 @@
     "criteria": [
       {
         "quiz": "q-np-agreement",
-        "statement": "能说出填 is，因为 the number of 的中心词是单数 number，而 a number of 的中心词才是后面的复数名词"
+        "statement": "能说出 The number of students is 填 is，因为中心词是单数 the number"
+      },
+      {
+        "quiz": "q-np-agreement-center",
+        "statement": "能说出谓语一致找中心词、忽略介词短语这条判据"
+      },
+      {
+        "quiz": "q-np-agreement-exceptions",
+        "statement": "能举出两个例外：距离作整体、集合名词（Ten miles is / The police are）"
       }
     ]
   },
@@ -734,8 +874,16 @@
     "estMinutes": 7,
     "criteria": [
       {
+        "quiz": "q-np-modifier-order-eight",
+        "statement": "能按评价 / 大小 / 年龄 / 形状 / 颜色 / 来源 / 材料 / 用途排出八个前置修饰位"
+      },
+      {
         "quiz": "q-np-modifier-order",
-        "statement": "能说出前置修饰语的顺序，并指出「名词定语不带复数」这条硬规则"
+        "statement": "能说出名词定语不带复数（a five-year plan）"
+      },
+      {
+        "quiz": "q-np-modifier-order-numeral",
+        "statement": "能说出序数在基数之前（the first two chapters）"
       }
     ]
   },
@@ -770,6 +918,14 @@
     ],
     "estMinutes": 6,
     "criteria": [
+      {
+        "quiz": "q-tense-simple-present-uses",
+        "statement": "能说出一般现在时的三种用法（习惯、恒常事实、时刻表）并各举一例"
+      },
+      {
+        "quiz": "q-tense-simple-present-third-person-s",
+        "statement": "能说出否定与疑问用 does、-s 落在助动词上、动词回原形"
+      },
       {
         "quiz": "q-tense-simple-present",
         "statement": "能解释时间与条件从句用现在时表将来的分工"
@@ -808,8 +964,16 @@
     "estMinutes": 7,
     "criteria": [
       {
+        "quiz": "q-tense-present-progressive-uses",
+        "statement": "能说出进行时的三种用法（此刻正在发生、临时状态、带感情色彩的习惯）并各举一例"
+      },
+      {
+        "quiz": "q-tense-present-progressive-state-verbs",
+        "statement": "能举出四个一般不用进行时的状态动词（know / believe / own / contain）"
+      },
+      {
         "quiz": "q-tense-present-progressive",
-        "statement": "能说出进行时的「临时 vs 永久」语义，并列出一般不用进行时的状态动词"
+        "statement": "能说出 I live 是长期、I am living 是暂住，进行时真正带的语义是「临时 vs 永久」"
       }
     ]
   },
@@ -846,7 +1010,15 @@
     "criteria": [
       {
         "quiz": "q-tense-simple-past",
-        "statement": "能区分一般过去时与现在完成时在「与现在是否关联」上的差别"
+        "statement": "能说出一般过去时不与现在关联，现在完成时的结果落到现在"
+      },
+      {
+        "quiz": "q-tense-simple-past-irregular",
+        "statement": "能举出两个不规则变化的过去式（went / saw）"
+      },
+      {
+        "quiz": "q-tense-simple-past-did-base",
+        "statement": "能说出 did 后面动词用原形，并各举一例否定句与疑问句"
       }
     ]
   },
@@ -883,7 +1055,15 @@
     "criteria": [
       {
         "quiz": "q-tense-past-progressive",
-        "statement": "能解释过去进行时作背景、一般过去时作打断事件的关系"
+        "statement": "能解释过去进行时作背景、一般过去时作打断事件的包含关系"
+      },
+      {
+        "quiz": "q-tense-past-progressive-form",
+        "statement": "能说出过去进行时的形式 was / were + -ing"
+      },
+      {
+        "quiz": "q-tense-past-progressive-when-while",
+        "statement": "能说出 when 倾向带打断事件、while 倾向带同时进行的背景"
       }
     ]
   },
@@ -920,7 +1100,15 @@
     "criteria": [
       {
         "quiz": "q-tense-present-perfect",
-        "statement": "能说出因为 yesterday 把事件钉在确定的过去点，与现在完成时「与现在关联」的语义冲突，应改用一般过去时 I saw him yesterday"
+        "statement": "能说出 yesterday 这类确定过去时间与现在完成时冲突，应改用 I saw him yesterday"
+      },
+      {
+        "quiz": "q-tense-present-perfect-uses",
+        "statement": "能说出现在完成时的两种用法（完成、持续）并各举一例"
+      },
+      {
+        "quiz": "q-tense-present-perfect-markers",
+        "statement": "能举出五个与现在关联的标记词（already / yet / just / ever / never）"
       }
     ]
   },
@@ -958,6 +1146,14 @@
       {
         "quiz": "q-tense-perfect-progressive",
         "statement": "能区分 have done 与 have been doing，并说出后者不数次数与数量"
+      },
+      {
+        "quiz": "q-tense-perfect-progressive-form",
+        "statement": "能说出形式是 have / has been + -ing"
+      },
+      {
+        "quiz": "q-tense-perfect-progressive-features",
+        "statement": "能说出持续到现在、可能还在进行，并能从痕迹推出刚发生过的持续动作"
       }
     ]
   },
@@ -994,7 +1190,15 @@
     "criteria": [
       {
         "quiz": "q-tense-past-perfect",
-        "statement": "能说出必须有一个过去参照点（显式如 when 从句、或上下文已定的过去时点），孤立使用应改用一般过去时"
+        "statement": "能说出过去完成时必须有一个参照点，它表示「过去的过去」"
+      },
+      {
+        "quiz": "q-tense-past-perfect-form",
+        "statement": "能说出形式是 had + 过去分词"
+      },
+      {
+        "quiz": "q-tense-past-perfect-standalone",
+        "statement": "能说出孤立使用时改用一般过去时，因为听者找不到参照点"
       }
     ]
   },
@@ -1031,7 +1235,15 @@
     "criteria": [
       {
         "quiz": "q-tense-future-will",
-        "statement": "能区分 will 与 be going to 各自带的预设（此刻决定 / 已计划或已有迹象）"
+        "statement": "能区分 will（此刻决定或主观预测）与 be going to（已计划或已有迹象）"
+      },
+      {
+        "quiz": "q-tense-future-will-uses",
+        "statement": "能说出 will 的三种用法（承诺、预测、临时决定）并各举一例"
+      },
+      {
+        "quiz": "q-tense-future-will-clause",
+        "statement": "能说出时间与条件从句用现在时、不用 will"
       }
     ]
   },
@@ -1068,7 +1280,15 @@
     "criteria": [
       {
         "quiz": "q-tense-future-going-to",
-        "statement": "能说出填 is going to，因为乌云是眼前可见的既有迹象，正是 be going to 的典型依据；will 只作主观预测"
+        "statement": "能说出 Look at those clouds 填 is going to，因为乌云是眼前可见的迹象"
+      },
+      {
+        "quiz": "q-tense-future-going-to-grounds",
+        "statement": "能说出 be going to 的两类依据：既有迹象、已计划"
+      },
+      {
+        "quiz": "q-tense-future-going-to-form",
+        "statement": "能说出形式是 am / is / are going to + 原形"
       }
     ]
   },
@@ -1105,7 +1325,15 @@
     "criteria": [
       {
         "quiz": "q-tense-future-perfect",
-        "statement": "能说出 by + 时间 与将来完成时的搭配，以及从句不用将来时"
+        "statement": "能说出 by + 时间 是将来完成时的典型标记，at + 时间 配将来进行时"
+      },
+      {
+        "quiz": "q-tense-future-perfect-forms",
+        "statement": "能说出 will have + 过去分词与 will have been + -ing 两种形式"
+      },
+      {
+        "quiz": "q-tense-future-perfect-clause",
+        "statement": "能说出从句不用将来时、仍用现在时"
       }
     ]
   },
@@ -1141,8 +1369,16 @@
     "estMinutes": 8,
     "criteria": [
       {
+        "quiz": "q-av-passive-form-five",
+        "statement": "能写出五个时态的被动形式各一例"
+      },
+      {
         "quiz": "q-av-passive-form",
-        "statement": "能说出构成是 has/have been + 过去分词（如 It has been signed），时态落在 be 上"
+        "statement": "能说出现在完成时的被动是 has / have been + 过去分词"
+      },
+      {
+        "quiz": "q-av-passive-form-be-vs-participle",
+        "statement": "能说出 be 管时态、过去分词不变，时态信息全在 be 上"
       }
     ]
   },
@@ -1179,7 +1415,15 @@
     "criteria": [
       {
         "quiz": "q-av-passive-use",
-        "statement": "能说出被动语态的语篇动因，而不把它当成「更正式」的替换"
+        "statement": "能说出被动语态的动因在语篇，不是「更正式」的风格替换"
+      },
+      {
+        "quiz": "q-av-passive-use-grounds",
+        "statement": "能说出三种动因（施事未知、有意隐去、让受事承接话题）并各举一例"
+      },
+      {
+        "quiz": "q-av-passive-use-by-phrase",
+        "statement": "能说出 by 短语在施事有必要交代时才出现"
       }
     ]
   },
@@ -1217,6 +1461,14 @@
       {
         "quiz": "q-av-get-passive",
         "statement": "能说出 get 被动与 be 被动在语义色彩与语体上的差别"
+      },
+      {
+        "quiz": "q-av-get-passive-state",
+        "statement": "能举出 get dressed / get lost 这类表状态的 get + 过去分词结构"
+      },
+      {
+        "quiz": "q-av-get-passive-no-by",
+        "statement": "能说出 get 被动很少带 by 短语"
       }
     ]
   },
@@ -1252,8 +1504,12 @@
     "estMinutes": 8,
     "criteria": [
       {
+        "quiz": "q-av-causative-types",
+        "statement": "能说出三类使役结构的形式并各举一例"
+      },
+      {
         "quiz": "q-av-causative",
-        "statement": "能按「谁动手」区分 have / get + 过去分词与 have / make / let + 原形"
+        "statement": "能按「谁动手」区分 have + 过去分词（别人做）与 have + 原形（宾语自己做），并说出 make 变被动后 to 要回来（He was made to apologize）"
       }
     ]
   },
@@ -1290,7 +1546,15 @@
     "criteria": [
       {
         "quiz": "q-av-modal-ability",
-        "statement": "能解释 can 无将来形式，并说出 be able to 的补位用法"
+        "statement": "能解释 can 无将来与非限定形式，将来、完成、不定式位置换 be able to"
+      },
+      {
+        "quiz": "q-av-modal-ability-meanings",
+        "statement": "能说出 can 的两种意义（能力、许可）并各举一例"
+      },
+      {
+        "quiz": "q-av-modal-ability-could",
+        "statement": "能区分 could 表过去能力与表委婉请求"
       }
     ]
   },
@@ -1326,8 +1590,16 @@
     "estMinutes": 8,
     "criteria": [
       {
+        "quiz": "q-av-modal-obligation-source",
+        "statement": "能说出 must 的义务来自说话人、have to 的义务来自外部规定"
+      },
+      {
         "quiz": "q-av-modal-obligation",
-        "statement": "能区分 mustn't 与 don't have to，并说出过去义务用 had to"
+        "statement": "能区分 mustn't（禁止）与 don't have to（无义务），两者不是同义"
+      },
+      {
+        "quiz": "q-av-modal-obligation-past",
+        "statement": "能说出 must 没有过去形式、过去义务用 had to"
       }
     ]
   },
@@ -1364,7 +1636,15 @@
     "criteria": [
       {
         "quiz": "q-av-modal-epistemic",
-        "statement": "能说出 He must be tired 的 must 是推测义（几乎确定），He must rest 的 must 是义务义（必须），且推测义的否定用 can't"
+        "statement": "能说出 He must be tired 是推测义、He must rest 是义务义"
+      },
+      {
+        "quiz": "q-av-modal-epistemic-scale",
+        "statement": "能排出推测义的四级强度阶梯（must / may-might-could / can't）"
+      },
+      {
+        "quiz": "q-av-modal-epistemic-negation",
+        "statement": "能说出推测义的否定用 can't、疑问用 Can he…?，不用 mustn't"
       }
     ]
   },
@@ -1402,6 +1682,18 @@
       {
         "quiz": "q-av-modal-past",
         "statement": "能说出「情态 + have + 过去分词」的反事实含义与它的使用禁区"
+      },
+      {
+        "quiz": "q-av-modal-past-form",
+        "statement": "能说出结构是情态动词 + have + 过去分词"
+      },
+      {
+        "quiz": "q-av-modal-past-four",
+        "statement": "能举出 must / may / should / could 四种情态的过去义各一句"
+      },
+      {
+        "quiz": "q-av-modal-past-obligation",
+        "statement": "能说出过去义务用 had to，不用 must have"
       }
     ]
   },
@@ -1438,7 +1730,15 @@
     "criteria": [
       {
         "quiz": "q-av-subjunctive",
-        "statement": "能说出虚拟语气用 were 的理由，并举一例 mandative 虚拟"
+        "statement": "能说出虚拟语气用 were 的理由（与现在事实相反、通用于各人称）"
+      },
+      {
+        "quiz": "q-av-subjunctive-cases",
+        "statement": "能说出三种场合（与现在相反、现在做不到的愿望、对过去的遗憾）并各举一例"
+      },
+      {
+        "quiz": "q-av-subjunctive-mandative-forms",
+        "statement": "能说出 mandative 虚拟的两种形态：美式原形、英式 should + 原形"
       }
     ]
   },
@@ -1475,7 +1775,19 @@
     "criteria": [
       {
         "quiz": "q-av-conditional",
-        "statement": "能说出属第三型（与过去事实相反），形式是 if + had done, would have done，两半都指向未实现的过去"
+        "statement": "能说出 If I had known, I would have told you 属第三型"
+      },
+      {
+        "quiz": "q-av-conditional-three-types",
+        "statement": "能写出三型条件句的形式配对"
+      },
+      {
+        "quiz": "q-av-conditional-mixed",
+        "statement": "能说出混合条件两半各自按时段配形式，并举一例"
+      },
+      {
+        "quiz": "q-av-conditional-iron-rule",
+        "statement": "能说出条件从句不用 will / would，并知道表意愿的 will 是例外"
       }
     ]
   },
@@ -1512,7 +1824,15 @@
     "criteria": [
       {
         "quiz": "q-nf-infinitive-form",
-        "statement": "能说出不定式的三种形式，并解释否定词为什么放 to 之前"
+        "statement": "能说出否定词放在 to 之前（not to go），不写成 to not go"
+      },
+      {
+        "quiz": "q-nf-infinitive-form-three",
+        "statement": "能写出不定式的三种形态：to do、to have done、to be done"
+      },
+      {
+        "quiz": "q-nf-infinitive-form-perfect-meaning",
+        "statement": "能说出完成式表动作先于主句（She seems to have left）"
       }
     ]
   },
@@ -1548,8 +1868,12 @@
     "estMinutes": 8,
     "criteria": [
       {
+        "quiz": "q-nf-infinitive-function-four",
+        "statement": "能说出不定式作主语、宾语、定语、状语各一例"
+      },
+      {
         "quiz": "q-nf-infinitive-function",
-        "statement": "能说出不定式作主语时用 it 后置的规则"
+        "statement": "能说出长不定式作主语要用 it 占位、真主语后置"
       }
     ]
   },
@@ -1586,7 +1910,15 @@
     "criteria": [
       {
         "quiz": "q-nf-bare-infinitive",
-        "statement": "能说出填 go，因为 make 后接不带 to 的不定式，变被动时才补回 to（was made to go）"
+        "statement": "能说出 make 后接不带 to 的不定式，变被动时 to 要补回（was made to go）"
+      },
+      {
+        "quiz": "q-nf-bare-infinitive-help",
+        "statement": "能说出 help 后可带可不带 to，是唯一的自由选择"
+      },
+      {
+        "quiz": "q-nf-bare-infinitive-sense",
+        "statement": "能说出感官动词接原形看全过程、接 -ing 看正在进行"
       }
     ]
   },
@@ -1624,6 +1956,18 @@
       {
         "quiz": "q-nf-gerund",
         "statement": "能区分动名词与现在分词同形不同用"
+      },
+      {
+        "quiz": "q-nf-gerund-three-positions",
+        "statement": "能说出动名词作主语、宾语、介词宾语各一例"
+      },
+      {
+        "quiz": "q-nf-gerund-subject-forms",
+        "statement": "能写出两种逻辑主语写法（his coming / him coming）"
+      },
+      {
+        "quiz": "q-nf-gerund-perfect",
+        "statement": "能写出动名词完成式 having finished"
       }
     ]
   },
@@ -1660,7 +2004,19 @@
     "criteria": [
       {
         "quiz": "q-nf-gerund-vs-infinitive",
-        "statement": "能说出 remember doing 是记得做过（动作已发生），remember to do 是记得去做（动作尚未做）"
+        "statement": "能说出 remember doing 是记得做过、remember to do 是记得去做"
+      },
+      {
+        "quiz": "q-nf-gerund-vs-infinitive-lists",
+        "statement": "能各举三个只接 -ing 与只接 to do 的动词"
+      },
+      {
+        "quiz": "q-nf-gerund-vs-infinitive-three-pairs",
+        "statement": "能说出 remember / stop / try 三组的两义差别"
+      },
+      {
+        "quiz": "q-nf-gerund-vs-infinitive-to-preposition",
+        "statement": "能识别 to 作介词时后接 -ing（look forward to seeing）"
       }
     ]
   },
@@ -1698,6 +2054,18 @@
       {
         "quiz": "q-nf-present-participle",
         "statement": "能判断分词状语的隐含主语，并说出悬垂分词错在哪"
+      },
+      {
+        "quiz": "q-nf-present-participle-four",
+        "statement": "能说出分词作定语、状语、宾补、表语各一例"
+      },
+      {
+        "quiz": "q-nf-present-participle-perfect",
+        "statement": "能写出完成式 Having finished，并说出它表先于主句"
+      },
+      {
+        "quiz": "q-nf-present-participle-vs-gerund",
+        "statement": "能说出分词保留动作性可带宾语、动名词整体作名词"
       }
     ]
   },
@@ -1734,7 +2102,15 @@
     "criteria": [
       {
         "quiz": "q-nf-past-participle",
-        "statement": "能解释不及物动词的过去分词为何只表完成、不表被动"
+        "statement": "能解释不及物动词的过去分词只表完成、不表被动"
+      },
+      {
+        "quiz": "q-nf-past-participle-two-layers",
+        "statement": "能说出过去分词的两层语义是被动 + 完成"
+      },
+      {
+        "quiz": "q-nf-past-participle-four",
+        "statement": "能说出过去分词作定语、后置定语、状语、宾补各一例"
       }
     ]
   },
@@ -1771,7 +2147,15 @@
     "criteria": [
       {
         "quiz": "q-nf-participle-clause",
-        "statement": "能说出这是悬垂分词 —— walking 的隐含主语是人，不是 the tower，应改为 Walking down the street, I saw the tower 或 Seen from the street, the tower…"
+        "statement": "能认出悬垂分词并说出 walking 的逻辑主语应是人、不是 the tower"
+      },
+      {
+        "quiz": "q-nf-participle-clause-fixes",
+        "statement": "能说出三种改法（补主语、换成分词、改独立主格）并各举一例"
+      },
+      {
+        "quiz": "q-nf-participle-clause-frozen",
+        "statement": "能举出四个固化的分词插入语（generally speaking / judging from / considering / provided that）"
       }
     ]
   },
@@ -1808,7 +2192,11 @@
     "criteria": [
       {
         "quiz": "q-nf-absolute",
-        "statement": "能说出独立主格与悬垂分词的分界：自带主语"
+        "statement": "能说出独立主格与悬垂分词的分界是自带主语"
+      },
+      {
+        "quiz": "q-nf-absolute-four-forms",
+        "statement": "能写出四种构成（名 + 副、名 + 过去分词、名 + 完成分词、with 结构）各一例"
       }
     ]
   },
@@ -1845,7 +2233,15 @@
     "criteria": [
       {
         "quiz": "q-nf-perfect-infinitive",
-        "statement": "能按时间先后判断非谓语该不该用完成式"
+        "statement": "能按时间先后判断该不该用完成式：先于主句才用"
+      },
+      {
+        "quiz": "q-nf-perfect-infinitive-forms",
+        "statement": "能写出四种完成形态（to have done / having done / to have been done / having been done）"
+      },
+      {
+        "quiz": "q-nf-perfect-infinitive-omission",
+        "statement": "能说出漏用完成式的后果：动作被读成与主句同时发生"
       }
     ]
   },
@@ -1883,6 +2279,14 @@
       {
         "quiz": "q-cl-relative-defining",
         "statement": "能说出关系词作宾语可省、作主语不可省"
+      },
+      {
+        "quiz": "q-cl-relative-defining-features",
+        "statement": "能说出限制性从句的两个特征：不加逗号、删掉后指代改变"
+      },
+      {
+        "quiz": "q-cl-relative-defining-where",
+        "statement": "能说出 where 等于 in which"
       }
     ]
   },
@@ -1919,7 +2323,15 @@
     "criteria": [
       {
         "quiz": "q-cl-relative-nondefining",
-        "statement": "能说出不能，非限制性关系从句只能用 who / which / whose，且关系词不能省略"
+        "statement": "能说出非限制性从句不能用 that，只用 which / who"
+      },
+      {
+        "quiz": "q-cl-relative-nondefining-rules",
+        "statement": "能说出两条硬规则：不用 that、关系词不能省"
+      },
+      {
+        "quiz": "q-cl-relative-nondefining-comma",
+        "statement": "能说出逗号把「补充信息」变成「限定」，并举出兄弟那两句的差别"
       }
     ]
   },
@@ -1956,7 +2368,15 @@
     "criteria": [
       {
         "quiz": "q-cl-relative-pronoun-choice",
-        "statement": "能说出用 that（或省略），因为 everything 这类不定代词作先行词时不用 which"
+        "statement": "能说出先行词是 everything 这类不定代词时只能用 that"
+      },
+      {
+        "quiz": "q-cl-relative-pronoun-choice-table",
+        "statement": "能按人 / 物 / 所属 / 地点时间原因四栏给出关系词"
+      },
+      {
+        "quiz": "q-cl-relative-pronoun-choice-omission",
+        "statement": "能说出作宾语可省、作主语不可省"
       }
     ]
   },
@@ -1993,7 +2413,15 @@
     "criteria": [
       {
         "quiz": "q-cl-noun-that",
-        "statement": "能说出哪几类名词性从句的 that 不可省"
+        "statement": "能说出只有宾语从句的 that 可省，主语、表语、同位语从句不可省"
+      },
+      {
+        "quiz": "q-cl-noun-that-four-positions",
+        "statement": "能说出四种位置（主语、宾语、表语、同位语）并各举一例"
+      },
+      {
+        "quiz": "q-cl-noun-that-formal-subject",
+        "statement": "能写出 it 作形式主语、从句后置的写法"
       }
     ]
   },
@@ -2030,7 +2458,15 @@
     "criteria": [
       {
         "quiz": "q-cl-noun-wh",
-        "statement": "能解释 wh- 名词性从句为何不倒装，并区分 what 与 that 的分工"
+        "statement": "能解释 wh- 名词性从句用陈述语序、不倒装（What he said surprised me）"
+      },
+      {
+        "quiz": "q-cl-noun-wh-what-vs-that",
+        "statement": "能说出缺成分用 what、不缺成分用 that"
+      },
+      {
+        "quiz": "q-cl-noun-wh-whether",
+        "statement": "能说出 whether 在介词后与主语位只能用 whether、不能用 if"
       }
     ]
   },
@@ -2067,7 +2503,15 @@
     "criteria": [
       {
         "quiz": "q-cl-comparative",
-        "statement": "能找出比较对象不对齐的错误并改正（than that of …）"
+        "statement": "能找出比较对象不对齐的错误，并改成 than that of London"
+      },
+      {
+        "quiz": "q-cl-comparative-omission",
+        "statement": "能说出重复成分可省、可用 does 替代"
+      },
+      {
+        "quiz": "q-cl-comparative-than",
+        "statement": "能说出 than 作连词与作介词的差别"
       }
     ]
   },
@@ -2104,7 +2548,15 @@
     "criteria": [
       {
         "quiz": "q-cl-adverbial-time",
-        "statement": "能说出一律用一般现在时（或现在完成表完成），不用 will，如 when he arrives / when I have finished"
+        "statement": "能说出一律用一般现在时表将来，不用 will"
+      },
+      {
+        "quiz": "q-cl-adverbial-time-connectives",
+        "statement": "能举出六个时间从句连接词"
+      },
+      {
+        "quiz": "q-cl-adverbial-time-perfect",
+        "statement": "能说出从句表完成时用现在完成（when I have finished）"
       }
     ]
   },
@@ -2141,7 +2593,15 @@
     "criteria": [
       {
         "quiz": "q-cl-adverbial-condition",
-        "statement": "能说出条件从句不用将来时的例外：will 表意愿"
+        "statement": "能说出条件从句不用将来时，例外是 will 表意愿（If you will wait a moment）"
+      },
+      {
+        "quiz": "q-cl-adverbial-condition-unless",
+        "statement": "能说出 unless 等于 if not 但带「除非」的预期，不能随意互换"
+      },
+      {
+        "quiz": "q-cl-adverbial-condition-variants",
+        "statement": "能举出四个正式变体（provided / as long as / on condition that / in case）"
       }
     ]
   },
@@ -2179,6 +2639,14 @@
       {
         "quiz": "q-cl-adverbial-concession",
         "statement": "能解释 although 与 but 不能同现，并说出 however / despite 的词性"
+      },
+      {
+        "quiz": "q-cl-adverbial-concession-even-though",
+        "statement": "能说出 even though 的让步与事实性比 although 更强"
+      },
+      {
+        "quiz": "q-cl-adverbial-concession-despite",
+        "statement": "能说出 despite 后接名词或 -ing，不接从句"
       }
     ]
   },
@@ -2215,7 +2683,15 @@
     "criteria": [
       {
         "quiz": "q-cl-adverbial-reason",
-        "statement": "能区分原因、目的与结果三类从句各自的连接词"
+        "statement": "能区分原因、目的、结果三类从句各自的连接词"
+      },
+      {
+        "quiz": "q-cl-adverbial-reason-groups",
+        "statement": "能说出三类从句的连接词名单与「目的带情态、结果不带」的差别"
+      },
+      {
+        "quiz": "q-cl-adverbial-reason-for-limits",
+        "statement": "能说出 for 的三个限制：并列连词、只能后置、不回答 why"
       }
     ]
   },
@@ -2252,7 +2728,15 @@
     "criteria": [
       {
         "quiz": "q-wo-basic-svo",
-        "statement": "能说出语序在英语里承担语法功能，并举一例换位换义"
+        "statement": "能说出英语语序承担语法功能，并举一例换位换义"
+      },
+      {
+        "quiz": "q-wo-basic-svo-adverb-slots",
+        "statement": "能说出状语的两个常规位置是句首与句末"
+      },
+      {
+        "quiz": "q-wo-basic-svo-marked",
+        "statement": "能说出有标记语序只在转移焦点时用"
       }
     ]
   },
@@ -2289,7 +2773,15 @@
     "criteria": [
       {
         "quiz": "q-wo-question",
-        "statement": "能解释主语疑问句为何不借 do"
+        "statement": "能解释主语疑问句不借 do：who 本身就是主语"
+      },
+      {
+        "quiz": "q-wo-question-inversion",
+        "statement": "能写出疑问词 + 助动词 + 主语 + 动词的语序"
+      },
+      {
+        "quiz": "q-wo-question-do",
+        "statement": "能说出没有助动词时借 do / does / did，动词回原形"
       }
     ]
   },
@@ -2326,7 +2818,15 @@
     "criteria": [
       {
         "quiz": "q-wo-there-be",
-        "statement": "能说出 there 是虚位主语，以及谓语与后接名词的一致规则"
+        "statement": "能说出 there 是虚位主语、真主语在 be 之后，且不能用 the 引导已知信息作真主语"
+      },
+      {
+        "quiz": "q-wo-there-be-agreement",
+        "statement": "能说出谓语与后接名词一致，并列时口语按最近的名词定"
+      },
+      {
+        "quiz": "q-wo-there-be-variants",
+        "statement": "能举出三个变体（there seems to be / used to be / might be）"
       }
     ]
   },
@@ -2363,7 +2863,15 @@
     "criteria": [
       {
         "quiz": "q-wo-adverb-position",
-        "statement": "能解释评注副词放句首与放句末的辖域差别"
+        "statement": "能解释评注副词放句首修饰整句、放句末修饰动作"
+      },
+      {
+        "quiz": "q-wo-adverb-position-three",
+        "statement": "能说出句首 / 句中 / 句末三个位置并各举一例"
+      },
+      {
+        "quiz": "q-wo-adverb-position-middle",
+        "statement": "能说出中位三规则：实义动词前、be 后、助动词后"
       }
     ]
   },
@@ -2400,7 +2908,19 @@
     "criteria": [
       {
         "quiz": "q-wo-negation-scope",
-        "statement": "能说出这是部分否定 —— 「闪光的未必都是金子」，not 的辖域覆盖 all 而不是否定谓语"
+        "statement": "能说出 All that glitters is not gold 是部分否定「闪光的未必都是金子」"
+      },
+      {
+        "quiz": "q-wo-negation-scope-three",
+        "statement": "能说出三类否定（部分、全部、否定转移）并各举一例"
+      },
+      {
+        "quiz": "q-wo-negation-scope-partial",
+        "statement": "能写出部分否定的两种写法"
+      },
+      {
+        "quiz": "q-wo-negation-scope-transfer",
+        "statement": "能说出否定转移的判据：否定整个命题就把 not 提到主句"
       }
     ]
   },
@@ -2437,7 +2957,19 @@
     "criteria": [
       {
         "quiz": "q-wo-inversion-negative",
-        "statement": "能说出填 have —— 否定词 Never 前置，主句用疑问句语序，操作词提到主语之前"
+        "statement": "能说出 Never 前置后填 have，因为否定词前置触发主谓倒装"
+      },
+      {
+        "quiz": "q-wo-inversion-negative-triggers",
+        "statement": "能举出五个触发词（never / rarely / seldom / hardly / no sooner）"
+      },
+      {
+        "quiz": "q-wo-inversion-negative-no-sooner",
+        "statement": "能写出 no sooner … than 的固定搭配"
+      },
+      {
+        "quiz": "q-wo-inversion-negative-scope",
+        "statement": "能说出倒装只发生在主句"
       }
     ]
   },
@@ -2474,7 +3006,15 @@
     "criteria": [
       {
         "quiz": "q-wo-inversion-conditional",
-        "statement": "能说出只有 were / had / should 能前置以省略 if"
+        "statement": "能说出只有 were / had / should 三个操作词能前置以省略 if"
+      },
+      {
+        "quiz": "q-wo-inversion-conditional-negation",
+        "statement": "能说出否定用 Had I not known，不用 Hadn't I known"
+      },
+      {
+        "quiz": "q-wo-inversion-conditional-register",
+        "statement": "能说出这种倒装正式、日常保留 if 更常见"
       }
     ]
   },
@@ -2512,6 +3052,14 @@
       {
         "quiz": "q-wo-object-fronting",
         "statement": "能区分话题化与倒装：看操作词有没有上提"
+      },
+      {
+        "quiz": "q-wo-object-fronting-three",
+        "statement": "能说出三种前置情形（话题化、否定宾语前置、感叹性前置）"
+      },
+      {
+        "quiz": "q-wo-object-fronting-pronoun",
+        "statement": "能说出代词复指在正式写作里算重复"
       }
     ]
   },
@@ -2548,7 +3096,15 @@
     "criteria": [
       {
         "quiz": "q-wo-cleft-it",
-        "statement": "能写出 It was Tom who/that broke the window，并说明时态跟随原句、人被强调时 who 与 that 均可"
+        "statement": "能写出 It was Tom who broke the window，并说明时态跟随原句"
+      },
+      {
+        "quiz": "q-wo-cleft-it-who-that",
+        "statement": "能说出人用 who / that、物用 that"
+      },
+      {
+        "quiz": "q-wo-cleft-it-verb",
+        "statement": "能说出强调动作要改用 wh- 分裂句或 do 强调"
       }
     ]
   },
@@ -2585,7 +3141,15 @@
     "criteria": [
       {
         "quiz": "q-wo-cleft-wh",
-        "statement": "能说出 wh- 分裂句的焦点位置与它的使用场景"
+        "statement": "能说出焦点在句末（the window），也可把受事提前"
+      },
+      {
+        "quiz": "q-wo-cleft-wh-form",
+        "statement": "能写出两种语序的 wh- 分裂句"
+      },
+      {
+        "quiz": "q-wo-cleft-wh-division",
+        "statement": "能说出 it 分裂句强调主语宾语状语、wh- 分裂句专放受事或事件"
       }
     ]
   },
@@ -2622,7 +3186,15 @@
     "criteria": [
       {
         "quiz": "q-co-reference",
-        "statement": "能说出 this 偏近指、可概括刚说完或即将说的内容，that 偏远指、多指已完结的旧信息"
+        "statement": "能说出 this 偏近指、可概括刚说完的内容，that 偏远指、多指已完结的旧信息"
+      },
+      {
+        "quiz": "q-co-reference-chain",
+        "statement": "能说出指代链判据：唯一可找回的先行词、中间无同类竞争者"
+      },
+      {
+        "quiz": "q-co-reference-disambiguation",
+        "statement": "能说出两种消歧手段：重复姓名、改写语序"
       }
     ]
   },
@@ -2659,7 +3231,15 @@
     "criteria": [
       {
         "quiz": "q-co-substitution",
-        "statement": "能说出 so 替代前文的谓语部分（can swim），并与助动词、主语构成倒装，用来避免重复 —— 属替代而非指代"
+        "statement": "能说出 so 替代前文的谓语部分，并构成倒装，属替代而非指代"
+      },
+      {
+        "quiz": "q-co-substitution-three",
+        "statement": "能说出三类替代（one / so / do so）并各举一例"
+      },
+      {
+        "quiz": "q-co-substitution-so-inversion",
+        "statement": "能写出肯定附和 so can he 与否定附和 Neither can I"
       }
     ]
   },
@@ -2697,6 +3277,14 @@
       {
         "quiz": "q-co-ellipsis",
         "statement": "能说出省略的前提是「能唯一恢复」"
+      },
+      {
+        "quiz": "q-co-ellipsis-three",
+        "statement": "能说出三类省略（动词省略、助动词共享、关系词省略）"
+      },
+      {
+        "quiz": "q-co-ellipsis-with-substitution",
+        "statement": "能举出省略与替代并用的例子（I asked him to leave and he did）"
       }
     ]
   },
@@ -2733,7 +3321,15 @@
     "criteria": [
       {
         "quiz": "q-co-connective-additive",
-        "statement": "能区分 moreover 与 in addition 的论证强度"
+        "statement": "能区分 moreover 的论证推进与 in addition 的「还有」"
+      },
+      {
+        "quiz": "q-co-connective-additive-four",
+        "statement": "能举出四个增补连接词"
+      },
+      {
+        "quiz": "q-co-connective-additive-position",
+        "statement": "能说出 moreover / also / besides 各自的位置倾向"
       }
     ]
   },
@@ -2770,7 +3366,15 @@
     "criteria": [
       {
         "quiz": "q-co-connective-adversative",
-        "statement": "能说出 however 是连接副词，前面必须句号或分号、后面加逗号；although 是从属连词，直接引导从句，且不能与 but 同用"
+        "statement": "能说出 however 是连接副词、前后标点规则，although 是从属连词且不能与 but 同用"
+      },
+      {
+        "quiz": "q-co-connective-adversative-tiers",
+        "statement": "能说出 but / however / nevertheless 三档并各举一例"
+      },
+      {
+        "quiz": "q-co-connective-adversative-other-hand",
+        "statement": "能说出 on the other hand 是对比而非转折（同类 whereas）"
       }
     ]
   },
@@ -2808,6 +3412,14 @@
       {
         "quiz": "q-co-connective-causal",
         "statement": "能说出结果侧连接词是副词，不能把两个分句连成一个句子"
+      },
+      {
+        "quiz": "q-co-connective-causal-two-sides",
+        "statement": "能各举三个原因侧与结果侧连接词"
+      },
+      {
+        "quiz": "q-co-connective-causal-for",
+        "statement": "能说出 for 的三个限制：并列连词、只能后置、不回答 why"
       }
     ]
   },
@@ -2843,8 +3455,16 @@
     "estMinutes": 7,
     "criteria": [
       {
+        "quiz": "q-co-connective-temporal-groups",
+        "statement": "能说出三组时间衔接词（序列、同时、之后）并各举一例"
+      },
+      {
         "quiz": "q-co-connective-temporal",
-        "statement": "能区分 eventually / finally / in the end / at the end"
+        "statement": "能区分 eventually（终于）与 finally（最后一步或总算）"
+      },
+      {
+        "quiz": "q-co-connective-temporal-in-at-end",
+        "statement": "能区分 in the end（最终结果）与 at the end（某段时间末尾）"
       }
     ]
   },
@@ -2881,7 +3501,19 @@
     "criteria": [
       {
         "quiz": "q-co-information-structure",
-        "statement": "能说出句末焦点位与末端重量，并说明被动为何是信息结构工具"
+        "statement": "能说出句末是默认焦点位，并说明被动与分裂句都是信息结构工具"
+      },
+      {
+        "quiz": "q-co-information-structure-principles",
+        "statement": "能说出句末焦点与末端重量两条原则"
+      },
+      {
+        "quiz": "q-co-information-structure-tools",
+        "statement": "能说出被动与分裂句两种调整工具"
+      },
+      {
+        "quiz": "q-co-information-structure-criterion",
+        "statement": "能说出「每句主语承接上一句」这条写作判据"
       }
     ]
   },
@@ -2918,7 +3550,15 @@
     "criteria": [
       {
         "quiz": "q-co-paragraph-topic",
-        "statement": "能说出段落的主题句—支撑—收束结构与主要衔接手段"
+        "statement": "能说出英语段落靠关键词重复与指代链维持连贯，连接词堆太多反而生硬"
+      },
+      {
+        "quiz": "q-co-paragraph-topic-three-parts",
+        "statement": "能说出主题句 → 支撑 → 收束的三段式"
+      },
+      {
+        "quiz": "q-co-paragraph-topic-cohesion",
+        "statement": "能说出三类衔接手段各自的分工"
       }
     ]
   },
@@ -2956,6 +3596,14 @@
       {
         "quiz": "q-co-register",
         "statement": "能按词汇、缩写、句法三个标记判断语域是否统一"
+      },
+      {
+        "quiz": "q-co-register-markers",
+        "statement": "能说出三个正式度标记并各举一例"
+      },
+      {
+        "quiz": "q-co-register-legal",
+        "statement": "能说出契约类文档有 shall / herein 这套独立用语，与普通正式英语不同"
       }
     ]
   }
