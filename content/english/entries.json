@@ -1,0 +1,2626 @@
+{
+  "english/wc-noun": {
+    "summary": "名词按指称方式分四类：专有、普通、抽象、集合；类别决定冠词与可数性。",
+    "body": "London / Mary —— 专有：指唯一对象，通常不带冠词\ndog / table —— 普通：一类中的可数个体\nthe team / the committee —— 集合：形式单数、内部是多人\nthe team are arguing（BrE）/ the team is arguing（AmE）\n\n分类不是贴标签：专有名词失去唯一性时会退化成普通名词，a certain Mr Smith（某个史密斯先生）就带了不定冠词；集合名词的谓语单复数取决于说话人把它看成一个整体还是一群人。抽象名词（freedom / advice）多数不可数，所以不能加 -s、不能配 a。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读名词分类那一节，把四类的判据抄成一行一句：指唯一对象 / 一类个体 / 不可感知实体 / 多人整体"
+      },
+      {
+        "operator": "example",
+        "instruction": "给每一类各写两个例句，专有名词那组再补一句 a certain Mr Smith，观察冠词的变化"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 the team are arguing 改成美式用法，改完说出改的是词还是数"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释为什么 freedom 不能说 a freedom，而 decision 可以 —— 差别落在哪一类上"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出四类的名字、各自一个例词、以及集合名词谓语单复数的两种取向"
+      }
+    ],
+    "selfCheck": [
+      "能说出专有名词在什么情况下会带上不定冠词",
+      "能判断一个抽象名词是抽象还是普通，并给出可数性结论"
+    ],
+    "estMinutes": 7
+  },
+  "english/wc-pronoun": {
+    "summary": "代词按语法功能分九类，同一形式可跨类（this 既是指示代词也是限定词）。",
+    "body": "人称 I / me · 物主 mine / my · 反身 myself · 指示 this / that · 疑问 who / what · 关系 which / who · 不定 someone / anything · 相互 each other · 虚位 it / there\n\nShe hurt herself.       反身：宾语与主语同指\nShe hurt her.           人称：宾语另指一人\nIt is raining.          虚位 it：无实义，只占主语位\n\n九类的用处不同：人称与反身管指称是否同指，指示管远近，不定管量化，虚位 it / there 只是为了满足「英语句子必须有主语」这条结构要求。判断类别看它在本句里做什么成分，不看词形 —— this 在 this book 里是限定词，在 This is mine 里是指示代词。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读代词分类一节，把九类各记一个代表词，重点看「虚位 it」与「指示 this」的说明"
+      },
+      {
+        "operator": "example",
+        "instruction": "写 She hurt herself 与 She hurt her 两句，标出宾语分别指谁"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 This is mine 改成名词前用法，说明 this 的词性变没变"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释为什么 It is raining 里的 it 不能换成 this 或 that"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出九类的名字，并各举一词"
+      }
+    ],
+    "selfCheck": [
+      "能区分反身代词与宾格代词的指称差别",
+      "能说明 this 在名词前与单独使用时的词性变化"
+    ],
+    "estMinutes": 7
+  },
+  "english/wc-verb": {
+    "summary": "动词分四类：实义、助动、情态、系动；分类决定它能带什么、能不能独立作谓语。",
+    "body": "run / eat       实义：有词汇意义，可独立作谓语\nbe / do / have  助动：构成时态、语态、否定与疑问\ncan / must      情态：表达可能性与义务，无第三人称 -s、无 to\nseem / become   系动：后面接主语补足语，不是宾语\n\nShe seems tired.      系动 + 形容词补语\nShe seems tiredly.    错 —— 系动词后不用副词修饰主语\n\n界线在功能不在形态：have 在 I have a car 里是实义动词，在 I have finished 里是助动词；do 在 I do my homework 里是实义，在 Do you know 里是助动。判断方法是看它后面接的是宾语、还是另一个动词的过去分词 / 原形。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读动词分类一节，把四类的判据写成「带宾语 / 带过去分词 / 无 -s 无 to / 带主语补语」"
+      },
+      {
+        "operator": "example",
+        "instruction": "给 have 与 do 各写两个例句，一个作实义、一个作助动，标出后面的词形"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 She seems tiredly 改对，并说明为什么不能保留副词"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释情态动词为什么没有第三人称单数形式，而不只是「习惯上不加」"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出四类动词、各自一个代表词、以及区分 have 两种用法的方法"
+      }
+    ],
+    "selfCheck": [
+      "能靠后接成分为 have / do 定性，而不是靠词形",
+      "能说出系动词后接形容词而不接副词的原因"
+    ],
+    "estMinutes": 7
+  },
+  "english/wc-adjective": {
+    "summary": "形容词有定语与表语两个位置，少数字只能占其中一处，位置差别不只是语序。",
+    "body": "the red car       定语位：名词前\nthe car is red    表语位：系动词后\nsomething nice    后置位：修饰 -thing / -body 类不定代词\nthe president elect  后置位：少数源自法语的固定说法\n\nthe main reason    只能定语（main 不作表语：the reason is main 不成立）\nHe is asleep.      只能表语（an asleep child 不成立，要用 a sleeping child）\n\n位置差别带意义差别：present 在 the present members（现任成员）与 the members present（在场的成员）里意思不同；responsible 在 a responsible person（负责可靠）与 the person responsible（当事负责人）里也不同。形容词带自己的补足语时必须后置：a man [proud of his son]。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读形容词位置一节，记下三类只能占一处的词：只定语、只表语、必须后置"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 present 与 responsible 的两组对比例句，写出每组各是什么意思"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 an asleep child 改对，再把 a man who is proud of his son 压成一个名词短语"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释为什么 something nice 不能说成 nice something"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出两个位置的名字、各两个只能占一处的例词、以及形容词必须后置的两种情形"
+      }
+    ],
+    "selfCheck": [
+      "能说出至少两个只作表语的形容词和一个只作定语的形容词",
+      "能解释 same 形在不同位置带来意义差别的原因"
+    ],
+    "estMinutes": 8
+  },
+  "english/wc-adverb": {
+    "summary": "副词分方式、地点、时间、程度频率四类，类别决定它站句中、句末还是句首。",
+    "body": "quickly / carefully   方式：常在句末，也可中位\nhere / outside        地点：句末\nnow / yesterday       时间：句末或句首\nvery / often          程度频率：中位（实义动词前、be 后）\n\nShe often goes there.   频率副词在实义动词前\nShe is often there.     频率副词在 be 后\nShe goes there often.   也可句末，但语气不同\n\n位置会改意思：Only she can do it（只有她能）与 She can only do it（她只能做这件事）差别全在 only 站哪儿；clearly 在中位常表判断（He clearly lied），在句末倾向方式（He spoke clearly）。already / yet / still 的中位与句末也各带预设不同。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读副词分类与位置一节，记下三类中位规则：实义动词前、be 后、助动词后"
+      },
+      {
+        "operator": "example",
+        "instruction": "写 often 的三种位置例句，读一遍比较语气差别"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 Only she can do it 改成 only 修饰动作的版本，写出两句并说清各强调什么"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释为什么频率副词中位时站在 be 之后、实义动词之前"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出四类副词、各自典型位置、以及位置改义的三个例子"
+      }
+    ],
+    "selfCheck": [
+      "能说出频率副词的中位规则，并能给 often 摆出三个位置",
+      "能说明 only 位置不同时句子意思怎么变"
+    ],
+    "estMinutes": 7
+  },
+  "english/wc-preposition": {
+    "summary": "介词带宾语构成介词短语；短语的整体功能由它在句中作什么成分决定。",
+    "body": "in the box            简单介词 + 宾语\nin front of the house  复杂介词（三词一体，不能拆成 in / front / of）\nduring the war         分词来源的介词\n\nin the morning        时间状语\nin trouble            表语（状态）\nthe man in black      后置定语\n\n介词后面接代词要用宾格：between you and me，不是 between you and I。介词与动词的搭配不能靠规则推出，只能记：depend on、consist of、apologize for。要注意介词动词（look after）与短语动词（look up）在宾语位置上的差别 —— 后者可把宾语放中间。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读介词一节，把简单介词、复杂介词、分词来源介词各记两个"
+      },
+      {
+        "operator": "example",
+        "instruction": "用 in 造三个短语，分别作时间状语、表语、后置定语"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 between you and I 改对，并写出这条规则为什么只管代词"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释 in front of 为什么算一个介词而不是三个词"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出介词短语能作的四种成分，各给一例"
+      }
+    ],
+    "selfCheck": [
+      "能说出介词后接代词用宾格的原因",
+      "能给同一个介词造出三种不同成分的短语"
+    ],
+    "estMinutes": 6
+  },
+  "english/wc-conjunction": {
+    "summary": "并列连词连接同级成分，从属连词引导分句作状语或定语；for 只能后置且不回答 why。",
+    "body": "and / but / or / so / yet / for / nor    并列连词，连接同级成分\nbecause / although / while / if        从属连词，引导从句\n\nHe left, for it was late.       for 引导的分句只能后置\nFor it was late, he left.       不成立\nWhy did he leave? For it was late.   不能这样回答\n\nbecause 与 for 的差别不是正式度：because 表直接原因，可前置可后置，能回答 why；for 表推断性理由（说话人由前句推出后句），只能后置、不能回答 why、也不能被强调句抓住（It was because… 对，It was for… 不对）。并列连词前逗号在短句可省，从属从句前置时必须有逗号。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读连词一节，把七个并列连词背下来，记下 for 的两个限制：只后置、不回答 why"
+      },
+      {
+        "operator": "example",
+        "instruction": "把 He left, for it was late 改写成 because 版，比较两句在「原因来源」上的差别"
+      },
+      {
+        "operator": "practice",
+        "instruction": "用 It was because… 造强调句，再试着用 for 造一次，记录后者为什么不成立"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释并列连词与从属连词在「能不能前置」上的根本差别"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出 for 与 because 的三点差别，并举出 because 能前置的例子"
+      }
+    ],
+    "selfCheck": [
+      "能说出 for 不能前置的原因，而不只是「习惯」",
+      "能把一句 for 从句改写成 because 从句并说明意义变化"
+    ],
+    "estMinutes": 8,
+    "criteria": [
+      {
+        "quiz": "q-wc-conjunction",
+        "statement": "能说出 for 是并列连词、分句只能后置且不能回答 why；because 是从属连词，可前置也可后置"
+      }
+    ]
+  },
+  "english/wc-determiner": {
+    "summary": "限定词占名词短语最前位，分前位、中位、后位三层；中位限定词彼此排斥。",
+    "body": "all / both / half          前位限定词\n the / my / some / every   中位限定词（中心限定词）\n many / few / first / three 后位限定词\n\nall my friends       前位 + 中位 + 名词\nmy all friends       错 —— 前位不能站到中位后面\nthe my book          错 —— 两个中位限定词不能共现\n\n限定词与形容词不冲突，但占两个位次：限定词在限定位（the / my / some），形容词在描写位（big / red），次序是「限定词 + 形容词 + 名词」。中位互斥是硬规则：the / my / this / every 只能选一个；要同时表达「我的这本书」，用 of 结构 —— this book of mine。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读限定词一节，把三层各记三个词，重点记「中位互斥」这条硬规则"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 all my friends 与 the my book 一对正误例，标出错在哪一层"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 the my book 改成合法说法，写出两种改法（换中位 / 用 of 结构）"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释限定词与形容词为什么能同时出现、而两个中位限定词不能"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出三层的名字、各三个词、以及中位互斥的规避写法"
+      }
+    ],
+    "selfCheck": [
+      "能判断一个名词短语里限定词的层次是否合法",
+      "能说出两个中位限定词要共现时的替代结构"
+    ],
+    "estMinutes": 8,
+    "criteria": [
+      {
+        "quiz": "q-wc-determiner",
+        "statement": "能说出限定词与形容词占两个不同位次、次序为「限定词 + 形容词 + 名词」，并指出中位限定词彼此排斥"
+      }
+    ]
+  },
+  "english/wc-suffix": {
+    "summary": "派生后缀改词性不改词干意义，但会移动重音；同一词干配不同后缀，意义可分化。",
+    "body": "-ness / -ity / -tion / -ment   造名词：happy → happiness, real → reality\n-able / -ive / -ous / -ful    造形容词：read → readable, create → creative\n-ize / -ify / -en             造动词：modern → modernize, pure → purify\n-ly                           造副词：quick → quickly\n\nˈphotograph → phoˈtographer → photoˈgraphic\n\n重音随后缀后移是规律，不是例外：-tion / -ic / -ity 都把重音拉到后缀前一音节。意义也会分化：economic（经济领域的）与 economical（省钱的）同出 economy，historical（历史的）与 historic（有历史意义的）也各说一义，不能互换。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读后缀一节，按「造名词 / 形容词 / 动词 / 副词」四组各记三个后缀"
+      },
+      {
+        "operator": "example",
+        "instruction": "把 photograph 的三个派生词写出来，读出重音位置的变化"
+      },
+      {
+        "operator": "practice",
+        "instruction": "给 economy 造两个形容词并各写一句，说明两者不能互换的理由"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释 -tion 与 -ic 为什么都把重音往后拉"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出四组后缀各三个，以及 economic 与 economical 的差别"
+      }
+    ],
+    "selfCheck": [
+      "能靠后缀判断派生词的词性",
+      "能说出至少一对同词干不同义的派生形容词"
+    ],
+    "estMinutes": 7
+  },
+  "english/wc-compound": {
+    "summary": "复合词是一个词（重音前置），短语是两个词；短语动词的宾语是代词时必须插在中间。",
+    "body": "ˈblackbird    复合词：重音在第一个词，语义专指一种鸟\nblack ˈbird   短语：重音在后，指「黑色的鸟」\n\nlook up the word / look the word up   短语动词，宾语可后置也可中置\nlook it up                            宾语是代词时必须中置\nlook it up 不能说成 look up it\n\nlook after the baby / look after it    介词动词，宾语不能中置\n\n判别办法有两个：重音在不在第一个词上、以及能不能把宾语插进中间。插入测试是硬判据 —— look after 是介词动词（after 是介词），整体不可分；look up 是短语动词（up 是小品词），可分词。复合名词的写法不统一（post office 分开、blackboard 连写、mother-in-law 加连字符），只能记。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读复合词与短语动词一节，记下两个判别法：重音位置、宾语插入测试"
+      },
+      {
+        "operator": "example",
+        "instruction": "念 ˈblackbird 与 black ˈbird，标出重音，再说出两句各指什么"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 look up it 改对，再用 look after 造一句并试着插入宾语，记录为什么不成立"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释为什么代词宾语必须中置，而名词宾语可以后置"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出复合词与短语的重音差别、短语动词与介词动词的可分性差别"
+      }
+    ],
+    "selfCheck": [
+      "能用插入测试判断一个动词短语可不可分",
+      "能解释代词宾语必须中置的理由"
+    ],
+    "estMinutes": 8,
+    "criteria": [
+      {
+        "quiz": "q-wc-compound",
+        "statement": "能说出 look up 这类短语动词的宾语是代词时必须插在中间（look it up），而介词动词 look after 不可插入"
+      }
+    ]
+  },
+  "english/np-countability": {
+    "summary": "可数性决定能不能加 -s、能不能配 a/an；不可数名词靠量词结构计数。",
+    "body": "a book / two books         可数：有单复数对立，可配 a/an\ninformation / advice       不可数：无复数，不配 a/an\n\ntwo informations                 错\n two pieces of information       对 —— 靠量词结构计数\n\n可数性不是名词的固有属性，是用法：coffee 通常不可数，但 three coffees（三杯）在咖啡馆是常态；paper 表「纸」不可数、表「论文 / 报纸」可数。抽象名词多数不可数，但 decision / suggestion / proposal 这类「一次具体行为」可数，所以 a decision 成立。判断靠三个测试：能不能加 -s、能不能配 a/an、能不能直接接数词。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读可数性一节，记下三个测试：加 -s、配 a/an、接数词"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 information 与 decision 各两句，一句正确一句错误，标出错在哪"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把「三条建议」用 advice 表达出来，不许改 advice 本身"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释为什么 coffee 在不同语境下可数性会变，而不只是「口语例外」"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出三个测试、两个不可数抽象名词、以及一个可数化的抽象名词"
+      }
+    ],
+    "selfCheck": [
+      "能用三个测试给一个名词定性",
+      "能说出不可数名词计数的标准结构"
+    ],
+    "estMinutes": 7,
+    "criteria": [
+      {
+        "quiz": "q-np-countability",
+        "statement": "能说出 information 没有复数形式、不配 a/an，计数要用 a piece of information 这类量词结构"
+      }
+    ]
+  },
+  "english/np-plural": {
+    "summary": "复数有规则变化与不规则变化两套，外来词还有拉丁/希腊式复数。",
+    "body": "book → books · bus → buses · city → cities · leaf → leaves\nchild → children · foot → feet · mouse → mice\nsheep → sheep · deer → deer · series → series   零复数\ndatum → data · criterion → criteria              外来复数\n\n规则变化里三条要注意：-y 前是辅音才改 ies（boy → boys 不改）；-f/-fe 变 ves 只覆盖一部分词（roof → roofs 属例外）；-o 结尾有的加 es（potato → potatoes）、有的加 s（photo → photos）。零复数名词靠量词或上下文表数：two sheep 里的 sheep 不变。data 在学术写作里常作复数（the data are），日常英语已多作不可数。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读复数一节，把规则变化四条、零复数三个、外来复数两组分开记"
+      },
+      {
+        "operator": "example",
+        "instruction": "把 city / boy / leaf / roof 四个词的复数写出来，标出哪两个是例外"
+      },
+      {
+        "operator": "practice",
+        "instruction": "用 two sheep 与 two children 各造一句，说明为什么一个变一个不变"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释 -y 变 ies 的条件为什么是「前接辅音」而不是「所有 -y」"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出四个不规则复数、两个零复数、以及 data 的两种用法"
+      }
+    ],
+    "selfCheck": [
+      "能说出 -y 变 ies 的完整条件",
+      "能举出三个零复数名词"
+    ],
+    "estMinutes": 6
+  },
+  "english/np-article-definite": {
+    "summary": "定冠词标记「听者能定位」，定位依据有四类：上文提及、情境唯一、限定修饰、共享常识。",
+    "body": "I bought a book. The book was expensive.     上文提及\nClose the door, please.                       情境唯一（现场只有一扇）\nthe man in the black coat                     后置修饰限定\nthe sun / the moon                            共享常识的唯一对象\n\nThe tiger is a mammal.                        类指（单数可数）\n\n定冠词也用于最高级与序数（the best、the first）、乐器（play the piano）、以及部分专有名词（the Thames、the Alps、the Netherlands）。反过来，the 不能用在泛指的复数或不可数名词前：Tigers are dangerous 不能说 the tigers are dangerous（除非指特定那群）。判据只有一条：听者能不能在当下定位到那个对象。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读定冠词一节，把四类定位依据各抄一句判据"
+      },
+      {
+        "operator": "example",
+        "instruction": "写 a book / the book 的两句连用例，标出第二次为什么必须用 the"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 the tigers are dangerous 改成类指的正确说法，并说明改了什么"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释 the tiger 表类指与 a tiger 表类指的差别"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出四类定位依据、the 的三个固定用法、以及不能用的两种场合"
+      }
+    ],
+    "selfCheck": [
+      "能用「听者能否定位」这一条判据判断该不该用 the",
+      "能说出单数可数名词表类指的两种写法"
+    ],
+    "estMinutes": 8
+  },
+  "english/np-article-indefinite": {
+    "summary": "不定冠词用于首次提及与「某一类中的一个」，形式由后接词的读音决定。",
+    "body": "a university / a European     辅音音素开头（/j/）\nan hour / an honest man        元音音素开头（h 不发音）\n\nShe is a teacher.             职业归类\na dog came in                  首次提及，听者不知道是哪只\n\n选择 a 还是 an 看读音不看字母：university 拼写是元音字母，读音以 /j/ 开头，用 a。反之 hour 拼写以 h 开头但读音从元音起，用 an。不定冠词不能配复数与不可数名词（a books / a water 都不成立，要 some books / some water），也不能在 already 表「某一确定对象」时用 —— 那时换成 the。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读不定冠词一节，记下 a/an 的判据是读音不是拼写"
+      },
+      {
+        "operator": "example",
+        "instruction": "把 university / hour / European / honest 四个词的冠词写出来，标出各自的起始音素"
+      },
+      {
+        "operator": "practice",
+        "instruction": "用 teacher 造句表职业，再把同一句改成复数，观察冠词怎么消失"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释为什么 a books 不成立，而不是「习惯上不说」"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出 a/an 的判据、三个易错词、以及不定冠词不能配的两类名词"
+      }
+    ],
+    "selfCheck": [
+      "能靠音素而不是字母选对 a / an",
+      "能说明不定冠词为什么不能配复数名词"
+    ],
+    "estMinutes": 6
+  },
+  "english/np-zero-article": {
+    "summary": "零冠词出现在三类场合：泛指复数与不可数、机构的功能用法、以及多数专有名词。",
+    "body": "Tigers are dangerous.          泛指复数\nWater boils at 100 °C.         泛指不可数\ngo to school / in prison       机构的功能用途（去上学 / 服刑）\nby bus / at noon / at home     交通、时间、固定搭配\nMount Everest / Lake Victoria  多数专有名词\n\ngo to school        去上学（作为学生）\ngo to the school    去那所学校（那座建筑）\n\n零冠词不是「漏了冠词」，它是一个选择：用零冠词表示「按该机构的功能使用」，用 the 表示「指那座具体的建筑物」。同一组对立还有 in prison（服刑）与 in the prison（在那座监狱里）、at table（在吃饭）与 at the table（在桌边）。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读零冠词一节，把三类场合各抄一句判据，重点记「功能 vs 建筑」这组对立"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 go to school / go to the school 与 in prison / in the prison 两对例句，各写一句释义"
+      },
+      {
+        "operator": "practice",
+        "instruction": "用 by bus 与 on the bus 各造一句，说明两者强调的差别"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释零冠词为什么在泛指复数上成立，而在单数可数名词上不成立"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出三类场合、两对功能与建筑的对比、以及三个固定零冠词搭配"
+      }
+    ],
+    "selfCheck": [
+      "能说出 go to school 与 go to the school 的差别落在哪一层",
+      "能举出三个固定零冠词的搭配"
+    ],
+    "estMinutes": 7,
+    "criteria": [
+      {
+        "quiz": "q-np-zero-article",
+        "statement": "能说出 go to school 是零冠词、指机构的功能用途（去上学），go to the school 用定冠词、指那座具体建筑"
+      }
+    ]
+  },
+  "english/np-quantifier": {
+    "summary": "量词按可数性分工：many/few 配可数，much/little 配不可数，a lot of 两边通用。",
+    "body": "many books / few books          可数\nmuch water / little water        不可数\na lot of books / a lot of water  两者皆可\nseveral / both / each           只可数\na great deal of / a bit of      只不可数\n\nsome 用于肯定句与期待肯定回答的疑问，any 用于否定句与开放疑问：\nDo you have some money?（预期「有」）\nDo you have any money?（不知道有没有）\n\n量词短语作主语时，谓语一致看中心词：A number of students are here（中心是 students，复数）；The number of students is rising（中心是 number，单数）。这一对是考试高频错点，判据在 the / a 上，不在 number 上。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读量词一节，把「只可数 / 只不可数 / 通用」三栏各记三个词"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 some / any 那两句疑问句，写出两句各自预设了什么"
+      },
+      {
+        "operator": "practice",
+        "instruction": "用 a number of 与 the number of 各造一句，标出谓语该用 are 还是 is"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释 some / any 的分工为什么不是「肯定 / 否定」这么简单"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出三栏各三个量词，以及 a number of 与 the number of 的谓语差别"
+      }
+    ],
+    "selfCheck": [
+      "能按可数性给量词归类",
+      "能说清 a number of 与 the number of 的谓语为什么不同"
+    ],
+    "estMinutes": 7
+  },
+  "english/np-possessive": {
+    "summary": "名词属格用于人、动物、时间与机构；无生命名词多用 of 结构，双重所有格表「其中之一」。",
+    "body": "Tom's car · the dog's tail        人与动物\na day's work · two hours' delay   时间\nthe government's decision         机构\n\na friend of mine                  双重所有格：我朋友中的一个\na friend of me                    错\nTom and Mary's house              共同拥有（一套房）\nTom's and Mary's houses           各自拥有（各一套）\n\n属格与 of 结构的分工依据是「生命度 + 长短」：人、动物、时间、机构用 's；无生命的长短语用 of（the name of the man who called yesterday 比 the man who called yesterday's name 可读）。双重所有格 a friend of mine 带「部分」义，与 my friend（可能唯一）不同。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读属格一节，把 's 的四类适用对象与 of 结构的分工写成两条判据"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 Tom and Mary's house 与 Tom's and Mary's houses，写出两句各是几套房"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把「昨天打电话那个人」的名字用 of 结构表达出来，再试着用 's，比较可读性"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释 a friend of mine 与 my friend 的差别落在哪"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出 's 的四类对象、双重所有格的形态、以及共同/各自拥有怎么区分"
+      }
+    ],
+    "selfCheck": [
+      "能判断一个无生命名词该用 's 还是 of",
+      "能说清双重所有格比物主限定词多带了什么意思"
+    ],
+    "estMinutes": 8
+  },
+  "english/np-of-genitive": {
+    "summary": "of 结构与名词属格可互换的只有一部分；分工由生命度、短语长度与固定搭配决定。",
+    "body": "the roof of the house       无生命，常规用 of\nthe house's roof            口语里也成立，但 less 正式\nthe man's name / the name of the man   两者皆可\nthe end of the story        固定搭配，不说 the story's end\n\nthe Queen of England        称号，不能用 's\na piece of cake             量词结构，不是属格\n\n选择次序：先看是不是固定搭配（of 优先），再看中心词是不是人（'s 优先），最后看长度 —— 长而带从句的成分放 of 后面，避免 's 挂在从句末尾。要留意 of 结构里两个名词的先后正好与 's 相反：the legs of the table = the table's legs。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读 of 结构一节，抄下三条选择次序：固定搭配、生命度、长度"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 the legs of the table 与 the table's legs，标出名词先后关系"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 the story's end 改回固定搭配形态，并说明为什么后者更自然"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释称号 the Queen of England 为什么不能改成 's 形式"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出三条选择次序，以及 of 结构与 's 的名词先后对应关系"
+      }
+    ],
+    "selfCheck": [
+      "能按三条次序给出一句该用 of 还是 's",
+      "能说出 of 结构与 's 结构中两个名词的顺序关系"
+    ],
+    "estMinutes": 7
+  },
+  "english/np-agreement": {
+    "summary": "主谓一致看主语中心词，不看离谓语最近的修饰语；the number of 与 a number of 分属单复数。",
+    "body": "The number of students is increasing.     中心词 number，单数\nA number of students are absent.          中心词 students，复数\n\nEach of them is ready.                     each 单数\nNeither of the answers is correct.          neither 单数（正式）\nTen miles is a long way.                   距离作整体，单数\nThe police are coming.                     集合名词，复数\n\nthere be 的存在句按后面的名词定：There is a book / There are books。最容易错的是「就近吸引」：The list of items was long —— 谓语跟 list 不跟 items。判据固定为「找到中心词，忽略介词短语」。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读主谓一致一节，抄下判据：找中心词、忽略介词短语、集合名词按语义"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 the number of / a number of 两句，标出各自主语中心词"
+      },
+      {
+        "operator": "practice",
+        "instruction": "给 The list of items ___ long 填谓语，并说明为什么不是 items 决定"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释 Ten miles is 为什么用单数，而不是按复数形式"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出判据一条、the/a number of 的差别、以及至少两个例外情形"
+      }
+    ],
+    "selfCheck": [
+      "能在含介词短语的主语里正确找到中心词",
+      "能说出 the number of 与 a number of 的谓语差别"
+    ],
+    "estMinutes": 8,
+    "criteria": [
+      {
+        "quiz": "q-np-agreement",
+        "statement": "能说出填 is，因为 the number of 的中心词是单数 number，而 a number of 的中心词才是后面的复数名词"
+      }
+    ]
+  },
+  "english/np-modifier-order": {
+    "summary": "前置修饰语按「评价—大小—年龄—形状—颜色—来源—材料—用途」排列，名词定语用单数。",
+    "body": "a lovely little old rectangular green French silver whittling knife\n 评价  大小  年龄  形状   颜色  来源  材料  用途\n\na shoe shop / a shoes shop         名词定语用单数\ntwo ten-year-old boys              复合定语里的名词不带复数 -s\nsomething interesting              修饰 -thing 类词必须后置\n\nthe first two chapters             序数在基数前\n\n这条顺序是倾向而非铁律，但违反时读起来明显别扭：a green lovely dress 不像英语。记忆法是 OSASCOMP。真正的硬规则只有两条：名词定语不带复数（a five-year plan），以及修饰 -thing / -body / -one 的形容词必须后置。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读修饰语顺序一节，把八个位置按序背下来，再读一遍那条长名词短语"
+      },
+      {
+        "operator": "example",
+        "instruction": "把 a lovely little old green French silver knife 逐词标上它占的位置"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把「一个五年的计划」写成名词短语，注意 year 的单复数"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释为什么修饰 something 的形容词必须后置"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出八位置顺序、两条硬规则、以及序数与基数的先后"
+      }
+    ],
+    "selfCheck": [
+      "能把三个以上修饰语按正确顺序排好",
+      "能说出复合定语里名词不带复数的理由"
+    ],
+    "estMinutes": 7
+  },
+  "english/tense-simple-present": {
+    "summary": "一般现在时表示习惯、规律与恒常事实，而不是「现在正在做」。",
+    "body": "She walks to work every day.       习惯\nWater boils at 100 °C.             恒常事实\nThe train leaves at 8.             时刻表\n\n第三人称单数加 -s：he walks / she watches / it goes\n否定与疑问用 do / does：She does not walk. / Does she walk?\n\n「现在」不等于「此刻」：此刻正在走要用现在进行时 She is walking。一般现在时的核心是「不限定时段内重复成立」。同样一句可以装在时间从句里表将来：When he arrives, we will start —— 从句用现在时，主句用将来时，这是英语的固定分工，不是时态混用。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读一般现在时一节，把三种用法记成「习惯 / 恒常 / 时刻表」"
+      },
+      {
+        "operator": "example",
+        "instruction": "写 She walks to work every day 与 She is walking to work now 两句，标出时段差别"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 When he arrives, we will start 里的从句改成将来时，看读起来还对不对"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释第三人称单数 -s 在疑问句里跑到哪去了"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出三种用法、-s 的位移规则、以及时间从句表将来的用法"
+      }
+    ],
+    "selfCheck": [
+      "能区分一般现在时与现在进行时的时段含义",
+      "能说出第三人称单数 -s 在否定与疑问句中的位置变化"
+    ],
+    "estMinutes": 6
+  },
+  "english/tense-present-progressive": {
+    "summary": "现在进行时表示说话时刻正在发生、或近期临时状态；状态动词通常不用进行时。",
+    "body": "She is reading.                说话时刻正在发生\nI am living in Berlin.        临时状态（不是永久）\nHe is always losing his keys. 带感情色彩的习惯\n\n状态动词一般不用进行时：know / believe / own / contain\nI am knowing the answer      错\nI know the answer            对\n\n「临时 vs 永久」是现在进行时真正带的语义：I live in Berlin（长期）与 I am living in Berlin（暂住）差别在此。少数状态动词进进行时后意思会变：I am seeing him tomorrow（约会）、He is having lunch（吃）—— 因为这时它们表达的是动作而不是状态。句中出现 now / at the moment 通常提示进行时，但不是判据。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读现在进行时一节，记下三种用法与「状态动词不进进行时」这条"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 I live in Berlin 与 I am living in Berlin，写出两句各含的时长预设"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 I am knowing the answer 改对，再写一句 seeing 表「约会」的例句"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释为什么 seeing 进进行时后意思会变"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出三种用法、四个状态动词、以及临时与永久的对比例句"
+      }
+    ],
+    "selfCheck": [
+      "能说出 I live 与 I am living 的语义差别",
+      "能列出三个通常不用进行时的状态动词"
+    ],
+    "estMinutes": 7
+  },
+  "english/tense-simple-past": {
+    "summary": "一般过去时表示与现在断开的确定过去事件，通常带或隐含确定时间。",
+    "body": "I saw him yesterday.               确定过去\nShe lived in Paris for ten years.  已结束的过去时段\nWhen I was a child, I liked tea.   过去状态\n\n与现在完成时的分界：一般过去时不与现在关联。\nI lost my keys.（还没找到，或不说结果）\nI have lost my keys.（结果是现在找不到）\n\n形式用 -ed 或不等变化（go → went），否定与疑问用 did + 原形：Did you see him? / I did not see him。带 yesterday / last week / in 2019 这类确定时间状语时一律用一般过去时，不能用现在完成时。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读一般过去时一节，记下「与现在断开」这一条核心判据"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 I lost my keys 与 I have lost my keys，写出两句各自现在是什么状态"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 Did you see him 改成肯定句与否定句，观察动词回到哪种形式"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释为什么 yesterday 只能配一般过去时"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出核心判据、两个不等变化动词、以及 did 后面接什么形式"
+      }
+    ],
+    "selfCheck": [
+      "能用「是否与现在关联」区分一般过去时和现在完成时",
+      "能说出 did 之后动词用原形的原因"
+    ],
+    "estMinutes": 6
+  },
+  "english/tense-past-progressive": {
+    "summary": "过去进行时画背景动作，被一般过去时的事件打断或衬托。",
+    "body": "I was reading when he called.      背景 + 打断事件\nWhile I was cooking, she was tidying.  两个同时背景\nAt 8 last night I was working.     过去某点正在进行\n\nwas/were + -ing\n\n两个过去动作的相对长度靠时态区分：长的是进行时、短的是过去时。I was reading 与 he called 的关系不是「先后」而是「包含」—— 电话落在读书的时间段里。叙述文里连续事件用一般过去时（He got up, opened the door, walked out），只有需要「拉到背景」时才换进行时；全篇进行时会让事件失去推进。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读过去进行时一节，记下「背景 vs 事件」这组分工"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 I was reading when he called，画一条时间轴标出两段各占哪一段"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 He got up, opened the door, walked out 三段连续动作改成进行时，读一遍说明为什么不合适"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释 when 与 while 在这组时态里分别倾向接哪种"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出分工、形式、以及 when / while 的倾向差异"
+      }
+    ],
+    "selfCheck": [
+      "能说出进行时与一般过去时在叙事的相对长度关系",
+      "能判断一段连续动作该不该用进行时"
+    ],
+    "estMinutes": 7
+  },
+  "english/tense-present-perfect": {
+    "summary": "现在完成时把过去事件与现在连起来，因此不能与确定的过去时间状语共现。",
+    "body": "I have seen him.                现在知道他长什么样\nI have seen him recently.       模糊时段可用\nI saw him yesterday.            确定过去 → 一般过去时\nI have seen him yesterday.      错\n\nhave/has + 过去分词\n\n两种用法：\nI have finished the report.     完成（结果现在有效）\nI have lived here for ten years. 持续（从过去延续到现在）\n\n判据就一条：句子里有没有把事件钉在过去的某一点。钉住了（yesterday / last year / in 2019 / when I was young）就用一般过去时；只说「到现在为止如何」才用现在完成时。already / yet / just / ever / never 属于与现在关联的标记，可与完成时共现。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读现在完成时一节，记下「不与确定过去时间共现」这条判据"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 I have seen him 与 I saw him yesterday，写出两句各自把事件放在哪"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 I have seen him yesterday 改对，两种改法各写一句（改时态 / 改状语）"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释为什么 recently 能配完成时而 yesterday 不能"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出两种用法、判据一条、以及五个与现在关联的时间标记"
+      }
+    ],
+    "selfCheck": [
+      "能判断一个句子该用完成时还是一般过去时",
+      "能说出 recently 与 yesterday 的差别落在哪"
+    ],
+    "estMinutes": 8,
+    "criteria": [
+      {
+        "quiz": "q-tense-present-perfect",
+        "statement": "能说出因为 yesterday 把事件钉在确定的过去点，与现在完成时「与现在关联」的语义冲突，应改用一般过去时 I saw him yesterday"
+      }
+    ]
+  },
+  "english/tense-perfect-progressive": {
+    "summary": "完成进行时强调动作持续到现在（或到某一时点）且可能继续，兼有完成与进行两层。",
+    "body": "I have been reading for two hours.     持续到现在，可能还在读\nYour eyes are red. Have you been crying?  已见痕迹的持续动作\nShe had been waiting for an hour when he arrived.  过去某点之前持续\n\nhave/has/had been + -ing\n\n与现在完成时的差别：I have read the book（读完，结果）与 I have been reading the book（在读，未必读完）。完成进行时排斥次数与数量：I have been reading it three times 不成立，要改成 I have read it three times —— 持续体本身不数次数。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读完成进行时一节，记下「持续 + 可能继续」「不数次数」两条"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 I have read the book 与 I have been reading the book，写出两者进度差别"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 I have been reading it three times 改对，说明改的是哪个成分"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释为什么完成进行时不能带次数状语"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出形式、两条特征、以及与现在完成时的对比"
+      }
+    ],
+    "selfCheck": [
+      "能说出完成进行时与现在完成时的进度差别",
+      "能解释为什么持续体不能数次数"
+    ],
+    "estMinutes": 7
+  },
+  "english/tense-past-perfect": {
+    "summary": "过去完成时是「过去的过去」，必须有一个过去参照点，否则不成立。",
+    "body": "When I arrived, he had left.        参照点 arrived，事件更早\nShe had never seen the sea before that trip.  参照点 that trip\n\nhad + 过去分词\n\n参照点可以显式（when 从句）、也可以隐式（上下文已定的过去时点）。单独一句 He had left 没有参照点时，读者会问「比什么时候更早」，这时应该用一般过去时 He left。过去完成时也不用于「很久以前」的表达：那还是一般过去时的事。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读过去完成时一节，记下「必须有过去参照点」这条判据"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 When I arrived, he had left，标出两个事件谁在先"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把孤立的 He had left 改成带参照点的句子，写出完整两句"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释为什么没有参照点时过去完成时读起来别扭"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出形式、参照点的两种来源、以及孤立使用时该换成什么时态"
+      }
+    ],
+    "selfCheck": [
+      "能判断一句话有没有过去参照点",
+      "能说出没有参照点时应改用哪个时态"
+    ],
+    "estMinutes": 7,
+    "criteria": [
+      {
+        "quiz": "q-tense-past-perfect",
+        "statement": "能说出必须有一个过去参照点（显式如 when 从句、或上下文已定的过去时点），孤立使用应改用一般过去时"
+      }
+    ]
+  },
+  "english/tense-future-will": {
+    "summary": "will 表预测、承诺与临时决定，不带「已有迹象」或「已计划」的预设。",
+    "body": "I will help you.               承诺\nI think it will rain.          预测（无迹象依据）\nThe phone is ringing. I will get it.  临时决定\n\n否定 will not / won't\n\n与 be going to 的分工：will 是「此刻作出的」或「主观预测」，be going to 带「已有迹象」或「已计划」。同一句 I will visit him（说了算）与 I am going to visit him（已打算）在语境上不同。will 不用于时间与条件从句：When he comes, I will tell him —— 从句用现在时。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读 will 一节，把三种用法记成「预测 / 承诺 / 临时决定」"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄电话铃响那段两小句，写出 I will get it 为什么是临时决定"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 When he comes, I will tell him 的从句改成 will，读一遍说明为什么不对"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释 will 与 be going to 在「依据来源」上的差别"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出三种用法、与 be going to 的分工、以及从句里的替换规则"
+      }
+    ],
+    "selfCheck": [
+      "能说出 will 与 be going to 的预设差别",
+      "能解释时间从句里为什么不用 will"
+    ],
+    "estMinutes": 7
+  },
+  "english/tense-future-going-to": {
+    "summary": "be going to 表已计划或有既有迹象的将来，与 will 的分界在「依据从哪来」。",
+    "body": "Look at those clouds. It is going to rain.   既有迹象\nI am going to buy a car next month.           已计划\n\nLook at those clouds. It will rain.          也行，但像主观预测\n\n形式：am/is/are going to + 原形\n\n判据是「说话时有没有外部依据」：看得见乌云、已经在攒钱、票已买好 —— 用 be going to；只是说话人凭感觉判断或当场决定 —— 用 will。陈述计划时常可与现在进行时互换（I am meeting him tomorrow），但 be going to 更强调意图，进行时更强调已定安排。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读 be going to 一节，记下「已有迹象 / 已计划」两类依据"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄乌云那两句，写出两句各依据什么"
+      },
+      {
+        "operator": "practice",
+        "instruction": "给「票已买好，明天去上海」写两句：be going to 版与现在进行时版，说出差别"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释为什么看见乌云时 be going to 比 will 更贴"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出两类依据、形式、以及与 will 的判据一条"
+      }
+    ],
+    "selfCheck": [
+      "能在具体语境里选对 will 与 be going to",
+      "能说出 be going to 与现在进行时表计划的语气差别"
+    ],
+    "estMinutes": 7,
+    "criteria": [
+      {
+        "quiz": "q-tense-future-going-to",
+        "statement": "能说出填 is going to，因为乌云是眼前可见的既有迹象，正是 be going to 的典型依据；will 只作主观预测"
+      }
+    ]
+  },
+  "english/tense-future-perfect": {
+    "summary": "将来完成时说到将来某时点为止已完成，将来进行时说到那时正在进行。",
+    "body": "By next June, I will have finished the book.   将来某点之前完成\nAt 8 tomorrow, I will be flying to Berlin.     将来某点正在进行\n\nwill have + 过去分词       将来完成\nwill have been + -ing      将来完成进行（持续到那时）\n\nBy the time you arrive, I will have cooked dinner.\n\nby + 时间 是将来完成的典型标记，表示「不迟于」。将来进行时则与 at + 时间 搭配自然。两者都不用于时间与条件从句（从句仍用现在时）：By the time you arrive 而不是 By the time you will arrive。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读将来完成与将来进行一节，记下 by 配完成、at 配进行的搭配倾向"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 By next June 与 At 8 tomorrow 两句，标出各自锚点"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 By the time you will arrive 改对，并说明从句为什么不用将来时"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释 by 与 at 在语义上的差别，为什么一个配完成一个配进行"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出两种形式、各自标记词、以及从句的时态规则"
+      }
+    ],
+    "selfCheck": [
+      "能区分 by 与 at 引导的时间锚点",
+      "能说出将来完成与将来进行的形式"
+    ],
+    "estMinutes": 7
+  },
+  "english/av-passive-form": {
+    "summary": "被动语态 = be + 过去分词；be 承担时态与数，过去分词不变。",
+    "body": "The letter is written.              一般现在\nShe was invited.                    一般过去\nIt has been signed.                 现在完成：has been + 过去分词\nIt is being repaired.               现在进行：is being + 过去分词\nIt will have been finished.         将来完成\n\nThe letter was written by Tom.      施事用 by 引出，通常可省\n\n构成规则固定：把主动句宾语提为主语，动词换成「be 的相应时态 + 过去分词」，原主语若要保留就放到 by 后面。be 变时态，过去分词不动 —— 所以时态信息全在 be 上。只有及物动词能变被动：Happen was happened 不成立，因为 happen 不带宾语。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读被动构成一节，抄下公式「be + 过去分词」，并记 be 负责时态与数"
+      },
+      {
+        "operator": "example",
+        "instruction": "把 They have signed it 改成被动，逐词标出 has been 各承担什么"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 She is repairing it 改成被动，注意两个 -ing 只能留一个"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释为什么不及物动词不能变被动"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出五个时态的被动形式，以及 be 与过去分词各管什么"
+      }
+    ],
+    "selfCheck": [
+      "能把任意时态的主动句改成被动",
+      "能说出不及物动词不能变被动的原因"
+    ],
+    "estMinutes": 8,
+    "criteria": [
+      {
+        "quiz": "q-av-passive-form",
+        "statement": "能说出构成是 has/have been + 过去分词（如 It has been signed），时态落在 be 上"
+      }
+    ]
+  },
+  "english/av-passive-use": {
+    "summary": "被动语态的动因在语篇：施事未知、不重要、或要让旧信息占主语位。",
+    "body": "The bridge was built in 1890.        施事未知或不重要\nMistakes were made.                  施事有意隐去\nThe results were analyzed by the team.  施事有必要出现时用 by\n\nThe window was broken.              不知道谁打破的\nSomeone broke the window.            同等信息，焦点不同\n\n被动不是「更正式」的替换：主动句与被动句的信息结构不同 —— 被动把受事提到主语位，让它承接上文的话题。学术写作大量用被动是为了让方法、结果占话题位置，而不是为了「显得客观」。判断该不该用：看这一段的话题是谁，别只数句子长短。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读被动动因一节，记下三种动因：施事未知、不重要、话题在受事"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 The window was broken 与 Someone broke the window，写出两句各自让谁占主语位"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把一段以 the results 开头的句子里的一句主动句改成被动，说明话题是不是更连贯"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释为什么被动不等于更正式"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出三种动因、by 短语的使用条件、以及判断该不该用被动的依据"
+      }
+    ],
+    "selfCheck": [
+      "能说出被动语态的语篇动因而非风格理由",
+      "能判断一句话改成被动后话题是否更连贯"
+    ],
+    "estMinutes": 7
+  },
+  "english/av-get-passive": {
+    "summary": "get 被动强调变化与意外，通常不带 by 短语，语体偏口语。",
+    "body": "He got fired.                 遭到（含不利或意外色彩）\nShe got promoted.             得到（积极变化）\nThey got married last year.   状态变化\nget hurt / get caught / get lost\n\nMy bike got stolen.          意外\nMy bike was stolen.          中性陈述\n\n与 be 被动的分工：be 被动陈述事实，get 被动突出「发生了变化」并常带说话人态度（吃惊、不满、庆幸）。get 被动很少带 by 短语 —— 说 He got fired by the manager 会很别扭。另有一类 get + 过去分词不表被动而表状态：get dressed（穿衣）、get lost（迷路），此时过去分词接近形容词。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读 get 被动一节，记下两条：突出变化、通常不带 by"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 My bike got stolen 与 My bike was stolen，写出两句语气差别"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 He got fired by the manager 改得自然，说出改了什么"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释 get dressed 为什么不算被动语态"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出 get 被动的两条特征、与 be 被动的分工、以及一个状态类 get 结构"
+      }
+    ],
+    "selfCheck": [
+      "能说出 get 被动比 be 被动多带了什么",
+      "能区分 get + 过去分词表被动与表状态两种用法"
+    ],
+    "estMinutes": 7
+  },
+  "english/av-causative": {
+    "summary": "使役结构分三类：have/get 表「让别人做」，make/let 表强迫与允许，形式各不同。",
+    "body": "I had my hair cut.             have + 宾语 + 过去分词（别人做）\nI got my car repaired.         get + 宾语 + 过去分词（同义，稍口语）\nShe made him apologize.        make + 宾语 + 原形（强迫）\nLet me go.                     let + 宾语 + 原形（允许）\nI had him fix it.              have + 宾语 + 原形（安排某人做）\n\n关键差别在「谁动手」：have/get + 过去分词表示动作由别人完成（我被剪发，不是我剪），have/make/let + 原形表示宾语自己动手。make 与 let 后接不带 to 的不定式，变被动时 to 要回来：He was made to apologize。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读使役结构一节，把三类按「谁动手」分开记"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 I had my hair cut 与 I cut my hair，写出两句各是谁动手"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 She made him apologize 改成被动，注意 to 回落的位置"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释 have + 过去分词与 have + 原形在施事上的差别"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出三类结构、各自形式、以及 make 变被动后 to 的变化"
+      }
+    ],
+    "selfCheck": [
+      "能区分「别人做」与「宾语自己做」两类使役",
+      "能说出 make/let 变被动时的不定式变化"
+    ],
+    "estMinutes": 8
+  },
+  "english/av-modal-ability": {
+    "summary": "can 表现在的能力与许可，could 表过去能力或委婉请求；be able to 补足不能用的时态。",
+    "body": "She can swim.                 现在能力\nShe could swim at five.      过去能力\nCan I borrow this?            许可（口语）\nCould you help me?            委婉请求（不是过去）\n\nwill can / have canned        错 —— can 无将来与非限定形式\nShe will be able to swim.     对\n\ncan 只有现在与过去两套形式，所以将来、完成、不定式位置一律换成 be able to：will be able to、have been able to、to be able to。could 用于请求时与过去无关，只是把语气放软；回答这类请求用 can 而不是 could，避免把委婉当成时态。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读 can/could 一节，记下 can 缺哪些形式、用什么补"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 Could you help me 与 She could swim at five，写出两句各是哪种 could"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 She will can swim 改成正确形式，并说明为什么不能保留 can"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释 could 表委婉请求时为什么不带过去义"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出 can 的两种意义、缺的三种形式、以及 could 的两副面孔"
+      }
+    ],
+    "selfCheck": [
+      "能说出 can 缺少哪三种形式、各自怎么补",
+      "能区分 could 表过去与表委婉两种用法"
+    ],
+    "estMinutes": 7
+  },
+  "english/av-modal-obligation": {
+    "summary": "must 是说话人施加的义务，have to 是外部规定；否定形式意思完全不同。",
+    "body": "You must wear a seatbelt.       说话人强调的义务\nYou have to wear a seatbelt.    外部规定（法律、规章）\n\nYou mustn't go.                 不许去（禁止）\nYou don't have to go.           不必去（无义务）\n\nshould / ought to              建议，弱于 must\n\n否定上的分工最容易错：mustn't 是「禁止」，don't have to 是「不必要」，两者不是同义。must 没有过去与将来形式，要表过去义务改用 had to。must 还可表推测（He must be tired），那是另一种情态用法，与义务义不共用否定 —— 推测义的否定用 can't。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读义务情态一节，把 must 与 have to 的来源差别、两种否定各抄一句"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 You mustn't go 与 You don't have to go，写出两句各是什么意思"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把「昨天不得不加班」写出来，说明为什么不能用 must"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释 mustn't 与 don't have to 为什么不能互换"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出义务来源差别、两种否定、以及 must 缺过去形式后用什么"
+      }
+    ],
+    "selfCheck": [
+      "能说出 must 与 have to 的义务来源差别",
+      "能正确使用 mustn't 与 don't have to"
+    ],
+    "estMinutes": 8
+  },
+  "english/av-modal-epistemic": {
+    "summary": "must 有两义：义务（你去休息）与推测（他一定累了）；推测义的否定换成 can't。",
+    "body": "He must be tired.        推测：一定累了（现在）\nHe must rest.            义务：必须休息\nHe must have left.       推测过去：一定已经走了\n\n推测义的强度阶梯：\nmust（几乎确定）> may / might / could（有可能）> can't（几乎不可能）\n\nHe can't be tired.       不可能是累了 —— 推测义的否定\nHe mustn't be tired.     错（这是「不许累」）\n\n两类 must 的分辨靠后接成分：接 be / have + 过去分词多半是推测，接动作动词多半是义务（但 He must be resting 两种都讲得通，要看语境）。推测义的否定与疑问不用 must，用 can't 与 Can he…?。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读情态两义一节，把义务与推测两组例句分开抄，标出强度阶梯"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 He must be tired 与 He must rest，写出两句各属哪一义"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 He mustn't be tired 改成推测义的否定，说明改了什么"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释推测义的否定为什么换成 can't 而不是 mustn't"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出两义、强度阶梯四级、以及推测义否定与疑问的形式"
+      }
+    ],
+    "selfCheck": [
+      "能靠后接成分与语境分辨两种 must",
+      "能说出推测义否定的正确形式"
+    ],
+    "estMinutes": 8,
+    "criteria": [
+      {
+        "quiz": "q-av-modal-epistemic",
+        "statement": "能说出 He must be tired 的 must 是推测义（几乎确定），He must rest 的 must 是义务义（必须），且推测义的否定用 can't"
+      }
+    ]
+  },
+  "english/av-modal-past": {
+    "summary": "情态动词无过去形式时用「情态 + have + 过去分词」表对过去的推测或遗憾。",
+    "body": "He must have left.              对过去的推测（一定走了）\nShe may have forgotten.         可能忘了\nYou should have told me.        本该告诉我（实际没说）\nI could have helped.            本来能帮（没帮）\n\nmust leave（现在义务）vs must have left（过去推测）\n\n这一结构一律指向过去，且带说话人的判断或评价：should have / could have / might have 都含「事实并非如此」的反事实意味，所以不能用来陈述已发生的好事（You should have passed 会被理解为「居然没通过」）。过去义务不用 must have，用 had to。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读情态 + have + 过去分词一节，把四个例句各配一句释义"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 You should have told me 与 You told me，写出两句的事实差别"
+      },
+      {
+        "operator": "practice",
+        "instruction": "用 could have 造一句「本来能但你没做」的句子"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释 should have 为什么自带反事实意味"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出结构形式、四种情态的过去义、以及过去义务该用什么"
+      }
+    ],
+    "selfCheck": [
+      "能把现在的情态句改写成对过去的推测",
+      "能说出 should have 的反事实含义"
+    ],
+    "estMinutes": 8
+  },
+  "english/av-subjunctive": {
+    "summary": "虚拟语气表达与事实相反的愿望、建议与假设，形式比陈述语气「退一步」。",
+    "body": "If I were you, I would apologize.       与现在事实相反（were 通用于各人称）\nI wish I knew the answer.              现在做不到的愿望\nI wish I had studied harder.           对过去的遗憾\nIt is essential that he be informed.   建议/要求从句用原形（mandative）\n\nwere 而非 was 是虚拟标志；口语里 If I was you 常见，正式写作仍用 were。mandative 虚拟（suggest / insist / demand + that + 原形）在美式英语里稳定，英式常用 should + 原形。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读虚拟语气一节，把三种场合分开：非真实条件、wish 愿望、建议从句"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 If I were you 与 If I was you，写出两句的语体差别"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 I wish I studied harder 改成对过去的遗憾，说明时态怎么退"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释 wish 后面为什么用过去时表现在、过去完成时表过去"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出三种场合、were 的用法、以及 mandative 虚拟的两种形态"
+      }
+    ],
+    "selfCheck": [
+      "能说出 wish 后面时态「退一步」的规则",
+      "能写出一个 mandative 虚拟的例句"
+    ],
+    "estMinutes": 9
+  },
+  "english/av-conditional": {
+    "summary": "条件句按真实度分三型，另加混合条件；形式与时态严格配对。",
+    "body": "第一型（真实可能）If it rains, we will cancel.        if + 现在时, will + 原形\n第二型（与现在相反）If I had time, I would go.   if + 过去时, would + 原形\n第三型（与过去相反）If I had known, I would have told you.  if + had done, would have done\n\n混合条件：If I had studied medicine, I would be a doctor now.\n          前半指过去、后半指现在，各自按时段配形式\n\n铁律一条：条件从句里不用 will 与 would（表意愿的 will 例外：If you will wait a moment）。第三型的两半都是「未实现」的，所以不能说 If I had known, I would tell you —— 后半也必须是完成式。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读条件句一节，把三型的形式配对抄成表：从句时态 / 主句情态"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄第三型例句，标出两半各指哪段时间"
+      },
+      {
+        "operator": "practice",
+        "instruction": "写一句混合条件：过去没学医、现在不是医生"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释为什么条件从句里不用 will"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出三型形式配对、混合条件的规则、以及那条铁律"
+      }
+    ],
+    "selfCheck": [
+      "能按真实度给条件句定型并写出正确形式",
+      "能说出一句混合条件里两半的时段归属"
+    ],
+    "estMinutes": 9,
+    "criteria": [
+      {
+        "quiz": "q-av-conditional",
+        "statement": "能说出属第三型（与过去事实相反），形式是 if + had done, would have done，两半都指向未实现的过去"
+      }
+    ]
+  },
+  "english/nf-infinitive-form": {
+    "summary": "不定式三形：to do、to have done、to be done；否定一律 not to do。",
+    "body": "to write / to have written / to be written\nto be writing                    进行式（少见）\n\n否定：not to write / never to write\n不定式符号后置：He asked me not to go.\n\n完成式表动作先于主句：She seems to have left.（看上去已经走了）\n被动式表逻辑主语被动作：The letter seems to have been sent.\n\n不定式不承载人称与时间，只承载「体」与「态」：to have done 是完成体、to be done 是被动态。否定词放 to 之前，not to do 不能拆成 to not do（口语常见，正式写作避免）。split infinitive（to boldly go）现在被广泛接受，但不要在考试与正式文书里刻意拆。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读不定式形式一节，把三种形态与否定形式各抄一行"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 She seems to have left 与 She seems to leave，写出两句的时间差别"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 The letter seems to send 改成被动完成形态"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释不定式为什么只带体和态、不带时"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出三种形态、否定位置、以及完成式的语义"
+      }
+    ],
+    "selfCheck": [
+      "能写出不定式的完成式与被动式",
+      "能说清不定式不承载时的原因"
+    ],
+    "estMinutes": 7
+  },
+  "english/nf-infinitive-function": {
+    "summary": "不定式可作主语、宾语、定语、状语四种成分，作主语时常用 it 后置。",
+    "body": "To learn a language takes time.        主语\nIt takes time to learn a language.     it 作形式主语，真主语后置\nShe wants to leave.                   宾语\nsomething to eat                      定语（修饰名词，含「将来/待做」义）\nHe came to help.                      目的状语\n\nI am glad to see you.                 原因状语（形容词后）\n\nThe hard part is to stay calm.        表语\n\n作主语的长不定式几乎总被后置，用 it 占位：It is hard to stay calm 比 To stay calm is hard 常见。作定语时带「尚未做」的意味：something to eat 是「能吃的东西（尚未吃）」，与 eaten 不同。判断成分只看它在句里占哪个位置，不看词形。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读不定式功能一节，把四种成分各记一句例句"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 To learn a language takes time 与 It takes time to learn a language，标出真主语"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 two books to read 与 two books read 各造一句，说明 to 带来的「未做」义"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释为什么长不定式作主语时要后置"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出四种成分各一例，以及 it 形式主语的用法"
+      }
+    ],
+    "selfCheck": [
+      "能判断一个不定式在句中作什么成分",
+      "能说出后置主语的理由"
+    ],
+    "estMinutes": 8
+  },
+  "english/nf-bare-infinitive": {
+    "summary": "情态动词后、使役与感官动词后、以及固定搭配里用不带 to 的不定式。",
+    "body": "She can swim.               情态动词后\nMake him go.                使役 make / let / have + 原形\nI saw him leave.            感官 see / hear / watch + 原形（看到全过程）\nI saw him leaving.          感官 + -ing（看到正在进行）\nWhy not ask her?            固定句式\n\nHe was made to go.          变被动后 to 回来\n\n不带 to 的场合集中在「情态与使役感官」两类，加上 help（可带可不带：help me do / help me to do）。help 是唯一的自由选择。判断法：看前面那个词，情态 / make / let / have / 感官 → 原形；其余动词 → to do。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读不带 to 的不定式一节，把三类触发词抄下来：情态、使役、感官"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 I saw him leave 与 I saw him leaving，写出两句各看到什么"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 He was made to go 改回主动句，观察 to 消失"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释为什么变被动后 to 会回来"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出三类触发词、help 的特殊性、以及感官动词两种形式的差别"
+      }
+    ],
+    "selfCheck": [
+      "能判断一个动词后接 to do 还是原形",
+      "能说出 make 变被动后 to 的变化"
+    ],
+    "estMinutes": 7,
+    "criteria": [
+      {
+        "quiz": "q-nf-bare-infinitive",
+        "statement": "能说出填 go，因为 make 后接不带 to 的不定式，变被动时才补回 to（was made to go）"
+      }
+    ]
+  },
+  "english/nf-gerund": {
+    "summary": "动名词是动词的 -ing 形式作名词用，可作主语、宾语、介词的宾语。",
+    "body": "Swimming is good exercise.        主语\nI enjoy swimming.                 宾语\nShe is good at swimming.          介词宾语\nNo smoking.                      否定用 no 或 not\n\n复合结构：\nI don't mind his coming late.       物主代词 + -ing\nI don't mind him coming late.       宾格 + -ing（口语）\n\n动名词与现在分词形式相同、功能不同：作名词成分时是动名词（swimming is fun），作修饰或进行体的一部分时是分词（the swimming boy / he is swimming）。动名词可以有逻辑主语（his coming），也可以用完成式（having finished）表先于主句。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读动名词一节，把三种成分位置各记一句例句"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 Swimming is fun 与 He is swimming，写出两句中 -ing 各是动名词还是分词"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把「他迟到我不介意」写成两种形态：物主代词版与宾格版"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释动名词与现在分词形式相同、靠什么区分"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出三种成分位置、两种逻辑主语写法、以及完成式形态"
+      }
+    ],
+    "selfCheck": [
+      "能判断一个 -ing 形式是动名词还是分词",
+      "能写出带逻辑主语和完成式的动名词短语"
+    ],
+    "estMinutes": 7
+  },
+  "english/nf-gerund-vs-infinitive": {
+    "summary": "有些动词只接动名词、有些只接不定式；两者都能接时，意义常不同。",
+    "body": "只接 -ing：enjoy / mind / avoid / suggest / look forward to\n只接 to do：decide / hope / promise / refuse / manage\n两可但意义不同：\nremember doing   记得做过（动作已发生）\nremember to do   记得去做（动作尚未做）\nstop doing       停止该动作\nstop to do       停下来去做另一件事\ntry doing        试着做（一种办法）\ntry to do        努力去做（不一定成功）\n\nI look forward to seeing you.   to 是介词，后接 -ing\n\n这类差别无法从规则推出，只能按对记。有一个可用线索：表「已完成 / 已发生」的多接 -ing，表「将要做 / 意图」的多接 to do。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读动名词与不定式取舍一节，把三组对比各抄一对"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 remember doing 与 remember to do 各一句，标出动作发生在什么时候"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 stop to smoke 与 stop smoking 各造一句，写出两句差别"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释 look forward to 后面为什么必须接 -ing"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出只接 -ing 与只接 to do 各三个动词、以及三组对比差别"
+      }
+    ],
+    "selfCheck": [
+      "能说出 remember / stop / try 三组的两义差别",
+      "能识别 to 是介词而非不定式符号的场合"
+    ],
+    "estMinutes": 9,
+    "criteria": [
+      {
+        "quiz": "q-nf-gerund-vs-infinitive",
+        "statement": "能说出 remember doing 是记得做过（动作已发生），remember to do 是记得去做（动作尚未做）"
+      }
+    ]
+  },
+  "english/nf-present-participle": {
+    "summary": "现在分词表主动与进行，可作定语、状语、补语。",
+    "body": "the boiling water        定语（正在沸腾的水）\nShe came running.        方式状语\nI found him sleeping.    宾语补足语\nThe film is boring.      表语（引起感受）\n\nHaving finished, he left.  完成式，先于主句\n\n与动名词的分界：现在分词保留动作性、可带自己的宾语（reading the letter, he smiled）；动名词整体当名词，不能再直接带宾语作动词用。现在分词的隐含主语必须与主句主语一致：She came running（she 既 came 又 ran）；不一致就成了悬垂分词。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读现在分词一节，把定语 / 状语 / 补语 / 表语四处各记一句"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 the boiling water 与 boiling water kills germs，写出两句中 -ing 各作什么"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 Having finished, he left 改成普通分词，说明时间关系怎么变"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释现在分词的隐含主语必须与主句主语一致"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出四种成分位置、完成式形态、以及与动名词的分界"
+      }
+    ],
+    "selfCheck": [
+      "能判断现在分词作什么成分",
+      "能说出隐含主语一致这条要求"
+    ],
+    "estMinutes": 8
+  },
+  "english/nf-past-participle": {
+    "summary": "过去分词表被动与完成，作定语时常后置，作状语时隐含主语要一致。",
+    "body": "the broken window        定语（被打破的）\na letter written in 1890  后置定语（带自己的状语）\nSeen from above, the town looks small  状语\nI had it repaired        宾语补足语\n\nthe fallen leaves        不及物动词的过去分词，只表完成不表被动\n\nthe falling leaves       现在分词：正在落\n\n过去分词的语义是「被动 + 完成」，所以只有及物动词的过去分词能表被动，不及物动词的过去分词（fallen / grown / risen）只表完成状态。作状语时与现在分词同一要求：隐含主语等于主句主语，否则要补成独立主格或改用从句。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读过去分词一节，把「被动 + 完成」两层语义与不及物例外各记一句"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 the fallen leaves 与 the falling leaves，写出两句各指什么状态"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 a letter which was written in 1890 压成过去分词短语"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释为什么不及物动词的过去分词不能表被动"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出两层语义、四种成分位置、以及 fallen 这类词的例外"
+      }
+    ],
+    "selfCheck": [
+      "能区分现在分词与过去分词的语义差别",
+      "能说出不及物过去分词只表完成的原因"
+    ],
+    "estMinutes": 8
+  },
+  "english/nf-participle-clause": {
+    "summary": "分词短语作状语时，隐含主语必须等于主句主语，否则是悬垂分词。",
+    "body": "Walking down the street, I saw the tower.       对：I 既是 walking 又是 saw\nWalking down the street, the tower came into view.  错：塔不会走路\n\n改法一：补出主语\nAs I was walking down the street, the tower came into view.\n改法二：换成分词\nSeen from the street, the tower came into view.\n改法三：改独立主格\nWith the sun setting, we went home.\n\n悬垂分词（dangling participle）在英语写作里属明确错误，因为它让读者短暂地给主句主语安上不可能的动作。少数分词已固化成独立副词性插入语，不受这条约束：generally speaking / judging from / considering / provided that。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读悬垂分词一节，记下判据「分词隐含主语 = 主句主语」与三种改法"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄那对正误例，写出错句里 the tower 被安上了什么动作"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把错句用三种改法各改一次"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释 generally speaking 为什么不受这条约束"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出判据、三种改法、以及四个固化插入语"
+      }
+    ],
+    "selfCheck": [
+      "能认出悬垂分词并说出错在哪",
+      "能给出一句至少两种改法"
+    ],
+    "estMinutes": 8,
+    "criteria": [
+      {
+        "quiz": "q-nf-participle-clause",
+        "statement": "能说出这是悬垂分词 —— walking 的隐含主语是人，不是 the tower，应改为 Walking down the street, I saw the tower 或 Seen from the street, the tower…"
+      }
+    ]
+  },
+  "english/nf-absolute": {
+    "summary": "独立主格自带主语，不由主句主语约束，可表时间、原因、条件、伴随。",
+    "body": "The meeting over, we went home.        名词 + 副词\nHis work finished, he left.            名词 + 过去分词\nNobody having any questions, the class ended.  名词 + 完成式分词\nWith the sun setting, we packed up.    with + 名词 + 分词\n\n与悬垂分词的分界：独立主格自带一个不同主语，所以不违反「隐含主语一致」这条。它书面色彩强、新闻与文学里常见，日常口语更常说 As the meeting was over, we went home。with 复合结构是最口语化的一类，可表伴随与原因。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读独立主格一节，记下「自带主语」这一点，以及它为什么不算悬垂"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 The meeting over, we went home，标出两个主语各是谁"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把「因为工作做完了，他走了」写成独立主格与从句两种形态"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释独立主格与悬垂分词的根本区别"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出四种构成（名+副、名+过去分词、名+完成分词、with 结构）各一例"
+      }
+    ],
+    "selfCheck": [
+      "能说出独立主格为什么不违反分词的主语一致要求",
+      "能写出一个 with 复合结构"
+    ],
+    "estMinutes": 8
+  },
+  "english/nf-perfect-infinitive": {
+    "summary": "非谓语的完成式表动作先于主句，被动完成式两层叠加。",
+    "body": "to have done        不定式完成式\nhaving done         分词完成式\nto have been done   不定式被动完成式\nhaving been done    分词被动完成式\n\nShe seems to have left.           看起来已经走了\nHaving finished the report, he left.  写完才走\nHe is said to have been arrested.  据说已被捕\n\n用法判据是时间先后：非谓语动作先于主句谓语才用完成式；同时或之后用一般式。汉语里「已经」这层意思在英语非谓语上靠形式承担，漏了就变成「同时发生」：Having finished 换成 Finishing，读者会理解成一边写一边走。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读非谓语完成式一节，把四种形态抄成表"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 Having finished the report, he left 与 Finishing the report, he left，写出两句时间关系差别"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把「据说已被捕」写成 said + 不定式形式"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释非谓语为什么要靠形式表先后，而汉语靠词汇"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出四种形态、判据一条、以及漏用完成式的后果"
+      }
+    ],
+    "selfCheck": [
+      "能写出不定式与分词的被动完成式",
+      "能判断什么时候该用完成式"
+    ],
+    "estMinutes": 8
+  },
+  "english/cl-relative-defining": {
+    "summary": "限制性关系从句界定先行词的范围，不能随意删除，关系词可作宾语时省略。",
+    "body": "The book that I bought is expensive.      限定「我买的那本」\nThe man who called is my uncle.           限定「打电话那个人」\nThe house where I grew up was sold.       where = in which\n\nThe book I bought is expensive.            关系词作宾语时可省\n\nThe book that I bought                         对\nThe book who I bought                          错（先行词是物）\n\n限制性从句前不加逗号：加了逗号，意义从「限定」变成「补充」，整句的信息结构就变了。判定依据是「删掉从句后句子还成不成立、指的是不是同一个对象」—— 删掉后若指代对象改变，就是限制性。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读限制性关系从句一节，记下不加逗号与关系词可省两个特征"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 The book that I bought 与 The man who called，标出先行词与关系词各是什么"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 The book that I bought 里的 that 去掉，读一遍说明为什么仍成立"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释删掉从句后指代对象改变为什么能判定限制性"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出两个特征、关系词可省的两种条件、以及 where 等于什么"
+      }
+    ],
+    "selfCheck": [
+      "能用「删掉后指代是否改变」判定限制性",
+      "能说出关系词可省略的两种条件"
+    ],
+    "estMinutes": 8
+  },
+  "english/cl-relative-nondefining": {
+    "summary": "非限制性关系从句只补充信息，用逗号隔开，不能用 that，关系词不能省。",
+    "body": "My brother, who lives in Berlin, is a doctor.     补充信息\nMy brother who lives in Berlin is a doctor.       限制（我还有别的兄弟）\n\nThe book, which I bought last year, is expensive.\nThe book, that I bought last year, is expensive.  错\n\n两条硬规则：非限制性从句用 who / which / whose，不用 that；关系词即使作宾语也不能省（whom / which 都要留）。逗号改变意义：第一句说明「我只有一个兄弟」，第二句暗示「我有多个兄弟，说的是住在柏林那个」。考试里这两句差别是常考点。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读非限制性关系从句一节，记下两条硬规则：不用 that、关系词不省"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄带逗号与不带逗号那两句，写出各自暗示我有几个兄弟"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 The book, that I bought… 改对，说明改的是哪个词"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释逗号为什么能改变「兄弟的数量」这层意思"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出两条硬规则、逗号带来的意义差别、以及可用的关系词"
+      }
+    ],
+    "selfCheck": [
+      "能说出非限制性从句为什么不能用 that",
+      "能解释逗号如何改变限制性"
+    ],
+    "estMinutes": 8,
+    "criteria": [
+      {
+        "quiz": "q-cl-relative-nondefining",
+        "statement": "能说出不能，非限制性关系从句只能用 who / which / whose，且关系词不能省略"
+      }
+    ]
+  },
+  "english/cl-relative-pronoun-choice": {
+    "summary": "关系代词按先行词类别与从句成分选择；先行词是不定代词时用 that。",
+    "body": "人 → who / whom / that\nthe man who called / the man whom I met\n物 → which / that\nthe book which I read\n所属 → whose\nthe man whose car was stolen\n地点 / 时间 / 原因 → where / when / why\nthe house where I live\nthe day when we met\n\n先行词是 everything / anything / nothing / all / the only 时用 that：\nEverything that he said was true.      对\nEverything which he said was true.     不自然\n\n关系词的选择由两件事定：先行词是人还是物、它在从句里作什么成分。作宾语时可省（限制性句中），作主语时不可省。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读关系代词选择一节，把「人 / 物 / 所属 / 地点时间」四栏各记一个词"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 Everything that he said 与 Everything which he said，写出哪句不自然"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 the man I met 补出合适的关系词，说明能不能保留"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释先行词是不定代词时为什么倾向用 that"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出四栏对应关系词、that 的特殊场合、以及何时可省"
+      }
+    ],
+    "selfCheck": [
+      "能按先行词与从句成分选对关系词",
+      "能说出不定代词先行词用 that 的场合"
+    ],
+    "estMinutes": 8,
+    "criteria": [
+      {
+        "quiz": "q-cl-relative-pronoun-choice",
+        "statement": "能说出用 that（或省略），因为 everything 这类不定代词作先行词时不用 which"
+      }
+    ]
+  },
+  "english/cl-noun-that": {
+    "summary": "that 引导名词性从句时不做成分、无词义，只起连接作用。",
+    "body": "That he lied is obvious.              主语从句\nI know that he lied.                  宾语从句\nThat he lied is the problem.          表语从句\nThe fact that he lied surprised us.   同位语从句\n\nIt is obvious that he lied.            it 形式主语，从句后置\n\nThe problem is that we have no time.   表语从句里 that 不能省\nI know he lied.                        宾语从句里 that 可省\n\n与关系代词 that 的区别：关系代词 that 在从句里充当主语或宾语（the book that I bought），连接词 that 不充当任何成分且后面紧跟的是完整句子。宾语从句的 that 可省，主语、表语、同位语从句的 that 不可省。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读名词性 that 从句一节，把四种位置各记一例，标出 that 能不能省"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 I know that he lied 与 That he lied is obvious，比较 that 的位置"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 It is obvious that he lied 还原成主语从句居首的形态"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释连接词 that 与关系代词 that 的判别方法"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出四种位置、that 可省与不可省的分界、以及形式主语写法"
+      }
+    ],
+    "selfCheck": [
+      "能区分连接词 that 与关系代词 that",
+      "能说出哪几类从句的 that 不能省"
+    ],
+    "estMinutes": 8
+  },
+  "english/cl-noun-wh": {
+    "summary": "wh- 名词性从句用陈述语序，连接词在从句里充当成分且有词义。",
+    "body": "What he said surprised me.           what = the thing that，作主语或宾语\nWhere he lives is unknown.           作地点状语\nI wonder when he will come.          作时间状语\nWhether he agrees matters.           whether 不作成分，但带疑问义\n\nWhat did he say surprised me.        错 —— 从句不倒装\nI wonder when will he come.          错\n\n两条要点：wh- 从句用陈述语序（even 在疑问语境里也不倒装）；what 与 that 的分工是「缺成分用 what、不缺成分用 that」—— What he said（缺宾语）与 That he said it（成分完整）。whether 与 if 表「是否」，介词后与主语位只能用 whether。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读 wh- 名词性从句一节，记下陈述语序与 what / that 的分工"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 What he said surprised me 与 That he said it surprised me，标出从句缺不缺成分"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 I wonder when will he come 改对，说明改了什么"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释 wh- 从句为什么在疑问语境里也不倒装"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出陈述语序规则、what 与 that 的分工、以及 whether 的两处专用"
+      }
+    ],
+    "selfCheck": [
+      "能保持 wh- 从句的陈述语序",
+      "能用「缺不缺成分」区分 what 与 that"
+    ],
+    "estMinutes": 8
+  },
+  "english/cl-comparative": {
+    "summary": "比较从句常省略与主句重复的部分，但省略后不能改变比较对象。",
+    "body": "She is taller than I am.           完整形态\nShe is taller than me.             口语形态（than 当介词）\nShe is taller than I.              正式书面\n\nThe weather here is better than in Berlin.   省略了 it is\nHe works harder than his brother does.        用 does 替代重复谓语\n\nas … as 与 than 的省略规则相同：\nShe is as tall as her sister (is).\n\n最容易出错的是比较对象不对齐：The population of Tokyo is larger than London（拿人口比城市）应改成 …larger than that of London。判据是把省略部分补回来，看两边比的是不是同一类东西。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读比较从句一节，记下省略规则与 than 的两种词性"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 She is taller than I am 与 She is taller than me，写出两句差别在哪一层"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 The population of Tokyo is larger than London 改对，说明补了什么"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释比较对象不对齐为什么是错误而不只是「不严谨」"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出省略规则、than 的两种词性、以及对齐的判据"
+      }
+    ],
+    "selfCheck": [
+      "能把省略部分补回来检查比较对象是否对齐",
+      "能说出 than 作连词与作介词的差别"
+    ],
+    "estMinutes": 8
+  },
+  "english/cl-adverbial-time": {
+    "summary": "时间状语从句用现在时表将来，不用 will；主从时态按时段搭配。",
+    "body": "When he arrives, we will start.      从句现在时，主句将来\nWhen he arrived, we started.         过去配过去\nAfter she had finished, she left.    从句用过去完成表更早\n\nWhen he will arrive, we will start.  错\nI will call you when I get there.    对\n\n时间从句的连接词：when / while / before / after / as soon as / until / by the time。表将来的动作时，从句一律用现在时（或用现在完成表完成：when I have finished）。主句用过去时，从句按规定可用过去时或过去完成时 —— 关键是「不出现 will」。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读时间状语从句一节，记下「从句不用 will」这条铁律与常用连接词"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 When he arrives, we will start 与错句，标出差别"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 After she finished, she left 改成强调更早的完成形态"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释时间从句为什么不用将来时"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出铁律、六个连接词、以及从句表完成时用什么形式"
+      }
+    ],
+    "selfCheck": [
+      "能在时间从句里正确使用现在时表将来",
+      "能说出从句表「已完成」时的形式"
+    ],
+    "estMinutes": 7,
+    "criteria": [
+      {
+        "quiz": "q-cl-adverbial-time",
+        "statement": "能说出一律用一般现在时（或现在完成表完成），不用 will，如 when he arrives / when I have finished"
+      }
+    ]
+  },
+  "english/cl-adverbial-condition": {
+    "summary": "真实条件从句同样用现在时表将来；unless 等于 if not，但不能随意互换。",
+    "body": "If it rains, we will cancel.              真实条件\nUnless it rains, we will go.              除非下雨（= if it does not rain）\nIf you heat ice, it melts.                普遍真理用双现在时\n\nIf it will rain, we will cancel.          错\n\n条件从句与时间从句共用同一条铁律（不用 will），也有同一组例外：若 will 表意愿，可出现在条件句里 —— If you will wait a moment, I will check。in case 后接现在时表「以防」，不表将来预测。provided / as long as / on condition that 属正式变体。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读条件状语从句一节，记下与时间从句共用的铁律与 will 表意愿的例外"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 If it rains 与 Unless it rains 两句，写出后者等于什么"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把「以防下雨，带伞」用 in case 写出来，说明从句用什么时态"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释 unless 与 if not 为什么不能无条件互换"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出铁律、unless 的等价式、以及四个正式变体"
+      }
+    ],
+    "selfCheck": [
+      "能在条件从句里避开 will",
+      "能说出 unless 与 if not 的差别"
+    ],
+    "estMinutes": 7
+  },
+  "english/cl-adverbial-concession": {
+    "summary": "让步从句承认对立事实：although 引导从句，however 作副词，despite 后接名词。",
+    "body": "Although it rained, we went out.       although + 从句\nEven though it rained, we went out.    更强让步（事实性强）\nIt rained. However, we went out.        however 是副词，需另起分句\nDespite the rain, we went out.          despite + 名词\ndespite it rained                        错\n\nAlthough it rained, but we went out.    错 —— 不能与 but 同用\n\n三个词的语法位置完全不同：although 是从属连词（引导从句，可与主句换位）、however 是连接副词（前面句号或分号，后面逗号）、despite / in spite of 是介词（后接名词或 -ing）。汉语「虽然…但是…」可同现，英语不能。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读让步从句一节，把 although / however / despite 三者的语法位置各记一句"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 Although it rained, we went out 与 Despite the rain, we went out，标出后接成分差别"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把「虽然下雨，但我们出去了」改掉汉式双连词写法"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释 although 与 but 为什么不能同现"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出三者的位置差别、even though 的强度、以及 despite 后接什么"
+      }
+    ],
+    "selfCheck": [
+      "能按后接成分选对 although / however / despite",
+      "能说出汉式双连词为什么不成立"
+    ],
+    "estMinutes": 8
+  },
+  "english/cl-adverbial-reason": {
+    "summary": "原因从句用 because / since / as，目的用 so that，结果用 so … that。",
+    "body": "He left because he was tired.        直接原因（可回答 why）\nSince you are here, let's start.     已知原因（since 弱于 because）\nAs it was raining, we stayed in.     原因（书面，弱）\n\nHe left, so he was tired.            错 —— so 表结果不表原因\nHe studied hard so that he could pass.   目的\nIt was so cold that we stayed in.        结果\n\nbecause / since / as 三者强度递减，since 与 as 常把原因当已知前提。目的从句常带情态（so that he could / would），结果从句不带。for 也能表原因，但它是并列连词、只能后置、不回答 why。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读原因 / 目的 / 结果从句一节，把三组连接词分开记"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 because he was tired 与 so that he could pass，标出前者表原因、后者表目的"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把「他学习努力以便通过考试」改写成结果从句，观察连接词怎么变"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释 since 与 because 的强度差别为什么要紧"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出三组连接词、强度递减次序、以及 for 的三个限制"
+      }
+    ],
+    "selfCheck": [
+      "能区分原因、目的、结果三类从句",
+      "能说出 since / as / because 的强度次序"
+    ],
+    "estMinutes": 8
+  },
+  "english/wo-basic-svo": {
+    "summary": "英语基本语序是主—谓—宾，位置变化几乎都带语篇或强调动因。",
+    "body": "The dog bit the man.      主 + 谓 + 宾\nThe man bit the dog.      换位即换义\n\n状语位置相对自由：\nYesterday the dog bit the man.\nThe dog bit the man yesterday.\n\n语序在英语里承担语法功能：汉语靠语序也靠「把 / 被」这类标记，英语几乎没有格标记，所以谁在前谁就是主语。倒装、前置、分裂句都是有标记的语序，只有在需要转移焦点时才用；无标记语序是默认，不承载额外含义。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读基本语序一节，记下「语序在英语里承担语法功能」这一条"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 The dog bit the man 与换位句，写出两句各是谁遭殃"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 yesterday 分别放句首与句末各写一句，读出语气差别"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释为什么英语能靠语序定主宾语，而汉语更依赖标记词"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出基本语序、状语的两个常规位置、以及有标记语序的使用条件"
+      }
+    ],
+    "selfCheck": [
+      "能说明英语语序为什么承担语法功能",
+      "能说出状语的两个无标记位置"
+    ],
+    "estMinutes": 6
+  },
+  "english/wo-question": {
+    "summary": "一般疑问句靠操作词倒装，特殊疑问句在此之上把疑问词前置。",
+    "body": "She is a doctor.      → Is she a doctor?\nThey have left.       → Have they left?\nHe works here.        → Does he work here?\n\nWhat did he buy?      疑问词 + 助动词 + 主语 + 动词\nWho bought it?        疑问词作主语时不倒装\n\n没有助动词时借 do：do / does / did + 原形。主语疑问句是例外：Who called? 里 who 本身就是主语，不需要操作词，所以不加 did（Who did call? 只在强调时出现）。否定疑问句与附加问句同样靠操作词：Isn't he coming? / He is coming, isn't he?",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读疑问句构成一节，记下操作词倒装与 do 的支持作用"
+      },
+      {
+        "operator": "example",
+        "instruction": "把 He works here 改成一般疑问句与特殊疑问句，标出 do 的两处位置"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 Who did call you 改成最自然的说法，说明为什么可以不加 did"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释疑问词作主语时为什么不倒装"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出倒装规则、do 的使用条件、以及主语疑问句的例外"
+      }
+    ],
+    "selfCheck": [
+      "能把陈述句改造成一般疑问句与特殊疑问句",
+      "能说出主语疑问句不倒装的原因"
+    ],
+    "estMinutes": 8
+  },
+  "english/wo-there-be": {
+    "summary": "there be 存在句把新信息放在 be 之后，谓语与后接名词一致。",
+    "body": "There is a book on the table.\nThere are books on the table.\nThere is a book and two pens on the table.   按最近的名词定（口语）\n\nThere is a man at the door.      介绍新信息\nthe man is at the door          已知信息作主语\n\nthere 是虚位主语，没有「那里」的意思；真主语在 be 之后。所以 there be 句不能用 the 引导真主语（There is the book 不成立，除非指认现场）。变体：there seems to be / there used to be / there might be。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读存在句一节，记下 there 是虚位、真主语在 be 之后"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 There is a man at the door 与 The man is at the door，写出两句信息结构差别"
+      },
+      {
+        "operator": "practice",
+        "instruction": "给 There ___ two books and a pen 填谓语，说明按哪个名词定"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释 There is the book 为什么通常不成立"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出虚位主语、一致规则、以及三个变体结构"
+      }
+    ],
+    "selfCheck": [
+      "能说出 there be 句的真主语在哪里",
+      "能说出 there be 为什么不能带 the 引导真主语"
+    ],
+    "estMinutes": 7
+  },
+  "english/wo-adverb-position": {
+    "summary": "状语位置分句首、句中、句末三种，位置改变会改变强调与语义辖域。",
+    "body": "Quickly he left. / He quickly left. / He left quickly.\n\n频率与程度副词的中位规则：\nShe always arrives early.      实义动词前\nShe is always late.            be 后\nShe has always known.          助动词后\n\n位置改义：\nHe naturally answered.（自然地，方式）\nNaturally, he answered.（当然，评注）\n\n句末位置最无标记，句首位置最强调，句中位置常带评注色彩。评注副词（naturally / frankly / honestly）放句首时修饰整个句子，放句末时修饰动作 —— 这是同形不同辖域，不是语体差别。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读状语位置一节，把三个位置与频率副词中位规则敲定"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 He naturally answered 与 Naturally, he answered，写出两句各修饰什么"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 always 放进 She arrives early / She is late / She has known 三句的中间，检查位置"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释评注副词为什么位置一变就换了修饰对象"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出三个位置、中位三规则、以及一个位置改义的例子"
+      }
+    ],
+    "selfCheck": [
+      "能正确放置频率副词",
+      "能说出评注副词在句首与句末的辖域差别"
+    ],
+    "estMinutes": 8
+  },
+  "english/wo-negation-scope": {
+    "summary": "否定词的位置决定辖域：not all 是部分否定，all … not 有歧义。",
+    "body": "All that glitters is not gold.      部分否定：闪光的未必都是金子\nNot all that glitters is gold.      同义，但更清楚\n\nNobody likes him.                   全部否定\nEverybody doesn't like him.         不合英语习惯（应用 Nobody）\n\n否定转移：I don't think he is right.（否定在主句，意义在从句）\n\n英语倾向把否定词放在句首位置，让辖域覆盖整句：I don't think… 而不是 I think … not。汉语「我认为他不对」直译成 I think he is not right，语法没错，但英语母语者更常说前者。判据：想否定的是整个命题，就把 not 提前到主句。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读否定辖域一节，记下部分否定、全部否定、否定转移三类"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 All that glitters is not gold 与 Not all that glitters is gold，写出两句是否同义"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 I think he is not right 改成更自然的英语说法，说明改的是位置"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释为什么 Everybody doesn't like him 不合习惯"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出三类否定、部分否定的两种写法、以及否定转移的判据"
+      }
+    ],
+    "selfCheck": [
+      "能识别部分否定与全部否定",
+      "能说出否定转移的判断依据"
+    ],
+    "estMinutes": 8,
+    "criteria": [
+      {
+        "quiz": "q-wo-negation-scope",
+        "statement": "能说出这是部分否定 —— 「闪光的未必都是金子」，not 的辖域覆盖 all 而不是否定谓语"
+      }
+    ]
+  },
+  "english/wo-inversion-negative": {
+    "summary": "否定词或半否定词前置时，主句要用疑问句语序（操作词提前）。",
+    "body": "Never have I seen such a thing.\nRarely does he complain.\nNot only did she sing, but she also danced.\nNeither do I.\n\n触发词：never / rarely / seldom / hardly / scarcely / no sooner / not until / not only / little / nowhere / under no circumstances\n\nNo sooner had he arrived than it began to rain.      固定搭配 than\nNot until he left did I realize.                     not until 前置后主句才倒装\n\n倒装只发生在主句：Not until he left 里 he left 是正常语序。这类结构书面色彩强，口语里多用正常语序加强调重音。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读否定前置倒装一节，记下触发词表与「只倒主句」这条"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 Never have I seen 与 Not until he left did I realize，标出操作词与主语各在哪"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 Rarely he complains 改成倒装形态"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释为什么 not until 句里从句不倒装、主句才倒装"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出五个触发词、no sooner … than 搭配、以及倒装的范围"
+      }
+    ],
+    "selfCheck": [
+      "能识别需要倒装的触发词",
+      "能正确写出 not until 前置后的主句"
+    ],
+    "estMinutes": 8,
+    "criteria": [
+      {
+        "quiz": "q-wo-inversion-negative",
+        "statement": "能说出填 have —— 否定词 Never 前置，主句用疑问句语序，操作词提到主语之前"
+      }
+    ]
+  },
+  "english/wo-inversion-conditional": {
+    "summary": "虚拟条件句可省略 if，把 were / had / should 提到主语前。",
+    "body": "If I were you, I would apologize.\n→ Were I you, I would apologize.\n\nIf he had known, he would have told you.\n→ Had he known, he would have told you.\n\nIf you should need help, call me.\n→ Should you need help, call me.\n\n三条规则：只有 were / had / should 三个操作词能前置；省略 if 后不能补逗号以外的标记；否定形式不倒装（Had I not known 对，Hadn't I known 少见）。这种倒装很正式，日常与商务写作里保留 if 更常见。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读虚拟条件倒装一节，记下只有 were / had / should 能前置"
+      },
+      {
+        "operator": "example",
+        "instruction": "把 If I were you 改成倒装，标出 which 词被提前"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 Should you need help 还原成带 if 的形态"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释为什么不能把 If he knew 倒装成 Knew he"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出三个可前置操作词、一条否定规则、以及语体倾向"
+      }
+    ],
+    "selfCheck": [
+      "能把虚拟条件句改成倒装形态并还原",
+      "能说出哪三个词可以前置"
+    ],
+    "estMinutes": 7
+  },
+  "english/wo-object-fronting": {
+    "summary": "宾语前置把受事提到句首作话题，语序仍保留主谓，不倒装。",
+    "body": "This book, I really enjoyed.       话题化\nThat I cannot accept.              否定宾语前置\nA fine teacher he is.              感叹性前置（少见）\n\nThis book I really enjoyed.        不加逗号也成立\n\n与倒装的区别：前置只移动成分位置，操作词不上提（This book I enjoyed，不是 This book did I enjoy —— 后者是强强调）。话题化常与代词复指同用：This book, I really enjoyed it（口语冗余，正式写作视为重复）。汉语「这本书我很喜欢」是常规语序，英语里属有标记语序，用于衔接上文。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读宾语前置一节，记下「只移位置、不倒装」"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 This book, I really enjoyed 与 I really enjoyed this book，写出前者的语篇作用"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 This book, I really enjoyed it 去掉冗余代词，说明为什么"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释宾语前置与倒装的操作词差别"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出前置的三种情形、与倒装的分界、以及代词复指的问题"
+      }
+    ],
+    "selfCheck": [
+      "能区分宾语前置与倒装",
+      "能说出话题化在语篇里的作用"
+    ],
+    "estMinutes": 7
+  },
+  "english/wo-cleft-it": {
+    "summary": "it 分裂句用 It is/was … that/who … 把某一成分单独拎出来作焦点。",
+    "body": "Tom broke the window.\n→ It was Tom who broke the window.        强调 Tom\n→ It was the window that Tom broke.       强调 the window\n→ It was yesterday that Tom broke the window.  强调时间\n\n规则：it 无实义；时态跟随原句；人被强调时 who / that 都可用，物用 that。\n\nIt was in 2019 that he left.              强调状语\n\n分裂句与强调的关系是结构性的：原句的信息被拆成「焦点 + 背景」，焦点放在 is 之后。不能分裂谓语动词本身（*It was broke that Tom the window），要强调动作就改用 wh- 分裂句或 do 强调（He did break it）。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读 it 分裂句一节，记下结构公式与「不能分裂谓语」这条限制"
+      },
+      {
+        "operator": "example",
+        "instruction": "把 Tom broke the window 分别强调 Tom 与 the window，各写一句"
+      },
+      {
+        "operator": "practice",
+        "instruction": "强调时间「昨天」写一句分裂句"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释为什么不能把谓语动词放进焦点位"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出结构公式、who 与 that 的选择、以及强调动作的替代手段"
+      }
+    ],
+    "selfCheck": [
+      "能把任意成分改造成分裂句焦点",
+      "能说出强调谓语动词的正确手段"
+    ],
+    "estMinutes": 8,
+    "criteria": [
+      {
+        "quiz": "q-wo-cleft-it",
+        "statement": "能写出 It was Tom who/that broke the window，并说明时态跟随原句、人被强调时 who 与 that 均可"
+      }
+    ]
+  },
+  "english/wo-cleft-wh": {
+    "summary": "wh- 分裂句把焦点放在句末，用 What … is/was … 结构。",
+    "body": "What Tom broke was the window.      焦点在句末\nThe window is what Tom broke.       也可把受事提前\nWhat I need is a holiday.\nWhat happened was that he left.\n\n与 it 分裂句的分工：it 分裂句能强调主语、宾语、状语，wh- 分裂句专把「受事或事件」放到句末作新信息，因此更常用于「回答 what 问题」的语境：What did he break? — The window is what he broke（少见）/ What he broke was the window（自然）。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读 wh- 分裂句一节，记下「焦点在句末」与两类分裂句的分工"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 What Tom broke was the window，标出哪部分是已知信息"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 I need a holiday 改造成 wh- 分裂句"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释 wh- 分裂句为何更适合回答 what 疑问"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出结构、焦点位置、以及与 it 分裂句的分工"
+      }
+    ],
+    "selfCheck": [
+      "能写出 wh- 分裂句",
+      "能说出两类分裂句各自擅长强调什么"
+    ],
+    "estMinutes": 7
+  },
+  "english/co-reference": {
+    "summary": "指代靠代词与指示词把后句挂到前文；this 偏近指与概括，that 偏远指与已完结。",
+    "body": "Tom came late. He missed the bus.        he 回指 Tom\nPrices rose. This worried the government. this 概括前一句整件事\nThat is what I meant.                     that 指已说完的话\n\nthis 与 that 的倾向：\nthis —— 指刚说过的、或即将展开的内容，可前指也可后指\nthat —— 多前指已完成的信息，语气更「远」\n\nHe said he would come. 里的 he 若与前面的人不同，就会造成歧义，这时要么重复姓名，要么改写语序。指代链的判据：每个代词都要有唯一可找回的先行词，且中间不能插入同类竞争者。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读指代一节，记下 this 与 that 在远近与概括范围上的倾向"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 Prices rose. This worried the government，写出 this 指的是什么"
+      },
+      {
+        "operator": "practice",
+        "instruction": "造一句含两个男性人物的句子，用重复姓名或改写语序消除 he 的歧义"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释 this 为什么能指一整句而 that 更常指已完结的内容"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出 this / that 的倾向差别、指代链的判据、以及消歧的两种手段"
+      }
+    ],
+    "selfCheck": [
+      "能判断一个代词有没有唯一先行词",
+      "能说出 this 与 that 回指时的倾向差别"
+    ],
+    "estMinutes": 8,
+    "criteria": [
+      {
+        "quiz": "q-co-reference",
+        "statement": "能说出 this 偏近指、可概括刚说完或即将说的内容，that 偏远指、多指已完结的旧信息"
+      }
+    ]
+  },
+  "english/co-substitution": {
+    "summary": "替代用 one / do so / so 顶替重复成分，与前句保持形式呼应而不重复词。",
+    "body": "I need a pen. Do you have one?         one 替代 a pen\nShe can swim and so can he.            so 替代 can swim\nHe asked me to leave and I did so.     do so 替代 leave\n\n替代与指代的区别：\n代词指代实体（he = Tom）\n替代替换词或短语（one = a pen，so = can swim）\n\nso + 助动词 + 主语 是固定倒装结构，只用于肯定附和；否定用 neither / nor + 助动词 + 主语（Neither can I）。替代的好处是避免整段重复，代价是读者必须回找被替代的成分 —— 距离太远时改用重复更清楚。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读替代一节，记下 one / do so / so 三类替代形式"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 She can swim and so can he，写出 so 替代了哪几个词"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 Neither can I 改成肯定附和形态，说明助动词怎么选"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释替代与指代在「替换的是什么」上的区别"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出三类替代形式、so 的倒装结构、以及否定附和形态"
+      }
+    ],
+    "selfCheck": [
+      "能说出 so 替代的是谓语而不是主语",
+      "能正确写出肯定与否定两种附和结构"
+    ],
+    "estMinutes": 8,
+    "criteria": [
+      {
+        "quiz": "q-co-substitution",
+        "statement": "能说出 so 替代前文的谓语部分（can swim），并与助动词、主语构成倒装，用来避免重复 —— 属替代而非指代"
+      }
+    ]
+  },
+  "english/co-ellipsis": {
+    "summary": "省略删去可从上下文恢复的成分，是衔接手段而不是语法残缺。",
+    "body": "She ordered tea and he (ordered) coffee.        动词省略\nI can and will finish it.                       助动词共享\nSome came early; others (came) late.\n\nThe man I met (whom) yesterday was kind.        关系词省略\n\n省略的前提是「能唯一恢复」：读者必须能准确填回被删的成分。省略与替代常并用：I asked him to leave and he did（did = left）。写作里省略过多会让句子失去骨架，尤其在跨句省略时 —— 判断标准是把它填回去读一遍，若有两种填法，就别省。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读省略一节，记下「可唯一恢复」这条前提"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 She ordered tea and he coffee，把省略的动词填回去"
+      },
+      {
+        "operator": "practice",
+        "instruction": "写一句含助动词共享的句子（can and will），标出共享的是哪个动词"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释跨句省略为什么容易造成歧义"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出三类省略、可恢复前提、以及省略与替代并用的一例"
+      }
+    ],
+    "selfCheck": [
+      "能判断一省略是否可唯一恢复",
+      "能写出助动词共享的句子"
+    ],
+    "estMinutes": 7
+  },
+  "english/co-connective-additive": {
+    "summary": "增补类连接词分递进与并列：moreover 递进、in addition 添一项、also 常句中。",
+    "body": "Moreover, the cost is lower.        递进（带论证推进）\nIn addition, we need more time.     添一项\nAlso, note the deadline.            口语化补充\nBesides, nobody objected.           追加理由（口语）\n\n位置差别：moreover / furthermore 常置句首并带逗号；also 多居句中（also needs / is also）；besides 可作介词（besides the cost）。\n\n用法判据是「加的东西是不是同一层级」：moreover 暗示「更强的一点」，in addition 只表示「还有」，besides 常带「反正也」的语气。汉语「而且」在三种场合都通用，英语要按论证强度挑。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读增补连接词一节，把 moreover / in addition / also / besides 的语气差别各记一句"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 Moreover, the cost is lower 与 In addition, we need more time，写出两句论证关系差别"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 also 放进一个句子的句中位置，检查它站在实义动词还是 be 之后"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释 moreover 与 in addition 为什么不能完全互换"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出四个连接词、各自位置倾向、以及强度差别"
+      }
+    ],
+    "selfCheck": [
+      "能按论证强度选对增补连接词",
+      "能说出 also 的句中位置规则"
+    ],
+    "estMinutes": 7
+  },
+  "english/co-connective-adversative": {
+    "summary": "转折类分三档：but 直接对立，however 书面转折，although 引导从句让步。",
+    "body": "It was cheap, but it broke quickly.      直接对立（并列连词）\nIt was cheap. However, it broke quickly. 书面转折（连接副词）\nAlthough it was cheap, it broke quickly. 让步从句（从属连词）\n\nnevertheless / nonetheless               强转折，书面\non the other hand                       对比（不是转折）\nwhereas                                 对比两个事实（书面）\n\nhowever 的标点：前面必须是句号或分号，后面加逗号。However cheap it was, it broke quickly 里的 however 表「无论多么」，是另一种用法。判据是看它引导的是分句还是独立句 —— 能引导从句的是 although / whereas，只能另起一句的是 however。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读转折连接词一节，把 but / however / although 三档各记一句"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 It was cheap. However, it broke quickly 与 Although it was cheap…，标出标点差别"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 Although it was cheap, but it broke 改掉双连词写法"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释 however 前面为什么必须断句或加分号"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出三档、however 的标点规则、以及 on the other hand 的类别"
+      }
+    ],
+    "selfCheck": [
+      "能按句法位置选对 although / however / but",
+      "能说出 however 的标点要求"
+    ],
+    "estMinutes": 8,
+    "criteria": [
+      {
+        "quiz": "q-co-connective-adversative",
+        "statement": "能说出 however 是连接副词，前面必须句号或分号、后面加逗号；although 是从属连词，直接引导从句，且不能与 but 同用"
+      }
+    ]
+  },
+  "english/co-connective-causal": {
+    "summary": "因果连接分原因与结果两侧：because / since 表原因，therefore / thus 表结果。",
+    "body": "He was late because the bus broke down.     原因从句\nSince the bus broke down, he was late.      已知原因前置\n\nThe bus broke down. Therefore, he was late. 结果副词\nIt rained; consequently, the match was cancelled.\n\nso / thus / hence / accordingly            结果侧变体\nfor                                         推断性理由，只能后置\n\n结果侧连接词一律是副词，不能连接两个分句成一个句子（He was late, therefore he missed the bus 属 run-on，正式写作要改成分号或句号）。结果副词的位置灵活：therefore 可句首、句中（he therefore missed）、句末少见。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读因果连接词一节，把原因侧与结果侧分开记"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 The bus broke down. Therefore, he was late，标出 therefore 属哪一侧"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 He was late, therefore he missed the bus 改成合规写法，说明改了什么"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释 therefore 为什么不能像 but 那样直接连接两个分句"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出原因侧与结果侧各三个词、for 的限制、以及 run-on 的改法"
+      }
+    ],
+    "selfCheck": [
+      "能分清原因侧与结果侧连接词",
+      "能避免 therefore 造成的 run-on"
+    ],
+    "estMinutes": 8
+  },
+  "english/co-connective-temporal": {
+    "summary": "时间连接词按先后、同时、之后三类分工，位置影响强调。",
+    "body": "First, preheat the oven.      序列\nMeanwhile, prepare the sauce. 同时\nAfterwards, let it cool.      之后\n\n同时类：while / meanwhile / at the same time\n先后类：before / after / then / subsequently\n结束类：finally / eventually / in the end\n\neventually 与 finally 不同：eventually 表「终于（经历长时间后）」，finally 表「最后一步」或「总算」。in the end 表最终结果，at the end 指某段时间末尾。这类词混用是写作里最常见的衔接错误 —— 汉语「最后」同时覆盖三个意思。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读时间连接词一节，把三组各记三个词"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 eventually 与 finally 各一句，写出两句各强调什么"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把「最后他成功了」用 eventually 与 finally 各写一句，比较语气"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释 in the end 与 at the end 的差别"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出三组词、eventually 与 finally 的差别、以及 in/at the end 的区别"
+      }
+    ],
+    "selfCheck": [
+      "能区分 eventually 与 finally",
+      "能正确使用 in the end 与 at the end"
+    ],
+    "estMinutes": 7
+  },
+  "english/co-information-structure": {
+    "summary": "已知信息在前、新信息在后；句末位置最重，是默认焦点位。",
+    "body": "The man who called yesterday is my uncle.   已知（长描写）在前，新信息在后\nMy uncle is the man who called yesterday.   信息重心移到句末\n\n末端重量（end weight）：长成分放句末\nShe gave the book to the boy who had been waiting all morning.\n\n被动与分裂句都是调整信息结构的工具：把受事提为主语，是为了让已知信息占句首。写作判据：一段话里每句的主语应当承接上一句的信息，读起来才连得上。汉语的「话题—说明」结构在英语里没有对应语法，只能靠语序与被动来模拟。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读信息结构一节，记下「已知在前、新信息在后」与末端重量两条"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄那对主宾换位的句子，写出两句各把什么放在句末"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把一句长宾语挪到句末，让它符合末端重量"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释被动语态为什么能用来调整信息结构"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出两条原则、调整语序的两种工具、以及写作判据"
+      }
+    ],
+    "selfCheck": [
+      "能判断一句话的信息重心落在哪",
+      "能说出末端重量的处理办法"
+    ],
+    "estMinutes": 8
+  },
+  "english/co-paragraph-topic": {
+    "summary": "段落靠主题句定中心，后续句子用衔接手段展开同一个中心。",
+    "body": "主题句通常在段首：\nRemote work changes how teams communicate.\n\n展开顺序：\n1. 主题句（主张）\n2. 支撑（理由 / 例证 / 数据）\n3. 收束（回到主张或给结论）\n\n衔接手段的分工：指代与替代管句内衔接，连接词管句间逻辑，重复关键词管段落连贯。一段里连接词堆太多反而显得生硬 —— 英语写作更依赖「关键词重复 + 指代链」而不是成串的 firstly / moreover / therefore。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读段落结构一节，记下主题句 / 支撑 / 收束三段式"
+      },
+      {
+        "operator": "example",
+        "instruction": "找一段自己写的话，标出主题句在哪、支撑有几条"
+      },
+      {
+        "operator": "practice",
+        "instruction": "给一个已有段落补一句主题句，要求能覆盖段内所有句子"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释连接词堆太多为什么会显得生硬"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出三段式、三类衔接手段的分工、以及关键词重复的作用"
+      }
+    ],
+    "selfCheck": [
+      "能写出覆盖全段的主题句",
+      "能说出英语段落靠什么维持连贯"
+    ],
+    "estMinutes": 7
+  },
+  "english/co-register": {
+    "summary": "语域按正式度与场合选择：同义表达在学术、商务、口语里不通用。",
+    "body": "口语：I'd like to, but I can't make it.\n商务：Unfortunately, I am unable to attend.\n学术：Attendance is not possible due to prior commitments.\n\n正式度的三个标记：\n词汇（get / obtain / acquire）\n缩写（don't / do not）\n句法（短语动词 vs 单个拉丁词：find out / ascertain）\n\n正式文本倾向名词化（decide → make a decision）、被动、拉丁词源；口语倾向短语动词、缩写、短句。语域不统一是写作硬伤：一段里同时出现 ascertain 与 gotta，读者会立刻察觉。契约与规格类文档另有一套固定用语（shall / herein），与普通正式英语又不同。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读语域一节，记下三个正式度标记：词汇、缩写、句法"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 get / obtain / acquire 三句，标出各自适用场合"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把一句口语话改成商务信函体，只改词汇与缩写"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释正式文本为什么倾向名词化与被动"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出三个标记、一对短语动词 / 拉丁词对照、以及契约用语的特殊性"
+      }
+    ],
+    "selfCheck": [
+      "能识别一段文字的语域是否统一",
+      "能把口语表述改成书面表述"
+    ],
+    "estMinutes": 7
+  }
+}
