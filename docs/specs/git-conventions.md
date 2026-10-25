@@ -134,7 +134,7 @@ git config --get core.hooksPath       # 自查：应回显 .githooks
 以下三处最容易漏，单独强调：
 
 - **第 3 步**：`git add -A --dry-run`（§七）只用来**检查**有无意外文件，**不是提交方式**。暂存一律列显式路径 —— `-A` 会把 `tmp/`、本地配置、半成品一起带进去，且事后从 diff 里看不出来是「顺手带上的」还是「本来就该改」。
-- **第 5 步**：`core.hooksPath` 没设，钩子一行也不跑。拦直推 `main`、引用类型判据、`(#NNN)` 校验**三条全挂在同一个开关上**，一起失效（§2.1）。
+- **第 5 步**：`core.hooksPath` 没设，钩子一行也不跑。拦直推 `main`、引用类型判据、`(#NNN)` 校验、非快进判据**四条全挂在同一个开关上**，一起失效（§2.1）。
 - **第 6 步**：`gh pr create` **不读** `.github/PULL_REQUEST_TEMPLATE.md` —— 缺省无自动读取行为（`--template <file>` 可显式指定骨架），Web UI 那一趟才由服务端渲染模板。用 CLI 开 PR 时正文必须照骨架手填；这一环的**形态**现有装置兜底（`bash .githooks/pr-body`，本地与 `repo-hygiene` 共用同一份，见 §4.1），但装置**只判形态、不判内容是否成立** —— 反证有没有被写成自证，仍只能人看。**正文一律先落 `.workbuddy/tmp/<name>.md`，再以 `--body-file` 传入** —— 多行正文走 `--body` 会被 shell 转义吃掉；临时文件用完即删，不进仓。**开 PR 是四步，第一步不能省**：① **先读** `.github/PULL_REQUEST_TEMPLATE.md` 认骨架（5 节标题与顺序 · 自审留痕五行名称）—— `gh` 不读它，人也不读就等于**根本没有骨架**，漏栏要等别人看 PR 才发现；② 照骨架逐节填值，五行全部给值、一律不用 `- [ ]`；③ 跑 `bash .githooks/pr-body --file <file> --diff-base origin/main`，红则改正文后重跑（不必重开 PR）；④ 再 `--body-file` 传入。省掉第 ① 步的典型后果是把 §4.1 的**判据项**当节名写（判据 8 项、模板 5 节，两者不是一回事）。
 
 ### 2.3 失败处置
@@ -150,6 +150,7 @@ git config --get core.hooksPath       # 自查：应回显 .githooks
 | 7 | 合并后 `git branch -D <branch>` 报 `not found` | 正常：`--delete-branch` 已连本地段一起删 | `git branch` 里确无该分支 |
 | 8 | `git fetch --prune` 报 502 | ① 走 SSH 并**带显式 refspec**：`git fetch --prune git@github.com:<owner>/<repo>.git '+refs/heads/*:refs/remotes/origin/*'`；② 仍不通则 `gh api` 取远端事实 + `git branch -dr origin/<branch>` 手工清 tracking ref（纯本地操作，不碰远端） | `git rev-parse main` == `git rev-parse origin/main` |
 | 8 | `git fetch <url>` 之后 `origin/*` 没更新 | 只写 URL 不带 refspec ⇒ 内容只进 `FETCH_HEAD`，不进 `origin/*`，已删分支也不会剪 | 同上 |
+| 8 | 合并后发现 `main` 末条提交**没有 `(#NNN)`**，或 `git log -1 --format=%cn` 不是 `GitHub` | **说明 `main` 被本地重写过**（`--squash` 合出来的提交，committer 恒为 `GitHub`）。**不要再 amend + 强推去修** —— 那会第二次改写历史：sha 全变、`(#NNN)` 照样可以再丢一次（`pre-push` 旧版的标题判据挡不住带号的强推） | 不改历史：开一个 PR 把「为什么会丢」补成判据，正文追认哪几笔受影响；`git log -1 --format='%cn %s'` 回显 `GitHub … (#NNN)` |
 
 > **`fetch` 报错不等于收口失败**：`gh pr merge` 自己会 fetch，本地 `main` 常已被快进。收口判据永远是 `main` 与 `origin/main` 两个 sha 相等，不是「`fetch` 有没有报错」。
 
@@ -315,7 +316,7 @@ git config --get core.hooksPath       # 自查：应回显 .githooks
 1. **删源分支** —— 远端与本地**都要删**。远端由仓库开关自动删除（开关现状见 §4.3）；**本地不自动**。用 `gh pr merge --delete-branch` 时它会连**本地段**一起删，故随后的 `git branch -D` 报 `not found` 属正常，不是没删。
 2. **`git fetch --prune origin`** —— 只清 `origin/*` 跟踪引用、给本地分支打上 `[gone]` 标记，**不删本地分支**，故须另跑 `git branch -D <branch>`。
 3. **本地 `main` 前进** —— `git switch main` → `git merge --ff-only origin/main`。**`fetch` 只更新 `origin/main` 引用，本地 `main` 不会自己走**；漏这步，下一次从 `main` 切分支就切到合并前的旧点，PR 里的「分支基线」sha 随之失真。
-4. **收尾判据** —— `git branch` 只剩 `main`，且 `git log --oneline -1` 的标题带 `(#NNN)`。**`[gone]` 不等于已删除。** 另须核 `git rev-parse main` == `git rev-parse origin/main` —— 只比分支列表**看不出**本地 `main` 是否真的前进了。
+4. **收尾判据** —— 四项全核：`git branch` 只剩 `main`（**`[gone]` 不等于已删除**）· `git rev-parse main` == `git rev-parse origin/main`（只比分支列表**看不出**本地 `main` 是否真的前进了）· `git log --oneline -1` 的标题带 `(#NNN)` · `git log -1 --format=%cn` 回显 **`GitHub`**。最后一项不是重复：标题是**纯文本**，本地提交完全可以写得一模一样；`--squash` 合出来的提交 committer 恒为 `GitHub`，被本地改写过的提交 committer 是操作者 ⇒ **这一项才是「这笔是不是平台合的」的直接证据，也是历史被重写过的唯一痕迹**。
 
 评审意见落 PR 正文 / 评论，`main` 只留里程碑结论。
 
@@ -338,6 +339,8 @@ git config --get core.hooksPath       # 自查：应回显 .githooks
 | `main` 分支保护 | ⚠️ **未启用**                                    | GitHub 免费账号的私有仓不支持（API 403：`Upgrade to GitHub Pro or make this repository public`） |
 
 **分支保护挂待办**，满足任一条件后补齐：升级 GitHub Pro，或仓库转为公开（转公开前须先复核提交历史无敏感信息）。
+
+> ⚠️ **保护未启用 ⇒ 上表里的「`Allow force pushes` ❌ 关」只是一句期望，平台上没有任何东西在执行它**。近端唯一的兜底是 `.githooks/pre-push` 的祖先判据（非快进推送直接拒），而它自己也挂在 `core.hooksPath` 上（§2.1）。⇒ 在保护真正启用之前，**「`main` 历史没被改写」靠的是每次推送前那一步，不是平台开关**。
 
 > 本节只定**语义**；开关名以平台现行界面 / API 为准，落地时逐项核对，**不凭记忆填字段名**。
 
