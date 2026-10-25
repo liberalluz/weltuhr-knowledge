@@ -28,7 +28,17 @@
       "能不看表写出六种主格冠词",
       "能说出「判断格看冠词、不看位置」的理由"
     ],
-    "estMinutes": 7
+    "estMinutes": 7,
+    "criteria": [
+      {
+        "quiz": "q-cs-nominative-articles",
+        "statement": "能说出主格冠词是 der / die / das / die（阳 / 阴 / 中 / 复数）"
+      },
+      {
+        "quiz": "q-cs-nominative-predicative",
+        "statement": "能说出系动词 sein / werden / bleiben 后的表语名词与主语同格，用主格"
+      }
+    ]
   },
   "german/cs-accusative": {
     "summary": "第四格标记直接宾语，只有阳性单数在冠词上露出变化，其余性与数与主格同形。",
@@ -59,7 +69,17 @@
       "能写出阳性第四格的冠词、不定冠词、物主冠词三种形式",
       "能说出 es gibt 与时间状语为什么用第四格"
     ],
-    "estMinutes": 7
+    "estMinutes": 7,
+    "criteria": [
+      {
+        "quiz": "q-cs-accusative-only-masc",
+        "statement": "能说出第四格只有阳性单数在冠词上变形（der → den），阴性、中性与复数同形"
+      },
+      {
+        "quiz": "q-cs-accusative-extra-sources",
+        "statement": "能说出 es gibt、时间状语、带第四格的介词三类场合用第四格"
+      }
+    ]
   },
   "german/cs-dative": {
     "summary": "与格标记间接宾语，也是 helfen、danken 这类动词唯一的宾语格，阳性冠词变 dem。",
@@ -95,6 +115,10 @@
       {
         "quiz": "q-cs-dative",
         "statement": "能说出 helfen / danken / gehören / folgen 支配第三格，并给出一个只有与格宾语的例句"
+      },
+      {
+        "quiz": "q-cs-dative-plural-n",
+        "statement": "能说出复数第三格加 -n（die Kinder → den Kindern），词尾已含 -n 或 -s 的不再加"
       }
     ]
   },
@@ -127,7 +151,21 @@
       "能写出阳性单音节与多音节名词的属格形式",
       "能说出三个支配属格的介词"
     ],
-    "estMinutes": 8
+    "estMinutes": 8,
+    "criteria": [
+      {
+        "quiz": "q-cs-genitive-four-forms",
+        "statement": "能说出属格四形：des Mannes / der Frau / des Kindes / der Kinder"
+      },
+      {
+        "quiz": "q-cs-genitive-prepositions",
+        "statement": "能说出 wegen / trotz / während / statt 支配属格"
+      },
+      {
+        "quiz": "q-cs-genitive-noun-ending",
+        "statement": "能说出属格名词单音节加 -es、多音节加 -s，阴性与复数不带词尾"
+      }
+    ]
   },
   "german/cs-case-preposition": {
     "summary": "介词按支配的格分三组：只第四格、只第三格、以及按方向与位置切换的双格介词。",
@@ -158,7 +196,21 @@
       "能背出只第三格与只第四格的介词清单",
       "能说出双格介词判断第四格还是第三格的那一问"
     ],
-    "estMinutes": 8
+    "estMinutes": 8,
+    "criteria": [
+      {
+        "quiz": "q-cs-case-preposition-two-way-list",
+        "statement": "能说出双格介词八个：an / auf / in / über / unter / vor / hinter / zwischen"
+      },
+      {
+        "quiz": "q-cs-case-preposition-dative-list",
+        "statement": "能说出只支配第三格的六个介词：aus / bei / mit / nach / seit / von"
+      },
+      {
+        "quiz": "q-cs-case-preposition-contractions",
+        "statement": "能说出 in dem → im、an dem → am、zu dem → zum、bei dem → beim 四个缩合形式"
+      }
+    ]
   },
   "german/cs-two-way-preposition": {
     "summary": "双格介词的格由有没有发生位移决定：Wohin 用第四格，Wo 用第三格。",
@@ -191,6 +243,14 @@
     ],
     "estMinutes": 9,
     "criteria": [
+      {
+        "quiz": "q-cs-two-way-preposition-eight",
+        "statement": "能说出双格介词八个：an / auf / in / über / unter / vor / hinter / zwischen"
+      },
+      {
+        "quiz": "q-cs-two-way-preposition-fixed-dative",
+        "statement": "能说出不表空间移动的固定搭配锁第三格，如 an der Universität / auf dem Land / in der Schule"
+      },
       {
         "quiz": "q-cs-two-way-preposition",
         "statement": "能说出 in die Stadt 是第四格（Wohin，方向）、in der Stadt 是第三格（Wo，位置）"
@@ -226,7 +286,21 @@
       "能说出三个只带与格的动词",
       "能区分 antworten 与 beantworten 的格要求"
     ],
-    "estMinutes": 8
+    "estMinutes": 8,
+    "criteria": [
+      {
+        "quiz": "q-cs-case-verb-dative-only",
+        "statement": "能说出 helfen / danken / gehören / folgen 只带第三格"
+      },
+      {
+        "quiz": "q-cs-case-verb-genitive-only",
+        "statement": "能说出 bedürfen / gedenken 只带属格，属书面语"
+      },
+      {
+        "quiz": "q-cs-case-verb-pronoun-order",
+        "statement": "能说出代词先于名词、两个代词时第四格在前"
+      }
+    ]
   },
   "german/cs-case-adjective": {
     "summary": "少数形容词要求固定格或固定介词，格由形容词决定，与动词无关。",
@@ -262,6 +336,18 @@
       {
         "quiz": "q-cs-case-adjective",
         "statement": "能说出 dessen 是属格、bewusst 支配属格，并给出一句 Ich bin mir dessen bewusst"
+      },
+      {
+        "quiz": "q-cs-case-adjective-genitive-more",
+        "statement": "能说出 mächtig / verdächtig / schuldig 也支配属格"
+      },
+      {
+        "quiz": "q-cs-case-adjective-dative",
+        "statement": "能说出 ähnlich / fremd 支配与格（Sie ist mir ähnlich）"
+      },
+      {
+        "quiz": "q-cs-case-adjective-prep",
+        "statement": "能说出 stolz auf + A / interessiert an + D / abhängig von + D 三个介词搭配"
       }
     ]
   },
@@ -294,7 +380,17 @@
       "能写出一句主格同位语和一句与格同位语",
       "能说出同位语为什么必须同格"
     ],
-    "estMinutes": 7
+    "estMinutes": 7,
+    "criteria": [
+      {
+        "quiz": "q-cs-apposition-forms",
+        "statement": "能说出同位语三种形态：名词短语、头衔与称呼、固定地理与时间同位"
+      },
+      {
+        "quiz": "q-cs-apposition-same-case",
+        "statement": "能说出同位语与被说明名词同格，第三格里写成 mit Herrn Müller, meinem Nachbarn"
+      }
+    ]
   },
   "german/cs-case-loss": {
     "summary": "口语里属格被 von 替代、部分格标记弱化，语言靠语序与语境补偿丢失的信息。",
@@ -325,7 +421,17 @@
       "能说出属格被 von 替代的条件",
       "能解释同形句靠什么区分主宾"
     ],
-    "estMinutes": 7
+    "estMinutes": 7,
+    "criteria": [
+      {
+        "quiz": "q-cs-case-loss-two-paths",
+        "statement": "能说出属格被替代的两条路径：换 von + 与格、介词后换与格"
+      },
+      {
+        "quiz": "q-cs-case-loss-written",
+        "statement": "能说出书面语仍守格标记，正式文本写 wegen des Regens 而不是 wegen dem Regen"
+      }
+    ]
   },
   "german/ng-three-genders": {
     "summary": "德语名词分三性，各配不同冠词；性别是词的属性，必须跟冠词一起记。",
@@ -356,7 +462,17 @@
       "能写出三性冠词并各举三例",
       "能解释 das Mädchen 为什么是中性"
     ],
-    "estMinutes": 7
+    "estMinutes": 7,
+    "criteria": [
+      {
+        "quiz": "q-ng-three-genders-articles",
+        "statement": "能说出三性冠词是 der / die / das（der Tisch / die Tür / das Fenster）"
+      },
+      {
+        "quiz": "q-ng-three-genders-homographs",
+        "statement": "能说出同形异义词性不同义也不同：der See 湖 / die See 海、der Band 卷 / das Band 带子"
+      }
+    ]
   },
   "german/ng-gender-suffix": {
     "summary": "后缀能预测大量名词的性别：-ung / -heit / -keit 阴性，-chen / -lein 中性，-er 多阳性。",
@@ -387,7 +503,21 @@
       "能写出五个阴性后缀并各举一例",
       "能说出三个后缀法的反例"
     ],
-    "estMinutes": 9
+    "estMinutes": 9,
+    "criteria": [
+      {
+        "quiz": "q-ng-gender-suffix-fem",
+        "statement": "能说出 -ung / -heit / -keit / -schaft 是阴性后缀"
+      },
+      {
+        "quiz": "q-ng-gender-suffix-neut",
+        "statement": "能说出 -chen / -lein / -ment 是中性后缀"
+      },
+      {
+        "quiz": "q-ng-gender-suffix-masc",
+        "statement": "能说出 -er / -ling / -ismus 是阳性后缀"
+      }
+    ]
   },
   "german/ng-gender-semantic": {
     "summary": "语义类也能定性别：星期月份与方位多阳性，树与花多阴性，金属与不定式名词中性。",
@@ -418,7 +548,21 @@
       "能说出星期、方位、金属三类的性别",
       "能举出两个语义规则的反例"
     ],
-    "estMinutes": 8
+    "estMinutes": 8,
+    "criteria": [
+      {
+        "quiz": "q-ng-gender-semantic-masc",
+        "statement": "能说出星期与月份、方位、天气三类是阳性"
+      },
+      {
+        "quiz": "q-ng-gender-semantic-fem",
+        "statement": "能说出树木与花、船与飞机两类是阴性"
+      },
+      {
+        "quiz": "q-ng-gender-semantic-neut",
+        "statement": "能说出金属、颜色、不定式名词三类是中性"
+      }
+    ]
   },
   "german/ng-compound-gender": {
     "summary": "复合名词的性别与复数都由末位成分决定，前位成分只贡献意义。",
@@ -452,8 +596,16 @@
     "estMinutes": 8,
     "criteria": [
       {
+        "quiz": "q-ng-compound-gender-four-steps",
+        "statement": "能说出判定四步：切分找末位、取末位性别、取末位复数、前位只影响意义"
+      },
+      {
         "quiz": "q-ng-compound-gender",
         "statement": "能说出 die Haustür 是阴性，因为末位成分 Tür 是阴性"
+      },
+      {
+        "quiz": "q-ng-compound-gender-homograph",
+        "statement": "能说出末位是同形异义词时按选中的义项定性别，如 die Nordsee 取 die See（海）"
       }
     ]
   },
@@ -491,6 +643,10 @@
       {
         "quiz": "q-ng-plural-umlaut",
         "statement": "能说出 der Apfel 的复数是 die Äpfel（只变音不加词尾），并给出两个加 -e 又变音的例子"
+      },
+      {
+        "quiz": "q-ng-plural-umlaut-stuhl-tisch",
+        "statement": "能说出 die Stühle 是加 -e 并变音、die Tische 是加 -e 不变音"
       }
     ]
   },
@@ -523,7 +679,17 @@
       "能写出 Kind / Haus / Buch 的复数",
       "能区分 -er 复数与零复数"
     ],
-    "estMinutes": 7
+    "estMinutes": 7,
+    "criteria": [
+      {
+        "quiz": "q-ng-plural-er-three",
+        "statement": "能说出 die Kinder / die Bilder / die Häuser 三个 -er 复数"
+      },
+      {
+        "quiz": "q-ng-plural-er-vs-zero",
+        "statement": "能说出 Kinder 是加 -er 构成、Lehrer 是零复数，两者形态相同来源不同"
+      }
+    ]
   },
   "german/ng-plural-en": {
     "summary": "阴性名词绝大多数加 -(e)n，词尾已含 -e 时只加 -n；弱变化阳性也走这一类。",
@@ -554,7 +720,17 @@
       "能写出五个阴性的 -(e)n 复数",
       "能说出弱变化阳性与这一类的重合原因"
     ],
-    "estMinutes": 8
+    "estMinutes": 8,
+    "criteria": [
+      {
+        "quiz": "q-ng-plural-en-rules",
+        "statement": "能说出两条判据：阴性名词绝大多数加 -(e)n，词尾已含 -e 时只加 -n"
+      },
+      {
+        "quiz": "q-ng-plural-en-suffixes",
+        "statement": "能说出 -ion / -tät / -ung 三类后缀的词走 -(e)n 复数"
+      }
+    ]
   },
   "german/ng-plural-s": {
     "summary": "复数 -s 主要给外来词与缩写，不加变音，也不加与格词尾。",
@@ -585,7 +761,17 @@
       "能写出五个 -s 复数词",
       "能说出 -s 复数在与格里为什么不变"
     ],
-    "estMinutes": 7
+    "estMinutes": 7,
+    "criteria": [
+      {
+        "quiz": "q-ng-plural-s-sources",
+        "statement": "能说出 -s 复数三类来源：外语借词、缩写与字母词、口语亲属称呼"
+      },
+      {
+        "quiz": "q-ng-plural-s-dative",
+        "statement": "能说出 -s 复数在第三格里不再变形（den Autos / mit den Hotels）"
+      }
+    ]
   },
   "german/ng-plural-invariant": {
     "summary": "以 -er / -en / -el 结尾的阳中性名词多零复数，另有一批只有复数或只有单数的词。",
@@ -616,7 +802,21 @@
       "能区分零复数与变音零复数",
       "能说出仅复数名词的谓语要求"
     ],
-    "estMinutes": 8
+    "estMinutes": 8,
+    "criteria": [
+      {
+        "quiz": "q-ng-plural-invariant-zero",
+        "statement": "能说出零复数词三个：der Lehrer / das Fenster / der Wagen"
+      },
+      {
+        "quiz": "q-ng-plural-invariant-plural-only",
+        "statement": "能说出仅复数词三个（die Eltern / die Ferien / die Kosten），谓语用复数"
+      },
+      {
+        "quiz": "q-ng-plural-invariant-singular-only",
+        "statement": "能说出仅单数词两个（das Obst / die Milch）"
+      }
+    ]
   },
   "german/ng-n-declension": {
     "summary": "弱变化阳性名词在第二、三格及复数加 -en（-e 结尾只加 -n），第一格永远是原形。",
@@ -650,8 +850,16 @@
     "estMinutes": 9,
     "criteria": [
       {
+        "quiz": "q-ng-n-declension-rules",
+        "statement": "能说出判据三条：阳性、多表人或动物、词尾为 -e / -ant / -ent / -ist / -at / -oge"
+      },
+      {
         "quiz": "q-ng-n-declension",
         "statement": "能说出 der Student 的第三格是 dem Studenten，因为弱变化名词在二、三格及复数加 -en"
+      },
+      {
+        "quiz": "q-ng-n-declension-exceptions",
+        "statement": "能说出例外词 das Herz 与混变 der Name"
       }
     ]
   },
@@ -687,6 +895,14 @@
     "estMinutes": 8,
     "criteria": [
       {
+        "quiz": "q-art-definite-full-table",
+        "statement": "能默写定冠词四格：主 der/die/das/die、宾 den/die/das/die、与 dem/der/dem/den、属 des/der/des/der"
+      },
+      {
+        "quiz": "q-art-definite-homographs",
+        "statement": "能说出三处同形：der 兼阳性主格与阴性第三格与复数属格、die 兼阴性主宾与复数主宾、das 中性主宾同形"
+      },
+      {
         "quiz": "q-art-definite",
         "statement": "能说出阴性第三格是 der，并知道 der 还兼阳性主格与复数属格"
       }
@@ -721,7 +937,21 @@
       "能默写 ein 的四格三性",
       "能区分 kein 与 nicht 的否定对象"
     ],
-    "estMinutes": 8
+    "estMinutes": 8,
+    "criteria": [
+      {
+        "quiz": "q-art-indefinite-table",
+        "statement": "能默写 ein 的四格三性：主 ein/eine/ein、宾 einen/eine/ein、与 einem/einer/einem、属 eines/einer/eines"
+      },
+      {
+        "quiz": "q-art-indefinite-plural",
+        "statement": "能说出 ein 没有复数形式，kein 有复数形式"
+      },
+      {
+        "quiz": "q-art-indefinite-kein-vs-nicht",
+        "statement": "能说出否定名词用 kein、否定归属用 nicht"
+      }
+    ]
   },
   "german/art-possessive": {
     "summary": "物主冠词按不定冠词变格：词干随所有者变，词尾随名词的性数格变。",
@@ -755,8 +985,20 @@
     "estMinutes": 8,
     "criteria": [
       {
+        "quiz": "q-art-possessive-stems",
+        "statement": "能说出七个词干：mein / dein / sein / ihr / unser / euer / ihr，另有敬称 Ihr"
+      },
+      {
+        "quiz": "q-art-possessive-no-ending",
+        "statement": "能说出只有阳中单数的主格与第四格不带词尾，其余带词尾（mein Vater / meinen Vater / meinem Vater）"
+      },
+      {
         "quiz": "q-art-possessive",
         "statement": "能说出 mein Vater 的第四格是 meinen Vater，物主冠词按不定冠词变格"
+      },
+      {
+        "quiz": "q-art-possessive-euer",
+        "statement": "能说出 euer 带词尾时掉 e：eure Bücher / euren Vater"
       }
     ]
   },
@@ -789,7 +1031,17 @@
       "能默写 dieser 的变格",
       "能说出 derselbe 为什么只变前半"
     ],
-    "estMinutes": 8
+    "estMinutes": 8,
+    "criteria": [
+      {
+        "quiz": "q-art-demonstrative-dieser",
+        "statement": "能默写 dieser 的四格：dieser / diesen / diesem Tisch，阴性与格 dieser，复数与格 diesen Büchern"
+      },
+      {
+        "quiz": "q-art-demonstrative-derselbe",
+        "statement": "能说出 derselbe 只前段变格、selbe 不变（mit demselben Zug / zur selben Zeit）"
+      }
+    ]
   },
   "german/art-relative": {
     "summary": "关系代词与定冠词同形（二格与三格复数除外），格由它在从句里的角色决定。",
@@ -820,7 +1072,17 @@
       "能默写关系代词六形",
       "能说出关系代词的格由什么决定"
     ],
-    "estMinutes": 9
+    "estMinutes": 9,
+    "criteria": [
+      {
+        "quiz": "q-art-relative-table",
+        "statement": "能默写关系代词四格：主 der/die/das/die、宾 den/die/das/die、与 dem/der/dem/denen、属 dessen/deren/dessen/deren"
+      },
+      {
+        "quiz": "q-art-relative-diff",
+        "statement": "能说出两处差别：与格复数 denen、属格 dessen / deren"
+      }
+    ]
   },
   "german/art-interrogative": {
     "summary": "welcher 按定冠词变格问「哪一个」，was für ein 按不定冠词变格问「什么样的」。",
@@ -851,7 +1113,17 @@
       "能正确变格 welcher",
       "能说出 was für ein 里哪部分变格"
     ],
-    "estMinutes": 8
+    "estMinutes": 8,
+    "criteria": [
+      {
+        "quiz": "q-art-interrogative-welcher",
+        "statement": "能说出 welcher 自己变格、用于在已知范围内选择"
+      },
+      {
+        "quiz": "q-art-interrogative-was-fuer",
+        "statement": "能说出 was für ein 里 ein 变格、was für 不变，问的是类别"
+      }
+    ]
   },
   "german/art-quantifier": {
     "summary": "alle / viele / einige 在复数里按定冠词变尾，单数用法的形态要单独记。",
@@ -882,7 +1154,17 @@
       "能正确变格 alle 与 viel",
       "能说出 jeder 为什么只用单数"
     ],
-    "estMinutes": 9
+    "estMinutes": 9,
+    "criteria": [
+      {
+        "quiz": "q-art-quantifier-plural",
+        "statement": "能说出 alle / viele / einige / manche 四个复数不定量词，词尾同定冠词"
+      },
+      {
+        "quiz": "q-art-quantifier-only-plural",
+        "statement": "能说出 sämtliche / mehrere 只用复数"
+      }
+    ]
   },
   "german/art-use": {
     "summary": "定冠词表示可指认或唯一，不定冠词引入新信息，选择取决于听话人能否定位所指。",
@@ -913,7 +1195,21 @@
       "能说出定冠词与不定冠词的选择依据",
       "能解释职业表语为什么不加冠词"
     ],
-    "estMinutes": 9
+    "estMinutes": 9,
+    "criteria": [
+      {
+        "quiz": "q-art-use-definite",
+        "statement": "能说出定冠词三种用法：再提及、语境可指认或唯一、指上文提过的东西"
+      },
+      {
+        "quiz": "q-art-use-indefinite",
+        "statement": "能说出不定冠词两种用法：首次提及、单数泛指类别"
+      },
+      {
+        "quiz": "q-art-use-zero",
+        "statement": "能说出零冠词两种场合：复数泛指、职业身份国籍作表语"
+      }
+    ]
   },
   "german/art-zero": {
     "summary": "零冠词出现在物质与抽象名词泛指、复数泛指、职业表语与固定搭配里。",
@@ -947,8 +1243,16 @@
     "estMinutes": 8,
     "criteria": [
       {
+        "quiz": "q-art-zero-four-cases",
+        "statement": "能说出零冠词四类场合：物质名词泛指、抽象名词泛指、复数泛指、职业身份国籍作表语"
+      },
+      {
         "quiz": "q-art-zero",
         "statement": "能说出 Ich trinke gern Kaffee 用零冠词，因为物质名词泛指"
+      },
+      {
+        "quiz": "q-art-zero-phrases",
+        "statement": "能说出 zu Hause / nach Hause / auf Deutsch / mit Absicht 四个零冠词短语"
       }
     ]
   },
@@ -981,7 +1285,17 @@
       "能说出三类必须带冠词的国名",
       "能解释定语对专名冠词的影响"
     ],
-    "estMinutes": 8
+    "estMinutes": 8,
+    "criteria": [
+      {
+        "quiz": "q-art-proper-country-classes",
+        "statement": "能说出三类带冠词国名：阴性、复数、阳性，各举一例"
+      },
+      {
+        "quiz": "q-art-proper-name-genitive",
+        "statement": "能写出人名属格两种形式：Goethes Werke 与 die Werke von Goethe"
+      }
+    ]
   },
   "german/adj-weak": {
     "summary": "定冠词之后形容词走弱变化，整个变格只用 -e 与 -en 两种词尾。",
@@ -1014,6 +1328,14 @@
     ],
     "estMinutes": 8,
     "criteria": [
+      {
+        "quiz": "q-adj-weak-table",
+        "statement": "能默写弱变化表：单数主格三性 -e、阴性宾格 -e，其余全 -en（含复数主格）"
+      },
+      {
+        "quiz": "q-adj-weak-e-positions",
+        "statement": "能说出 -e 只在五个位置：单数主格三性加阴性单数宾格"
+      },
       {
         "quiz": "q-adj-weak",
         "statement": "能说出定冠词后的形容词只有 -e 与 -en 两种词尾，单数主格用 -e，其余多为 -en"
@@ -1049,7 +1371,17 @@
       "能默写混合变化全表",
       "能解释为什么复数要改用强变化"
     ],
-    "estMinutes": 9
+    "estMinutes": 9,
+    "criteria": [
+      {
+        "quiz": "q-adj-mixed-table",
+        "statement": "能默写混合变化表：主 -er/-e/-es、宾 -en/-e/-es、与格与属格全 -en"
+      },
+      {
+        "quiz": "q-adj-mixed-plural",
+        "statement": "能说出混合变化只限单数，复数改走弱变化（meine guten Freunde / keine guten Ideen）"
+      }
+    ]
   },
   "german/adj-strong": {
     "summary": "没有冠词时形容词独扛格标记，词尾几乎等于定冠词去掉首字母。",
@@ -1080,7 +1412,17 @@
       "能默写强变化全表",
       "能说出强变化的两类触发条件"
     ],
-    "estMinutes": 9
+    "estMinutes": 9,
+    "criteria": [
+      {
+        "quiz": "q-adj-strong-table",
+        "statement": "能默写强变化表：主 -er/-e/-es/-e、宾 -en/-e/-es/-e、与 -em/-er/-em/-en、属 -en/-er/-en/-er"
+      },
+      {
+        "quiz": "q-adj-strong-correspondence",
+        "statement": "能说出强变化词尾等于定冠词去掉首字母"
+      }
+    ]
   },
   "german/adj-choice": {
     "summary": "三种变格的选择只看形容词左边有没有限定词、限定词带不带词尾。",
@@ -1113,6 +1455,14 @@
     ],
     "estMinutes": 9,
     "criteria": [
+      {
+        "quiz": "q-adj-choice-triggers",
+        "statement": "能说出三种变格各一个触发词：der（弱）/ ein（混合）/ 无冠词或 viele（强）"
+      },
+      {
+        "quiz": "q-adj-choice-criterion",
+        "statement": "能说出判据那一句：看左边有没有已标格的限定词，有则形容词只 -e / -en"
+      },
       {
         "quiz": "q-adj-choice",
         "statement": "能说出没有冠词时用强变化，因为形容词要自己承担冠词的格标记"
@@ -1148,7 +1498,17 @@
       "能说出表语形容词为什么不变格",
       "能区分定语与表语的形态"
     ],
-    "estMinutes": 7
+    "estMinutes": 7,
+    "criteria": [
+      {
+        "quiz": "q-adj-predicative-only-attributive",
+        "statement": "能说出只有定语位置加词尾，表语、副词性表语与状语都不变格"
+      },
+      {
+        "quiz": "q-adj-predicative-plural",
+        "statement": "能说出复数主语的表语形容词也不变：Die Weine sind gut / Die Häuser sind alt"
+      }
+    ]
   },
   "german/adj-comparative": {
     "summary": "比较级加 -er，单音节多同时变音，比较对象用 als 引导。",
@@ -1179,7 +1539,17 @@
       "能构成常见形容词的比较级",
       "能说出比较级作定语时为什么要再变格"
     ],
-    "estMinutes": 8
+    "estMinutes": 8,
+    "criteria": [
+      {
+        "quiz": "q-adj-comparative-umlaut",
+        "statement": "能说出比较级加 -er，并给出 alt / jung / groß 三个变音例词"
+      },
+      {
+        "quiz": "q-adj-comparative-attributive",
+        "statement": "能说出表语比较级不变格、定语比较级照常变格"
+      }
+    ]
   },
   "german/adj-superlative": {
     "summary": "最高级有两形：am + -sten 作状语，der/die/das + -ste 作定语。",
@@ -1210,7 +1580,17 @@
       "能区分最高级两形的用法",
       "能写出四个加 -esten 的例词"
     ],
-    "estMinutes": 9
+    "estMinutes": 9,
+    "criteria": [
+      {
+        "quiz": "q-adj-superlative-two-forms",
+        "statement": "能说出最高级两形：状语 am + -sten、定语定冠词 + -ste + 词尾"
+      },
+      {
+        "quiz": "q-adj-superlative-irregular",
+        "statement": "能说出 gut / viel / gern 三组不规则等级"
+      }
+    ]
   },
   "german/adj-irregular": {
     "summary": "高频形容词的比较等级用异干，必须整组记，不能靠规则推。",
@@ -1241,7 +1621,13 @@
       "能默写七组不规则等级",
       "能说出 gern 等级的用法限制"
     ],
-    "estMinutes": 8
+    "estMinutes": 8,
+    "criteria": [
+      {
+        "quiz": "q-adj-irregular-seven",
+        "statement": "能默写七组不规则等级：gut / viel / gern / hoch / nah / bald / teuer"
+      }
+    ]
   },
   "german/adj-comparison": {
     "summary": "不等比较用 als，同等比较用 so ... wie，两者不能互换。",
@@ -1274,6 +1660,10 @@
     ],
     "estMinutes": 8,
     "criteria": [
+      {
+        "quiz": "q-adj-comparison-three-forms",
+        "statement": "能说出三种公式：比较级 + als、so + 原级 + wie、nicht so + 原级 + wie"
+      },
       {
         "quiz": "q-adj-comparison",
         "statement": "能说出不等比较用 als，wie 只用于同等比较（so ... wie）"
@@ -1309,7 +1699,17 @@
       "能区分第一分词与第二分词的语义",
       "能把一个关系从句压成扩展定语"
     ],
-    "estMinutes": 9
+    "estMinutes": 9,
+    "criteria": [
+      {
+        "quiz": "q-adj-participle-attribute-two-participles",
+        "statement": "能说出第一分词表主动与进行、第二分词表被动与完成"
+      },
+      {
+        "quiz": "q-adj-participle-attribute-position",
+        "statement": "能说出扩展定语位于冠词与名词之间，按从名词往前读的顺序解码"
+      }
+    ]
   },
   "german/vc-present": {
     "summary": "现在时词尾按人称变化，词干以 -t / -d 结尾时在 du、er、ihr 前插 -e。",
@@ -1340,7 +1740,21 @@
       "能正确变位规则动词与 -t/-d 结尾动词",
       "能说出元音交替只发生在哪两个人称"
     ],
-    "estMinutes": 8
+    "estMinutes": 8,
+    "criteria": [
+      {
+        "quiz": "q-vc-present-endings",
+        "statement": "能说出六个人称词尾：-e / -st / -t / -en / -t / -en"
+      },
+      {
+        "quiz": "q-vc-present-insert-e",
+        "statement": "能说出词干以 -t / -d / -m / -n 结尾时插 -e，以 -s / -ß / -z 结尾时 du 只加 -t"
+      },
+      {
+        "quiz": "q-vc-present-umlaut-persons",
+        "statement": "能说出元音交替只发生在 du 与 er 两个人称"
+      }
+    ]
   },
   "german/vc-strong": {
     "summary": "强变化动词在 du 与 er 变音或换音，过去时与第二分词另有词形，三处一起记。",
@@ -1371,7 +1785,21 @@
       "能说出三形记词法",
       "能正确变位 nehmen 与 sehen"
     ],
-    "estMinutes": 9
+    "estMinutes": 9,
+    "criteria": [
+      {
+        "quiz": "q-vc-strong-three-forms-a",
+        "statement": "能说出 nehmen / geben / sehen 的三形（nimmst、nimmt、nahm、genommen 等）"
+      },
+      {
+        "quiz": "q-vc-strong-three-forms-b",
+        "statement": "能说出 fahren / laufen 的三形（fuhr、gefahren、lief、gelaufen）"
+      },
+      {
+        "quiz": "q-vc-strong-persons",
+        "statement": "能说出交替只出现在 du 与 er，其余人称用原词干"
+      }
+    ]
   },
   "german/vc-modal-present": {
     "summary": "情态动词现在时第一、三人称同形且无词尾，过去时也不加人称词尾。",
@@ -1402,7 +1830,17 @@
       "能默写六个情态动词的现在时与过去时",
       "能说出情态动词的句末不定式规则"
     ],
-    "estMinutes": 9
+    "estMinutes": 9,
+    "criteria": [
+      {
+        "quiz": "q-vc-modal-present-forms",
+        "statement": "能说出六个情态动词的现在时一、三人称同形：kann / muss / will / darf / soll / mag"
+      },
+      {
+        "quiz": "q-vc-modal-present-past",
+        "statement": "能说出过去时一、三人称同形且无词尾（konnte / musste）"
+      }
+    ]
   },
   "german/vc-past": {
     "summary": "过去时用于书面叙述，弱变化加 -te，强变化换词干并单复数分用词尾。",
@@ -1433,7 +1871,17 @@
       "能构成弱变化与强变化的过去时",
       "能说出过去时与完成时的语体分工"
     ],
-    "estMinutes": 9
+    "estMinutes": 9,
+    "criteria": [
+      {
+        "quiz": "q-vc-past-three-types",
+        "statement": "能说出三类构成：弱变化加 -te、强变化换元音无词尾、混合变化换元音加弱词尾"
+      },
+      {
+        "quiz": "q-vc-past-colloquial",
+        "statement": "能说出情态动词、sein、haben 在口语里用过去时（Ich war müde / Ich hatte Zeit）"
+      }
+    ]
   },
   "german/vc-perfect-haben": {
     "summary": "完成时由 haben 的现在时加第二分词构成，多数动词走这一组。",
@@ -1464,7 +1912,25 @@
       "能写出三类动词的第二分词",
       "能说出 ge- 缺席的两个条件"
     ],
-    "estMinutes": 9
+    "estMinutes": 9,
+    "criteria": [
+      {
+        "quiz": "q-vc-perfect-haben-weak",
+        "statement": "能说出弱变化第二分词是 ge- + 词干 + -t（gemacht）"
+      },
+      {
+        "quiz": "q-vc-perfect-haben-strong",
+        "statement": "能说出强变化第二分词是 ge- + 词干 + -en（gelesen / genommen）"
+      },
+      {
+        "quiz": "q-vc-perfect-haben-no-ge",
+        "statement": "能说出不加 ge- 的两类：不可分前缀与 -ieren 结尾"
+      },
+      {
+        "quiz": "q-vc-perfect-haben-separable",
+        "statement": "能说出可分动词把 ge- 夹在前缀与词干之间（aufgestanden）"
+      }
+    ]
   },
   "german/vc-perfect-sein": {
     "summary": "完成时用 sein 的有三类：位置移动、状态变化，以及 sein / werden / bleiben 本身。",
@@ -1500,6 +1966,10 @@
       {
         "quiz": "q-vc-perfect-sein",
         "statement": "能说出位移动词、状态变化动词以及 sein / werden / bleiben 用 sein 构成完成时"
+      },
+      {
+        "quiz": "q-vc-perfect-sein-haben-classes",
+        "statement": "能说出仍用 haben 的三类：情态动词、反身动词、带第四格宾语的他动词"
       }
     ]
   },
@@ -1532,7 +2002,17 @@
       "能构成过去完成时",
       "能说出它与完成时的分工"
     ],
-    "estMinutes": 8
+    "estMinutes": 8,
+    "criteria": [
+      {
+        "quiz": "q-vc-plusquamperfect-aux",
+        "statement": "能说出过去完成时用 hatte / war + 第二分词"
+      },
+      {
+        "quiz": "q-vc-plusquamperfect-nachdem",
+        "statement": "能说出最常与 nachdem 连用：从句过去完成、主句过去时"
+      }
+    ]
   },
   "german/vc-future-1": {
     "summary": "将来时 I 由 werden 加不定式构成，口语更常用现在时加时间状语。",
@@ -1563,7 +2043,21 @@
       "能正确变位 werden",
       "能区分将来时与现在时替代、werden 的实义用法"
     ],
-    "estMinutes": 8
+    "estMinutes": 8,
+    "criteria": [
+      {
+        "quiz": "q-vc-future-1-werden",
+        "statement": "能说出 werden 变位 werde / wirst / wird / werden / werdet / werden，一三不同形"
+      },
+      {
+        "quiz": "q-vc-future-1-word-order",
+        "statement": "能说出将来时的不定式放句末"
+      },
+      {
+        "quiz": "q-vc-future-1-present-substitute",
+        "statement": "能说出用现在时加时间状语替代将来时（Morgen fahre ich nach Hamburg）"
+      }
+    ]
   },
   "german/vc-future-2": {
     "summary": "将来时 II 由 werden 加第二分词加 haben/sein 构成，既表将来完成，也表对过去的推测。",
@@ -1596,6 +2090,10 @@
     ],
     "estMinutes": 9,
     "criteria": [
+      {
+        "quiz": "q-vc-future-2-formula",
+        "statement": "能说出构成公式：werden + 第二分词 + haben / sein"
+      },
       {
         "quiz": "q-vc-future-2",
         "statement": "能说出 Er wird das gemacht haben 既可表将来完成，也可表对过去事实的推测"
@@ -1634,8 +2132,16 @@
     "estMinutes": 9,
     "criteria": [
       {
+        "quiz": "q-vc-passive-formation",
+        "statement": "能说出过程被动用 werden + 第二分词、状态被动用 sein + 第二分词"
+      },
+      {
         "quiz": "q-vc-passive",
         "statement": "能说出 Das Haus wird gebaut 是过程被动（正在被建），Das Haus ist gebaut 是状态被动（已建成）"
+      },
+      {
+        "quiz": "q-vc-passive-von-durch",
+        "statement": "能说出 von + 与格表施事、durch + 第四格表手段"
       }
     ]
   },
@@ -1668,7 +2174,17 @@
       "能用三条判据判断及物性",
       "能解释 helfen 为什么不算及物"
     ],
-    "estMinutes": 8
+    "estMinutes": 8,
+    "criteria": [
+      {
+        "quiz": "q-vf-transitive-three-tests",
+        "statement": "能说出及物性三条判据：有第四格宾语、完成时用 haben、可构成过程被动"
+      },
+      {
+        "quiz": "q-vf-transitive-counterexample",
+        "statement": "能说出反例：helfen 带与格宾语仍不及物，被动只能无人称"
+      }
+    ]
   },
   "german/vf-dative": {
     "summary": "一批动词只带与格宾语，没有第四格、完成时用 haben、只能构成无人称被动。",
@@ -1699,7 +2215,17 @@
       "能列出六个只带与格的动词",
       "能构造无人称被动"
     ],
-    "estMinutes": 9
+    "estMinutes": 9,
+    "criteria": [
+      {
+        "quiz": "q-vf-dative-six",
+        "statement": "能说出六个只带与格的动词：helfen / danken / gehören / folgen / gratulieren / antworten"
+      },
+      {
+        "quiz": "q-vf-dative-pair",
+        "statement": "能区分 antworten + D 与 beantworten + A"
+      }
+    ]
   },
   "german/vf-genitive": {
     "summary": "属格宾语只剩少数动词，书面且多固定，口语常换成介词宾语或第四格。",
@@ -1730,7 +2256,17 @@
       "能说出四个属格动词",
       "能说出属格宾语的口语替代形式"
     ],
-    "estMinutes": 9
+    "estMinutes": 9,
+    "criteria": [
+      {
+        "quiz": "q-vf-genitive-four",
+        "statement": "能说出四个支配属格的动词：bedürfen / gedenken / sich erinnern / sich bedienen"
+      },
+      {
+        "quiz": "q-vf-genitive-substitutes",
+        "statement": "能说出两条口语替代路径：gedenken 改带与格、sich erinnern 改 an + A"
+      }
+    ]
   },
   "german/vf-prepositional": {
     "summary": "介词宾语是动词的固定搭配，介词与它支配的格都要整条记。",
@@ -1761,7 +2297,17 @@
       "能记住五个常用介词搭配",
       "能正确使用 da(r)- 代词化"
     ],
-    "estMinutes": 9
+    "estMinutes": 9,
+    "criteria": [
+      {
+        "quiz": "q-vf-prepositional-five",
+        "statement": "能说出五个介词搭配：warten auf + A、sich interessieren für + A、teilnehmen an + D、denken an + A、abhängen von + D"
+      },
+      {
+        "quiz": "q-vf-prepositional-pronoun",
+        "statement": "能说出指事物用 da(r)- 复合词、指人用介词加人称代词的代词化规则"
+      }
+    ]
   },
   "german/vf-reflexive": {
     "summary": "反身代词可占第四格或与格位置，取决于句子里有没有另一个宾语。",
@@ -1795,8 +2341,16 @@
     "estMinutes": 9,
     "criteria": [
       {
+        "quiz": "q-vf-reflexive-two-paradigms",
+        "statement": "能说出反身代词第四格 mich / dich / sich / uns / euch / sich 与第三格 mir / dir / sich / uns / euch / sich"
+      },
+      {
         "quiz": "q-vf-reflexive",
         "statement": "能说出 Ich wasche mich 的反身代词是第四格（直接宾语），Ich wasche mir die Hände 的是第三格（与格 + 第四格身体部位）"
+      },
+      {
+        "quiz": "q-vf-reflexive-true-false",
+        "statement": "能说出真反身不能换宾语、假反身可换成非反身宾语"
       }
     ]
   },
@@ -1832,6 +2386,10 @@
     "estMinutes": 9,
     "criteria": [
       {
+        "quiz": "q-vf-separable-prefixes",
+        "statement": "能说出六个可分前缀：auf / an / aus / ein / mit / nach"
+      },
+      {
         "quiz": "q-vf-separable",
         "statement": "能说出可分动词在从句里不分开、整体放在句末：..., weil ich früh aufstehe"
       }
@@ -1866,7 +2424,17 @@
       "能识别不可分前缀",
       "能写出不可分动词的第二分词"
     ],
-    "estMinutes": 8
+    "estMinutes": 8,
+    "criteria": [
+      {
+        "quiz": "q-vf-inseparable-prefixes",
+        "statement": "能说出七个不可分前缀：be- / ge- / er- / ver- / zer- / ent- / emp-"
+      },
+      {
+        "quiz": "q-vf-inseparable-participles",
+        "statement": "能说出 verstanden / besucht / erzählt 三个不加 ge- 的第二分词"
+      }
+    ]
   },
   "german/vf-modal-use": {
     "summary": "情态动词有客观（义务、能力、许可）与主观（推测、转述）两套用法。",
@@ -1897,7 +2465,21 @@
       "能区分情态动词的客观与主观用法",
       "能说出 müssen 与 dürfen 否定的差别"
     ],
-    "estMinutes": 9
+    "estMinutes": 9,
+    "criteria": [
+      {
+        "quiz": "q-vf-modal-use-objective",
+        "statement": "能说出客观三类：义务、能力、许可，各举一例"
+      },
+      {
+        "quiz": "q-vf-modal-use-subjective",
+        "statement": "能说出主观两类：推测与转述"
+      },
+      {
+        "quiz": "q-vf-modal-use-negation",
+        "statement": "能说出 nicht müssen 是「不必」、nicht dürfen 是「不许」"
+      }
+    ]
   },
   "german/vf-infinitive-zu": {
     "summary": "zu 加不定式有三种形态：不带 zu、带 zu、可分动词的 zu 夹在中间。",
@@ -1930,6 +2512,10 @@
     ],
     "estMinutes": 9,
     "criteria": [
+      {
+        "quiz": "q-vf-infinitive-zu-no-zu",
+        "statement": "能说出四个不带 zu 的触发词：情态动词、werden、lassen、感官动词"
+      },
       {
         "quiz": "q-vf-infinitive-zu",
         "statement": "能说出可分动词加 zu 时 zu 夹在前缀与词干之间：aufzustehen"
@@ -1965,7 +2551,17 @@
       "能写出三套命令式",
       "能说出可分动词前缀位置"
     ],
-    "estMinutes": 8
+    "estMinutes": 8,
+    "criteria": [
+      {
+        "quiz": "q-vf-imperative-three-forms",
+        "statement": "能说出三套构成：du 用词干、ihr 与现在时第二人称同形、Sie 动词加 Sie 倒装"
+      },
+      {
+        "quiz": "q-vf-imperative-sein",
+        "statement": "能写出 sein 的命令式 Sei / Seid / Seien Sie"
+      }
+    ]
   },
   "german/wo-verb-second": {
     "summary": "主句的变位动词固定在第二位，第一位可以是任何成分，主语随之后移。",
@@ -1999,8 +2595,20 @@
     "estMinutes": 8,
     "criteria": [
       {
+        "quiz": "q-wo-verb-second-rule",
+        "statement": "能说出动词固定第二位、第一位可放任意一个成分"
+      },
+      {
         "quiz": "q-wo-verb-second",
         "statement": "能说出主句动词必须占第二位，Gestern ich ging 错在动词落到第三位"
+      },
+      {
+        "quiz": "q-wo-verb-second-first-slot",
+        "statement": "能举出主语、时间状语、介词短语三个可变的第一位成分"
+      },
+      {
+        "quiz": "q-wo-verb-second-exceptions",
+        "statement": "能说出三类例外：是非问句、命令句、无连词条件从句"
       }
     ]
   },
@@ -2033,7 +2641,21 @@
       "能正确改变前置场",
       "能说出前置场与信息结构的关系"
     ],
-    "estMinutes": 9
+    "estMinutes": 9,
+    "criteria": [
+      {
+        "quiz": "q-wo-vorfeld-capacity",
+        "statement": "能说出前置场只能放一个成分，长介词短语整体算一位"
+      },
+      {
+        "quiz": "q-wo-vorfeld-unsuitable",
+        "statement": "能说出 nicht、反身代词、弱读代词宾语三类不宜前置"
+      },
+      {
+        "quiz": "q-wo-vorfeld-information",
+        "statement": "能说出已知信息前置、新信息靠后的信息结构原则"
+      }
+    ]
   },
   "german/wo-satzklammer": {
     "summary": "句框把变位动词放第二位、非变位部分放末位，中间的部分叫中场。",
@@ -2064,7 +2686,17 @@
       "能识别并构造句框",
       "能说出框内成分的名称"
     ],
-    "estMinutes": 9
+    "estMinutes": 9,
+    "criteria": [
+      {
+        "quiz": "q-wo-satzklammer-four",
+        "statement": "能说出四种句框：完成时、情态、可分动词、带 zu 不定式"
+      },
+      {
+        "quiz": "q-wo-satzklammer-two-ends",
+        "statement": "能说出前半给时态与人称、后半给词汇意义"
+      }
+    ]
   },
   "german/wo-mittelfeld": {
     "summary": "中场默认顺序是 TeKaMoLo：时间 → 原因 → 方式 → 地点，再由信息新旧微调。",
@@ -2100,6 +2732,14 @@
       {
         "quiz": "q-wo-mittelfeld",
         "statement": "能说出 TeKaMoLo 是 Temporal→Kausal→Modal→Lokal（时间→原因→方式→地点）"
+      },
+      {
+        "quiz": "q-wo-mittelfeld-information",
+        "statement": "能说出已知信息靠前、新信息靠后的附加规则"
+      },
+      {
+        "quiz": "q-wo-mittelfeld-pronoun",
+        "statement": "能说出代词先于名词、两个代词时第四格在前"
       }
     ]
   },
@@ -2132,7 +2772,17 @@
       "能正确选择 kein 或 nicht",
       "能说出 nicht 的位置原则"
     ],
-    "estMinutes": 9
+    "estMinutes": 9,
+    "criteria": [
+      {
+        "quiz": "q-wo-negation-kein-nicht",
+        "statement": "能说出 kein 否定名词、nicht 否定其余成分"
+      },
+      {
+        "quiz": "q-wo-negation-position",
+        "statement": "能说出 nicht 的三条位置：第二分词前、地点前、时间之后"
+      }
+    ]
   },
   "german/wo-pronoun-order": {
     "summary": "代词宾语的顺序是第四格在第三格前，与名词宾语的顺序相反。",
@@ -2163,7 +2813,25 @@
       "能正确排列两个代词宾语",
       "能说出代词与名词顺序的差别"
     ],
-    "estMinutes": 9
+    "estMinutes": 9,
+    "criteria": [
+      {
+        "quiz": "q-wo-pronoun-order-noun-noun",
+        "statement": "能说出名词加名词时与格在前（Ich gebe dem Mann das Buch）"
+      },
+      {
+        "quiz": "q-wo-pronoun-order-pronoun-pronoun",
+        "statement": "能说出代词加代词时第四格在前（Ich gebe es ihm）"
+      },
+      {
+        "quiz": "q-wo-pronoun-order-pronoun-noun",
+        "statement": "能说出代词加名词时代词在前（Ich gebe ihm das Buch）"
+      },
+      {
+        "quiz": "q-wo-pronoun-order-reflexive",
+        "statement": "能说出反身代词占第四格时与格成分在后（Ich wasche mir die Hände）"
+      }
+    ]
   },
   "german/wo-question": {
     "summary": "是非问句动词居首，补充问句用疑问词占第一位、动词第二位。",
@@ -2194,7 +2862,17 @@
       "能构造两类问句",
       "能说出主语疑问词为什么是例外"
     ],
-    "estMinutes": 8
+    "estMinutes": 8,
+    "criteria": [
+      {
+        "quiz": "q-wo-question-verb-position",
+        "statement": "能说出是非问句动词居首、补充问句疑问词居首动词第二位"
+      },
+      {
+        "quiz": "q-wo-question-words",
+        "statement": "能说出六个疑问词：wer / was / wann / wo / warum / wie"
+      }
+    ]
   },
   "german/wo-subordinate": {
     "summary": "从句由连词引导，变位动词移到末位，主句的句框被整体撑开。",
@@ -2230,6 +2908,14 @@
       {
         "quiz": "q-wo-subordinate",
         "statement": "能说出 weil 从句里变位动词在末位，如 ..., weil ich krank bin"
+      },
+      {
+        "quiz": "q-wo-subordinate-modal",
+        "statement": "能说出带情态动词时不定式在前、变位动词在最末"
+      },
+      {
+        "quiz": "q-wo-subordinate-perfect",
+        "statement": "能说出完成时两个动词都在末位：第二分词 + 助动词"
       }
     ]
   },
@@ -2262,7 +2948,17 @@
       "能用前置场强调成分",
       "能说出强调时格不改变"
     ],
-    "estMinutes": 9
+    "estMinutes": 9,
+    "criteria": [
+      {
+        "quiz": "q-wo-emphasis-shift-three-ways",
+        "statement": "能说出三种强调手段：前置场、重音、小品词"
+      },
+      {
+        "quiz": "q-wo-emphasis-shift-nur",
+        "statement": "能说出 nur / sogar / selbst 紧贴被强调成分"
+      }
+    ]
   },
   "german/wo-ausklammerung": {
     "summary": "外置把重成分挪到句框之后，读起来轻，但受成分类型限制。",
@@ -2293,7 +2989,17 @@
       "能判断什么成分可外置",
       "能说出外置的语体限制"
     ],
-    "estMinutes": 9
+    "estMinutes": 9,
+    "criteria": [
+      {
+        "quiz": "q-wo-ausklammerung-allowed",
+        "statement": "能说出三类可外置成分：介词短语、从句、比较结构"
+      },
+      {
+        "quiz": "q-wo-ausklammerung-forbidden",
+        "statement": "能说出三类不可外置成分：第二分词、可分前缀、名词宾语"
+      }
+    ]
   },
   "german/cc-dass": {
     "summary": "dass 从句补足主句的宾语或主语位置，动词末位，主句常用 es 占位。",
@@ -2324,7 +3030,17 @@
       "能构造 dass 从句",
       "能说出 es 占位与 dass 不可省的条件"
     ],
-    "estMinutes": 8
+    "estMinutes": 8,
+    "criteria": [
+      {
+        "quiz": "q-cc-dass-two-functions",
+        "statement": "能说出两个功能：宾语从句与主语从句"
+      },
+      {
+        "quiz": "q-cc-dass-es",
+        "statement": "能说出主语从句后置时用 es 占位、从句居首位时不能省 dass"
+      }
+    ]
   },
   "german/cc-relative": {
     "summary": "关系从句紧跟先行词，关系代词按其在从句里的角色变格，动词末位。",
@@ -2355,7 +3071,17 @@
       "能正确选关系代词的格",
       "能构造带介词的关系从句"
     ],
-    "estMinutes": 9
+    "estMinutes": 9,
+    "criteria": [
+      {
+        "quiz": "q-cc-relative-four-cases",
+        "statement": "能说出关系代词四格：der / den / dem / dessen"
+      },
+      {
+        "quiz": "q-cc-relative-preposition",
+        "statement": "能说出介词加关系代词时介词决定格"
+      }
+    ]
   },
   "german/cc-relative-special": {
     "summary": "先行词是代词化、不定或整体性成分时用 was / wo，不用 der。",
@@ -2389,8 +3115,16 @@
     "estMinutes": 9,
     "criteria": [
       {
+        "quiz": "q-cc-relative-special-was",
+        "statement": "能说出 was 的三类先行词：不定代词、整句指代、最高级"
+      },
+      {
         "quiz": "q-cc-relative-special",
         "statement": "能说出先行词是 alles / nichts 这类不定代词时关系代词用 was"
+      },
+      {
+        "quiz": "q-cc-relative-special-wo",
+        "statement": "能说出 wo 的两类先行词：地名与时间"
       }
     ]
   },
@@ -2423,7 +3157,17 @@
       "能正确选 als 与 wenn",
       "能说出 nachdem 的时态要求"
     ],
-    "estMinutes": 9
+    "estMinutes": 9,
+    "criteria": [
+      {
+        "quiz": "q-cc-time-als-wenn",
+        "statement": "能说出 als 表过去一次性、wenn 表现在或未来的重复"
+      },
+      {
+        "quiz": "q-cc-time-waehrend-nachdem",
+        "statement": "能说出 während 表同时、nachdem 表从句先完成"
+      }
+    ]
   },
   "german/cc-causal": {
     "summary": "原因、条件、让步三类从句都用动词末位，靠连词区分逻辑关系。",
@@ -2454,7 +3198,25 @@
       "能区分 weil 与 denn 的语序",
       "能正确选 damit 与 um ... zu"
     ],
-    "estMinutes": 9
+    "estMinutes": 9,
+    "criteria": [
+      {
+        "quiz": "q-cc-causal-reason",
+        "statement": "能说出原因两个连词 weil 与 denn，并说出语序差别"
+      },
+      {
+        "quiz": "q-cc-causal-condition",
+        "statement": "能说出条件两个连词：wenn / falls"
+      },
+      {
+        "quiz": "q-cc-causal-concession",
+        "statement": "能说出让步两个连词：obwohl（事实）与 auch wenn（假定）"
+      },
+      {
+        "quiz": "q-cc-causal-purpose",
+        "statement": "能说出目的两个结构：damit + 从句、um ... zu + 不定式"
+      }
+    ]
   },
   "german/cc-indirect-question": {
     "summary": "间接疑问句用 ob（是非问）或疑问词（补充问），动词末位。",
@@ -2488,8 +3250,16 @@
     "estMinutes": 8,
     "criteria": [
       {
+        "quiz": "q-cc-indirect-question-words",
+        "statement": "能说出是非问用 ob、补充问用疑问词两类引导词"
+      },
+      {
         "quiz": "q-cc-indirect-question",
         "statement": "能说出是非问转间接引语用 ob（是否），dass 不带疑问语义"
+      },
+      {
+        "quiz": "q-cc-indirect-question-order",
+        "statement": "能说出从句动词末位、句末用句号"
       }
     ]
   },
@@ -2525,8 +3295,20 @@
     "estMinutes": 9,
     "criteria": [
       {
+        "quiz": "q-cc-konjunktiv-2-formation",
+        "statement": "能说出构成：过去时词干加虚拟词尾，强变化加变音（kam → käme / war → wäre）"
+      },
+      {
+        "quiz": "q-cc-konjunktiv-2-counterfactual",
+        "statement": "能说出两类反事实：与现在相反、与过去相反（hätte ... wäre gekommen）"
+      },
+      {
         "quiz": "q-cc-konjunktiv-2",
         "statement": "能说出 Wenn ich Zeit hätte, würde ich kommen 是与现在事实相反的虚拟（第二虚拟式）"
+      },
+      {
+        "quiz": "q-cc-konjunktiv-2-polite",
+        "statement": "能说出委婉用法：hätte gern / Könnten Sie / solltest"
       }
     ]
   },
@@ -2559,7 +3341,21 @@
       "能构造第一虚拟式转述",
       "能说出它与直陈同形时怎么区分"
     ],
-    "estMinutes": 9
+    "estMinutes": 9,
+    "criteria": [
+      {
+        "quiz": "q-cc-konjunktiv-1-uses",
+        "statement": "能说出用途：新闻与学术转述、报告他人话语而不认可内容"
+      },
+      {
+        "quiz": "q-cc-konjunktiv-1-sein",
+        "statement": "能写出 sein 的第一虚拟式 sei / seiest / sei / seien / seiet / seien"
+      },
+      {
+        "quiz": "q-cc-konjunktiv-1-homograph",
+        "statement": "能说出与直陈同形的问题，并说出改用第二虚拟式或 würde 的回避办法"
+      }
+    ]
   },
   "german/cc-modal-particle": {
     "summary": "情态小品词不改变句子真假，只调节语气与人际距离。",
@@ -2590,7 +3386,21 @@
       "能说出四个小品词的语气功能",
       "能说出小品词的位置限制"
     ],
-    "estMinutes": 9
+    "estMinutes": 9,
+    "criteria": [
+      {
+        "quiz": "q-cc-modal-particle-doch-mal-ja",
+        "statement": "能说出 doch / mal / ja 三个小品词的语气功能"
+      },
+      {
+        "quiz": "q-cc-modal-particle-halt-wohl-denn",
+        "statement": "能说出 halt-eben / wohl / denn 三个小品词的语气功能"
+      },
+      {
+        "quiz": "q-cc-modal-particle-position",
+        "statement": "能说出小品词放中场，不放句首也不放末位"
+      }
+    ]
   },
   "german/cc-nominalization": {
     "summary": "从句可以压成名词短语或介词短语，语体更书面，但信息密度上升。",
@@ -2621,6 +3431,16 @@
       "能把从句压成名词短语",
       "能说出名词化的信息代价"
     ],
-    "estMinutes": 9
+    "estMinutes": 9,
+    "criteria": [
+      {
+        "quiz": "q-cc-nominalization-three-paths",
+        "statement": "能说出三种路径：dass 从句转名词、转 zu 不定式、介词加名词化"
+      },
+      {
+        "quiz": "q-cc-nominalization-loss",
+        "statement": "能说出名词化丢失施事与时间，并给出用定语补回的例子"
+      }
+    ]
   }
 }

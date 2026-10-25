@@ -1,5 +1,17 @@
 [
   {
+    "id": "q-cs-two-way-preposition-eight",
+    "itemId": "german/cs-two-way-preposition",
+    "prompt": "双格介词是哪八个？",
+    "answer": "an / auf / in / über / unter / vor / hinter / zwischen"
+  },
+  {
+    "id": "q-cs-two-way-preposition-fixed-dative",
+    "itemId": "german/cs-two-way-preposition",
+    "prompt": "an der Universität、auf dem Land、in der Schule 为什么锁第三格？",
+    "answer": "它们不表示空间移动，只是固定搭配，故锁第三格"
+  },
+  {
     "id": "q-cs-two-way-preposition",
     "itemId": "german/cs-two-way-preposition",
     "prompt": "in die Stadt 与 in der Stadt 的格为何不同？",
@@ -12,10 +24,40 @@
     "answer": "第三格（与格）—— danken、gehören、folgen 等也是"
   },
   {
+    "id": "q-cs-dative-plural-n",
+    "itemId": "german/cs-dative",
+    "prompt": "复数第三格什么时候加 -n、什么时候不加？",
+    "answer": "一般要加（die Kinder → den Kindern），词尾已含 -n 或 -s 的不再加（den Frauen / den Autos）"
+  },
+  {
     "id": "q-cs-case-adjective",
     "itemId": "german/cs-case-adjective",
     "prompt": "Ich bin mir dessen bewusst. 里的 dessen 是什么格？",
     "answer": "第二格（属格）—— bewusst 支配属格"
+  },
+  {
+    "id": "q-cs-case-adjective-genitive-more",
+    "itemId": "german/cs-case-adjective",
+    "prompt": "除了 bewusst，还有哪些形容词支配属格？",
+    "answer": "mächtig / verdächtig / schuldig —— Er ist des Verbrechens schuldig."
+  },
+  {
+    "id": "q-cs-case-adjective-dative",
+    "itemId": "german/cs-case-adjective",
+    "prompt": "哪两个形容词支配与格？",
+    "answer": "ähnlich / fremd —— Sie ist mir ähnlich. / Das ist mir fremd."
+  },
+  {
+    "id": "q-cs-case-adjective-prep",
+    "itemId": "german/cs-case-adjective",
+    "prompt": "stolz / interessiert / abhängig 各带什么介词、什么格？",
+    "answer": "stolz auf + A · interessiert an + D · abhängig von + D"
+  },
+  {
+    "id": "q-ng-compound-gender-four-steps",
+    "itemId": "german/ng-compound-gender",
+    "prompt": "判定复合名词性别与复数要走哪四步？",
+    "answer": "切分复合词找末位成分 · 取末位成分的性别 · 取末位成分的复数形式 · 前位成分只影响意义、不影响语法属性"
   },
   {
     "id": "q-ng-compound-gender",
@@ -24,10 +66,28 @@
     "answer": "复合名词的性别由末位成分决定 —— Tür 是阴性"
   },
   {
+    "id": "q-ng-compound-gender-homograph",
+    "itemId": "german/ng-compound-gender",
+    "prompt": "die Nordsee 为什么是阴性？",
+    "answer": "末位成分 See 在这里取「海」义（die See），复合词的性别按被选中的那个同形词定"
+  },
+  {
+    "id": "q-ng-n-declension-rules",
+    "itemId": "german/ng-n-declension",
+    "prompt": "弱变化名词的三条判据是什么？",
+    "answer": "限阳性 · 多表人或动物 · 词尾为 -e / -ant / -ent / -ist / -at / -oge（der Kollege / der Praktikant / der Biologe）"
+  },
+  {
     "id": "q-ng-n-declension",
     "itemId": "german/ng-n-declension",
     "prompt": "der Student 在第三格里是什么形式？",
     "answer": "dem Studenten —— 弱变化名词在二、三格及复数加 -en"
+  },
+  {
+    "id": "q-ng-n-declension-exceptions",
+    "itemId": "german/ng-n-declension",
+    "prompt": "弱变化有哪两个要单记的词？",
+    "answer": "das Herz（des Herzens / dem Herzen）· 混变的 der Name（des Namens / dem Namen / die Namen）"
   },
   {
     "id": "q-ng-plural-umlaut",
@@ -36,10 +96,40 @@
     "answer": "die Äpfel —— 加变音，词尾不变"
   },
   {
+    "id": "q-ng-plural-umlaut-stuhl-tisch",
+    "itemId": "german/ng-plural-umlaut",
+    "prompt": "der Stuhl 与 der Tisch 的复数各是什么？差别在哪？",
+    "answer": "die Stühle（加 -e 并变音）· die Tische（加 -e 不变音）"
+  },
+  {
+    "id": "q-art-definite-full-table",
+    "itemId": "german/art-definite",
+    "prompt": "定冠词的四格形式各是什么？",
+    "answer": "主格 der / die / das / die · 宾格 den / die / das / die · 与格 dem / der / dem / den · 属格 des / der / des / der"
+  },
+  {
+    "id": "q-art-definite-homographs",
+    "itemId": "german/art-definite",
+    "prompt": "定冠词的 der、die、das 各兼哪几职？",
+    "answer": "der：阳性主格 / 阴性第三格 / 复数属格 · die：阴性主格宾格 / 复数主格宾格 · das：中性主格宾格"
+  },
+  {
     "id": "q-art-definite",
     "itemId": "german/art-definite",
     "prompt": "定冠词阴性第三格是什么形式？",
     "answer": "der —— 同一个 der 还兼阳性第一格与复数第二格"
+  },
+  {
+    "id": "q-art-possessive-stems",
+    "itemId": "german/art-possessive",
+    "prompt": "物主冠词有哪几个词干？",
+    "answer": "mein / dein / sein / ihr / unser / euer / ihr（第三人称复数），另有敬称 Ihr"
+  },
+  {
+    "id": "q-art-possessive-no-ending",
+    "itemId": "german/art-possessive",
+    "prompt": "物主冠词什么时候不带词尾？",
+    "answer": "只有阳性、中性单数的主格与第四格不带词尾（mein Vater / mein Kind），其余都带"
   },
   {
     "id": "q-art-possessive",
@@ -48,10 +138,40 @@
     "answer": "meinen Vater —— 物主冠词按不定冠词变格，阳性第四格加 -en"
   },
   {
+    "id": "q-art-possessive-euer",
+    "itemId": "german/art-possessive",
+    "prompt": "euer 加词尾时有什么变化？",
+    "answer": "掉中间的 e：eure Bücher / euren Vater / eurem Vater"
+  },
+  {
+    "id": "q-art-zero-four-cases",
+    "itemId": "german/art-zero",
+    "prompt": "零冠词有哪四类场合？",
+    "answer": "物质名词泛指 · 抽象名词泛指 · 复数泛指 · 职业、身份、国籍作表语"
+  },
+  {
     "id": "q-art-zero",
     "itemId": "german/art-zero",
     "prompt": "Ich trinke gern Kaffee. 为什么不用冠词？",
     "answer": "物质名词泛指时用零冠词"
+  },
+  {
+    "id": "q-art-zero-phrases",
+    "itemId": "german/art-zero",
+    "prompt": "举四个用零冠词的固定短语。",
+    "answer": "zu Hause / nach Hause / auf Deutsch / mit Absicht（另 ohne Grund / Rad fahren）"
+  },
+  {
+    "id": "q-adj-weak-table",
+    "itemId": "german/adj-weak",
+    "prompt": "定冠词后形容词的弱变化表怎么排？",
+    "answer": "主 -e / -e / -e / -en · 宾 -en / -e / -e / -en · 与 全 -en · 属 全 -en"
+  },
+  {
+    "id": "q-adj-weak-e-positions",
+    "itemId": "german/adj-weak",
+    "prompt": "弱变化里 -e 出现在哪五个位置？",
+    "answer": "阳性、阴性、中性单数主格，加阴性单数宾格 —— 共五个，其余全 -en"
   },
   {
     "id": "q-adj-weak",
@@ -60,10 +180,28 @@
     "answer": "只有 -e 与 -en 两种 —— 单数主格各性用 -e，其余多为 -en"
   },
   {
+    "id": "q-adj-choice-triggers",
+    "itemId": "german/adj-choice",
+    "prompt": "三种变格各举一个触发词。",
+    "answer": "弱：der（或 dieser、alle）· 混合：ein（或 kein、单数物主冠词）· 强：无冠词，或 viele / einige / wenige / manche"
+  },
+  {
+    "id": "q-adj-choice-criterion",
+    "itemId": "german/adj-choice",
+    "prompt": "判断用哪种变格，那一句判据是什么？",
+    "answer": "先看左边有没有带词尾、已标格的限定词：有则形容词只 -e / -en；没有，或限定词本身不标格（viele 类），形容词就自己标格"
+  },
+  {
     "id": "q-adj-choice",
     "itemId": "german/adj-choice",
     "prompt": "没有冠词时形容词用哪种变格？",
     "answer": "强变化 —— 形容词自己承担冠词的格标记"
+  },
+  {
+    "id": "q-adj-comparison-three-forms",
+    "itemId": "german/adj-comparison",
+    "prompt": "不等、同等、否定同等三种比较各是什么公式？",
+    "answer": "不等：比较级 + als（Er ist größer als ich）· 同等：so + 原级 + wie · 否定同等：nicht so + 原级 + wie"
   },
   {
     "id": "q-adj-comparison",
@@ -78,10 +216,28 @@
     "answer": "位移动词与状态变化动词，以及 sein、werden、bleiben"
   },
   {
+    "id": "q-vc-perfect-sein-haben-classes",
+    "itemId": "german/vc-perfect-sein",
+    "prompt": "哪些动词的完成时仍然用 haben？",
+    "answer": "情态动词（habe gekonnt）· 反身动词（hat sich gewaschen）· 带第四格宾语的他动词（hat den Kuchen gebacken）"
+  },
+  {
+    "id": "q-vc-future-2-formula",
+    "itemId": "german/vc-future-2",
+    "prompt": "将来时 II 的构成公式是什么？",
+    "answer": "werden（现在时）+ 第二分词 + haben / sein —— 助动词分工与完成时一致"
+  },
+  {
     "id": "q-vc-future-2",
     "itemId": "german/vc-future-2",
     "prompt": "Er wird das gemacht haben. 表达什么？",
     "answer": "将来完成，也可表示对过去事实的推测"
+  },
+  {
+    "id": "q-vc-passive-formation",
+    "itemId": "german/vc-passive",
+    "prompt": "两种被动各怎么构成？",
+    "answer": "过程被动：werden + 第二分词（Das Haus wird gebaut）· 状态被动：sein + 第二分词（Das Haus ist gebaut）"
   },
   {
     "id": "q-vc-passive",
@@ -90,10 +246,28 @@
     "answer": "前者是过程被动（正在被建），后者是状态被动（已建成）"
   },
   {
+    "id": "q-vc-passive-von-durch",
+    "itemId": "german/vc-passive",
+    "prompt": "被动句里 von 与 durch 怎么分工？",
+    "answer": "von + 与格表人或拟人力量（von der Regierung）· durch + 第四格表手段或中介（durch den Sturm）"
+  },
+  {
+    "id": "q-vf-separable-prefixes",
+    "itemId": "german/vf-separable",
+    "prompt": "举六个可分前缀。",
+    "answer": "auf / an / aus / ein / mit / nach（另 vor / weg / zu / zurück / fest / los）"
+  },
+  {
     "id": "q-vf-separable",
     "itemId": "german/vf-separable",
     "prompt": "可分动词在从句里怎么放？",
     "answer": "不再分开，整体放到句末：..., weil ich früh aufstehe"
+  },
+  {
+    "id": "q-vf-infinitive-zu-no-zu",
+    "itemId": "german/vf-infinitive-zu",
+    "prompt": "哪些词后面不定式不带 zu？",
+    "answer": "情态动词（muss gehen）· werden · lassen（lässt mich warten）· 感官动词（sehe ihn kommen），另 gehen / lehren / lernen 类"
   },
   {
     "id": "q-vf-infinitive-zu",
@@ -102,10 +276,28 @@
     "answer": "放在前缀与词干之间：aufzustehen"
   },
   {
+    "id": "q-vf-reflexive-two-paradigms",
+    "itemId": "german/vf-reflexive",
+    "prompt": "反身代词的第四格与第三格形式各是什么？",
+    "answer": "第四格 mich / dich / sich / uns / euch / sich · 第三格 mir / dir / sich / uns / euch / sich"
+  },
+  {
     "id": "q-vf-reflexive",
     "itemId": "german/vf-reflexive",
     "prompt": "Ich wasche mich. 与 Ich wasche mir die Hände. 的格差别？",
     "answer": "前者反身代词用第四格（直接宾语），后者用第三格（与格 + 第四格身体部位）"
+  },
+  {
+    "id": "q-vf-reflexive-true-false",
+    "itemId": "german/vf-reflexive",
+    "prompt": "真反身与假反身怎么区分？",
+    "answer": "真反身必须带 sich、不能换成别的宾语（sich beeilen / sich erholen）；假反身可换成非反身宾语（Ich wasche mich → Ich wasche das Kind）"
+  },
+  {
+    "id": "q-wo-verb-second-rule",
+    "itemId": "german/wo-verb-second",
+    "prompt": "主句里动词占第几位？第一位能放什么？",
+    "answer": "动词固定第二位；第一位可放主语、时间状语或介词短语等任意一个成分，主语随之挪到动词后"
   },
   {
     "id": "q-wo-verb-second",
@@ -114,10 +306,34 @@
     "answer": "主句动词必须占第二位 —— Gestern ging ich ins Kino"
   },
   {
+    "id": "q-wo-verb-second-first-slot",
+    "itemId": "german/wo-verb-second",
+    "prompt": "举三个可以放第一位的成分。",
+    "answer": "主语 Ich（Ich ging gestern ins Kino）· 时间状语 Gestern · 介词短语 Ins Kino"
+  },
+  {
+    "id": "q-wo-verb-second-exceptions",
+    "itemId": "german/wo-verb-second",
+    "prompt": "动词居首的三类例外是什么？",
+    "answer": "是非问句、命令句、不带连词的条件从句"
+  },
+  {
     "id": "q-wo-subordinate",
     "itemId": "german/wo-subordinate",
     "prompt": "..., weil ich krank bin. 里动词在什么位置？",
     "answer": "从句动词末位"
+  },
+  {
+    "id": "q-wo-subordinate-modal",
+    "itemId": "german/wo-subordinate",
+    "prompt": "从句里带情态动词时，两个动词怎么排？",
+    "answer": "不定式在前、变位的情态动词在最末：..., weil ich heute länger arbeiten muss."
+  },
+  {
+    "id": "q-wo-subordinate-perfect",
+    "itemId": "german/wo-subordinate",
+    "prompt": "从句用完成时，两个动词怎么排？",
+    "answer": "第二分词在前、助动词在最末：..., weil er das Buch gelesen hat."
   },
   {
     "id": "q-wo-mittelfeld",
@@ -126,10 +342,46 @@
     "answer": "Temporal（时间）→ Kausal（原因）→ Modal（方式）→ Lokal（地点）"
   },
   {
+    "id": "q-wo-mittelfeld-information",
+    "itemId": "german/wo-mittelfeld",
+    "prompt": "中场里信息新旧怎么排？",
+    "answer": "已知信息靠前、新信息靠后 —— Ich habe es gestern meinem Bruder gegeben / Ich habe meinem Bruder gestern das Buch gegeben"
+  },
+  {
+    "id": "q-wo-mittelfeld-pronoun",
+    "itemId": "german/wo-mittelfeld",
+    "prompt": "中场里代词与名词的先后如何？",
+    "answer": "代词先于名词；两个代词时第四格在前（Ich gebe ihm das Buch / Ich gebe es ihm）"
+  },
+  {
+    "id": "q-cc-konjunktiv-2-formation",
+    "itemId": "german/cc-konjunktiv-2",
+    "prompt": "第二虚拟式怎么构成？",
+    "answer": "过去时词干 + 虚拟词尾（-e / -est / -e / -en / -et / -en），强变化加变音：kam → käme / war → wäre / hatte → hätte；口语常用 würde + 不定式"
+  },
+  {
+    "id": "q-cc-konjunktiv-2-counterfactual",
+    "itemId": "german/cc-konjunktiv-2",
+    "prompt": "第二虚拟式表哪两类反事实？各举一例。",
+    "answer": "与现在事实相反（Wenn ich Zeit hätte, würde ich kommen）· 与过去事实相反（Wenn ich Zeit gehabt hätte, wäre ich gekommen）"
+  },
+  {
     "id": "q-cc-konjunktiv-2",
     "itemId": "german/cc-konjunktiv-2",
     "prompt": "Wenn ich Zeit hätte, würde ich kommen. 表达什么？",
     "answer": "与现在事实相反的虚拟（第二虚拟式）"
+  },
+  {
+    "id": "q-cc-konjunktiv-2-polite",
+    "itemId": "german/cc-konjunktiv-2",
+    "prompt": "第二虚拟式的委婉用法有哪些例子？",
+    "answer": "Ich hätte gern einen Kaffee. / Könnten Sie mir helfen? / Du solltest mehr schlafen."
+  },
+  {
+    "id": "q-cc-relative-special-was",
+    "itemId": "german/cc-relative-special",
+    "prompt": "was 的三类先行词是什么？",
+    "answer": "不定代词（alles / nichts）· 指代整个主句（Er kam zu spät, was mich ärgerte）· 最高级（das Beste, was du tun kannst）"
   },
   {
     "id": "q-cc-relative-special",
@@ -138,9 +390,819 @@
     "answer": "was"
   },
   {
+    "id": "q-cc-relative-special-wo",
+    "itemId": "german/cc-relative-special",
+    "prompt": "wo 的两类先行词是什么？",
+    "answer": "地名（Berlin, wo ich geboren bin）· 时间（Der Tag, wo wir uns trafen，书面常用 an dem）"
+  },
+  {
+    "id": "q-cc-indirect-question-words",
+    "itemId": "german/cc-indirect-question",
+    "prompt": "两类间接问句各用什么引导词？",
+    "answer": "是非问用 ob（是否）；补充问用疑问词（wann / wo / worauf / mit wem）"
+  },
+  {
     "id": "q-cc-indirect-question",
     "itemId": "german/cc-indirect-question",
     "prompt": "Er fragt, ob ich komme. 为什么用 ob 而不是 dass？",
     "answer": "是非问句转间接引语用 ob（是否）；dass 不带疑问语义"
+  },
+  {
+    "id": "q-cc-indirect-question-order",
+    "itemId": "german/cc-indirect-question",
+    "prompt": "间接问句的语序与标点是什么？",
+    "answer": "从句动词末位（..., ob du kommst）；整句是陈述，句末用句号不用问号"
+  },
+  {
+    "id": "q-cs-nominative-articles",
+    "itemId": "german/cs-nominative",
+    "prompt": "三性单数与复数的定冠词主格各是什么？",
+    "answer": "阳性 der / 阴性 die / 中性 das / 复数 die（der Mann, die Frau, das Kind, die Kinder）"
+  },
+  {
+    "id": "q-cs-nominative-predicative",
+    "itemId": "german/cs-nominative",
+    "prompt": "Er ist Lehrer. 里的 Lehrer 是什么格？为什么？",
+    "answer": "主格 —— sein / werden / bleiben 后面的表语名词与主语同格，不是第四格"
+  },
+  {
+    "id": "q-cs-accusative-only-masc",
+    "itemId": "german/cs-accusative",
+    "prompt": "第四格在哪一性数上真的变形？",
+    "answer": "只有阳性单数：der 变 den（den / einen / meinen / diesen / keinen），阴性、中性、复数同形"
+  },
+  {
+    "id": "q-cs-accusative-extra-sources",
+    "itemId": "german/cs-accusative",
+    "prompt": "除了直接宾语，哪三类场合固定带第四格？",
+    "answer": "es gibt（Es gibt einen Fehler）· 时间状语（jeden Tag / nächste Woche）· 带第四格的介词（durch / für / gegen / ohne / um / bis）"
+  },
+  {
+    "id": "q-cs-genitive-four-forms",
+    "itemId": "german/cs-genitive",
+    "prompt": "属格的四个形式各是什么？",
+    "answer": "des Mannes（阳性）/ der Frau（阴性）/ des Kindes（中性）/ der Kinder（复数）"
+  },
+  {
+    "id": "q-cs-genitive-prepositions",
+    "itemId": "german/cs-genitive",
+    "prompt": "哪四个介词要求属格？",
+    "answer": "wegen / trotz / während / statt（另有 aufgrund），如 wegen des Regens、trotz des Lärms"
+  },
+  {
+    "id": "q-cs-genitive-noun-ending",
+    "itemId": "german/cs-genitive",
+    "prompt": "属格里名词什么时候加 -es、什么时候加 -s、什么时候不加？",
+    "answer": "阳中性单音节多带 -es（des Mannes / des Kindes），多音节带 -s（des Lehrers / des Autos），阴性与复数不加词尾（der Frau / der Kinder）"
+  },
+  {
+    "id": "q-cs-case-preposition-two-way-list",
+    "itemId": "german/cs-case-preposition",
+    "prompt": "双格介词是哪八个？",
+    "answer": "an / auf / in / über / unter / vor / hinter / zwischen"
+  },
+  {
+    "id": "q-cs-case-preposition-dative-list",
+    "itemId": "german/cs-case-preposition",
+    "prompt": "只支配第三格的介词有哪六个？",
+    "answer": "aus / bei / mit / nach / seit / von（zu 与 gegenüber 也支配第三格）"
+  },
+  {
+    "id": "q-cs-case-preposition-contractions",
+    "itemId": "german/cs-case-preposition",
+    "prompt": "in dem / an dem / zu dem / bei dem 的缩合形式各是什么？",
+    "answer": "im / am / zum / beim（另 in das → ins、an das → ans、zu der → zur、von dem → vom）"
+  },
+  {
+    "id": "q-cs-case-verb-dative-only",
+    "itemId": "german/cs-case-verb",
+    "prompt": "哪四个动词只带第三格？",
+    "answer": "helfen / danken / gehören / folgen（schmecken、passen 也是）"
+  },
+  {
+    "id": "q-cs-case-verb-genitive-only",
+    "itemId": "german/cs-case-verb",
+    "prompt": "哪两个动词只带属格？",
+    "answer": "bedürfen / gedenken —— 书面语，口语少见"
+  },
+  {
+    "id": "q-cs-case-verb-pronoun-order",
+    "itemId": "german/cs-case-verb",
+    "prompt": "Ich gebe es ihm. 与 Ich gebe ihm das Buch. 反映什么排序规则？",
+    "answer": "代词整体先于名词；两个代词同时出现时第四格在前（es 在 ihm 之前）"
+  },
+  {
+    "id": "q-cs-apposition-forms",
+    "itemId": "german/cs-apposition",
+    "prompt": "同位语有哪三种形态？",
+    "answer": "名词短语（mein Nachbar）· 头衔与称呼（Professor Meier）· 固定地理与时间同位（die Stadt Berlin / der Monat Mai）"
+  },
+  {
+    "id": "q-cs-apposition-same-case",
+    "itemId": "german/cs-apposition",
+    "prompt": "mit Herrn Müller, meinem Nachbarn 里同位语为什么是 meinem？",
+    "answer": "同位语必须与被说明名词同格 —— Herrn Müller 是第三格，同位语随之用第三格"
+  },
+  {
+    "id": "q-cs-case-loss-two-paths",
+    "itemId": "german/cs-case-loss",
+    "prompt": "口语里属格常被哪两条路径替代？",
+    "answer": "属格短语换成 von + 与格（die Farbe vom Himmel）· 支配属格的介词后换成与格（wegen dem Regen）"
+  },
+  {
+    "id": "q-cs-case-loss-written",
+    "itemId": "german/cs-case-loss",
+    "prompt": "正式文本里 wegen dem Regen 可以接受吗？",
+    "answer": "不可以 —— 书面语仍守格标记，写 wegen des Regens；wegen dem Regen 只是口语形态"
+  },
+  {
+    "id": "q-ng-three-genders-articles",
+    "itemId": "german/ng-three-genders",
+    "prompt": "德语三性各配哪个定冠词？各举一例。",
+    "answer": "阳性 der（der Tisch）· 阴性 die（die Tür）· 中性 das（das Fenster）"
+  },
+  {
+    "id": "q-ng-three-genders-homographs",
+    "itemId": "german/ng-three-genders",
+    "prompt": "der See 与 die See、der Band 与 das Band 有什么区别？",
+    "answer": "同形异义、性不同则义不同：der See 是湖、die See 是海；der Band 是卷、das Band 是带子（die Band 是乐队）"
+  },
+  {
+    "id": "q-ng-gender-suffix-fem",
+    "itemId": "german/ng-gender-suffix",
+    "prompt": "哪四个后缀使名词成阴性？",
+    "answer": "-ung / -heit / -keit / -schaft（另 -tion / -tät / -ie），如 die Zeitung / die Freiheit / die Möglichkeit / die Freundschaft"
+  },
+  {
+    "id": "q-ng-gender-suffix-neut",
+    "itemId": "german/ng-gender-suffix",
+    "prompt": "哪三个后缀使名词成中性？",
+    "answer": "-chen / -lein / -ment（另 -um / -nis），如 das Mädchen / das Fräulein / das Dokument"
+  },
+  {
+    "id": "q-ng-gender-suffix-masc",
+    "itemId": "german/ng-gender-suffix",
+    "prompt": "哪三个后缀使名词成阳性？",
+    "answer": "-er / -ling / -ismus（另 -ant / -or），如 der Lehrer / der Frühling / der Realismus"
+  },
+  {
+    "id": "q-ng-gender-semantic-masc",
+    "itemId": "german/ng-gender-semantic",
+    "prompt": "星期与月份、方位、天气三类名词是什么性别？",
+    "answer": "都是阳性 —— der Montag / der Norden / der Regen"
+  },
+  {
+    "id": "q-ng-gender-semantic-fem",
+    "itemId": "german/ng-gender-semantic",
+    "prompt": "树木与花、船与飞机两类名词是什么性别？",
+    "answer": "阴性 —— die Eiche / die Rose、die Titanic / die Boeing"
+  },
+  {
+    "id": "q-ng-gender-semantic-neut",
+    "itemId": "german/ng-gender-semantic",
+    "prompt": "金属、颜色、动词不定式名词三类是什么性别？",
+    "answer": "中性 —— das Gold / das Rot / das Lesen"
+  },
+  {
+    "id": "q-ng-plural-er-three",
+    "itemId": "german/ng-plural-er",
+    "prompt": "Kind、Bild、Haus 的复数各是什么？",
+    "answer": "die Kinder / die Bilder / die Häuser（Haus 变音）"
+  },
+  {
+    "id": "q-ng-plural-er-vs-zero",
+    "itemId": "german/ng-plural-er",
+    "prompt": "die Kinder 与 die Lehrer 的复数构成有什么不同？",
+    "answer": "Kinder 是词干加 -er 构成复数；Lehrer 是零复数，词本身不变，只是冠词变 die"
+  },
+  {
+    "id": "q-ng-plural-en-rules",
+    "itemId": "german/ng-plural-en",
+    "prompt": "-(e)n 复数的两条判据是什么？",
+    "answer": "阴性名词绝大多数走这一类；词尾已含 -e 时只加 -n（die Blume → die Blumen）"
+  },
+  {
+    "id": "q-ng-plural-en-suffixes",
+    "itemId": "german/ng-plural-en",
+    "prompt": "-ion、-tät、-ung 结尾的名词复数怎么变？",
+    "answer": "都加 -en：die Nationen / die Universitäten / die Wohnungen"
+  },
+  {
+    "id": "q-ng-plural-s-sources",
+    "itemId": "german/ng-plural-s",
+    "prompt": "-s 复数的三类词源是什么？",
+    "answer": "外语借词（die Autos / die Restaurants）· 缩写与字母词（die PKWs）· 口语亲属称呼（die Omas / die Muttis）"
+  },
+  {
+    "id": "q-ng-plural-s-dative",
+    "itemId": "german/ng-plural-s",
+    "prompt": "-s 复数在第三格里还要加词尾吗？",
+    "answer": "不加 —— den Autos / mit den Hotels 形态不变，不需要再加 -n"
+  },
+  {
+    "id": "q-ng-plural-invariant-zero",
+    "itemId": "german/ng-plural-invariant",
+    "prompt": "举三个单复数同形的名词。",
+    "answer": "der Lehrer / das Fenster / der Wagen（复数仍 die Lehrer / die Fenster / die Wagen）"
+  },
+  {
+    "id": "q-ng-plural-invariant-plural-only",
+    "itemId": "german/ng-plural-invariant",
+    "prompt": "举三个只有复数的名词，谓语用什么数？",
+    "answer": "die Eltern / die Ferien / die Kosten（另 die Möbel / die Leute）；谓语用复数：Diese Möbel sind neu."
+  },
+  {
+    "id": "q-ng-plural-invariant-singular-only",
+    "itemId": "german/ng-plural-invariant",
+    "prompt": "举两个只有单数的名词。",
+    "answer": "das Obst / die Milch（另 das Fleisch / die Musik / die Gesundheit）"
+  },
+  {
+    "id": "q-art-indefinite-table",
+    "itemId": "german/art-indefinite",
+    "prompt": "ein 的四格三性形式各是什么？",
+    "answer": "主 ein / eine / ein · 宾 einen / eine / ein · 与 einem / einer / einem · 属 eines / einer / eines"
+  },
+  {
+    "id": "q-art-indefinite-plural",
+    "itemId": "german/art-indefinite",
+    "prompt": "ein 有复数形式吗？kein 呢？",
+    "answer": "ein 没有复数（Das sind Bücher，不能说 eins Bücher）；kein 有复数形式（keine Bücher）"
+  },
+  {
+    "id": "q-art-indefinite-kein-vs-nicht",
+    "itemId": "german/art-indefinite",
+    "prompt": "Ich habe kein Auto. 与 Das ist nicht mein Auto. 为什么一个用 kein 一个用 nicht？",
+    "answer": "kein 否定名词本身（没有车）；nicht 否定归属判断（不是我的车）"
+  },
+  {
+    "id": "q-art-demonstrative-dieser",
+    "itemId": "german/art-demonstrative",
+    "prompt": "dieser 的四格形式怎么变？",
+    "answer": "主 dieser Tisch / 宾 diesen Tisch / 与 diesem Tisch；阴性主宾 diese、与格 dieser；中性 dieses / diesem；复数与格 diesen Büchern"
+  },
+  {
+    "id": "q-art-demonstrative-derselbe",
+    "itemId": "german/art-demonstrative",
+    "prompt": "demselben Zug 为什么是 demselben 而不是 demselbem？",
+    "answer": "derselbe 只有 der 部分按格变格（dem-），selbe 部分不变"
+  },
+  {
+    "id": "q-art-relative-table",
+    "itemId": "german/art-relative",
+    "prompt": "关系代词的第三格与第二格各是什么形式？",
+    "answer": "与格 dem / der / dem / denen · 属格 dessen / deren / dessen / deren"
+  },
+  {
+    "id": "q-art-relative-diff",
+    "itemId": "german/art-relative",
+    "prompt": "关系代词与定冠词在哪两处不同？",
+    "answer": "与格复数用 denen（定冠词是 den）· 属格用 dessen / deren（定冠词是 des / der）"
+  },
+  {
+    "id": "q-art-interrogative-welcher",
+    "itemId": "german/art-interrogative",
+    "prompt": "welcher 提问什么？谁在变格？",
+    "answer": "在已知范围内选择；welcher 自己按格变（Welchen Wein trinkst du / Mit welchem Zug fährst du）"
+  },
+  {
+    "id": "q-art-interrogative-was-fuer",
+    "itemId": "german/art-interrogative",
+    "prompt": "was für ein 里哪部分变格？它问选择还是问类别？",
+    "answer": "ein 变格、was für 不变；问类别（Was für einen Wagen fährst du）"
+  },
+  {
+    "id": "q-art-quantifier-plural",
+    "itemId": "german/art-quantifier",
+    "prompt": "举四个用于复数的不定量词。",
+    "answer": "alle / viele / einige / manche（另 wenige、beide），词尾同定冠词：alle Bücher / mit vielen Freunden"
+  },
+  {
+    "id": "q-art-quantifier-only-plural",
+    "itemId": "german/art-quantifier",
+    "prompt": "哪两个不定量词只用复数？",
+    "answer": "sämtliche / mehrere —— sämtliche Unterlagen / mehrere Fragen"
+  },
+  {
+    "id": "q-art-use-definite",
+    "itemId": "german/art-use",
+    "prompt": "定冠词有哪三种用法？",
+    "answer": "再提及（Das Buch ist spannend）· 语境可指认或唯一（Die Sonne geht auf）· 指上文提过的东西（语篇功能）"
+  },
+  {
+    "id": "q-art-use-indefinite",
+    "itemId": "german/art-use",
+    "prompt": "不定冠词有哪两种用法？",
+    "answer": "首次提及（Ich kaufe ein Buch）· 单数泛指一个类别（Ein Hund bellt）"
+  },
+  {
+    "id": "q-art-use-zero",
+    "itemId": "german/art-use",
+    "prompt": "art-use 里零冠词出现在哪两种场合？",
+    "answer": "复数泛指（Hunde bellen）· 职业、身份、国籍作表语（Sie ist Lehrerin）"
+  },
+  {
+    "id": "q-art-proper-country-classes",
+    "itemId": "german/art-proper",
+    "prompt": "哪三类国名必须带定冠词？各举一例。",
+    "answer": "阴性 die Schweiz（die Türkei）· 复数 die USA（die Niederlande）· 阳性 der Iran（der Irak）"
+  },
+  {
+    "id": "q-art-proper-name-genitive",
+    "itemId": "german/art-proper",
+    "prompt": "人名的第二格有哪两种写法？",
+    "answer": "Goethes Werke（加 -s）· die Werke von Goethe（von + 与格，口语常用）"
+  },
+  {
+    "id": "q-adj-mixed-table",
+    "itemId": "german/adj-mixed",
+    "prompt": "混合变化表怎么排？",
+    "answer": "主 -er / -e / -es · 宾 -en / -e / -es · 与 全 -en · 属 全 -en（只有单数）"
+  },
+  {
+    "id": "q-adj-mixed-plural",
+    "itemId": "german/adj-mixed",
+    "prompt": "混合变化在复数上走哪一套？为什么？",
+    "answer": "走弱变化 —— meine / keine 的复数形已带词尾、已标格，形容词退回 -en（meine guten Freunde）"
+  },
+  {
+    "id": "q-adj-strong-table",
+    "itemId": "german/adj-strong",
+    "prompt": "强变化表怎么排？",
+    "answer": "主 -er / -e / -es / -e · 宾 -en / -e / -es / -e · 与 -em / -er / -em / -en · 属 -en / -er / -en / -er"
+  },
+  {
+    "id": "q-adj-strong-correspondence",
+    "itemId": "german/adj-strong",
+    "prompt": "强变化词尾与定冠词是什么关系？",
+    "answer": "词尾 = 定冠词去掉首字母：der → -er、die → -e、das → -es、dem → -em、den / des → -en"
+  },
+  {
+    "id": "q-adj-predicative-only-attributive",
+    "itemId": "german/adj-predicative",
+    "prompt": "形容词什么时候必须加词尾？",
+    "answer": "只有作定语时加；作表语、副词性表语、状语都不变格（Der Wein ist gut / Er fährt schnell）"
+  },
+  {
+    "id": "q-adj-predicative-plural",
+    "itemId": "german/adj-predicative",
+    "prompt": "表语形容词在复数主语后加词尾吗？举两个例子。",
+    "answer": "不加 —— Die Weine sind gut. / Die Häuser sind alt.（不是 guten / alten）"
+  },
+  {
+    "id": "q-adj-comparative-umlaut",
+    "itemId": "german/adj-comparative",
+    "prompt": "比较级怎么构成？举三个变音例词。",
+    "answer": "加 -er；alt → älter、jung → jünger、groß → größer（gesund 也作 gesünder）"
+  },
+  {
+    "id": "q-adj-comparative-attributive",
+    "itemId": "german/adj-comparative",
+    "prompt": "比较级作表语与作定语形态有什么不同？",
+    "answer": "表语不变格（Der Zug ist schneller）· 定语照常变格（ein schnellerer Zug / mit schnellerem Zug）"
+  },
+  {
+    "id": "q-adj-superlative-two-forms",
+    "itemId": "german/adj-superlative",
+    "prompt": "最高级的两个形式怎么构成？",
+    "answer": "状语 am + -sten（am schnellsten）· 定语 定冠词 + -ste + 变格词尾（der schnellste Zug）"
+  },
+  {
+    "id": "q-adj-superlative-irregular",
+    "itemId": "german/adj-superlative",
+    "prompt": "举三个不规则的等级。",
+    "answer": "gut — besser — am besten · viel — mehr — am meisten · gern — lieber — am liebsten（另 hoch、nah）"
+  },
+  {
+    "id": "q-adj-irregular-seven",
+    "itemId": "german/adj-irregular",
+    "prompt": "默写七组不规则等级。",
+    "answer": "gut-besser-am besten · viel-mehr-am meisten · gern-lieber-am liebsten · hoch-höher-am höchsten · nah-näher-am nächsten · bald-eher-am ehesten · teuer-teurer-am teuersten"
+  },
+  {
+    "id": "q-adj-participle-attribute-two-participles",
+    "itemId": "german/adj-participle-attribute",
+    "prompt": "第一分词与第二分词作定语各表什么？",
+    "answer": "第一分词表主动、进行（das schlafende Kind / die steigende Temperatur）· 第二分词表被动、完成（das gebaute Haus / die geöffnete Tür）"
+  },
+  {
+    "id": "q-adj-participle-attribute-position",
+    "itemId": "german/adj-participle-attribute",
+    "prompt": "扩展定语放在哪个位置？怎么读？",
+    "answer": "放在冠词与中心名词之间（der gestern von ihm geschriebene Brief）；从名词往前读 —— 先中心名词、再分词、再时间与施事"
+  },
+  {
+    "id": "q-vc-present-endings",
+    "itemId": "german/vc-present",
+    "prompt": "现在时六个人称的词尾各是什么？",
+    "answer": "ich -e · du -st · er/sie/es -t · wir -en · ihr -t · sie/Sie -en"
+  },
+  {
+    "id": "q-vc-present-insert-e",
+    "itemId": "german/vc-present",
+    "prompt": "什么时候在词尾前插 -e？词干以 -s / -ß / -z 结尾时 du 怎么变？",
+    "answer": "词干以 -t / -d / -m / -n 结尾且后接辅音时插 -e（du arbeitest / er atmet）；词干以 -s / -ß / -z 结尾时 du 只加 -t（du reist / du heißt）"
+  },
+  {
+    "id": "q-vc-present-umlaut-persons",
+    "itemId": "german/vc-present",
+    "prompt": "强变化动词的元音交替发生在哪两个人称？",
+    "answer": "只有 du 与 er —— du fährst / er fährt，wir fahren 用原词干"
+  },
+  {
+    "id": "q-vc-strong-three-forms-a",
+    "itemId": "german/vc-strong",
+    "prompt": "nehmen、geben、sehen 的三形各是什么？",
+    "answer": "nehmen-nahm-genommen（du nimmst / er nimmt）· geben-gab-gegeben（du gibst / er gibt）· sehen-sah-gesehen（du siehst / er sieht）"
+  },
+  {
+    "id": "q-vc-strong-three-forms-b",
+    "itemId": "german/vc-strong",
+    "prompt": "fahren 与 laufen 的三形各是什么？",
+    "answer": "fahren-fuhr-gefahren（du fährst / er fährt）· laufen-lief-gelaufen（du läufst / er läuft）"
+  },
+  {
+    "id": "q-vc-strong-persons",
+    "itemId": "german/vc-strong",
+    "prompt": "强变化的元音交替发生在哪两个人称？",
+    "answer": "只有 du 与 er；wir / sie 用原词干（wir nehmen / sie fahren）"
+  },
+  {
+    "id": "q-vc-modal-present-forms",
+    "itemId": "german/vc-modal-present",
+    "prompt": "六个情态动词的现在时第一、第三人称各是什么？",
+    "answer": "können: kann · müssen: muss · wollen: will · dürfen: darf · sollen: soll · mögen: mag —— 第一与第三人称同形"
+  },
+  {
+    "id": "q-vc-modal-present-past",
+    "itemId": "german/vc-modal-present",
+    "prompt": "情态动词的过去时第一、第三人称怎么构成？",
+    "answer": "同样一、三同形且无词尾：konnte / musste / wollte / durfte / sollte / mochte"
+  },
+  {
+    "id": "q-vc-past-three-types",
+    "itemId": "german/vc-past",
+    "prompt": "过去时三类构成方式各是什么？",
+    "answer": "弱变化：词干 + -te（machte）· 强变化：换元音、无词尾（ging）· 混合变化：换元音 + 弱变化词尾（brachte）"
+  },
+  {
+    "id": "q-vc-past-colloquial",
+    "itemId": "german/vc-past",
+    "prompt": "口语里哪三个动词常用过去时而不是完成时？",
+    "answer": "情态动词、sein、haben —— Ich war müde. / Ich hatte Zeit."
+  },
+  {
+    "id": "q-vc-perfect-haben-weak",
+    "itemId": "german/vc-perfect-haben",
+    "prompt": "弱变化的第二分词怎么构成？",
+    "answer": "ge- + 词干 + -t：gemacht / gekauft / gearbeitet"
+  },
+  {
+    "id": "q-vc-perfect-haben-strong",
+    "itemId": "german/vc-perfect-haben",
+    "prompt": "强变化的第二分词怎么构成？",
+    "answer": "ge- + 词干（常换元音）+ -en：gelesen / gesehen / genommen"
+  },
+  {
+    "id": "q-vc-perfect-haben-no-ge",
+    "itemId": "german/vc-perfect-haben",
+    "prompt": "哪两类动词的第二分词不加 ge-？",
+    "answer": "不可分前缀动词（verstehen → verstanden / besuchen → besucht）与 -ieren 结尾（studieren → studiert）"
+  },
+  {
+    "id": "q-vc-perfect-haben-separable",
+    "itemId": "german/vc-perfect-haben",
+    "prompt": "可分动词的第二分词怎么构成？",
+    "answer": "ge- 夹在前缀与词干之间：aufstehen → aufgestanden / einkaufen → eingekauft / anrufen → angerufen"
+  },
+  {
+    "id": "q-vc-plusquamperfect-aux",
+    "itemId": "german/vc-plusquamperfect",
+    "prompt": "过去完成时的两个助动词形式是什么？",
+    "answer": "hatte + 第二分词（hatte gearbeitet）· war + 第二分词（war gefahren），分工同完成时"
+  },
+  {
+    "id": "q-vc-plusquamperfect-nachdem",
+    "itemId": "german/vc-plusquamperfect",
+    "prompt": "过去完成时最常与哪个连词连用？从句与主句各用什么时态？",
+    "answer": "nachdem —— 从句用过去完成、主句用过去时（Nachdem er gegessen hatte, ging er los）"
+  },
+  {
+    "id": "q-vc-future-1-werden",
+    "itemId": "german/vc-future-1",
+    "prompt": "werden 的现在时怎么变位？",
+    "answer": "werde / wirst / wird / werden / werdet / werden —— 第一与第三人称不同形，与情态动词相反"
+  },
+  {
+    "id": "q-vc-future-1-word-order",
+    "itemId": "german/vc-future-1",
+    "prompt": "将来时里不定式放在什么位置？",
+    "answer": "句末：Ich werde das Buch morgen lesen. / Es wird regnen."
+  },
+  {
+    "id": "q-vc-future-1-present-substitute",
+    "itemId": "german/vc-future-1",
+    "prompt": "口语里怎么替代将来时？",
+    "answer": "用现在时 + 时间状语：Morgen fahre ich nach Hamburg. / Nächste Woche beginnt der Kurs."
+  },
+  {
+    "id": "q-vf-transitive-three-tests",
+    "itemId": "german/vf-transitive",
+    "prompt": "判断及物性的三条判据是什么？",
+    "answer": "有第四格宾语 · 完成时用 haben · 可构成过程被动（Das Haus wird gebaut）"
+  },
+  {
+    "id": "q-vf-transitive-counterexample",
+    "itemId": "german/vf-transitive",
+    "prompt": "helfen 带宾语，为什么不算及物动词？",
+    "answer": "它带的是与格宾语、不能构成过程被动，只能走无人称被动 Dem Lehrer wird geholfen"
+  },
+  {
+    "id": "q-vf-dative-six",
+    "itemId": "german/vf-dative",
+    "prompt": "举六个只带与格的动词。",
+    "answer": "helfen / danken / gehören / folgen / gratulieren / antworten（另 passen、gefallen、schmecken）"
+  },
+  {
+    "id": "q-vf-dative-pair",
+    "itemId": "german/vf-dative",
+    "prompt": "antworten 与 beantworten 的格要求有什么不同？",
+    "answer": "antworten + D（回答某人：Ich antworte dem Lehrer）· beantworten + A（回答问题：Ich beantworte die Frage）"
+  },
+  {
+    "id": "q-vf-genitive-four",
+    "itemId": "german/vf-genitive",
+    "prompt": "举四个支配属格的动词。",
+    "answer": "bedürfen / gedenken / sich erinnern / sich bedienen（另 anklagen、sich annehmen）"
+  },
+  {
+    "id": "q-vf-genitive-substitutes",
+    "itemId": "german/vf-genitive",
+    "prompt": "属格动词在口语里怎么替代？",
+    "answer": "gedenken 改带与格 · sich erinnern 改成 an + A（最常用）· bedürfen 换成 brauchen + A"
+  },
+  {
+    "id": "q-vf-prepositional-five",
+    "itemId": "german/vf-prepositional",
+    "prompt": "举五个动词的介词搭配。",
+    "answer": "warten auf + A / sich interessieren für + A / teilnehmen an + D / denken an + A / abhängen von + D"
+  },
+  {
+    "id": "q-vf-prepositional-pronoun",
+    "itemId": "german/vf-prepositional",
+    "prompt": "介词宾语怎么代词化？",
+    "answer": "指事物用 da(r)- 复合词（Ich warte darauf / Ich denke daran / Ich freue mich darüber）；指人用介词 + 人称代词（Ich warte auf ihn）"
+  },
+  {
+    "id": "q-vf-inseparable-prefixes",
+    "itemId": "german/vf-inseparable",
+    "prompt": "举七个不可分前缀。",
+    "answer": "be- / ge- / er- / ver- / zer- / ent- / emp-（miss- 通常也不可分）"
+  },
+  {
+    "id": "q-vf-inseparable-participles",
+    "itemId": "german/vf-inseparable",
+    "prompt": "举三个不可分动词的第二分词。",
+    "answer": "verstanden / besucht / erzählt（另 zerbrochen / empfohlen）—— 都不加 ge-"
+  },
+  {
+    "id": "q-vf-modal-use-objective",
+    "itemId": "german/vf-modal-use",
+    "prompt": "情态动词的客观用法有哪三类？各举一例。",
+    "answer": "义务（Ich muss zum Arzt）· 能力（Ich kann schwimmen）· 许可（Sie darf hier parken）"
+  },
+  {
+    "id": "q-vf-modal-use-subjective",
+    "itemId": "german/vf-modal-use",
+    "prompt": "情态动词的主观用法有哪两类？",
+    "answer": "推测（Er muss krank sein / Er kann krank sein / Er dürfte krank sein）· 转述（Er soll krank sein / Er will das selbst gesehen haben）"
+  },
+  {
+    "id": "q-vf-modal-use-negation",
+    "itemId": "german/vf-modal-use",
+    "prompt": "Du musst nicht kommen. 与 Du darfst nicht kommen. 有何差别？",
+    "answer": "前者是「不必来」（nicht müssen）；后者是「不许来」（nicht dürfen）"
+  },
+  {
+    "id": "q-vf-imperative-three-forms",
+    "itemId": "german/vf-imperative",
+    "prompt": "命令式三套各怎么构成？",
+    "answer": "du：用词干（Mach! / Komm!）· ihr：与现在时第二人称同形（Macht!）· Sie：动词 + Sie 倒装（Machen Sie!）"
+  },
+  {
+    "id": "q-vf-imperative-sein",
+    "itemId": "german/vf-imperative",
+    "prompt": "sein 的命令式怎么写？",
+    "answer": "Sei ruhig!（du）/ Seid ruhig!（ihr）/ Seien Sie ruhig!（Sie）"
+  },
+  {
+    "id": "q-wo-vorfeld-capacity",
+    "itemId": "german/wo-vorfeld",
+    "prompt": "前置场能放几个成分？",
+    "answer": "只有一个 —— 长的介词短语整体也算一个成分位（Gestern Abend um acht habe ich ...）"
+  },
+  {
+    "id": "q-wo-vorfeld-unsuitable",
+    "itemId": "german/wo-vorfeld",
+    "prompt": "哪三类成分不宜放前置场？",
+    "answer": "nicht · 反身代词 · 弱读代词宾语（Nicht habe ich das gesagt 应写成 Das habe ich nicht gesagt）"
+  },
+  {
+    "id": "q-wo-vorfeld-information",
+    "itemId": "german/wo-vorfeld",
+    "prompt": "前置场与信息结构是什么关系？",
+    "answer": "已知信息适合前置，全新信息留在中场靠后 —— Das Buch kenne ich schon / Ich kenne ein Buch, das ..."
+  },
+  {
+    "id": "q-wo-satzklammer-four",
+    "itemId": "german/wo-satzklammer",
+    "prompt": "举四个句框形式。",
+    "answer": "完成时 habe ... gekauft · 情态 muss ... arbeiten · 可分动词 stehe ... auf · 带 zu 不定式 versuche ... zu schlafen"
+  },
+  {
+    "id": "q-wo-satzklammer-two-ends",
+    "itemId": "german/wo-satzklammer",
+    "prompt": "句框两端各承担什么？",
+    "answer": "前半（左括号）给时态与人称，后半（右括号）给动词的词汇意义 —— 听话人要到句末才拿到完整命题"
+  },
+  {
+    "id": "q-wo-negation-kein-nicht",
+    "itemId": "german/wo-negation",
+    "prompt": "kein 与 nicht 怎么分工？",
+    "answer": "kein 否定名词（kein Geld / keine Zeit）；nicht 否定动词、形容词、地点等其余成分"
+  },
+  {
+    "id": "q-wo-negation-position",
+    "itemId": "german/wo-negation",
+    "prompt": "nicht 的位置有哪三条规则？",
+    "answer": "尽量靠后、但在固定成分之前：第二分词前（nicht gelesen）· 地点前（nicht nach Berlin）· 时间之后（heute nicht）"
+  },
+  {
+    "id": "q-wo-pronoun-order-noun-noun",
+    "itemId": "german/wo-pronoun-order",
+    "prompt": "两个名词宾语谁在前？",
+    "answer": "与格在前：Ich gebe dem Mann das Buch."
+  },
+  {
+    "id": "q-wo-pronoun-order-pronoun-pronoun",
+    "itemId": "german/wo-pronoun-order",
+    "prompt": "两个代词谁在前？",
+    "answer": "第四格在前：Ich gebe es ihm.（不是 ihm es）"
+  },
+  {
+    "id": "q-wo-pronoun-order-pronoun-noun",
+    "itemId": "german/wo-pronoun-order",
+    "prompt": "代词与名词同时出现谁在前？",
+    "answer": "代词在前：Ich gebe ihm das Buch. / Ich gebe es dem Mann."
+  },
+  {
+    "id": "q-wo-pronoun-order-reflexive",
+    "itemId": "german/wo-pronoun-order",
+    "prompt": "反身代词占第四格时，与格成分放哪？",
+    "answer": "与格成分在后：Ich wasche mir die Hände.（mir 与格 + die Hände 第四格）"
+  },
+  {
+    "id": "q-wo-question-verb-position",
+    "itemId": "german/wo-question",
+    "prompt": "两类问句里动词各在第几位？",
+    "answer": "是非问句：动词第一位（Kommst du mit?）· 补充问句：疑问词第一位、动词第二位（Wann kommst du?）"
+  },
+  {
+    "id": "q-wo-question-words",
+    "itemId": "german/wo-question",
+    "prompt": "举六个疑问词。",
+    "answer": "wer / was / wann / wo / warum / wie（另 wohin / woher / welcher）"
+  },
+  {
+    "id": "q-wo-emphasis-shift-three-ways",
+    "itemId": "german/wo-emphasis-shift",
+    "prompt": "三种强调手段是什么？",
+    "answer": "前置场（Das Buch habe ich gestern gekauft）· 重音（DEN habe ich gemeint）· 小品词（Das ist doch klar）"
+  },
+  {
+    "id": "q-wo-emphasis-shift-nur",
+    "itemId": "german/wo-emphasis-shift",
+    "prompt": "nur 放在什么位置？",
+    "answer": "紧贴被强调的成分：Ich habe nur das Buch gekauft.（只买了书，别的没买）"
+  },
+  {
+    "id": "q-wo-ausklammerung-allowed",
+    "itemId": "german/wo-ausklammerung",
+    "prompt": "哪三类成分可以外置？",
+    "answer": "介词短语（gesehen gestern im Kino）· 从句（Ich freue mich darauf, dass du kommst）· 比较结构"
+  },
+  {
+    "id": "q-wo-ausklammerung-forbidden",
+    "itemId": "german/wo-ausklammerung",
+    "prompt": "哪三类成分不能外置？",
+    "answer": "第二分词（不能离开框末）· 可分前缀 · 名词宾语（Ich habe das Buch gesehen，不能说 gesehen das Buch）"
+  },
+  {
+    "id": "q-cc-dass-two-functions",
+    "itemId": "german/cc-dass",
+    "prompt": "dass 从句有哪两个功能？",
+    "answer": "宾语从句（Ich glaube, dass er kommt）· 主语从句（Es ist wichtig, dass du pünktlich bist）"
+  },
+  {
+    "id": "q-cc-dass-es",
+    "itemId": "german/cc-dass",
+    "prompt": "什么时候用 es 占位？什么时候不能省 dass？",
+    "answer": "主语从句后置时主句用 es 占位（Es ist wichtig, dass du pünktlich bist）；从句提到主句第一位时不能省 dass（Dass er kommt, freut mich）"
+  },
+  {
+    "id": "q-cc-relative-four-cases",
+    "itemId": "german/cc-relative",
+    "prompt": "关系代词四个格的形式各是什么（以阳性为例）？",
+    "answer": "主 der · 宾 den · 与 dem · 属 dessen"
+  },
+  {
+    "id": "q-cc-relative-preposition",
+    "itemId": "german/cc-relative",
+    "prompt": "关系代词前带介词时，格由什么决定？",
+    "answer": "由介词决定：die Stadt, in der ich wohne / der Freund, mit dem ich reise"
+  },
+  {
+    "id": "q-cc-time-als-wenn",
+    "itemId": "german/cc-time",
+    "prompt": "als 与 wenn 各表什么时间关系？",
+    "answer": "als：过去的一次性事件（Als ich zwölf war, zogen wir um）· wenn：现在或未来的重复、每次（Immer wenn es regnet, bleibt er zu Hause）"
+  },
+  {
+    "id": "q-cc-time-waehrend-nachdem",
+    "itemId": "german/cc-time",
+    "prompt": "während 与 nachdem 各表什么？",
+    "answer": "während：同时进行（Während ich koche, hört er Musik）· nachdem：从句先完成、主从句时态错开（Nachdem er gegessen hatte, ging er los）"
+  },
+  {
+    "id": "q-cc-causal-reason",
+    "itemId": "german/cc-causal",
+    "prompt": "表原因的两个连词是什么？差别在哪？",
+    "answer": "weil + 从句（动词末位）· denn + 并列句（语序不变：denn es regnet）"
+  },
+  {
+    "id": "q-cc-causal-condition",
+    "itemId": "german/cc-causal",
+    "prompt": "表条件的两个连词是什么？",
+    "answer": "wenn / falls —— Wenn du kommst, freue ich mich."
+  },
+  {
+    "id": "q-cc-causal-concession",
+    "itemId": "german/cc-causal",
+    "prompt": "表让步的两个连词是什么？",
+    "answer": "obwohl（事实：Obwohl es regnete, gingen wir spazieren）· auch wenn（假定：Auch wenn es regnet, gehe ich）"
+  },
+  {
+    "id": "q-cc-causal-purpose",
+    "itemId": "german/cc-causal",
+    "prompt": "表目的的两个结构是什么？",
+    "answer": "damit + 从句（Ich spreche langsam, damit du mich verstehst）· um ... zu + 不定式（主语一致时）"
+  },
+  {
+    "id": "q-cc-konjunktiv-1-uses",
+    "itemId": "german/cc-konjunktiv-1",
+    "prompt": "第一虚拟式有什么用？",
+    "answer": "新闻与学术的转述，保持距离 · 报告他人话语而不认可其内容（Er sagt, er komme）"
+  },
+  {
+    "id": "q-cc-konjunktiv-1-sein",
+    "itemId": "german/cc-konjunktiv-1",
+    "prompt": "sein 的第一虚拟式怎么变位？",
+    "answer": "sei / seiest / sei / seien / seiet / seien"
+  },
+  {
+    "id": "q-cc-konjunktiv-1-homograph",
+    "itemId": "german/cc-konjunktiv-1",
+    "prompt": "第一虚拟式与直陈同形会带来什么问题？怎么回避？",
+    "answer": "第三人称单数 -e（er komme）与直陈第一人称（ich komme）同形，靠主语与语境分；口语改用第二虚拟式或 würde 形式（Er sagt, er käme / er würde kommen）"
+  },
+  {
+    "id": "q-cc-modal-particle-doch-mal-ja",
+    "itemId": "german/cc-modal-particle",
+    "prompt": "doch、mal、ja 各起什么作用？",
+    "answer": "doch：加强、反驳、催促（Komm doch mit / Das ist doch klar）· mal：弱化请求（Guck mal）· ja：共识、惊讶、提醒（Das ist ja interessant）"
+  },
+  {
+    "id": "q-cc-modal-particle-halt-wohl-denn",
+    "itemId": "german/cc-modal-particle",
+    "prompt": "halt / eben、wohl、denn 各起什么作用？",
+    "answer": "halt / eben：无可奈何的接受（Das ist halt so）· wohl：推测（Er ist wohl krank）· denn：疑问句里的关切（Was machst du denn?）"
+  },
+  {
+    "id": "q-cc-modal-particle-position",
+    "itemId": "german/cc-modal-particle",
+    "prompt": "小品词能放哪？不能放哪？",
+    "answer": "只能放中场；不能放句首，也不能放末位 —— 不能说 Doch komm mit / Komm mit doch"
+  },
+  {
+    "id": "q-cc-nominalization-three-paths",
+    "itemId": "german/cc-nominalization",
+    "prompt": "三种名词化路径是什么？",
+    "answer": "dass 从句转名词短语（Weil er krank war → Wegen seiner Krankheit）· 转 zu 不定式（Ich hoffe, ihn zu sehen）· 介词 + 名词化（aufgrund der schlechten Wetterlage）"
+  },
+  {
+    "id": "q-cc-nominalization-loss",
+    "itemId": "german/cc-nominalization",
+    "prompt": "名词化会丢什么信息？怎么补？",
+    "answer": "施事与时间信息易丢；用定语补回 —— nach seiner schnellen Ankunft in Berlin（seiner 施事、schnellen 方式、in Berlin 地点）"
   }
 ]
