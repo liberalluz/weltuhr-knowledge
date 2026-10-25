@@ -5,7 +5,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读主格一节，抄出三性单数与复数的主格冠词六形"
+        "instruction": "主格一节，抄出三性单数与复数的主格冠词六形"
       },
       {
         "operator": "example",
@@ -46,7 +46,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读第四格一节，写出阳性冠词 der 到 den 的对照"
+        "instruction": "第四格一节，写出阳性冠词 der 到 den 的对照"
       },
       {
         "operator": "example",
@@ -87,7 +87,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读与格一节，抄出与格冠词 des 以外四形（dem / der / dem / den）"
+        "instruction": "与格一节，抄出与格冠词 des 以外四形（dem / der / dem / den）"
       },
       {
         "operator": "example",
@@ -128,7 +128,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读属格一节，抄出三性单数与复数的属格冠词"
+        "instruction": "属格一节，抄出三性单数与复数的属格冠词"
       },
       {
         "operator": "example",
@@ -173,7 +173,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读介词三组清单，抄出只第四格与只第三格的完整列表"
+        "instruction": "介词三组清单，抄出只第四格与只第三格的完整列表"
       },
       {
         "operator": "example",
@@ -218,7 +218,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读双格介词一节，抄出 Wohin / Wo 两组例句"
+        "instruction": "双格介词一节，抄出 Wohin / Wo 两组例句"
       },
       {
         "operator": "example",
@@ -263,7 +263,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读动词格支配一节，抄出三组各四个动词"
+        "instruction": "动词格支配一节，抄出三组各四个动词"
       },
       {
         "operator": "example",
@@ -308,7 +308,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读形容词格支配一节，抄出属格、与格、第四格三组形容词"
+        "instruction": "形容词格支配一节，抄出属格、与格、第四格三组形容词"
       },
       {
         "operator": "example",
@@ -357,7 +357,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读同位语一节，抄出三句不同格的同位语"
+        "instruction": "同位语一节，抄出三句不同格的同位语"
       },
       {
         "operator": "example",
@@ -398,7 +398,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读格标记弱化一节，抄出两条属格被替代的例子"
+        "instruction": "格标记弱化一节，抄出两条属格被替代的例子"
       },
       {
         "operator": "example",
@@ -439,7 +439,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读三性一节，抄出三性各三个例词，冠词一起写"
+        "instruction": "三性一节，抄出三性各三个例词，冠词一起写"
       },
       {
         "operator": "example",
@@ -480,7 +480,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读后缀表，抄下阴性七个后缀与中性五个后缀"
+        "instruction": "后缀表，抄下阴性七个后缀与中性五个后缀"
       },
       {
         "operator": "example",
@@ -525,7 +525,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读语义类一节，抄出四组阳性和三组阴性"
+        "instruction": "语义类一节，抄出四组阳性和三组阴性"
       },
       {
         "operator": "example",
@@ -570,7 +570,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读复合名词一节，抄出四个例词并标出末位成分"
+        "instruction": "复合名词一节，抄出四个例词并标出末位成分"
       },
       {
         "operator": "example",
@@ -615,7 +615,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读复数变音一节，抄出三类各三个词"
+        "instruction": "复数变音一节，抄出三类各三个词"
       },
       {
         "operator": "example",
@@ -656,7 +656,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读 -er 复数一节，抄出中性四个与阳性两个"
+        "instruction": "-er 复数一节，抄出中性四个与阳性两个"
       },
       {
         "operator": "example",
@@ -697,7 +697,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读 -(e)n 复数一节，抄出五个阴性例词"
+        "instruction": "-(e)n 复数一节，抄出五个阴性例词"
       },
       {
         "operator": "example",
@@ -738,7 +738,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读 -s 复数一节，抄出五个外来词"
+        "instruction": "-s 复数一节，抄出五个外来词"
       },
       {
         "operator": "example",
@@ -779,7 +779,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读零复数一节，抄出五个例词并标出是否变音"
+        "instruction": "零复数一节，抄出五个例词并标出是否变音"
       },
       {
         "operator": "example",
@@ -824,7 +824,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读弱变化一节，抄出 Student 的四个格形式"
+        "instruction": "弱变化一节，抄出 Student 的四个格形式"
       },
       {
         "operator": "example",
@@ -869,7 +869,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读定冠词表，抄下六形并标出同形位置"
+        "instruction": "定冠词表，抄下六形并标出同形位置"
       },
       {
         "operator": "example",
@@ -914,7 +914,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读不定冠词表，抄下三性四格"
+        "instruction": "不定冠词表，抄下三性四格"
       },
       {
         "operator": "example",
@@ -959,7 +959,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读物主冠词一节，抄出词干与词尾两组"
+        "instruction": "物主冠词一节，抄出词干与词尾两组"
       },
       {
         "operator": "example",
@@ -1008,7 +1008,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读指示冠词一节，抄出 dieser 的变格"
+        "instruction": "指示冠词一节，抄出 dieser 的变格"
       },
       {
         "operator": "example",
@@ -1049,7 +1049,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读关系代词表，抄出六形并标出与定冠词不同的两处"
+        "instruction": "关系代词表，抄出六形并标出与定冠词不同的两处"
       },
       {
         "operator": "example",
@@ -1090,7 +1090,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读疑问限定词一节，抄出 welcher 的四格"
+        "instruction": "疑问限定词一节，抄出 welcher 的四格"
       },
       {
         "operator": "example",
@@ -1131,7 +1131,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读不定量词一节，抄出复数与单数两组"
+        "instruction": "不定量词一节，抄出复数与单数两组"
       },
       {
         "operator": "example",
@@ -1172,7 +1172,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读冠词语篇条件一节，抄出「首次/再提」那一组例句"
+        "instruction": "冠词语篇条件一节，抄出「首次/再提」那一组例句"
       },
       {
         "operator": "example",
@@ -1217,7 +1217,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读零冠词一节，抄出四类用法"
+        "instruction": "零冠词一节，抄出四类用法"
       },
       {
         "operator": "example",
@@ -1262,7 +1262,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读专名冠词一节，抄出三类必须带冠词的国名"
+        "instruction": "专名冠词一节，抄出三类必须带冠词的国名"
       },
       {
         "operator": "example",
@@ -1303,7 +1303,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读弱变化表，抄下 -e 出现的五个位置"
+        "instruction": "弱变化表，抄下 -e 出现的五个位置"
       },
       {
         "operator": "example",
@@ -1348,7 +1348,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读混合变化表，抄下 -er / -es 出现的两个位置"
+        "instruction": "混合变化表，抄下 -er / -es 出现的两个位置"
       },
       {
         "operator": "example",
@@ -1389,7 +1389,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读强变化表，抄下与定冠词的对应关系"
+        "instruction": "强变化表，抄下与定冠词的对应关系"
       },
       {
         "operator": "example",
@@ -1430,7 +1430,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读三种变格的触发条件表"
+        "instruction": "三种变格的触发条件表"
       },
       {
         "operator": "example",
@@ -1475,7 +1475,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读表语形容词一节，抄出三个表语例句"
+        "instruction": "表语形容词一节，抄出三个表语例句"
       },
       {
         "operator": "example",
@@ -1516,7 +1516,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读比较级构成一节，抄出五个例词"
+        "instruction": "比较级构成一节，抄出五个例词"
       },
       {
         "operator": "example",
@@ -1557,7 +1557,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读最高级两形一节，抄出状语与定语各三例"
+        "instruction": "最高级两形一节，抄出状语与定语各三例"
       },
       {
         "operator": "example",
@@ -1598,7 +1598,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读不规则等级表，抄下七组"
+        "instruction": "不规则等级表，抄下七组"
       },
       {
         "operator": "example",
@@ -1635,7 +1635,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读比较结构一节，抄出 als 与 wie 两组例句"
+        "instruction": "比较结构一节，抄出 als 与 wie 两组例句"
       },
       {
         "operator": "example",
@@ -1676,7 +1676,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读分词定语一节，抄出第一分词与第二分词各三例"
+        "instruction": "分词定语一节，抄出第一分词与第二分词各三例"
       },
       {
         "operator": "example",
@@ -1717,7 +1717,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读现在时词尾表，抄出 wohnen 的六个人称"
+        "instruction": "现在时词尾表，抄出 wohnen 的六个人称"
       },
       {
         "operator": "example",
@@ -1762,7 +1762,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读强变化表，抄出五个动词的三形（不定式/过去/第二分词）"
+        "instruction": "强变化表，抄出五个动词的三形（不定式/过去/第二分词）"
       },
       {
         "operator": "example",
@@ -1807,7 +1807,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读情态动词现在时表，抄出六个词的六个人称"
+        "instruction": "情态动词现在时表，抄出六个词的六个人称"
       },
       {
         "operator": "example",
@@ -1848,7 +1848,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读过去时一节，抄出弱、强、混合各一个动词的六个人称"
+        "instruction": "过去时一节，抄出弱、强、混合各一个动词的六个人称"
       },
       {
         "operator": "example",
@@ -1889,7 +1889,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读完成时一节，抄出第二分词的四种构成"
+        "instruction": "完成时一节，抄出第二分词的四种构成"
       },
       {
         "operator": "example",
@@ -1938,7 +1938,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读 sein 组完成时一节，抄出三类动词"
+        "instruction": "sein 组完成时一节，抄出三类动词"
       },
       {
         "operator": "example",
@@ -1979,7 +1979,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读过去完成时一节，抄出三个例句"
+        "instruction": "过去完成时一节，抄出三个例句"
       },
       {
         "operator": "example",
@@ -2020,7 +2020,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读将来时 I 一节，抄出 werden 的六个人称"
+        "instruction": "将来时 I 一节，抄出 werden 的六个人称"
       },
       {
         "operator": "example",
@@ -2065,7 +2065,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读将来时 II 一节，抄出两个例句"
+        "instruction": "将来时 II 一节，抄出两个例句"
       },
       {
         "operator": "example",
@@ -2106,7 +2106,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读两种被动一节，抄出过程与状态各两例"
+        "instruction": "两种被动一节，抄出过程与状态各两例"
       },
       {
         "operator": "example",
@@ -2151,7 +2151,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读及物动词一节，抄出三条判据"
+        "instruction": "及物动词一节，抄出三条判据"
       },
       {
         "operator": "example",
@@ -2192,7 +2192,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读与格动词一节，抄出八个动词"
+        "instruction": "与格动词一节，抄出八个动词"
       },
       {
         "operator": "example",
@@ -2233,7 +2233,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读属格动词一节，抄出五个动词及例句"
+        "instruction": "属格动词一节，抄出五个动词及例句"
       },
       {
         "operator": "example",
@@ -2274,7 +2274,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读介词宾语一节，抄出六个搭配"
+        "instruction": "介词宾语一节，抄出六个搭配"
       },
       {
         "operator": "example",
@@ -2315,7 +2315,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读反身动词一节，抄出真反身与假反身各三例"
+        "instruction": "反身动词一节，抄出真反身与假反身各三例"
       },
       {
         "operator": "example",
@@ -2360,7 +2360,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读可分动词一节，抄出主句与从句两组例句"
+        "instruction": "可分动词一节，抄出主句与从句两组例句"
       },
       {
         "operator": "example",
@@ -2401,7 +2401,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读不可分前缀清单，抄出七个前缀"
+        "instruction": "不可分前缀清单，抄出七个前缀"
       },
       {
         "operator": "example",
@@ -2442,7 +2442,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读情态动词两套用法，抄出客观与主观各三例"
+        "instruction": "情态动词两套用法，抄出客观与主观各三例"
       },
       {
         "operator": "example",
@@ -2487,7 +2487,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读 zu 不定式一节，抄出三种形态"
+        "instruction": "zu 不定式一节，抄出三种形态"
       },
       {
         "operator": "example",
@@ -2528,7 +2528,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读命令式一节，抄出三套变形的例词"
+        "instruction": "命令式一节，抄出三套变形的例词"
       },
       {
         "operator": "example",
@@ -2569,7 +2569,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读动词第二位一节，抄出三个语序变体"
+        "instruction": "动词第二位一节，抄出三个语序变体"
       },
       {
         "operator": "example",
@@ -2618,7 +2618,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读前置场一节，抄出三个语序变体"
+        "instruction": "前置场一节，抄出三个语序变体"
       },
       {
         "operator": "example",
@@ -2663,7 +2663,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读句框一节，抄出四种框型"
+        "instruction": "句框一节，抄出四种框型"
       },
       {
         "operator": "example",
@@ -2704,7 +2704,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读中场顺序一节，抄出 TeKaMoLo 四项"
+        "instruction": "中场顺序一节，抄出 TeKaMoLo 四项"
       },
       {
         "operator": "example",
@@ -2749,7 +2749,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读否定位置一节，抄出四个 nicht 例句"
+        "instruction": "否定位置一节，抄出四个 nicht 例句"
       },
       {
         "operator": "example",
@@ -2790,7 +2790,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读代词顺序一节，抄出四组对照"
+        "instruction": "代词顺序一节，抄出四组对照"
       },
       {
         "operator": "example",
@@ -2839,7 +2839,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读疑问句一节，抄出两类问句各三例"
+        "instruction": "疑问句一节，抄出两类问句各三例"
       },
       {
         "operator": "example",
@@ -2880,7 +2880,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读从句语序一节，抄出四类从句例句"
+        "instruction": "从句语序一节，抄出四类从句例句"
       },
       {
         "operator": "example",
@@ -2925,7 +2925,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读强调手段一节，抄出四种前置场强调"
+        "instruction": "强调手段一节，抄出四种前置场强调"
       },
       {
         "operator": "example",
@@ -2966,7 +2966,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读外置一节，抄出三个可外置的例子"
+        "instruction": "外置一节，抄出三个可外置的例子"
       },
       {
         "operator": "example",
@@ -3007,7 +3007,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读 dass 从句一节，抄出三个例句"
+        "instruction": "dass 从句一节，抄出三个例句"
       },
       {
         "operator": "example",
@@ -3048,7 +3048,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读关系从句一节，抄出四个格的例句"
+        "instruction": "关系从句一节，抄出四个格的例句"
       },
       {
         "operator": "example",
@@ -3089,7 +3089,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读特殊关系代词一节，抄出 was / wo 各三例"
+        "instruction": "特殊关系代词一节，抄出 was / wo 各三例"
       },
       {
         "operator": "example",
@@ -3134,7 +3134,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读时间从句一节，抄出 als / wenn / während / nachdem 四例"
+        "instruction": "时间从句一节，抄出 als / wenn / während / nachdem 四例"
       },
       {
         "operator": "example",
@@ -3175,7 +3175,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读原因/条件/让步三类从句，抄出四组连词"
+        "instruction": "原因/条件/让步三类从句，抄出四组连词"
       },
       {
         "operator": "example",
@@ -3224,7 +3224,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读间接疑问一节，抄出 ob 与疑问词各两例"
+        "instruction": "间接疑问一节，抄出 ob 与疑问词各两例"
       },
       {
         "operator": "example",
@@ -3269,7 +3269,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读第二虚拟式一节，抄出与现在、与过去各两句"
+        "instruction": "第二虚拟式一节，抄出与现在、与过去各两句"
       },
       {
         "operator": "example",
@@ -3318,7 +3318,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读第一虚拟式一节，抄出 sein / haben / kommen 的变位"
+        "instruction": "第一虚拟式一节，抄出 sein / haben / kommen 的变位"
       },
       {
         "operator": "example",
@@ -3363,7 +3363,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读情态小品词一节，抄出六个词及例句"
+        "instruction": "情态小品词一节，抄出六个词及例句"
       },
       {
         "operator": "example",
@@ -3408,7 +3408,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读名词化一节，抄出两组从句与名词短语的对应"
+        "instruction": "名词化一节，抄出两组从句与名词短语的对应"
       },
       {
         "operator": "example",

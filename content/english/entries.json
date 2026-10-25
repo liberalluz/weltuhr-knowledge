@@ -5,7 +5,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读名词分类那一节，把四类的判据抄成一行一句：指唯一对象 / 一类个体 / 不可感知实体 / 多人整体"
+        "instruction": "名词分类那一节，把四类的判据抄成一行一句：指唯一对象 / 一类个体 / 不可感知实体 / 多人整体"
       },
       {
         "operator": "example",
@@ -46,7 +46,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读代词分类一节，把九类各记一个代表词，重点看「虚位 it」与「指示 this」的说明"
+        "instruction": "代词分类一节，把九类各记一个代表词，重点看「虚位 it」与「指示 this」的说明"
       },
       {
         "operator": "example",
@@ -87,7 +87,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读动词分类一节，把四类的判据写成「带宾语 / 带过去分词 / 无 -s 无 to / 带主语补语」"
+        "instruction": "动词分类一节，把四类的判据写成「带宾语 / 带过去分词 / 无 -s 无 to / 带主语补语」"
       },
       {
         "operator": "example",
@@ -128,7 +128,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读形容词位置一节，记下三类只能占一处的词：只定语、只表语、必须后置"
+        "instruction": "形容词位置一节，记下三类只能占一处的词：只定语、只表语、必须后置"
       },
       {
         "operator": "example",
@@ -177,7 +177,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读副词分类与位置一节，记下三类中位规则：实义动词前、be 后、助动词后"
+        "instruction": "副词分类与位置一节，记下三类中位规则：实义动词前、be 后、助动词后"
       },
       {
         "operator": "example",
@@ -222,7 +222,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读介词一节，把简单介词、复杂介词、分词来源介词各记两个"
+        "instruction": "介词一节，把简单介词、复杂介词、分词来源介词各记两个"
       },
       {
         "operator": "example",
@@ -263,7 +263,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读连词一节，把七个并列连词背下来，记下 for 的两个限制：只后置、不回答 why"
+        "instruction": "连词一节，把七个并列连词背下来，记下 for 的两个限制：只后置、不回答 why"
       },
       {
         "operator": "example",
@@ -304,7 +304,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读限定词一节，把三层各记三个词，重点记「中位互斥」这条硬规则"
+        "instruction": "限定词一节，把三层各记三个词，重点记「中位互斥」这条硬规则"
       },
       {
         "operator": "example",
@@ -349,7 +349,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读后缀一节，按「造名词 / 形容词 / 动词 / 副词」四组各记三个后缀"
+        "instruction": "后缀一节，按「造名词 / 形容词 / 动词 / 副词」四组各记三个后缀"
       },
       {
         "operator": "example",
@@ -390,7 +390,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读复合词与短语动词一节，记下两个判别法：重音位置、宾语插入测试"
+        "instruction": "复合词与短语动词一节，记下两个判别法：重音位置、宾语插入测试"
       },
       {
         "operator": "example",
@@ -435,7 +435,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读可数性一节，记下三个测试：加 -s、配 a/an、接数词"
+        "instruction": "可数性一节，记下三个测试：加 -s、配 a/an、接数词"
       },
       {
         "operator": "example",
@@ -480,7 +480,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读复数一节，把规则变化四条、零复数三个、外来复数两组分开记"
+        "instruction": "复数一节，把规则变化四条、零复数三个、外来复数两组分开记"
       },
       {
         "operator": "example",
@@ -529,7 +529,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读定冠词一节，把四类定位依据各抄一句判据"
+        "instruction": "定冠词一节，把四类定位依据各抄一句判据"
       },
       {
         "operator": "example",
@@ -578,7 +578,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读不定冠词一节，记下 a/an 的判据是读音不是拼写"
+        "instruction": "不定冠词一节，记下 a/an 的判据是读音不是拼写"
       },
       {
         "operator": "example",
@@ -623,7 +623,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读零冠词一节，把三类场合各抄一句判据，重点记「功能 vs 建筑」这组对立"
+        "instruction": "零冠词一节，把三类场合各抄一句判据，重点记「功能 vs 建筑」这组对立"
       },
       {
         "operator": "example",
@@ -672,7 +672,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读量词一节，把「只可数 / 只不可数 / 通用」三栏各记三个词"
+        "instruction": "量词一节，把「只可数 / 只不可数 / 通用」三栏各记三个词"
       },
       {
         "operator": "example",
@@ -717,7 +717,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读属格一节，把 's 的四类适用对象与 of 结构的分工写成两条判据"
+        "instruction": "属格一节，把 's 的四类适用对象与 of 结构的分工写成两条判据"
       },
       {
         "operator": "example",
@@ -762,7 +762,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读 of 结构一节，抄下三条选择次序：固定搭配、生命度、长度"
+        "instruction": "of 结构一节，抄下三条选择次序：固定搭配、生命度、长度"
       },
       {
         "operator": "example",
@@ -803,7 +803,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读主谓一致一节，抄下判据：找中心词、忽略介词短语、集合名词按语义"
+        "instruction": "主谓一致一节，抄下判据：找中心词、忽略介词短语、集合名词按语义"
       },
       {
         "operator": "example",
@@ -848,7 +848,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读修饰语顺序一节，把八个位置按序背下来，再读一遍那条长名词短语"
+        "instruction": "修饰语顺序一节，把八个位置按序背下来，再读一遍那条长名词短语"
       },
       {
         "operator": "example",
@@ -893,7 +893,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读一般现在时一节，把三种用法记成「习惯 / 恒常 / 时刻表」"
+        "instruction": "一般现在时一节，把三种用法记成「习惯 / 恒常 / 时刻表」"
       },
       {
         "operator": "example",
@@ -938,7 +938,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读现在进行时一节，记下三种用法与「状态动词不进进行时」这条"
+        "instruction": "现在进行时一节，记下三种用法与「状态动词不进进行时」这条"
       },
       {
         "operator": "example",
@@ -983,7 +983,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读一般过去时一节，记下「与现在断开」这一条核心判据"
+        "instruction": "一般过去时一节，记下「与现在断开」这一条核心判据"
       },
       {
         "operator": "example",
@@ -1028,7 +1028,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读过去进行时一节，记下「背景 vs 事件」这组分工"
+        "instruction": "过去进行时一节，记下「背景 vs 事件」这组分工"
       },
       {
         "operator": "example",
@@ -1073,7 +1073,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读现在完成时一节，记下「不与确定过去时间共现」这条判据"
+        "instruction": "现在完成时一节，记下「不与确定过去时间共现」这条判据"
       },
       {
         "operator": "example",
@@ -1118,7 +1118,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读完成进行时一节，记下「持续 + 可能继续」「不数次数」两条"
+        "instruction": "完成进行时一节，记下「持续 + 可能继续」「不数次数」两条"
       },
       {
         "operator": "example",
@@ -1163,7 +1163,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读过去完成时一节，记下「必须有过去参照点」这条判据"
+        "instruction": "过去完成时一节，记下「必须有过去参照点」这条判据"
       },
       {
         "operator": "example",
@@ -1208,7 +1208,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读 will 一节，把三种用法记成「预测 / 承诺 / 临时决定」"
+        "instruction": "will 一节，把三种用法记成「预测 / 承诺 / 临时决定」"
       },
       {
         "operator": "example",
@@ -1253,7 +1253,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读 be going to 一节，记下「已有迹象 / 已计划」两类依据"
+        "instruction": "be going to 一节，记下「已有迹象 / 已计划」两类依据"
       },
       {
         "operator": "example",
@@ -1298,7 +1298,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读将来完成与将来进行一节，记下 by 配完成、at 配进行的搭配倾向"
+        "instruction": "将来完成与将来进行一节，记下 by 配完成、at 配进行的搭配倾向"
       },
       {
         "operator": "example",
@@ -1343,7 +1343,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读被动构成一节，抄下公式「be + 过去分词」，并记 be 负责时态与数"
+        "instruction": "被动构成一节，抄下公式「be + 过去分词」，并记 be 负责时态与数"
       },
       {
         "operator": "example",
@@ -1388,7 +1388,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读被动动因一节，记下三种动因：施事未知、不重要、话题在受事"
+        "instruction": "被动动因一节，记下三种动因：施事未知、不重要、话题在受事"
       },
       {
         "operator": "example",
@@ -1433,7 +1433,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读 get 被动一节，记下两条：突出变化、通常不带 by"
+        "instruction": "get 被动一节，记下两条：突出变化、通常不带 by"
       },
       {
         "operator": "example",
@@ -1478,7 +1478,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读使役结构一节，把三类按「谁动手」分开记"
+        "instruction": "使役结构一节，把三类按「谁动手」分开记"
       },
       {
         "operator": "example",
@@ -1519,7 +1519,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读 can/could 一节，记下 can 缺哪些形式、用什么补"
+        "instruction": "can/could 一节，记下 can 缺哪些形式、用什么补"
       },
       {
         "operator": "example",
@@ -1564,7 +1564,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读义务情态一节，把 must 与 have to 的来源差别、两种否定各抄一句"
+        "instruction": "义务情态一节，把 must 与 have to 的来源差别、两种否定各抄一句"
       },
       {
         "operator": "example",
@@ -1609,7 +1609,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读情态两义一节，把义务与推测两组例句分开抄，标出强度阶梯"
+        "instruction": "情态两义一节，把义务与推测两组例句分开抄，标出强度阶梯"
       },
       {
         "operator": "example",
@@ -1654,7 +1654,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读情态 + have + 过去分词一节，把四个例句各配一句释义"
+        "instruction": "情态 + have + 过去分词一节，把四个例句各配一句释义"
       },
       {
         "operator": "example",
@@ -1703,7 +1703,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读虚拟语气一节，把三种场合分开：非真实条件、wish 愿望、建议从句"
+        "instruction": "虚拟语气一节，把三种场合分开：非真实条件、wish 愿望、建议从句"
       },
       {
         "operator": "example",
@@ -1748,7 +1748,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读条件句一节，把三型的形式配对抄成表：从句时态 / 主句情态"
+        "instruction": "条件句一节，把三型的形式配对抄成表：从句时态 / 主句情态"
       },
       {
         "operator": "example",
@@ -1797,7 +1797,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读不定式形式一节，把三种形态与否定形式各抄一行"
+        "instruction": "不定式形式一节，把三种形态与否定形式各抄一行"
       },
       {
         "operator": "example",
@@ -1842,7 +1842,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读不定式功能一节，把四种成分各记一句例句"
+        "instruction": "不定式功能一节，把四种成分各记一句例句"
       },
       {
         "operator": "example",
@@ -1883,7 +1883,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读不带 to 的不定式一节，把三类触发词抄下来：情态、使役、感官"
+        "instruction": "不带 to 的不定式一节，把三类触发词抄下来：情态、使役、感官"
       },
       {
         "operator": "example",
@@ -1928,7 +1928,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读动名词一节，把三种成分位置各记一句例句"
+        "instruction": "动名词一节，把三种成分位置各记一句例句"
       },
       {
         "operator": "example",
@@ -1977,7 +1977,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读动名词与不定式取舍一节，把三组对比各抄一对"
+        "instruction": "动名词与不定式取舍一节，把三组对比各抄一对"
       },
       {
         "operator": "example",
@@ -2026,7 +2026,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读现在分词一节，把定语 / 状语 / 补语 / 表语四处各记一句"
+        "instruction": "现在分词一节，把定语 / 状语 / 补语 / 表语四处各记一句"
       },
       {
         "operator": "example",
@@ -2075,7 +2075,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读过去分词一节，把「被动 + 完成」两层语义与不及物例外各记一句"
+        "instruction": "过去分词一节，把「被动 + 完成」两层语义与不及物例外各记一句"
       },
       {
         "operator": "example",
@@ -2120,7 +2120,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读悬垂分词一节，记下判据「分词隐含主语 = 主句主语」与三种改法"
+        "instruction": "悬垂分词一节，记下判据「分词隐含主语 = 主句主语」与三种改法"
       },
       {
         "operator": "example",
@@ -2165,7 +2165,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读独立主格一节，记下「自带主语」这一点，以及它为什么不算悬垂"
+        "instruction": "独立主格一节，记下「自带主语」这一点，以及它为什么不算悬垂"
       },
       {
         "operator": "example",
@@ -2206,7 +2206,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读非谓语完成式一节，把四种形态抄成表"
+        "instruction": "非谓语完成式一节，把四种形态抄成表"
       },
       {
         "operator": "example",
@@ -2251,7 +2251,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读限制性关系从句一节，记下不加逗号与关系词可省两个特征"
+        "instruction": "限制性关系从句一节，记下不加逗号与关系词可省两个特征"
       },
       {
         "operator": "example",
@@ -2296,7 +2296,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读非限制性关系从句一节，记下两条硬规则：不用 that、关系词不省"
+        "instruction": "非限制性关系从句一节，记下两条硬规则：不用 that、关系词不省"
       },
       {
         "operator": "example",
@@ -2341,7 +2341,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读关系代词选择一节，把「人 / 物 / 所属 / 地点时间」四栏各记一个词"
+        "instruction": "关系代词选择一节，把「人 / 物 / 所属 / 地点时间」四栏各记一个词"
       },
       {
         "operator": "example",
@@ -2386,7 +2386,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读名词性 that 从句一节，把四种位置各记一例，标出 that 能不能省"
+        "instruction": "名词性 that 从句一节，把四种位置各记一例，标出 that 能不能省"
       },
       {
         "operator": "example",
@@ -2431,7 +2431,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读 wh- 名词性从句一节，记下陈述语序与 what / that 的分工"
+        "instruction": "wh- 名词性从句一节，记下陈述语序与 what / that 的分工"
       },
       {
         "operator": "example",
@@ -2476,7 +2476,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读比较从句一节，记下省略规则与 than 的两种词性"
+        "instruction": "比较从句一节，记下省略规则与 than 的两种词性"
       },
       {
         "operator": "example",
@@ -2521,7 +2521,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读时间状语从句一节，记下「从句不用 will」这条铁律与常用连接词"
+        "instruction": "时间状语从句一节，记下「从句不用 will」这条铁律与常用连接词"
       },
       {
         "operator": "example",
@@ -2566,7 +2566,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读条件状语从句一节，记下与时间从句共用的铁律与 will 表意愿的例外"
+        "instruction": "条件状语从句一节，记下与时间从句共用的铁律与 will 表意愿的例外"
       },
       {
         "operator": "example",
@@ -2611,7 +2611,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读让步从句一节，把 although / however / despite 三者的语法位置各记一句"
+        "instruction": "让步从句一节，把 although / however / despite 三者的语法位置各记一句"
       },
       {
         "operator": "example",
@@ -2656,7 +2656,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读原因 / 目的 / 结果从句一节，把三组连接词分开记"
+        "instruction": "原因 / 目的 / 结果从句一节，把三组连接词分开记"
       },
       {
         "operator": "example",
@@ -2701,7 +2701,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读基本语序一节，记下「语序在英语里承担语法功能」这一条"
+        "instruction": "基本语序一节，记下「语序在英语里承担语法功能」这一条"
       },
       {
         "operator": "example",
@@ -2746,7 +2746,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读疑问句构成一节，记下操作词倒装与 do 的支持作用"
+        "instruction": "疑问句构成一节，记下操作词倒装与 do 的支持作用"
       },
       {
         "operator": "example",
@@ -2791,7 +2791,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读存在句一节，记下 there 是虚位、真主语在 be 之后"
+        "instruction": "存在句一节，记下 there 是虚位、真主语在 be 之后"
       },
       {
         "operator": "example",
@@ -2836,7 +2836,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读状语位置一节，把三个位置与频率副词中位规则敲定"
+        "instruction": "状语位置一节，把三个位置与频率副词中位规则敲定"
       },
       {
         "operator": "example",
@@ -2881,7 +2881,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读否定辖域一节，记下部分否定、全部否定、否定转移三类"
+        "instruction": "否定辖域一节，记下部分否定、全部否定、否定转移三类"
       },
       {
         "operator": "example",
@@ -2930,7 +2930,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读否定前置倒装一节，记下触发词表与「只倒主句」这条"
+        "instruction": "否定前置倒装一节，记下触发词表与「只倒主句」这条"
       },
       {
         "operator": "example",
@@ -2979,7 +2979,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读虚拟条件倒装一节，记下只有 were / had / should 能前置"
+        "instruction": "虚拟条件倒装一节，记下只有 were / had / should 能前置"
       },
       {
         "operator": "example",
@@ -3024,7 +3024,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读宾语前置一节，记下「只移位置、不倒装」"
+        "instruction": "宾语前置一节，记下「只移位置、不倒装」"
       },
       {
         "operator": "example",
@@ -3069,7 +3069,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读 it 分裂句一节，记下结构公式与「不能分裂谓语」这条限制"
+        "instruction": "it 分裂句一节，记下结构公式与「不能分裂谓语」这条限制"
       },
       {
         "operator": "example",
@@ -3114,7 +3114,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读 wh- 分裂句一节，记下「焦点在句末」与两类分裂句的分工"
+        "instruction": "wh- 分裂句一节，记下「焦点在句末」与两类分裂句的分工"
       },
       {
         "operator": "example",
@@ -3159,7 +3159,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读指代一节，记下 this 与 that 在远近与概括范围上的倾向"
+        "instruction": "指代一节，记下 this 与 that 在远近与概括范围上的倾向"
       },
       {
         "operator": "example",
@@ -3204,7 +3204,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读替代一节，记下 one / do so / so 三类替代形式"
+        "instruction": "替代一节，记下 one / do so / so 三类替代形式"
       },
       {
         "operator": "example",
@@ -3249,7 +3249,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读省略一节，记下「可唯一恢复」这条前提"
+        "instruction": "省略一节，记下「可唯一恢复」这条前提"
       },
       {
         "operator": "example",
@@ -3294,7 +3294,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读增补连接词一节，把 moreover / in addition / also / besides 的语气差别各记一句"
+        "instruction": "增补连接词一节，把 moreover / in addition / also / besides 的语气差别各记一句"
       },
       {
         "operator": "example",
@@ -3339,7 +3339,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读转折连接词一节，把 but / however / although 三档各记一句"
+        "instruction": "转折连接词一节，把 but / however / although 三档各记一句"
       },
       {
         "operator": "example",
@@ -3384,7 +3384,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读因果连接词一节，把原因侧与结果侧分开记"
+        "instruction": "因果连接词一节，把原因侧与结果侧分开记"
       },
       {
         "operator": "example",
@@ -3429,7 +3429,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读时间连接词一节，把三组各记三个词"
+        "instruction": "时间连接词一节，把三组各记三个词"
       },
       {
         "operator": "example",
@@ -3474,7 +3474,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读信息结构一节，记下「已知在前、新信息在后」与末端重量两条"
+        "instruction": "信息结构一节，记下「已知在前、新信息在后」与末端重量两条"
       },
       {
         "operator": "example",
@@ -3523,7 +3523,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读段落结构一节，记下主题句 / 支撑 / 收束三段式"
+        "instruction": "段落结构一节，记下主题句 / 支撑 / 收束三段式"
       },
       {
         "operator": "example",
@@ -3568,7 +3568,7 @@
     "steps": [
       {
         "operator": "read",
-        "instruction": "读语域一节，记下三个正式度标记：词汇、缩写、句法"
+        "instruction": "语域一节，记下三个正式度标记：词汇、缩写、句法"
       },
       {
         "operator": "example",
