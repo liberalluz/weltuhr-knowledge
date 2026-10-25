@@ -64,13 +64,13 @@
 > | `content/tools/assemble_pack.py` | `<空间>/pack.json`（**客户端探的就是这个**） | 本条：单文件 = 清单 + 六段 |
 > | `content/tools/build.py` | `<空间>/dist/pack.json` | 作废的「五段 + `meta` 信封」，只服务 `verify.py --suite` 的 37 个 fixture |
 >
-> 也就是说**客户端链路上的产物已经符合本条**，已装出内容的有两个空间：`python` 10 个行星系 + 150 个行星 + 150 条内容（750 步 · 44 条断言）；`english` 8 个行星系 + 80 个行星 + 80 条内容（400 步 · 24 条断言）。两个空间的每条内容都带正文与五个步骤。
+> 也就是说**客户端链路上的产物已经符合本条**，三个空间都已装出内容：`python` 10 个行星系 + 150 个行星 + 150 条内容（750 步 · 44 条断言）；`english` 8 个行星系 + 80 个行星 + 80 条内容（400 步 · 24 条断言）；`german` 同样 8 个行星系 + 80 个行星 + 80 条内容（400 步 · 24 条断言）。三个空间的每条内容都带正文与五个步骤。
 > 尚未迁移的是 `build.py` 那一侧与它的 fixture —— 它们连同 `validator.py` 的字段级判据随三包重建一起走，那时 `assemble_pack.py` 与 `build.py` 合成一个。
 > 读到 `content/tools/` 里的「五段」时按这段理解，不要据此判本条未实现。
 >
 > **内容侧的源是另一个文件**：`content/<空间>/entries.json`（可选，`itemId → summary / body / steps[] / selfCheck[] / estMinutes / criteria[]`）。它是**写出来的内容**，与 `items.json`（编目事实）分开 —— 字段集仍取 `entity-fields` §9，本条不新增字段，只说明这些字段从哪来。
 >
-> **仍未关闭的差距**（如实登记）：三份源数据仍是旧格式（`english` / `german` 装配出来同样能读，只是 `german` 尚无内容）；`python` 与 `english` 的 `entries.json` 已各自覆盖全部节点（`payload.est_minutes_coverage` 两个空间都是 **1.0**），`german` 仍是 **0.0**（只有 24 道题派生出的 `entry`，无正文与步骤）；两个已覆盖空间里 `outcomes` / `resources` 两栏仍空 —— 旧源数据没有这两栏，装配器写空数组而不补写；`edges` 里 3 条旧边的端点不在 `nodes` 中，照旧计入 `dropped`。
+> **仍未关闭的差距**（如实登记）：三份源数据（`items` / `questions` / `edges`）仍是旧格式 —— 它们只承载编目事实与题目，装配器按空间全跑，三个空间都能读；三个空间的 `entries.json` 已各自覆盖全部节点（`payload.est_minutes_coverage` 都是 **1.0**）；`outcomes` / `resources` 两栏在三空间里仍空 —— 旧源数据没有这两栏，装配器写空数组而不补写；`edges` 里 3 条旧边的端点不在 `nodes` 中，照旧计入 `dropped`。
 
 `src:` 第 48 轮 · E3 · V-1 · `ADR-0005` 决策 2 · `ADR-0007`
 
