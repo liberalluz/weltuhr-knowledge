@@ -62,6 +62,7 @@
 > | 脚本 | 产出 | 形态 |
 > |---|---|---|
 > | `content/tools/assemble_pack.py` | `<空间>/pack.json`（**客户端探的就是这个**） | 本条：单文件 = 清单 + 六段 |
+> | `content/tools/assemble_skeleton.py` | `content/skeleton/pack.json`（**骨架内置，不走插件探测**） | 本条；`kinds` 为空、四个 facts 全无（`ADR-0005` 决策 2） |
 > | `content/tools/build.py` | `<空间>/dist/pack.json` | 作废的「五段 + `meta` 信封」，只服务 `verify.py --suite` 的 37 个 fixture |
 >
 > 也就是说**客户端链路上的产物已经符合本条**，三个空间都已装出内容：`python` 10 个行星系 + 150 个行星 + 150 条内容（750 步 · **355** 条断言）；`english` 8 个行星系 + 80 个行星 + 80 条内容（400 步 · **242** 条断言）；`german` 同样 8 个行星系 + 80 个行星 + 80 条内容（400 步 · **201** 条断言）。三个空间的每条内容都带正文与五个步骤。

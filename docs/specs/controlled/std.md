@@ -1,6 +1,6 @@
 # 软件测试说明（STD）
 
-> **状态**：**详情页不再露出内部枚举** —— 节点详情页原写 `step.operator.wire`、`step.effectivePhase.name`、`item.type.name`、`item.judge.name`，真机上就是 `read（first）`、`practice（both）`、`（freeform · self）`：四个标识符都是代码里的取值，不是给人读的。改为查 `core/constants.dart` 的四张中文名表（`operatorLabels` · `stepPhaseLabels` · `quizTypeLabels` · `quizJudgeLabels`），拼装抽成 `stepLine()` / `quizLine()` 两个纯函数 —— 抽出来才锁得住，写在 `build` 里只能靠 widget 测试翻渲染树去凑。算子中文名取 `SPEC-STEP-012` 表里的「读 / 例 / 忆 / 练 / 讲 / 做」，不另起译名。§三 新增 §3.61 **6 条**（`TC-BOOT-015`–`020`）。§三 用例表 **835 条**（829 → 835）、`flutter test` 453 → 459。逐版摘要见文末「历史（迁移前版号序列）」表。
+> **状态**：**骨架包从「没有生成路径」到「可装配、可加载、五项校验两头跑」** —— `content/tools/assemble_skeleton.py` 把三轴 **3,375** 节点装配成 `content/skeleton/pack.json`（单文件 = 清单 + 六段，`kinds` 为空：骨架不走插件），装配前先跑五项包级校验（`official_code` 轴内唯一 · 主父唯一 · 无环 · 无孤儿 · `star` 父链到轴根）+ `id` 与派生 `path` 全局唯一；客户端 `app/lib/core/pack/skeleton_pack.dart` 的 `loadSkeleton` 再跑同一套，并产出 `id → path` 注入表（3,375 条）交给 `PackLoader`。§三 新增 §3.62 **9 条**（`TC-SKEL-001`–`009`）。§三 用例表 **844 条**（835 → 844）、`flutter test` 459 → 467。逐版摘要见文末「历史（迁移前版号序列）」表。
 > 本文件是**用例正文**。测什么与通过判据见 [`STP`](stp.md)；**仓内当前读数见 §六**。
 > **追溯补录**：2026-10-17 · §三 依据 `app/test/` 与 `content/tools/fixtures/` 的既有测试逐条反推，非当时所写。
 
@@ -1950,6 +1950,29 @@
 > ⚠️ **`TC-BOOT-020` 判的是「不另起译名」**：规格表已经给了「读 / 例 / 忆 / 练 / 讲 / 做」，表里若另写一套（比如「阅 / 范 / 背 / 习 / 教 / 行」），文档与界面就成了两套话 —— 而两边都「看起来像中文」，没人会去比。
 > **如实登记**：`TC-BOOT-019` 只锁「表覆盖全集」，锁不住「表里填的是不是人话」（填成 `read` 也能全绿）；中文名的取舍仍靠人看。兜底分支 `?? …wire` 保留着 —— 它是「不崩」的保证，也正是「漏补表不会崩」的来源，所以由 `TC-BOOT-019` 单独兜。真机上「详情页顶部有一行淡字被裁」**未决**：核对代码后判为列表 `ListTile` 副标题在 push 转场中的残影（`AppBar` 只有 `title` 一个子节点、`ListView` 内容一律从 `padding: 20` 起，与「正文」左对齐，而截图那行左边缘在标题位置），**本笔未改布局**，需稳态截图再判。
 
+### 3.62 骨架包可加载与五项包级校验（9 条 · 2026-10-25 提出）
+
+> 本节验的是**骨架这一侧**：`B14` 出口第一项「骨架包可加载」在此之前没有任何判据 —— `readPack` 的「不守」清单明写不查父链语义（父链可达、`path` 构成），因为载荷包靠三元校验器在**装包时**查；骨架包一启动就在，没有「装包时」，那五项就此无人查。
+>
+> 判据落在 `app/lib/core/pack/skeleton_pack.dart` 的 `loadSkeleton`：五项对应 `skeleton-catalog.md` §六 步骤 4 的 ①–⑤，另加 `id` 全局唯一与派生 `path` 全局唯一（`P-01` / `P-07`）。装配侧同一套判据另有一份（`content/tools/assemble_skeleton.py`，查产物），两遍查的不是同一件事：源侧查「抽得对不对」、包侧查「搬得对不对」。
+>
+> ⚠️ **夹具是合成小骨架，不是真实产物**：`content/skeleton/pack.json` 不入库（与三个内容空间同口径），CI 里只能由装配脚本现场生成 —— `TC-SKEL-009` 就是那条「现场生成之后怎么验」的入口，缺产物时它 fail 而不 skip。
+
+| 编号 | `SPEC` | 显式/语义 | 夹具 | 操作 | 预期 | 层级 | 落点 / 测试名 |
+|---|---|---|---|---|---|---|---|
+| `TC-SKEL-001` | `PACK-005` | 显式 | 两轴四级小骨架（`discipline` 三级 + `major` 四级） | `loadSkeleton` | `nodeCount` 7；`kinds` 为空（骨架不走插件）；`path` 含轴根段：`discipline` / `discipline/01/0101` / `major/01/0101/010101`；两个轴的 `01` 不撞 | 单元 | `app/test/core/pack/skeleton_pack_test.dart` · 两轴小骨架装载：`path` 含轴根段、轴根可查（无 SPEC：`skeleton-catalog` §六 步骤 4） |
+| `TC-SKEL-002` | — | 显式 | 同轴两条节点同 `official_code` | 同上 | 抛 `SkeletonPackException`，指名「`official_code` 在轴 `discipline` 内重复」 | 单元 | 同上 · `official_code` 轴内重复即拒（无 SPEC：§六 步骤 4 ①） |
+| `TC-SKEL-003` | — | 显式 | 删掉某 `star` 的 `main` 父边 | 同上 | 抛错并指名「主父不唯一 / 缺失」—— 零条与两条都是坏数据，前者悬空、后者主父有两个答案 | 单元 | 同上 · 主父缺失即拒（无 SPEC：`entity-fields` §3） |
+| `TC-SKEL-004` | — | 显式 | 两条父边首尾相接成环 | 同上 | 抛错并指名「父边有环」—— `readPack` 只查 `⪯` 环，父边环无人查 | 单元 | 同上 · 父边成环即拒（无 SPEC：`readPack` 不查父边环） |
+| `TC-SKEL-005` | — | 显式 | 父边指向 `nodes[]` 里不存在的节点 | 同上 | 抛错并指名「孤儿」 | 单元 | 同上 · 孤儿即拒（无 SPEC：§六 步骤 4 ④） |
+| `TC-SKEL-006` | — | 显式 | `discipline` 的 `star` 挂到 `major` 轴根下 | 同上 | 抛错并指名「`star` 父链未到轴根」—— 走到别的轴根不算到根 | 单元 | 同上 · `star` 父链停在他轴根即拒（无 SPEC：§六 步骤 4 ⑤） |
+| `TC-SKEL-007` | — | 显式 | 同父下两个节点同 `slug` | 同上 | 抛错并指名「`path` 重复」—— `P-07` 是独立断言，不由「同父 slug 唯一」推出 | 单元 | 同上 · 派生 `path` 重复即拒（无 SPEC：`P-07` 独立断言） |
+| `TC-SKEL-008` | — | 显式 | 清单声明的轴在 `nodes[]` 里没有 `supercluster` 根 | 同上 | 抛错并指名「没有 `supercluster` 根节点」—— 轴根是 `path` 的唯一起点 | 单元 | 同上 · 清单声明的轴没有根即拒（无 SPEC：轴根是 `path` 唯一起点） |
+| `TC-SKEL-009` | `PACK-005` | 显式 | 真实产物：`content/` 下每个已装配的 `pack.json`（含 `content/skeleton/pack.json`） | `readPack` + `loadSkeleton` | 载荷包须有可学节点；**骨架包须没有**可学节点（`ADR-0005` 决策 2），且 `loadSkeleton` 通过、`paths.length == nodeCount` | 单元 | `app/test/core/pack/real_content_pack_test.dart` · `content/` 下每个已装配的包都能被 `readPack` 解析（`SPEC-PACK-005`） |
+
+> ⚠️ **`TC-SKEL-009` 为什么按 `pluginId` 分流**：这条用例原来对每个产物都断言「必须有可学节点」，骨架包一进 `content/` 就红 —— 而它红得对：**骨架包按定义没有行星**，逼它「有」等于让装配器造假数据。分流之后两类包各按自己的判据验，比放宽判据好：放宽会让「载荷包真的空了」也变绿。
+> **如实登记**：五项判据都是 `loadSkeleton` 的**单点断言**，它们锁得住「坏数据被拒」，锁不住「校验顺序」与「首因定位」—— 一处坏数据可能同时触发两条（如父边缺失既报主父又报父链未到根），用例只断言了关键文案，没有断言「恰好一条」。
+
 ## 四、覆盖缺口
 
 ### 4.1 总量
@@ -2065,7 +2088,7 @@
 
 | 读数 | 当前值 | 采集方式 |
 |---|---|---|
-| `flutter test` | **459 passed** | 在 `app/` 下整跑 `flutter test` |
+| `flutter test` | **467 passed** | 在 `app/` 下整跑 `flutter test` |
 | 用例表条数 | **835** | 本文件 §三 的 `TC-` 行数（唯一编号同数） |
 | `lint` 规则数 | **10** | `tool/lint/rules.dart` 的 `R1`–`R10` |
 
@@ -2079,6 +2102,7 @@
 
 | 版号 | 日期 | 修订摘要 |
 |---|---|---|
+| `v0.73.0` | 2026-10-25 | **骨架包可加载：装配路径 + 五项包级校验** —— `content/tools/assemble_skeleton.py` 把 `content/skeleton/` 的三轴源（199 + 951 + 2,225 = **3,375** 节点）装配成单文件 `pack.json`（清单 + 六段，`kinds` 为空、四个 facts 全无 —— `ADR-0005` 决策 2：骨架不走插件）；`parent_id` 转成 3,372 条 `main` 父边，`catalog_note` 丢弃、`catalog_refs` 补空，`sources[]` 三条各带本轴节点全集作 `node_scope`。装配前跑五项包级校验（`official_code` 轴内唯一 · 主父唯一 · 无环 · 无孤儿 · `star` 父链到轴根）+ `id` 全局唯一 + 派生 `path` 全局唯一；客户端 `app/lib/core/pack/skeleton_pack.dart` 的 `loadSkeleton` 再跑同一套、产出 `id → path` 注入表（3,375 条，含轴根段）交给 `PackLoader`。产物未压缩 **1,784,803 B** / gzip -9 **85,928 B**（预算 300 KB 指压缩后，仍成立），不入库。§三 新增 §3.62 **9 条**（`TC-SKEL-001`–`009`）。**用例表 835 → 844**、`flutter test` 459 → **467**。同批清掉两个零引用的六轴常量（`sixAxisKeys` / `sixAxisLabels`），并把 `constants.md` `C-35` 里「代码侧另有 `sixAxisLabels`」改成「曾有、已删」—— 不删常量那句话就是假话。⚠️ **如实登记**：`Plan.primaryAxis` / `plan_created` 事件的 `primaryAxis` 仍是活字段名（六轴词汇留在三轴本体里），改名属事件格式变更，未在本笔；`channel-table` / `VIEW` 的六轴口径整体作废、`FND-002` 仍以 `Item` + `sixAxis` 举例 —— 三处都是现时陈述但对应能力已废，重写归迁移笔；五项校验只断言关键文案，未断言「恰好一条」 |
 | `v0.72.0` | 2026-10-25 | **详情页文案去掉内部枚举** —— `main.dart` 的节点详情页原写 `step.operator.wire`、`step.effectivePhase.name`、`item.type.name`、`item.judge.name`，真机上是 `read（first）`、`（freemode · self）`；`StepPhase` / `QuizType` / `QuizJudge` 三者连 `wire` 都没有，`name` 就是线上取值。改为查 `core/constants.dart` 新增的四张中文名表（`operatorLabels` · `stepPhaseLabels` · `quizTypeLabels` · `quizJudgeLabels`），拼装抽成 `stepLine()` / `quizLine()` 两个纯函数 —— 抽出来负例才落得住（打在 `build` 里只能靠 widget 测试翻渲染树）。算子译名取 `SPEC-STEP-012` 表格的「读 / 例 / 忆 / 练 / 讲 / 做」，不另起一套。§三 新增 §3.61 **6 条**（`TC-BOOT-015`–`020`）。**用例表 829 → 835**、`flutter test` 453 → **459**。⚠️ **如实登记**：`TC-BOOT-019` 只锁「表覆盖枚举全集」，锁不住表里填的是不是人话；真机截图里「详情页顶部一行淡字被裁」核对代码后判为 push 转场的副标题残影（`AppBar` 只有 `title`、`ListView` 内容从 `padding: 20` 起），**本笔未改布局**，需稳态截图再判 |
 | `v0.71.0` | 2026-10-25 | **德语 80 条补齐 + 列表副标题改判** —— `content/german/entries.json` 首次写入 **80** 条（8 域各 10 条：摘要 · 正文 · 5 步（读 / 例 / 练 / 讲 / 忆）· 2 条步骤自检 · 预计时长，带题目的 24 条另写 `criteria`），装配后 `german`：`entries` **80** · `steps` 全覆盖（**400 步**）· `criteria` **24** · `est_minutes_coverage` **0.0 → 1.0**，三空间至此都是 1.0。同笔改掉列表副标题的判据：`main.dart` 原写 `entryOf(id) == null ? '暂无内容' : '有题目'`，把「有 `entry`」当成「有题」—— 三空间内容补齐后 **219 条无题**（python 107 · english 56 · german 56）仍在列表上写「有题目」，点进去第一句却是「暂无」。改为 `planetSubtitle()` 三态：无 `entry` / 三项全空 → 「暂无内容」，有正文无题 → 「有正文与步骤」，有题 → 「有正文与步骤 · 题目 N」，只有题 → 「仅题目 N」。§三 新增 §3.60 **5 条**（`TC-BOOT-010`–`014`）。**用例表 824 → 829**、`flutter test` 448 → **453**。⚠️ **如实登记**：80 条德语语法陈述无第二人复核；`outcomes` / `resources` 仍空；「内容完整度没有用例锁住」仍未关闭 |
 | `v0.70.0` | 2026-10-25 | **内容补齐：十域 150/150** —— `content/python/entries.json` 由 30 条扩到 **150** 条（本笔新写 `modules` / `oop` / `typing` / `concurrency` 四域，其余六域前几笔已写），每条 5 步（读 / 例 / 练 / 讲 / 忆）· 2 条步骤自检 · 预计时长；带题目的 44 条另写 `criteria`，断言人工撰写而非「能说出：+答案」的模板兜底。装配读数 `entries` **150** · `criteria` **44** · `quiz` **44** · `est_minutes_coverage` **0.1 → 1.0**；两次装配 sha256 一致。**用例表仍 824 条、`flutter test` 仍 448** —— 本笔是纯内容，未增用例、未改规格条文。同批把两处被本笔推翻的陈述改掉（`§3.58` 的「其余九域仍空」、`§3.59` 的如实登记）并按实测新增一条登记。⚠️ **如实登记**：**内容完整度没有任何用例锁住**（退回只 15 条的版本，`§3.59` 四条仍全绿）；135 条的技术准确性无第二人复核；`outcomes` / `resources` 两栏仍空 |

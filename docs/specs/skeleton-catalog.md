@@ -112,6 +112,10 @@
 
 > 步骤 2 的人工校名不可省：目录 PDF 的抽取结果在**全角/半角括号、连接符、异体字**上必然有偏差，而这些字符会直接进 `slug` 与 `path`。抽查发现一处即整表复验。
 
+**产物与校验现状（`B14` 笔 6）**：步骤 1–3、6 已由 `content/tools/extract_*.py` 与 `content/skeleton/*.json` 落地；步骤 4 的机器校验现在是**两遍** —— 源侧在 `extract_skeleton.py --check` / `extract_occupation.py --check`，**产物侧**在 `content/tools/assemble_skeleton.py`（合并三轴、`parent_id` 转父边之后，对 `nodes[]` / `edges[]` 拼出的图再跑五项）；步骤 5 的体积按包产物实测，读数记在 [`content/skeleton/README.md`](../../content/skeleton/README.md)。
+
+构建路径 = `python content/tools/assemble_skeleton.py` → `content/skeleton/pack.json`（单文件 = 清单 + 六段，`SPEC-PACK-005`；`kinds` 为空 —— 骨架不走插件，`ADR-0005` 决策 2）。**`pack.json` 不入库**，与三个内容空间同一口径。客户端装载入口是 `app/lib/core/pack/skeleton_pack.dart` 的 `loadSkeleton`，产出 `id → path` 注入表交给 `PackLoader`。
+
 ### 步骤 1 的来源与取得状态（`2026-10-20` 立表，`2026-10-23` 三份全部取得）
 
 | 轴 | 官方出处 | 文号 / 日期 | 载体 | 取得方式 |

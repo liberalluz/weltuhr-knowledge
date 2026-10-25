@@ -11,6 +11,8 @@
 ```bash
 python content/tools/assemble_pack.py              # 装配全部空间 → <空间>/pack.json（客户端读这个）
 python content/tools/assemble_pack.py python       # 只装配 content/python/
+python content/tools/assemble_skeleton.py          # 三轴骨架源 → content/skeleton/pack.json（不入库）
+python content/tools/assemble_skeleton.py --check  # 只跑五项包级校验，不落盘
 python content/tools/build.py                      # 旧形态 → <空间>/dist/pack.json（迁移期保留）
 python content/tools/build.py python               # 只构建 content/python/
 python content/tools/build.py --root <目录> --out <文件>   # 构建任意目录（fixtures / 临时）
@@ -20,16 +22,19 @@ python content/tools/verify.py --pack <pack.json>   # 校验已构建的产出
 python content/tools/verify.py --suite              # 全部 fixtures（源层 + 产物层）+ 错误码覆盖自检
 ```
 
-## 四个文件
+## 五个文件
 
 | 文件 | 职责 |
 |---|---|
 | `validator.py` | 所有判据。只读、不改写数据，一次报全部问题 |
 | `assemble_pack.py` | 旧五段源 → 单文件 `pack.json`（目标形态）。字段映射一栏一栏写在文件头的表里 |
+| `assemble_skeleton.py` | 三轴骨架源（`content/skeleton/*.json`）→ `content/skeleton/pack.json`，**装配前先跑五项包级校验**（`official_code` 轴内唯一 / 主父唯一 / 无环 / 无孤儿 / `star` 父链到轴根）+ `id` 与派生 `path` 全局唯一 |
 | `build.py` | 拼 `meta` 信封、固定序列化、原子落盘、确定性检查（**旧形态，迁移期保留**） |
 | `verify.py` | 独立校验 + fixtures 回归 |
 
 三个构建 / 校验脚本共用 `validator.py`：装配前先校验，校验不过不落盘 —— 避免盘上躺着半合规的包。
+
+`assemble_skeleton.py` 是个例外：它**不用** `validator.py`（那份判据建在旧五段上），五项校验自己实现，因为对象是**产物**而不是源 —— `extract_skeleton.py --check` 查的是抽取结果，装配可能漏搬 / 重搬，查 `nodes[]` 拼出来的图才算查到了包。
 
 `assemble_pack.py` **不校验、只搬运**：它把源数据映射成目标形态，判据全在 `validator.py`。映射里凡旧数据没有的字段，一律写 `null` 或空数组，不编造 —— 例外只有两处，且都写在那张表里（`criteria[].statement` 由答案原文加固定前缀派生、`quiz[].type` 定为 `freeform`）。
 

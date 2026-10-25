@@ -104,6 +104,8 @@ jobs:
       #
       # 两条都跑，理由不同：
       #   - `assemble_pack.py` 产目标形态 `pack.json`，是客户端测试的输入；
+      #   - `assemble_skeleton.py` 产骨架包 `content/skeleton/pack.json`，同样是
+      #     测试输入（`real_content_pack_test.dart` 会把它与载荷包分开验）；
       #   - `build.py` 产作废形态 `dist/pack.json`，跑它是在验「旧源数据仍能被旧
       #     校验器接受」—— 源数据本身的问题归它报，装配器只负责搬运。
       #     `build.py` 与其 fixtures 随管线迁移那一笔一并删除。
@@ -117,6 +119,7 @@ jobs:
         run: |
           python3 content/tools/build.py
           python3 content/tools/assemble_pack.py
+          python3 content/tools/assemble_skeleton.py
 
       - name: 单元测试
         if: steps.scope.outputs.run == 'true'

@@ -6,6 +6,7 @@ import 'package:project_knowledge/core/entities/entry.dart';
 import 'package:project_knowledge/core/entities/node.dart';
 import 'package:project_knowledge/core/enums.dart';
 import 'package:project_knowledge/core/pack/pack_reader.dart';
+import 'package:project_knowledge/core/pack/skeleton_pack.dart';
 import 'package:project_knowledge/main.dart';
 
 /// 真实产物的**唯一**回归点。
@@ -45,7 +46,26 @@ void main() {
     expect(files, isNotEmpty, reason: '一个包都没装配 —— 先跑 assemble_pack.py');
 
     for (final File file in files) {
-      final PackContent content = readPack(file.readAsStringSync());
+      final String text = file.readAsStringSync();
+      final PackContent content = readPack(text);
+      if (content.pack.pluginId == 'skeleton') {
+        // 骨架包**不是**载荷包（`ADR-0005` 决策 2：内置、不走插件）⇒ 它没有
+        // 可学节点，也不该有。反过来要求它「有行星」等于逼装配器造假数据。
+        expect(
+          content.learnableNodes,
+          isEmpty,
+          reason: '${file.path} 是骨架包，不该出现行星',
+        );
+        // 骨架包的判据在 `loadSkeleton`：五项包级校验 + `path` 注入表。
+        final SkeletonPack skeleton = loadSkeleton(text);
+        expect(
+          skeleton.nodeCount,
+          greaterThan(0),
+          reason: '${file.path} 一个骨架节点都没有',
+        );
+        expect(skeleton.paths.length, skeleton.nodeCount);
+        continue;
+      }
       expect(
         content.learnableNodes,
         isNotEmpty,

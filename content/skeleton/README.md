@@ -124,6 +124,10 @@ python tools/extract_occupation.py --check
 
 三轴全绿，`anomalies` 均为 `0`。
 
+**上面这套查的是源；包级校验查产物**（`B14` 笔 6 补上，`content/tools/assemble_skeleton.py`）：把三轴合并成 `pack.json` 之后，对 `nodes[]` / `edges[]` 拼出来的那张图再跑一遍五项 —— `official_code` 轴内唯一 · 主父唯一 · 无环 · 无孤儿 · `star` 父链到轴根，另加 `id` 全局唯一与派生 `path` 全局唯一。两遍都要：源侧查「抽得对不对」，包侧查「搬得对不对」，中间那一步（合并、补 `catalog_refs`、`parent_id` 转父边）源侧看不见。
+
+客户端侧同一套判据在 `app/lib/core/pack/skeleton_pack.dart` 的 `loadSkeleton` 里再跑一次 —— 骨架包一启动就在，没有「装包时」可以搁判据，不在这里查就永远没有一处会查。
+
 ## 体积（步骤 5）
 
 | 轴 | 未压缩 | gzip -9 |
@@ -135,13 +139,18 @@ python tools/extract_occupation.py --check
 
 隐含压缩比约 **15×**。§五 原估「压缩后 220–300 KB」是早期按「单节点 ≈300 B、压缩 3–4×」推的，实测小一个量级 —— 原因是 JSON 的键名高度重复。⚠️ **brotli 未实测**，包内最终用哪种压缩随 `B14` 装载层定；届时以包内实测回填 §五，不拿 gzip 数直接顶替 brotli。
 
-## 未做
+**包产物实测**（`pack.json`，`B14` 笔 6）：未压缩 **1,784,803 B（1.74 MB）** / gzip -9 **85,928 B（84 KB）**。比三份源合计大 675 KB，因为产物多了三段东西：父边（3,372 条，源里只是每节点一个 `parent_id`）、`catalog_refs` 空数组、以及 `sources[].appliesTo.node_scope` 里逐条枚举的本轴节点 id。**预算仍成立**：84 KB 远低于 §五 的 300 KB 上限，口径同样是压缩后。
 
-| 项 | 归属 |
+## 已完成（原「未做」，`B14` 笔 6 收口）
+
+| 项 | 状态 |
 |---|---|
-| 步骤 6 快照登记（三份目录的版本与条数写入基线） | `docs/baselines.md` 追加 `BL-4`，**单独一笔 PR**（锚点要用本笔合入后的 squash sha，合并前填不出来） |
-| `skeleton` 包构建（`pack.json`） | 不入库；随 `B14` 装载层 |
-| `content/tools/README.md` 的「权威处」表 | 整表建在旧六轴格式上，**随三包重建整表重写**（`B14`），本批不局部改 |
+| 步骤 6 快照登记 | ✅ `docs/baselines.md` 的 `BL-4`（锚点 `1e0a7b4`），组成与缺口记 `controlled/scmp.md` §3.5 |
+| `skeleton` 包构建（`pack.json`） | ✅ `content/tools/assemble_skeleton.py`，产物 3,375 节点 / 3,372 父边 / 3 源，**不入库**（`.gitignore` 的 `content/*/pack.json`） |
+| 包级五项机器校验（步骤 4） | ✅ 装配器内跑一遍（查产物）、客户端 `loadSkeleton` 再跑一遍（查装载） |
+| `content/tools/README.md` 的「权威处」表 | ✅ 随 `B14` 笔 5 整表重写 |
+
+**仍未做**：`B8` 的三端制品里把骨架包打进去（骨架包现在能生成、能装载，但还没有分发形态）。
 
 ## 已知现象（不是缺陷）
 

@@ -170,37 +170,9 @@ const int frameGoodFps = 50;
 // 编辑距离，值回填在这里，判据只改 `_match` 的最后一步（`TC-QUANT-007` 锁的
 // 正是「连续包含才命中」这条可判边界）。
 
-/// **六轴键序**（`entity-fields` §2）。`θ` 扇区序号与颜色通道的颜色序号都按
-/// 这个顺序取，顺序本身是规格的一部分 —— 改序等于给所有项换扇区。
-///
-/// 进常量表是因为 `R2` 禁止核心层散落字面量：`primaryAxis` 的值是这六个键之一，
-/// 而「值 → 扇区序号」的映射必须有唯一出处。
-const List<String> sixAxisKeys = <String>[
-  'subject',
-  'role',
-  'industry',
-  'ability',
-  'topic',
-  'stack',
-];
-
-/// 六轴的中文名（`entity-fields` §2 的同一张表），**与 [sixAxisKeys] 同序同长**。
-///
-/// 只给界面看（② 的 chip 写「学科」而不是 `subject`）。进常量表而不进视图层：
-/// 轴键是代码的标识、中文名是同一件事的另一种写法，两处各存一份的话，改一条
-/// 轴的名字要记得翻两个文件，而漏掉的那一处不会报错 —— 只会在界面上显示英文键名。
-const Map<String, String> sixAxisLabels = <String, String>{
-  'subject': '学科',
-  'role': '岗位',
-  'industry': '行业',
-  'ability': '能力',
-  'topic': '主题',
-  'stack': '技术栈',
-};
-
 /// `LearnableType` 的中文名（`entity-fields` §2）。
 ///
-/// 与 [sixAxisLabels] 同一条理由进常量表：取值是代码的标识、中文名是同一件事的
+/// 与 [axisLabels] 同一条理由进常量表：取值是代码的标识、中文名是同一件事的
 /// 另一种写法，两处各存一份的话，改一个类型的名字要记得翻两个文件。
 /// 原本只在 `features/detail/detail_panel.dart` 里有一份私有副本，`B4` `P-8` 的
 /// 候选卡「适用范围」是第二处要用的地方 —— 两份就会分叉，故上收到此处。
@@ -221,8 +193,7 @@ const Map<Layer, String> layerLabels = <Layer, String>{
 /// 三条容器轴的中文名（`entity-fields` §2 `Node.axis`）。理由同 [learnableTypeLabels]。
 ///
 /// 笔 5c-1 新增：`appliesTo.axes` 取代 `spaceId` 之后，候选卡的「适用范围」
-/// 那一行要写「学科」而不是 `discipline`。旧表 [sixAxisLabels] 是六轴时代的
-/// 键 → 名映射，键集与新 `Axis` 枚举不是一回事，不能拿来顶替。
+/// 那一行要写「学科」而不是 `discipline`。
 const Map<Axis, String> axisLabels = <Axis, String>{
   Axis.discipline: '学科',
   Axis.major: '专业',
