@@ -32,7 +32,7 @@ cd app && flutter pub get
 # dipendenze del server + database
 cd ../server && dart pub get
 
-# generare il pacchetto di contenuti (deve precedere l'avvio del client: il client cerca content/<space>/dist/pack.json rispetto alla CWD di esecuzione)
+# generare i pacchetti di contenuti (l'output non è versionato; il client cerca <radice candidata>/<dir del pacchetto>/pack.json rispetto alla CWD di esecuzione)
 cd ../content && python tools/build.py
 
 # avvio

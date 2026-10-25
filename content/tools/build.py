@@ -6,7 +6,8 @@
     python tools/build.py --root <目录>    构建指定目录（fixtures 用）
     python tools/build.py --check          两遍构建 + 不同环境复跑，比 sha256
 
-设计约束（`SPEC-PACK-005`）：
+设计约束（**本脚本实现的是作废的五段形态**；目标形态是「单文件 = 清单 + 六段」，
+见 `SPEC-PACK-005` 及其「迁移状态」段 —— 管线随三包重建一并迁）：
   - `meta.version` **原样透传** `manifest.json` 的 `version`，绝不改写
   - `meta` 是**信封**不是内容段：只含 `space` 与 `version`，**不含构建时间戳**
   - 序列化参数硬编码在此：`sort_keys` + 固定缩进 + `ensure_ascii=False` +

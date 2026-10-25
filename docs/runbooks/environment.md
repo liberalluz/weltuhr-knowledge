@@ -45,4 +45,4 @@ GIT_SSH_COMMAND="ssh -o BatchMode=yes -o StrictHostKeyChecking=accept-new" git p
 
 ## 六、内容包与运行目录
 
-`PackLoader` 按**运行期 CWD** 查找 `<仓根>/content/<空间>/dist/pack.json`。因此 `flutter run` **必须在 `app/` 目录内执行**；`dist/` 由构建脚本生成且**不入库**。
+`PackLoader` 按**运行期 CWD** 在**候选根下的包目录**里探测 `pack.json`（`<候选根>/<包目录>/pack.json`，`SPEC-PACK-018`）。因此 `flutter run` **必须在 `app/` 目录内执行**；`pack.json` 由内容管线生成且**不入库**。

@@ -18,6 +18,8 @@ python content/tools/verify.py --suite          # 跑 fixtures 回归
 
 ## 目录形态
 
+> ⚠️ 下面的形态是**当前管线**的样子。包格式的目标形态是**单文件**（`pack.json` = 清单 + 六段，`SPEC-PACK-005`），差距与迁移时机写在 `SPEC-PACK-005` 的「迁移状态」段 —— 别把本节当目标读。
+
 ```
 content/
 ├── tools/                构建与校验（纯标准库，无第三方依赖）

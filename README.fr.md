@@ -32,7 +32,7 @@ cd app && flutter pub get
 # dépendances du serveur + base de données
 cd ../server && dart pub get
 
-# générer le pack de contenu (doit précéder le lancement du client : le client cherche content/<space>/dist/pack.json par rapport au répertoire de travail à l'exécution)
+# générer les packs de contenu (la sortie n'est pas versionnée ; le client cherche <racine candidate>/<dossier du pack>/pack.json par rapport au répertoire de travail à l'exécution)
 cd ../content && python tools/build.py
 
 # exécution
