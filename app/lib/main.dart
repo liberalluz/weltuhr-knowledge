@@ -247,9 +247,7 @@ class SpaceScreen extends StatelessWidget {
                 ListTile(
                   dense: true,
                   title: Text(planet.name),
-                  subtitle: Text(
-                    content.entryOf(planet.id) == null ? '暂无内容' : '有题目',
-                  ),
+                  subtitle: Text(planetSubtitle(content.entryOf(planet.id))),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => Navigator.of(context).push(
                     MaterialPageRoute<void>(
@@ -362,4 +360,24 @@ class _Section extends StatelessWidget {
       ),
     );
   }
+}
+
+/// 节点副标题：**只报 entry 里真有的东西**。
+///
+/// 判据是「这一条有没有正文/步骤、有没有题」，不是「有没有 entry」：
+/// entry 是内容容器，写满正文与五步之后它照样不含题；把「有 entry」读成
+/// 「有题目」，列表上就会整片显示「有题目」，点进去第一句却是「暂无」。
+///
+/// 三态各自可核：无 entry = 暂无内容；有正文无题 = 有正文与步骤；
+/// 有正文有题 = 有正文与步骤 · 题目 N。题数取 `quiz.length`，不写死。
+String planetSubtitle(NodeEntry? entry) {
+  if (entry == null) {
+    return '暂无内容';
+  }
+  final int quizCount = entry.quiz.length;
+  final bool hasText = (entry.body ?? '').isNotEmpty || entry.steps.isNotEmpty;
+  if (!hasText) {
+    return quizCount == 0 ? '暂无内容' : '仅题目 $quizCount';
+  }
+  return quizCount == 0 ? '有正文与步骤' : '有正文与步骤 · 题目 $quizCount';
 }
