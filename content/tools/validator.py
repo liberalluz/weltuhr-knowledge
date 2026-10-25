@@ -41,7 +41,8 @@ EDGE_TYPES = ("strong", "weak", "unknown")
 # 出处等级（entity-fields §5 §6）
 AUTHORITY_LEVELS = ("L0", "L1", "L2", "L4")
 
-# pack 内容五段（SPEC-PACK-005）
+# pack 内容五段 —— **作废形态**：目标形态是「清单 + 六段」（`SPEC-PACK-005`），
+# 本管线尚未迁移，迁移时机见那一条的「迁移状态」段。
 SEGMENTS = ("items", "edges", "schemes", "questions", "excerpts")
 
 # 信封字段：只回答「这是哪个空间的哪一版」，不含构建时间戳
@@ -101,7 +102,7 @@ def load_source(root: str) -> tuple[dict | None, dict[str, list | None], list[Is
         if not os.path.isfile(path):
             segments[name] = None
             issues.append(
-                _issue("E-SEGMENT-MISSING", f"{name}.json", "pack 五段缺段（SPEC-PACK-005）")
+                _issue("E-SEGMENT-MISSING", f"{name}.json", "pack 五段缺段（旧形态，`SPEC-PACK-005` 的作废版）")
             )
             continue
         try:
@@ -411,7 +412,7 @@ def find_cycles(edges: list) -> list[list[str]]:
 def compute_inversions(nodes: list[str], edges: list) -> int:
     """`nodes` 相对 `⪯` 的逆序数：一条前置边在后继之后出现即计一次。
 
-    只统计两端都在 `nodes` 里的边；逆序不禁止（`SPEC-PACK-005`），
+    只统计两端都在 `nodes` 里的边；逆序不禁止（`SPEC-PLAN-012`），
     但必须算出来以便 Planner 显式展示代价。
     """
     pos = {nid: i for i, nid in enumerate(nodes)}

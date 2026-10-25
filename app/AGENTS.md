@@ -29,6 +29,6 @@
 - **不同构就不映射**：宇宙坐标（`r`/`θ`/`φ`）与树的缩进（`⪯` 容器层级）不同构，切换只做交叉淡入，不做形态过渡动画；不得用 `φ` 当难度代理。
 - **3D 力导向布局永久排除**：位置即语义，力导向会毁掉坐标的可读性。
 - **事件是唯一事实源**：所有可写状态必须由 `fold(events, asOf)` 得出，不得引入与之并行的状态表（会话游标、笔记版本皆同）。
-- **内容包不是资产**：`PackLoader` 按运行期 CWD 查找 `<仓根>/content/<空间>/dist/pack.json`，故 `flutter run` 必须在 `app/` 内执行；`dist/` 由 `content/tools/build.py` 生成且不入库。
+- **内容包不是资产**：`PackLoader` 按运行期 CWD 在**候选根下的包目录**里找 `pack.json`（`SPEC-PACK-018`），故 `flutter run` 必须在 `app/` 内执行；`pack.json` 由内容管线生成且**不入库**。
 - **声明驱动零分支**：空间差异、语言差异、方法差异一律由内容包与平台声明承载，不得在客户端写 `if (space == ...)` 这类分支。
 - **codegen 白名单**：只解禁 `drift_dev` + `build_runner`；`freezed` / `json_serializable` / `riverpod_generator` 禁用（模型手写 `fromJson`、provider 手动声明）。新增 codegen 依赖须走 ADR。

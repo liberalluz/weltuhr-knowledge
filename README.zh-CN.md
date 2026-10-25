@@ -31,7 +31,7 @@ cd app && flutter pub get
 # 服务端依赖 + 起库
 cd ../server && dart pub get
 
-# 生成内容包产物（须先于运行客户端：客户端按运行期 CWD 查找 content/<space>/dist/pack.json）
+# 生成内容包（产物不入库；客户端运行期按 CWD 探测 <候选根>/<包目录>/pack.json）
 cd ../content && python tools/build.py
 
 # 运行

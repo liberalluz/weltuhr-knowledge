@@ -3,5 +3,5 @@
   "exit": 0,
   "scheme": "scheme-official-tutorial",
   "inversions": 1,
-  "note": "nodes 把 class 排在 function 之前，与 e-class-after-function 逆序。SPEC-PACK-005：逆序不禁止，但必须算出 inversions"
+  "note": "nodes 把 class 排在 function 之前，与 e-class-after-function 逆序。SPEC-PLAN-012：逆序不禁止，但必须算出 inversions"
 }

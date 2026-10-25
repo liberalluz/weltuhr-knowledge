@@ -140,7 +140,7 @@ python tools/extract_occupation.py --check
 | 项 | 归属 |
 |---|---|
 | 步骤 6 快照登记（三份目录的版本与条数写入基线） | `docs/baselines.md` 追加 `BL-4`，**单独一笔 PR**（锚点要用本笔合入后的 squash sha，合并前填不出来） |
-| `skeleton` 包构建（`dist/pack.json`） | 不入库；随 `B14` 装载层 |
+| `skeleton` 包构建（`pack.json`） | 不入库；随 `B14` 装载层 |
 | `content/tools/README.md` 的「权威处」表 | 整表建在旧六轴格式上，**随三包重建整表重写**（`B14`），本批不局部改 |
 
 ## 已知现象（不是缺陷）

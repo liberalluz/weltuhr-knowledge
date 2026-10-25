@@ -32,7 +32,7 @@ cd app && flutter pub get
 # Server-Abhängigkeiten + Datenbank
 cd ../server && dart pub get
 
-# Content-Paket erzeugen (muss vor dem Start des Clients laufen: der Client sucht content/<space>/dist/pack.json relativ zum Arbeitsverzeichnis zur Laufzeit)
+# Content-Pakete erzeugen (Ausgabe wird nicht versioniert; der Client sucht <Kandidatenwurzel>/<Paketverzeichnis>/pack.json relativ zum Arbeitsverzeichnis zur Laufzeit)
 cd ../content && python tools/build.py
 
 # starten
