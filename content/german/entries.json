@@ -17,7 +17,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释 Er ist Lehrer 里 Lehrer 为什么用主格而不是第四格"
+        "instruction": "Er ist Lehrer 里 Lehrer 为什么用主格而不是第四格"
       },
       {
         "operator": "recall",
@@ -58,7 +58,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释为什么阴性、中性、复数的第四格看起来与主格一样"
+        "instruction": "为什么阴性、中性、复数的第四格看起来与主格一样"
       },
       {
         "operator": "recall",
@@ -99,7 +99,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释为什么 Dem Lehrer wird geholfen 这种句子没有主语"
+        "instruction": "为什么 Dem Lehrer wird geholfen 这种句子没有主语"
       },
       {
         "operator": "recall",
@@ -140,7 +140,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释口语里为什么要用 von 替代属格，代价是什么"
+        "instruction": "口语里为什么要用 von 替代属格，代价是什么"
       },
       {
         "operator": "recall",
@@ -185,7 +185,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释同一个 in 为什么既能带第四格又能带第三格"
+        "instruction": "同一个 in 为什么既能带第四格又能带第三格"
       },
       {
         "operator": "recall",
@@ -230,7 +230,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释为什么 Ich laufe im Park 用第三格，尽管也是移动"
+        "instruction": "为什么 Ich laufe im Park 用第三格，尽管也是移动"
       },
       {
         "operator": "recall",
@@ -275,7 +275,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释为什么不能靠「谁受事」判断格"
+        "instruction": "为什么不能靠「谁受事」判断格"
       },
       {
         "operator": "recall",
@@ -320,7 +320,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释为什么 bewusst 后面是 dessen 而不是 das"
+        "instruction": "为什么 bewusst 后面是 dessen 而不是 das"
       },
       {
         "operator": "recall",
@@ -369,7 +369,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释同位语为什么不能自己单独定格"
+        "instruction": "同位语为什么不能自己单独定格"
       },
       {
         "operator": "recall",
@@ -410,7 +410,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释格标记弱化后，语言用什么手段补偿"
+        "instruction": "格标记弱化后，语言用什么手段补偿"
       },
       {
         "operator": "recall",
@@ -451,7 +451,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释为什么背名词必须带冠词"
+        "instruction": "为什么背名词必须带冠词"
       },
       {
         "operator": "recall",
@@ -492,7 +492,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释为什么后缀法只能算高概率规则，不能算公式"
+        "instruction": "为什么后缀法只能算高概率规则，不能算公式"
       },
       {
         "operator": "recall",
@@ -537,7 +537,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释为什么语义规则只能当提示"
+        "instruction": "为什么语义规则只能当提示"
       },
       {
         "operator": "recall",
@@ -582,7 +582,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释为什么 Wartezimmer 是中性，尽管 warten 是动词"
+        "instruction": "为什么 Wartezimmer 是中性，尽管 warten 是动词"
       },
       {
         "operator": "recall",
@@ -627,7 +627,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释为什么不能靠「单音节」一条规则定复数"
+        "instruction": "为什么不能靠「单音节」一条规则定复数"
       },
       {
         "operator": "recall",
@@ -668,7 +668,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释为什么 den Kindern 要加 -n"
+        "instruction": "为什么 den Kindern 要加 -n"
       },
       {
         "operator": "recall",
@@ -709,7 +709,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释为什么弱变化阳性名词也归入这一类"
+        "instruction": "为什么弱变化阳性名词也归入这一类"
       },
       {
         "operator": "recall",
@@ -750,7 +750,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释为什么 -s 复数在口语里会扩展到 Oma 这类词"
+        "instruction": "为什么 -s 复数在口语里会扩展到 Oma 这类词"
       },
       {
         "operator": "recall",
@@ -791,7 +791,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释为什么仅复数名词的动词要用复数"
+        "instruction": "为什么仅复数名词的动词要用复数"
       },
       {
         "operator": "recall",
@@ -836,7 +836,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释为什么第一格不加 -en，而第四格要加"
+        "instruction": "为什么第一格不加 -en，而第四格要加"
       },
       {
         "operator": "recall",
@@ -881,7 +881,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释为什么不能只看冠词就断定成分的格"
+        "instruction": "为什么不能只看冠词就断定成分的格"
       },
       {
         "operator": "recall",
@@ -926,7 +926,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释为什么复数没有 ein 形式"
+        "instruction": "为什么复数没有 ein 形式"
       },
       {
         "operator": "recall",
@@ -971,7 +971,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释为什么物主冠词与 ein 同词尾"
+        "instruction": "为什么物主冠词与 ein 同词尾"
       },
       {
         "operator": "recall",
@@ -1020,7 +1020,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释为什么 derselbe 的后半段不变格"
+        "instruction": "为什么 derselbe 的后半段不变格"
       },
       {
         "operator": "recall",
@@ -1061,7 +1061,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释为什么关系代词的格不能跟先行词"
+        "instruction": "为什么关系代词的格不能跟先行词"
       },
       {
         "operator": "recall",
@@ -1102,7 +1102,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释为什么 was für ein 里只有 ein 变格"
+        "instruction": "为什么 was für ein 里只有 ein 变格"
       },
       {
         "operator": "recall",
@@ -1143,7 +1143,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释 viel 与 viele 的分工"
+        "instruction": "viel 与 viele 的分工"
       },
       {
         "operator": "recall",
@@ -1184,7 +1184,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释定冠词与指示冠词的分工"
+        "instruction": "定冠词与指示冠词的分工"
       },
       {
         "operator": "recall",
@@ -1229,7 +1229,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释为什么物质名词泛指时不用冠词"
+        "instruction": "为什么物质名词泛指时不用冠词"
       },
       {
         "operator": "recall",
@@ -1274,7 +1274,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释为什么阴性国名必须带冠词而中性国名不带"
+        "instruction": "为什么阴性国名必须带冠词而中性国名不带"
       },
       {
         "operator": "recall",
@@ -1315,7 +1315,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释为什么复数主格也用 -en"
+        "instruction": "为什么复数主格也用 -en"
       },
       {
         "operator": "recall",
@@ -1360,7 +1360,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释「混合」这个名字的来由"
+        "instruction": "「混合」这个名字的来由"
       },
       {
         "operator": "recall",
@@ -1401,7 +1401,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释为什么无冠词时形容词必须承担格标"
+        "instruction": "为什么无冠词时形容词必须承担格标"
       },
       {
         "operator": "recall",
@@ -1442,7 +1442,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释为什么 meine 复数之后走弱变化，而 viele 之后走强变化"
+        "instruction": "为什么 meine 复数之后走弱变化，而 viele 之后走强变化"
       },
       {
         "operator": "recall",
@@ -1487,7 +1487,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释为什么表语位置不需要格标记"
+        "instruction": "为什么表语位置不需要格标记"
       },
       {
         "operator": "recall",
@@ -1528,7 +1528,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释为什么定语比较级还要再加变格词尾"
+        "instruction": "为什么定语比较级还要再加变格词尾"
       },
       {
         "operator": "recall",
@@ -1569,7 +1569,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释为什么最高级必须有 am 或定冠词"
+        "instruction": "为什么最高级必须有 am 或定冠词"
       },
       {
         "operator": "recall",
@@ -1610,7 +1610,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释为什么 hoch 作定语时要写成 hoher"
+        "instruction": "为什么 hoch 作定语时要写成 hoher"
       },
       {
         "operator": "recall",
@@ -1647,7 +1647,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释 als 与 wie 分别对应哪种比较关系"
+        "instruction": "als 与 wie 分别对应哪种比较关系"
       },
       {
         "operator": "recall",
@@ -1688,7 +1688,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释扩展定语为什么难读，解码顺序是什么"
+        "instruction": "扩展定语为什么难读，解码顺序是什么"
       },
       {
         "operator": "recall",
@@ -1729,7 +1729,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释为什么 arbeit 后面要插 -e，而 wohn 不要"
+        "instruction": "为什么 arbeit 后面要插 -e，而 wohn 不要"
       },
       {
         "operator": "recall",
@@ -1774,7 +1774,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释变音与换音的区别"
+        "instruction": "变音与换音的区别"
       },
       {
         "operator": "recall",
@@ -1819,7 +1819,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释为什么情态动词第一人称不需要词尾"
+        "instruction": "为什么情态动词第一人称不需要词尾"
       },
       {
         "operator": "recall",
@@ -1860,7 +1860,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释口语与书面语为什么选用不同的过去表达"
+        "instruction": "口语与书面语为什么选用不同的过去表达"
       },
       {
         "operator": "recall",
@@ -1901,7 +1901,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释为什么 verstehen 与 studieren 不加 ge-"
+        "instruction": "为什么 verstehen 与 studieren 不加 ge-"
       },
       {
         "operator": "recall",
@@ -1950,7 +1950,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释为什么 bleiben 用 sein 而没有位移"
+        "instruction": "为什么 bleiben 用 sein 而没有位移"
       },
       {
         "operator": "recall",
@@ -1991,7 +1991,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释过去完成时与完成时的使用条件差别"
+        "instruction": "过去完成时与完成时的使用条件差别"
       },
       {
         "operator": "recall",
@@ -2032,7 +2032,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释 Er wird Lehrer 为什么不是将来时"
+        "instruction": "Er wird Lehrer 为什么不是将来时"
       },
       {
         "operator": "recall",
@@ -2077,7 +2077,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释同一形态为什么能表将来完成与过去推测"
+        "instruction": "同一形态为什么能表将来完成与过去推测"
       },
       {
         "operator": "recall",
@@ -2118,7 +2118,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释过程被动与状态被动各回答什么问题"
+        "instruction": "过程被动与状态被动各回答什么问题"
       },
       {
         "operator": "recall",
@@ -2163,7 +2163,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释为什么 helfen 不是及物动词，尽管它也带宾语"
+        "instruction": "为什么 helfen 不是及物动词，尽管它也带宾语"
       },
       {
         "operator": "recall",
@@ -2204,7 +2204,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释为什么这类动词不能有被动主语"
+        "instruction": "为什么这类动词不能有被动主语"
       },
       {
         "operator": "recall",
@@ -2245,7 +2245,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释属格宾语为什么不能作被动主语"
+        "instruction": "属格宾语为什么不能作被动主语"
       },
       {
         "operator": "recall",
@@ -2286,7 +2286,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释 sich freuen auf 与 über 的意义差别"
+        "instruction": "sich freuen auf 与 über 的意义差别"
       },
       {
         "operator": "recall",
@@ -2327,7 +2327,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释什么情况下反身代词用与格"
+        "instruction": "什么情况下反身代词用与格"
       },
       {
         "operator": "recall",
@@ -2372,7 +2372,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释重音为什么能区分可分与不可分"
+        "instruction": "重音为什么能区分可分与不可分"
       },
       {
         "operator": "recall",
@@ -2413,7 +2413,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释为什么不可分动词的第二分词不加 ge-"
+        "instruction": "为什么不可分动词的第二分词不加 ge-"
       },
       {
         "operator": "recall",
@@ -2454,7 +2454,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释主观用法为什么重音落在情态动词上"
+        "instruction": "主观用法为什么重音落在情态动词上"
       },
       {
         "operator": "recall",
@@ -2499,7 +2499,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释为什么可分动词的 zu 要夹在中间"
+        "instruction": "为什么可分动词的 zu 要夹在中间"
       },
       {
         "operator": "recall",
@@ -2540,7 +2540,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释为什么 fahren 的命令式不改音"
+        "instruction": "为什么 fahren 的命令式不改音"
       },
       {
         "operator": "recall",
@@ -2581,7 +2581,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释为什么动词第二位会带动主语后移"
+        "instruction": "为什么动词第二位会带动主语后移"
       },
       {
         "operator": "recall",
@@ -2630,7 +2630,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释为什么 nicht 不宜放前置场"
+        "instruction": "为什么 nicht 不宜放前置场"
       },
       {
         "operator": "recall",
@@ -2675,7 +2675,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释句框把什么信息放在两端"
+        "instruction": "句框把什么信息放在两端"
       },
       {
         "operator": "recall",
@@ -2716,7 +2716,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释为什么已知信息要靠前"
+        "instruction": "为什么已知信息要靠前"
       },
       {
         "operator": "recall",
@@ -2761,7 +2761,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释 nicht 的位置为什么尽量靠后"
+        "instruction": "nicht 的位置为什么尽量靠后"
       },
       {
         "operator": "recall",
@@ -2802,7 +2802,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释为什么代词顺序与名词顺序相反"
+        "instruction": "为什么代词顺序与名词顺序相反"
       },
       {
         "operator": "recall",
@@ -2851,7 +2851,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释为什么 wer 作主语时语序不同"
+        "instruction": "为什么 wer 作主语时语序不同"
       },
       {
         "operator": "recall",
@@ -2892,7 +2892,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释从句在主句第一位时，主句动词为什么仍在第二位"
+        "instruction": "从句在主句第一位时，主句动词为什么仍在第二位"
       },
       {
         "operator": "recall",
@@ -2937,7 +2937,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释为什么不能靠打乱中场顺序来强调"
+        "instruction": "为什么不能靠打乱中场顺序来强调"
       },
       {
         "operator": "recall",
@@ -2978,7 +2978,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释为什么名词宾语不能外置"
+        "instruction": "为什么名词宾语不能外置"
       },
       {
         "operator": "recall",
@@ -3019,7 +3019,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释 dass 从句在句首时为什么不能省 dass"
+        "instruction": "dass 从句在句首时为什么不能省 dass"
       },
       {
         "operator": "recall",
@@ -3060,7 +3060,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释关系代词的格由什么决定"
+        "instruction": "关系代词的格由什么决定"
       },
       {
         "operator": "recall",
@@ -3101,7 +3101,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释先行词为整句时为什么用 was"
+        "instruction": "先行词为整句时为什么用 was"
       },
       {
         "operator": "recall",
@@ -3146,7 +3146,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释 als 与 wenn 的分工"
+        "instruction": "als 与 wenn 的分工"
       },
       {
         "operator": "recall",
@@ -3187,7 +3187,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释 damit 与 um ... zu 的使用条件差别"
+        "instruction": "damit 与 um ... zu 的使用条件差别"
       },
       {
         "operator": "recall",
@@ -3236,7 +3236,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释为什么不能用 dass 替换 ob"
+        "instruction": "为什么不能用 dass 替换 ob"
       },
       {
         "operator": "recall",
@@ -3281,7 +3281,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释过去完成虚拟为什么要用 hätte / wäre + 第二分词"
+        "instruction": "过去完成虚拟为什么要用 hätte / wäre + 第二分词"
       },
       {
         "operator": "recall",
@@ -3330,7 +3330,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释为什么口语更常用第二虚拟式替代"
+        "instruction": "为什么口语更常用第二虚拟式替代"
       },
       {
         "operator": "recall",
@@ -3375,7 +3375,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释情态小品词为什么不改变句子的真假"
+        "instruction": "情态小品词为什么不改变句子的真假"
       },
       {
         "operator": "recall",
@@ -3420,7 +3420,7 @@
       },
       {
         "operator": "explain",
-        "instruction": "解释名词化会丢哪些信息，怎么补回"
+        "instruction": "名词化会丢哪些信息，怎么补回"
       },
       {
         "operator": "recall",
