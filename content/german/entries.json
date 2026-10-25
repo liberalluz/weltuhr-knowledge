@@ -1,0 +1,2626 @@
+{
+  "german/cs-nominative": {
+    "summary": "主格标记句子主语与系动词后的表语名词，判断格要看冠词而不是位置。",
+    "body": "Der Mann liest.        主语 der Mann（阳性主格）\nDie Frau liest.        主语 die Frau（阴性主格）\nDas Kind liest.        主语 das Kind（中性主格）\nDie Kinder lesen.      主语 die Kinder（复数主格）\n\nEr ist Lehrer.         表语名词也用主格：er 与 Lehrer 同格\nSie wird Ärztin.       同上\n\n格标记落在两种载体上\nder Mann / dem Mann / den Mann    阳性只有第四格在冠词上变，名词本身不变\ndie Frau / der Frau / die Frau    阴性一、四格同形，二、三格才变\n\n易错点\n① 德语语序自由，主语不一定在句首：Gestern kam der Mann. 里 der Mann 仍是主格；\n② 系动词 sein / werden / bleiben 后面的名词与主语同格，不是第四格；\n③ 呼喊用语不带冠词：Herr Müller! / Liebe Kollegen!",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读主格一节，抄出三性单数与复数的主格冠词六形"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 Der Mann liest / Die Frau liest / Das Kind liest / Die Kinder lesen，圈出每句的冠词"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 Die Kinder lesen ein Buch 改成单数，冠词与动词一起改"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释 Er ist Lehrer 里 Lehrer 为什么用主格而不是第四格"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出三性单数与复数的主格冠词，以及系动词后表语用什么格"
+      }
+    ],
+    "selfCheck": [
+      "能不看表写出六种主格冠词",
+      "能说出「判断格看冠词、不看位置」的理由"
+    ],
+    "estMinutes": 7
+  },
+  "german/cs-accusative": {
+    "summary": "第四格标记直接宾语，只有阳性单数在冠词上露出变化，其余性与数与主格同形。",
+    "body": "Ich sehe den Mann.       阳性：der 变 den\nIch sehe die Frau.       阴性：die 不变\nIch sehe das Kind.       中性：das 不变\nIch sehe die Kinder.     复数：die 不变\n\n变化只集中在阳性\nden / einen / meinen / diesen / keinen\nIch kaufe einen Tisch.   阳性第四格 -en\nIch kaufe ein Buch.      中性第四格同形\n\n第四格的其他来源\nes gibt 固定带第四格      Es gibt einen Fehler.\n时间状语               jeden Tag / nächste Woche / letzten Monat\n双格介词表方向          in die Stadt（见 cs-two-way-preposition）\n带第四格的介词          durch / für / gegen / ohne / um / bis\n\n注意「同形不等于没格」\nDie Frau sieht die Frau. 两个 die 一主一宾，格靠位置与语境定，不靠词形",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读第四格一节，写出阳性冠词 der 到 den 的对照"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 Ich sehe den Mann / die Frau / das Kind / die Kinder，标出哪一句的冠词变了"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 Ich kaufe ein Buch 改成阳性名词 Tisch，注意 ein 与名词"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释为什么阴性、中性、复数的第四格看起来与主格一样"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出第四格唯一变形的性数，以及三个固定带第四格的场合"
+      }
+    ],
+    "selfCheck": [
+      "能写出阳性第四格的冠词、不定冠词、物主冠词三种形式",
+      "能说出 es gibt 与时间状语为什么用第四格"
+    ],
+    "estMinutes": 7
+  },
+  "german/cs-dative": {
+    "summary": "与格标记间接宾语，也是 helfen、danken 这类动词唯一的宾语格，阳性冠词变 dem。",
+    "body": "Ich gebe dem Mann das Buch.     间接宾语 dem Mann\nIch helfe der Frau.             helfen 只带与格，没有第四格宾语\nIch danke dem Lehrer.\n\n复数与格要加 -n\ndie Kinder -> den Kindern\ndie Freunde -> den Freunden\n词尾已含 -n 或 -s 的复数不再加：den Autos / den Frauen\n\n支配与格的常见动词（整组记）\nhelfen danken gehören folgen gratulieren antworten gefallen passen schmecken\nDas Buch gehört mir. / Der Film gefällt mir. / Das Kleid passt dir.\n\n少数动词带两个第四格，不占与格位置\nlehren / nennen / kosten：Er nennt mich einen Freund.\n\n与格也能作被动句的唯一宾语（无人称被动）\nDem Lehrer wird geholfen.\n这里没有主语，格仍留在与格上，动词用第三人称单数。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读与格一节，抄出与格冠词 des 以外四形（dem / der / dem / den）"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 Ich helfe der Frau / Ich danke dem Lehrer / Das Buch gehört mir，标出每句的与格成分"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 die Kinder 填进 Ich helfe ___，注意复数与格词尾"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释为什么 Dem Lehrer wird geholfen 这种句子没有主语"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出四个只带与格的动词，以及复数与格什么时候加 -n"
+      }
+    ],
+    "selfCheck": [
+      "能写出三性单数与复数的与格冠词",
+      "能说出至少四个支配与格的动词"
+    ],
+    "estMinutes": 8,
+    "criteria": [
+      {
+        "quiz": "q-cs-dative",
+        "statement": "能说出 helfen / danken / gehören / folgen 支配第三格，并给出一个只有与格宾语的例句"
+      }
+    ]
+  },
+  "german/cs-genitive": {
+    "summary": "属格表示所属与部分量，多作定语放在名词后，口语里常被 von 加与格替代。",
+    "body": "das Auto des Mannes        阳性/中性：des + -es（单音节多带 -es）\ndie Tasche der Frau        阴性：der，名词无词尾\ndas Spielzeug des Kindes\ndie Bücher der Kinder      复数：der，名词无词尾\n\n名词词尾看音节与结尾\ndes Mannes / des Kindes（-es）  des Lehrers / des Autos（-s）\n\n属格作定语还出现在\ndie Farbe des Himmels / ein Freund meines Vaters\nder Anfang des Buches\n\n支配属格的介词\nwegen / trotz / während / statt / aufgrund + 属格\nwegen des Regens / trotz des Lärms\n\n口语替代\nwegen dem Regen（与格，正式书面不用）\ndie Farbe vom Himmel（von + 与格）\n\n单独记：部分量不用属格，量词直接加名词\nein Glas Wein / zwei Kilo Mehl / eine Tasse Kaffee",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读属格一节，抄出三性单数与复数的属格冠词"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 des Mannes / des Kindes / des Lehrers / der Frau / der Kinder，说明哪几个带名词词尾"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 wegen der Regen 改成正确形式，再用 trotz 造一句带属格的句子"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释口语里为什么要用 von 替代属格，代价是什么"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出属格的四形、带属格的四个介词、以及哪些名词不带词尾"
+      }
+    ],
+    "selfCheck": [
+      "能写出阳性单音节与多音节名词的属格形式",
+      "能说出三个支配属格的介词"
+    ],
+    "estMinutes": 8
+  },
+  "german/cs-case-preposition": {
+    "summary": "介词按支配的格分三组：只第四格、只第三格、以及按方向与位置切换的双格介词。",
+    "body": "只第四格：durch für gegen ohne um bis entlang\nfür den Gast / ohne meinen Bruder / gegen ihn\n\n只第三格：aus bei mit nach seit von zu gegenüber\nmit dem Freund / nach der Arbeit / seit einem Jahr / zu Hause\n\n双格：an auf in über unter vor hinter zwischen\nWohin? 第四格    Ich gehe in die Stadt.\nWo?    第三格    Ich bin in der Stadt.\n\n介词与冠词的缩合（口语与书面都用）\nin dem -> im            in das -> ins\nan dem -> am            an das -> ans\nzu dem -> zum           zu der -> zur\nbei dem -> beim         von dem -> vom\n\n易错\n① 只第三格的 zu 表「去某处」也带与格：zum Bahnhof / nach Hause；\n② 缩合形式不重读，不能还原成 in dem 再变格；\n③ gegenüber 可放在名词前也可后置：gegenüber dem Bahnhof / dem Bahnhof gegenüber。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读介词三组清单，抄出只第四格与只第三格的完整列表"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 für den Gast / mit dem Freund / in die Stadt / in der Stadt，标出格"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 in dem / in das / zu dem / bei dem 四处缩合改写成口语常用形式"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释同一个 in 为什么既能带第四格又能带第三格"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出双格介词八个、只第三格六个，以及四个缩合形式"
+      }
+    ],
+    "selfCheck": [
+      "能背出只第三格与只第四格的介词清单",
+      "能说出双格介词判断第四格还是第三格的那一问"
+    ],
+    "estMinutes": 8
+  },
+  "german/cs-two-way-preposition": {
+    "summary": "双格介词的格由有没有发生位移决定：Wohin 用第四格，Wo 用第三格。",
+    "body": "Wohin? 第四格（方向、目的地）\nIch hänge das Bild an die Wand.\nWir gehen ins Kino.\nEr legt das Buch auf den Tisch.\n\nWo? 第三格（位置、状态）\nDas Bild hängt an der Wand.\nWir sind im Kino.\nDas Buch liegt auf dem Tisch.\n\n同一组动词靠格的搭配区分动作与状态\nsetzen（放，四格）/ sitzen（坐，三格）\nstellen（立，四格）/ stehen（立着，三格）\nlegen（平放，四格）/ liegen（平躺，三格）\nhängen（挂，四格）/ hängen（挂着，三格，弱变化）\n\n不表示空间移动的固定搭配锁第三格\nan der Universität / auf dem Land / in der Schule / zu Hause\n\n注意：第四格不等于「有方向」，而是「跨过边界」；沿着某处移动仍用第三格\nIch laufe im Park.（在公园里跑） vs Ich laufe in den Park.（跑进公园）",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读双格介词一节，抄出 Wohin / Wo 两组例句"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 legen/liegen 与 stellen/stehen 两组对照，各标出格"
+      },
+      {
+        "operator": "practice",
+        "instruction": "用 in 造两句：一句表「走进电影院」，一句表「在电影院里」"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释为什么 Ich laufe im Park 用第三格，尽管也是移动"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出双格介词八个、三个锁第三格的固定搭配，以及判断用的那一问"
+      }
+    ],
+    "selfCheck": [
+      "能默写四组动作/状态动词对",
+      "能说出 Wohin 与 Wo 各支配哪一格，并给出一个固定搭配例子"
+    ],
+    "estMinutes": 9,
+    "criteria": [
+      {
+        "quiz": "q-cs-two-way-preposition",
+        "statement": "能说出 in die Stadt 是第四格（Wohin，方向）、in der Stadt 是第三格（Wo，位置）"
+      }
+    ]
+  },
+  "german/cs-case-verb": {
+    "summary": "动词支配哪个格是词汇属性，不能靠语义或语序推，必须随词记。",
+    "body": "只带第四格：sehen kaufen essen lesen bauen treffen\n只带第三格：helfen danken gehören folgen schmecken passen\n只带属格：bedürfen gedenken（书面，见 vf-genitive）\n带介词宾语：warten auf + A / sich interessieren für + A / teilnehmen an + D\n\n两类宾语同时出现：代词先于名词，两个代词时第四格在前\nIch gebe ihm das Buch.\nIch gebe es ihm.（第四格代词 es 在三格代词 ihm 之前）\n\n与格宾语不能变被动主语，只能走无人称被动\nDem Kind wird geholfen.\n\n词形相同、格要求不同的对子要分开记\nantworten + D（人） vs beantworten + A（问题）\nIch antworte dem Lehrer. / Ich beantworte die Frage.\nhelfen + D vs unterstützen + A\n\n查法：词典条目后缀 +A / +D / +G / +Präp，比凭语感可靠。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读动词格支配一节，抄出三组各四个动词"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 Ich antworte dem Lehrer 与 Ich beantworte die Frage，标出格差别"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 Ich helfe ihn 改对，再用 unterstützen 造一句说明为什么用第四格"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释为什么不能靠「谁受事」判断格"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出四个只带第三格的动词、两个只带属格的动词，以及两个代词的排序"
+      }
+    ],
+    "selfCheck": [
+      "能说出三个只带与格的动词",
+      "能区分 antworten 与 beantworten 的格要求"
+    ],
+    "estMinutes": 8
+  },
+  "german/cs-case-adjective": {
+    "summary": "少数形容词要求固定格或固定介词，格由形容词决定，与动词无关。",
+    "body": "属格（最少的，需单独记）\nsich bewusst sein + G    Ich bin mir dessen bewusst.\nmächtig / verdächtig / schuldig + G\nEr ist des Verbrechens schuldig.\n\n与格\nähnlich / gleich / fremd / dankbar / bekannt + D\nDas ist mir fremd. / Sie ist mir ähnlich.\n\n第四格\ngewohnt / los / satt / müde + A\nIch bin den Lärm gewohnt. / Ich bin ihn los.\n\n带介词（介词再定格，见 cs-case-preposition）\nstolz auf + A / interessiert an + D / abhängig von + D / zufrieden mit + D\n\n注意一个容易漏的点：这类结构里反身代词跟着形容词的格走\nIch bin mir dessen bewusst.   mir 是与格（sich 的与格形），dessen 是属格\n而不是 Ich bin mich dessen bewusst.",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读形容词格支配一节，抄出属格、与格、第四格三组形容词"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 Ich bin mir dessen bewusst 并标出 mir 与 dessen 各是什么格"
+      },
+      {
+        "operator": "practice",
+        "instruction": "用 stolz auf 和 zufrieden mit 各造一句，标出介词后的格"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释为什么 bewusst 后面是 dessen 而不是 das"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出两个支配属格的形容词、两个支配与格的、以及三个带介词的"
+      }
+    ],
+    "selfCheck": [
+      "能说出 bewusst 的固定格搭配",
+      "能区分形容词格支配与动词格支配"
+    ],
+    "estMinutes": 8,
+    "criteria": [
+      {
+        "quiz": "q-cs-case-adjective",
+        "statement": "能说出 dessen 是属格、bewusst 支配属格，并给出一句 Ich bin mir dessen bewusst"
+      }
+    ]
+  },
+  "german/cs-apposition": {
+    "summary": "同位语紧跟被说明的名词并与之同格，用逗号隔开，不改变句子其余成分。",
+    "body": "Herr Müller, mein Nachbar, kommt mit.        同位语与 Herr Müller 同为主格\nIch traf Herrn Müller, meinen Nachbarn.       都是第四格\nmit Herrn Müller, meinem Nachbarn            都是第三格\ndie Werke Goethes, des großen Dichters       都是属格\n\n同位语的形态\n① 名词短语（带或不带冠词）：mein Nachbar / ein bekannter Arzt\n② 头衔与称呼：Kaiser Wilhelm II. / Professor Meier\n③ 固定地理与时间同位：die Stadt Berlin / der Monat Mai\n\n不加冠词的同位语仍随格变\ndie Regierung Merkels（属格）\nmit Bundeskanzler Scholz（与格）\n\n易错：同位语不改变主句动词位置\nHerr Müller, mein Nachbar, kommt heute.  动词仍在第二位（kommt 紧跟第一位成分组之后）",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读同位语一节，抄出三句不同格的同位语"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 Ich traf Herrn Müller, meinen Nachbarn 并说明为什么两处都是 -n"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 mein Nachbar 放进 mit ___ 的句子，改成正确的格"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释同位语为什么不能自己单独定格"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出同位语的三种形态，以及它与被说明名词的格关系"
+      }
+    ],
+    "selfCheck": [
+      "能写出一句主格同位语和一句与格同位语",
+      "能说出同位语为什么必须同格"
+    ],
+    "estMinutes": 7
+  },
+  "german/cs-case-loss": {
+    "summary": "口语里属格被 von 替代、部分格标记弱化，语言靠语序与语境补偿丢失的信息。",
+    "body": "属格 -> von + 与格\ndie Farbe des Himmels -> die Farbe vom Himmel\nwegen des Regens -> wegen dem Regen（口语）\n\n冠词同形造成的歧义，靠语序区分\nDie Frau sieht die Frau.        两句都是 die，只能靠位置判主宾\nDen Mann sieht die Frau.        den 已标出宾语，语序可换\n\n口语的与格/宾格合流（部分方言与俚语）\n口语里偶尔听到 wegen mir / trotz dir，标准语仍要求属格\n\n代价与补偿\n① 格标记丢失 -> 语序固定化（主语倾向在动词前）\n② 语序改变 -> 靠重音与语境补\n③ 书面语仍守格标记，正式文本不改口语形态\n\n判据：写正式文本时按格标记写，不按口语听感写。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读格标记弱化一节，抄出两条属格被替代的例子"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 Die Frau sieht die Frau 与 Den Mann sieht die Frau，说明两句各靠什么区分主宾"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 wegen des Regens 改写为口语形式，再说明正式文本为什么不能这样写"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释格标记弱化后，语言用什么手段补偿"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出两条属格被替代的路径，以及书面语与口语的分工"
+      }
+    ],
+    "selfCheck": [
+      "能说出属格被 von 替代的条件",
+      "能解释同形句靠什么区分主宾"
+    ],
+    "estMinutes": 7
+  },
+  "german/ng-three-genders": {
+    "summary": "德语名词分三性，各配不同冠词；性别是词的属性，必须跟冠词一起记。",
+    "body": "阳性 der    der Tisch / der Mond / der Löwe\n阴性 die    die Tür / die Sonne / die Blume\n中性 das    das Fenster / das Kind / das Buch\n\n自然性别与语法性别不总一致\ndas Mädchen     中性，因后缀 -chen\ndas Fräulein    中性，因后缀 -lein\nder Löwe / die Löwin   动物才按自然性别分\n\n同形异义词性不同、意义也不同\nder Band（卷）  die Band（乐队）  das Band（带子）\nder See（湖）   die See（海）\nder Leiter（负责人） die Leiter（梯子）\n\n记忆法：不背裸词，背「冠词 + 名词」\n背 der Tisch 比背 Tisch 可靠，因为性别只有在冠词上才看得见。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读三性一节，抄出三性各三个例词，冠词一起写"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 der Band / die Band / das Band 三个同形词，写出各自的意思"
+      },
+      {
+        "operator": "practice",
+        "instruction": "给 Mädchen / Fräulein / Kind 各配冠词，并说明为什么不是自然性别"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释为什么背名词必须带冠词"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出三性的冠词，以及两组同形异义词"
+      }
+    ],
+    "selfCheck": [
+      "能写出三性冠词并各举三例",
+      "能解释 das Mädchen 为什么是中性"
+    ],
+    "estMinutes": 7
+  },
+  "german/ng-gender-suffix": {
+    "summary": "后缀能预测大量名词的性别：-ung / -heit / -keit 阴性，-chen / -lein 中性，-er 多阳性。",
+    "body": "阴性（最稳的一类）\n-ung      die Zeitung / die Wohnung / die Rechnung\n-heit     die Freiheit / die Gesundheit\n-keit     die Möglichkeit / die Schwierigkeit\n-schaft   die Freundschaft / die Wissenschaft\n-tion     die Nation / die Information\n-tät      die Universität / die Realität\n-ie       die Philosophie / die Energie\n\n中性\n-chen     das Mädchen / das Brötchen\n-lein     das Fräulein / das Büchlein\n-ment     das Dokument / das Medikament\n-um       das Museum / das Zentrum\n-nis      das Ergebnis / das Zeugnis（也有 die Erlaubnis）\n\n阳性\n-er       der Lehrer / der Computer / der Fahrer\n-ling     der Frühling / der Liebling\n-ismus    der Realismus / der Tourismus\n-ant      der Praktikant / der Mandant\n-or       der Motor / der Direktor\n\n必须单记的例外\ndas Wasser / das Fenster / das Messer（-er 但中性）\ndie Mutter / die Tochter / die Schwester（亲属 -er 却阴性）",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读后缀表，抄下阴性七个后缀与中性五个后缀"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 die Zeitung / das Mädchen / der Lehrer，各再补两个同后缀词"
+      },
+      {
+        "operator": "practice",
+        "instruction": "给 Wasser / Mutter / Fenster 标性别，并说明为什么后缀法在这里失效"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释为什么后缀法只能算高概率规则，不能算公式"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出四个阴性后缀、三个中性后缀、三个阳性后缀"
+      }
+    ],
+    "selfCheck": [
+      "能写出五个阴性后缀并各举一例",
+      "能说出三个后缀法的反例"
+    ],
+    "estMinutes": 9
+  },
+  "german/ng-gender-semantic": {
+    "summary": "语义类也能定性别：星期月份与方位多阳性，树与花多阴性，金属与不定式名词中性。",
+    "body": "阳性\n星期与月份   der Montag / der Mai / der Oktober\n方位        der Norden / der Süden / der Osten\n天气        der Regen / der Schnee / der Wind\n酒类        der Wein / der Sekt（例外 das Bier）\n汽车品牌     der BMW / der Mercedes\n\n阴性\n树木与花     die Eiche / die Rose / die Tulpe\n数字         die Eins / die Zwei\n船与飞机     die Titanic / die Boeing\n\n中性\n金属         das Gold / das Eisen / das Silber（例外 die Bronze）\n颜色         das Rot / das Blau\n不定式名词    das Lesen / das Essen / das Gehen\n城市与大陆    das alte Berlin / das moderne Europa（带定语时）\n\n注意：语义类规则同样有例外，遇到生词仍以词典为准。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读语义类一节，抄出四组阳性和三组阴性"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 der Montag / die Rose / das Gold，各再补两个同类词"
+      },
+      {
+        "operator": "practice",
+        "instruction": "给 Bier / Bronze / Frühling 标性别，说明哪条语义规则不适用"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释为什么语义规则只能当提示"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出三组阳性语义类、两组阴性、三组中性"
+      }
+    ],
+    "selfCheck": [
+      "能说出星期、方位、金属三类的性别",
+      "能举出两个语义规则的反例"
+    ],
+    "estMinutes": 8
+  },
+  "german/ng-compound-gender": {
+    "summary": "复合名词的性别与复数都由末位成分决定，前位成分只贡献意义。",
+    "body": "die Haustür      Haus（das）+ Tür（die）-> die\nder Kühlschrank  Schrank 阳性\ndas Wartezimmer  Zimmer 中性（尽管前面的 warten 是动词）\ndie Arbeitszeit  Arbeit + s + Zeit -> die\n\n复数也看末位\ndie Haustür -> die Haustüren（跟 Tür）\nder Kühlschrank -> die Kühlschränke（跟 Schrank）\n\n连接元素 s / n / en / er 不改变性别\ndie Arbeitszeit / der Sonnenschein / die Straßenbahn\n\n判读顺序\n① 切分复合词，找到末位成分\n② 取末位成分的性别\n③ 取末位成分的复数形式\n④ 前位成分只影响意义，不影响语法属性\n\n易错：末位成分本身是多义同形词时要看语义\nder See（湖）/ die See（海）-> 复合后仍按被选中的那一个定性别：die Nordsee",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读复合名词一节，抄出四个例词并标出末位成分"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 die Haustür / der Kühlschrank / das Wartezimmer，写出各自的末位成分"
+      },
+      {
+        "operator": "practice",
+        "instruction": "判断 die Straßenbahn 的性别与复数，并说明依据"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释为什么 Wartezimmer 是中性，尽管 warten 是动词"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出判定复合名词性别的四步，以及一个末位为同形异义词的例子"
+      }
+    ],
+    "selfCheck": [
+      "能对陌生复合词正确判断性别与复数",
+      "能说出连接元素为什么不改变性别"
+    ],
+    "estMinutes": 8,
+    "criteria": [
+      {
+        "quiz": "q-ng-compound-gender",
+        "statement": "能说出 die Haustür 是阴性，因为末位成分 Tür 是阴性"
+      }
+    ]
+  },
+  "german/ng-plural-umlaut": {
+    "summary": "单音节阳性与部分阴性常靠变音构成复数，有的加 -e，有的连词尾都不加。",
+    "body": "只变音、不加词尾（多为一元音词干的阳性/中性）\nder Apfel -> die Äpfel\nder Vater -> die Väter\nder Garten -> die Gärten\nder Boden -> die Böden\n\n加 -e 并变音（阳性与部分阴性）\nder Stuhl -> die Stühle\nder Sturm -> die Stürme\ndie Stadt -> die Städte\ndie Hand -> die Hände\n\n加 -e 不变音\nder Tisch -> die Tische\nder Tag -> die Tage\ndas Jahr -> die Jahre\n\n同型不同路，必须看词记\nder Hund -> die Hunde（无变音）\nder Mund -> die Münder（变音）\n\n与格复数一律再加 -n（-e 类本就有 e，不再加）\nden Stühlen / den Städten / den Äpfeln",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读复数变音一节，抄出三类各三个词"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 der Apfel / die Äpfel 与 der Stuhl / die Stühle，标出哪一类加了词尾"
+      },
+      {
+        "operator": "practice",
+        "instruction": "写出 Hund / Mund / Stadt 的复数与复数与格"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释为什么不能靠「单音节」一条规则定复数"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出 Apfel、Stuhl、Tisch 三个词的复数，并说明差别"
+      }
+    ],
+    "selfCheck": [
+      "能写出 Apfel 与 Stuhl 的复数",
+      "能说出复数与格为什么还要加 -n"
+    ],
+    "estMinutes": 8,
+    "criteria": [
+      {
+        "quiz": "q-ng-plural-umlaut",
+        "statement": "能说出 der Apfel 的复数是 die Äpfel（只变音不加词尾），并给出两个加 -e 又变音的例子"
+      }
+    ]
+  },
+  "german/ng-plural-er": {
+    "summary": "中性单音节多落 -er 并常变音，复数与格要再加 -n。",
+    "body": "das Kind -> die Kinder\ndas Bild -> die Bilder\ndas Lied -> die Lieder\ndas Kleid -> die Kleider\ndas Haus -> die Häuser（变音）\ndas Buch -> die Bücher（变音）\n\n少数阳性也走这一类\nder Mann -> die Männer\nder Wald -> die Wälder\nder Geist -> die Geister\n\n复数与格补 -n\nden Kindern / den Männern / den Häusern\n\n不变音的也照加 -n\nden Bildern\n\n注意 -er 复数与「-er 结尾名词的零复数」不同\ndie Kinder（Kid 加 -er） vs die Lehrer（Lehrer 本身不变，见 ng-plural-invariant）",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读 -er 复数一节，抄出中性四个与阳性两个"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 die Kinder / die Häuser / die Bücher，标出哪些变音"
+      },
+      {
+        "operator": "practice",
+        "instruction": "写出 Kind / Haus / Mann 的复数与复数与格"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释为什么 den Kindern 要加 -n"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出三个 -er 复数词，以及它们与 Lehrer 那类零复数的区别"
+      }
+    ],
+    "selfCheck": [
+      "能写出 Kind / Haus / Buch 的复数",
+      "能区分 -er 复数与零复数"
+    ],
+    "estMinutes": 7
+  },
+  "german/ng-plural-en": {
+    "summary": "阴性名词绝大多数加 -(e)n，词尾已含 -e 时只加 -n；弱变化阳性也走这一类。",
+    "body": "die Frau -> die Frauen\ndie Tür -> die Türen\ndie Zeit -> die Zeiten\ndie Blume -> die Blumen（已含 -e，只加 -n）\ndie Tasche -> die Taschen\n\n外来词后缀几乎全落这一类\ndie Nation -> die Nationen\ndie Universität -> die Universitäten\ndie Wohnung -> die Wohnungen\ndie Möglichkeit -> die Möglichkeiten\n\n弱变化阳性同样加 -en（见 ng-n-declension）\nder Student -> die Studenten\nder Mensch -> die Menschen\nder Junge -> die Jungen\n\n复数与格不再额外加 -n（已含）\nden Frauen / den Studenten\n\n例外：-nis 结尾可加 -se\ndas Ergebnis -> die Ergebnisse",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读 -(e)n 复数一节，抄出五个阴性例词"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 die Blume / die Blumen 与 die Frau / die Frauen，说明 -n 与 -en 的分工"
+      },
+      {
+        "operator": "practice",
+        "instruction": "写出 Universität / Wohnung / Student 的复数"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释为什么弱变化阳性名词也归入这一类"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出 -(e)n 复数的两条判据，以及三个走这一类的后缀"
+      }
+    ],
+    "selfCheck": [
+      "能写出五个阴性的 -(e)n 复数",
+      "能说出弱变化阳性与这一类的重合原因"
+    ],
+    "estMinutes": 8
+  },
+  "german/ng-plural-s": {
+    "summary": "复数 -s 主要给外来词与缩写，不加变音，也不加与格词尾。",
+    "body": "das Auto -> die Autos\ndas Hotel -> die Hotels\nder Park -> die Parks\ndas Kino -> die Kinos\ndas Foto -> die Fotos\ndas Büro -> die Büros\n\n-y 结尾变 -ys（专名与口语词）\ndie Party -> die Parties\ndas Hobby -> die Hobbys\n\n缩写与字母词\ndie PKWs / die LKWs / die AGs\n\n口语扩展到本土亲属称呼\ndie Omas / die Opas / die Muttis\n\n复数与格不变形\nden Autos / mit den Hotels\n\n易错：-s 复数不表示「少量」，也不只限英语借词\ndie Restaurants（法语借词）/ die Chefs",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读 -s 复数一节，抄出五个外来词"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 die Autos / die Parties / die PKWs，说明各自来源"
+      },
+      {
+        "operator": "practice",
+        "instruction": "写出 Hotel / Party / Büro 的复数与复数与格"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释为什么 -s 复数在口语里会扩展到 Oma 这类词"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出 -s 复数的三类词源，以及它在与格里的表现"
+      }
+    ],
+    "selfCheck": [
+      "能写出五个 -s 复数词",
+      "能说出 -s 复数在与格里为什么不变"
+    ],
+    "estMinutes": 7
+  },
+  "german/ng-plural-invariant": {
+    "summary": "以 -er / -en / -el 结尾的阳中性名词多零复数，另有一批只有复数或只有单数的词。",
+    "body": "零复数（最多需要变音）\nder Lehrer -> die Lehrer\nder Spiegel -> die Spiegel\ndas Fenster -> die Fenster\nder Wagen -> die Wagen\nder Mantel -> die Mäntel（只变音）\nder Bruder -> die Brüder（只变音）\n\n仅复数（Pluraletantum）\ndie Eltern / die Ferien / die Kosten / die Leute / die Möbel / die Geschwister\nDiese Möbel sind neu.（动词用复数）\n\n仅单数（Singularetantum）\ndas Obst / das Fleisch / die Milch / die Gesundheit / die Musik\n\n复数与格加 -n（词尾已含 -n 的不加）\nden Lehrern / den Fenstern / den Männern\nden Eltern（已含 -n，不再加）\n\n注意：零复数的词若变音，与格仍只加 -n\nden Männern / den Brüdern",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读零复数一节，抄出五个例词并标出是否变音"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 der Mantel / die Mäntel 与 der Lehrer / die Lehrer，说明差别"
+      },
+      {
+        "operator": "practice",
+        "instruction": "写出 Lehrer / Mantel / Bruder 的复数与复数与格"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释为什么仅复数名词的动词要用复数"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出三个零复数词、三个仅复数词、两个仅单数词"
+      }
+    ],
+    "selfCheck": [
+      "能区分零复数与变音零复数",
+      "能说出仅复数名词的谓语要求"
+    ],
+    "estMinutes": 8
+  },
+  "german/ng-n-declension": {
+    "summary": "弱变化阳性名词在第二、三格及复数加 -en（-e 结尾只加 -n），第一格永远是原形。",
+    "body": "der Student     des Studenten    dem Studenten    den Studenten\nder Junge       des Jungen       dem Jungen       die Jungen\nder Herr        des Herrn        dem Herrn        die Herren\nder Mensch      des Menschen     dem Menschen     die Menschen\nder Polizist    des Polizisten   dem Polizisten   die Polizisten\n\n判据：阳性 + 多表人或动物 + 词尾 -e / -ant / -ent / -ist / -at / -oge\nder Kollege / der Praktikant / der Präsident / der Kandidat / der Biologe\n\n第一格不变，这是它最容易识别的地方\nDer Student kommt.        不是 Der Studenten\nIch sehe den Studenten.   第四格也变\n\n例外：das Herz 也弱变化\ndes Herzens / dem Herzen / ein Herz\n\n混变（少量）：der Name -> des Namens / dem Namen / die Namen",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读弱变化一节，抄出 Student 的四个格形式"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 der Junge / den Jungen / dem Jungen，标出哪几格加了 -n"
+      },
+      {
+        "operator": "practice",
+        "instruction": "给 Herr / Mensch / Polizist 各写出二、三格形式"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释为什么第一格不加 -en，而第四格要加"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出弱变化的判据三条、两个例外词"
+      }
+    ],
+    "selfCheck": [
+      "能写出 Student 与 Herr 的四格变化",
+      "能说出弱变化只限阳性且第一格不变"
+    ],
+    "estMinutes": 9,
+    "criteria": [
+      {
+        "quiz": "q-ng-n-declension",
+        "statement": "能说出 der Student 的第三格是 dem Studenten，因为弱变化名词在二、三格及复数加 -en"
+      }
+    ]
+  },
+  "german/art-definite": {
+    "summary": "定冠词六形覆盖三性四格，多个位置同形，读句子要连同名词的性数一起判。",
+    "body": "        阳性     阴性     中性     复数\n主格    der      die      das      die\n宾格    den      die      das      die\n与格    dem      der      dem      den（名词加 -n）\n属格    des（-s） der      des（-s） der\n\n同形陷阱\nder：阳性主格 / 阴性第三格 / 复数第二格\ndie：阴性主格宾格 / 复数主格宾格\ndas：中性主格宾格\ndem：阳性与格 / 中性与格\n\n例句\nDer Mann gibt der Frau des Nachbarn das Buch.\nder Frau 是与格，des Nachbarn 是属格，das Buch 是第四格\n\n与格复数名词补 -n\nden Kindern / den Frauen（已含 -n 不加）\n\n缩合：与介词连用\nin dem -> im / an dem -> am / zu der -> zur",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读定冠词表，抄下六形并标出同形位置"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 Der Mann gibt der Frau das Buch，标出三个成分的格"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 die Kinder 填进 mit ___ 与 für ___，写出正确的冠词形式"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释为什么不能只看冠词就断定成分的格"
+      },
+      {
+        "operator": "recall",
+        "instruction": "默写定冠词表，并说出三处同形"
+      }
+    ],
+    "selfCheck": [
+      "能默写定冠词六形",
+      "能说出与格复数为什么要加 -n"
+    ],
+    "estMinutes": 8,
+    "criteria": [
+      {
+        "quiz": "q-art-definite",
+        "statement": "能说出阴性第三格是 der，并知道 der 还兼阳性主格与复数属格"
+      }
+    ]
+  },
+  "german/art-indefinite": {
+    "summary": "不定冠词只有单数三形，否定冠词 kein 走同一套词尾，复数另有形式。",
+    "body": "        阳性     阴性     中性\n主格    ein      eine     ein\n宾格    einen    eine     ein\n与格    einem    einer    einem\n属格    eines    einer    eines\n\n没有复数不定冠词\nDas sind Bücher.      不是 eins Bücher\n复数泛指直接用零冠词（见 art-zero）\n\n否定冠词 kein 同套词尾，但复数有形式\nkein Tisch / keine Tür / kein Buch / keine Bücher\nIch habe keinen Bruder.      阳性第四格\nIch habe keine Zeit.         阴性第四格\n\nein 与 kein 在否定句里的分工\nIch habe ein Auto. -> Ich habe kein Auto.（否定名词）\nDas ist nicht mein Auto.（否定归属，用 nicht）\n\n易错：ein 也是数词「一」，重读时强调数量\nIch möchte nur einen Kaffee.（只要一杯）",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读不定冠词表，抄下三性四格"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 einen Tisch / eine Tür / ein Buch，标出哪些有词尾"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 Ich habe ein Auto 改成否定句，再用 nicht 否定归属造一句"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释为什么复数没有 ein 形式"
+      },
+      {
+        "operator": "recall",
+        "instruction": "默写 ein 与 kein 的单数变格，说出两者的分工"
+      }
+    ],
+    "selfCheck": [
+      "能默写 ein 的四格三性",
+      "能区分 kein 与 nicht 的否定对象"
+    ],
+    "estMinutes": 8
+  },
+  "german/art-possessive": {
+    "summary": "物主冠词按不定冠词变格：词干随所有者变，词尾随名词的性数格变。",
+    "body": "词干（按所有者）\nmein / dein / sein / ihr / unser / euer / ihr（第三人称复数）/ Ihr（敬称）\n\n词尾与 ein 相同：阳性中性单数主格与第四格无词尾，其余带词尾\nmein Vater      meinen Vater     meinem Vater\nmeine Mutter    meine Mutter     meiner Mutter\nmein Kind       mein Kind        meinem Kind\nmeine Eltern    meine Eltern     meinen Eltern（复数与格加 -n）\n\neuer 掉 e\neuer Buch -> eure Bücher / euren Vater / eurem Vater\n\nsein / ihr 要分清所有者\nEr liebt seine Frau.（他自己的）/ Sie liebt ihren Mann.（她自己的）\n\n敬称大写\nWie geht es Ihnen? / Ihr Name, bitte.",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读物主冠词一节，抄出词干与词尾两组"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 mein Vater / meinen Vater / meinem Vater，标出词尾差别"
+      },
+      {
+        "operator": "practice",
+        "instruction": "用 euer 改写 euer Buch 的四格，注意掉 e"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释为什么物主冠词与 ein 同词尾"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出七个词干、五种带词尾的位置，以及 euer 的变化"
+      }
+    ],
+    "selfCheck": [
+      "能默写 mein 的完整变格",
+      "能区分 sein 与 ihr 的所有者"
+    ],
+    "estMinutes": 8,
+    "criteria": [
+      {
+        "quiz": "q-art-possessive",
+        "statement": "能说出 mein Vater 的第四格是 meinen Vater，物主冠词按不定冠词变格"
+      }
+    ]
+  },
+  "german/art-demonstrative": {
+    "summary": "指示冠词 dieser / jener 按定冠词变格，derselbe 与 derjenige 前段变格后段不变。",
+    "body": "dieser / diese / dieses / diese（主宾同形逻辑与定冠词一致）\ndieser Tisch     diesen Tisch    diesem Tisch\ndiese Tür        diese Tür       dieser Tür\ndieses Buch      dieses Buch     diesem Buch\ndiese Bücher     diese Bücher    diesen Büchern\n\njener 同套，语体更书面、更旧\njenseits jener Berge\n\nderselbe：der 部分变格，selbe 不变\nderselbe Zug / dieselbe Idee / dasselbe Buch\nmit demselben Zug / zur selben Zeit\n\nderjenige：der 部分变格，jenige 不变\ndiejenigen, die ...\n\n口语替代：重读的定冠词\nDer Mann da kenne ich nicht.（那个男的）\nDen meine ich.（我指的是那个）",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读指示冠词一节，抄出 dieser 的变格"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 dieselbe Idee / mit demselben Zug，说明 der 与 selbe 两部分谁变"
+      },
+      {
+        "operator": "practice",
+        "instruction": "用 derselbe 造两句，一句阳性主格一句阴性与格"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释为什么 derselbe 的后半段不变格"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出 dieser 的四格、derselbe 的构成方式"
+      }
+    ],
+    "selfCheck": [
+      "能默写 dieser 的变格",
+      "能说出 derselbe 为什么只变前半"
+    ],
+    "estMinutes": 8
+  },
+  "german/art-relative": {
+    "summary": "关系代词与定冠词同形（二格与三格复数除外），格由它在从句里的角色决定。",
+    "body": "        阳性     阴性     中性     复数\n主格    der      die      das      die\n宾格    den      die      das      die\n与格    dem      der      dem      denen\n属格    dessen    deren    dessen   deren\n\n格由从句内的角色定，不由先行词的格定\nDer Mann, der dort steht, ...      关系代词作主语（主格）\nDer Mann, den ich sehe, ...        作宾语（第四格）\nDer Mann, dem ich helfe, ...       作与格\nDer Mann, dessen Buch ich las, ... 二格作定语\n\n二格关系代词后面名词不带冠词\nder Autor, dessen neues Buch ...\n\n介词 + 关系代词，介词决定格\ndie Stadt, in der ich wohne\nder Freund, mit dem ich reise\n\n关系代词占从句第一位，动词末位 —— 从句内部也是句框（见 wo-satzklammer）",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读关系代词表，抄出六形并标出与定冠词不同的两处"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 der Mann, den ich sehe 与 dem ich helfe，说明格差别从哪来"
+      },
+      {
+        "operator": "practice",
+        "instruction": "用 dessen 造一句二格关系句，注意后面名词不带冠词"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释为什么关系代词的格不能跟先行词"
+      },
+      {
+        "operator": "recall",
+        "instruction": "默写关系代词表，说出它与定冠词的两处差别"
+      }
+    ],
+    "selfCheck": [
+      "能默写关系代词六形",
+      "能说出关系代词的格由什么决定"
+    ],
+    "estMinutes": 9
+  },
+  "german/art-interrogative": {
+    "summary": "welcher 按定冠词变格问「哪一个」，was für ein 按不定冠词变格问「什么样的」。",
+    "body": "welcher（选择）\nwelcher Tag / welche Farbe / welches Buch / welche Bücher\nWelchen Wein trinkst du?       阳性第四格\nMit welchem Zug fährst du?     阳性与格\n\nwas für ein（类别）\nein 变格，was für 不变\nWas für ein Auto ist das?              中性主格\nWas für einen Wagen fährst du?         阳性第四格\nMit was für einem Auto kommst du?      阳性与格\n\n复数用 was für + 复数名词（无 ein）\nWas für Bücher liest du?\n\n口语变体\nWelchen hast du genommen?（省略名词，指代已知事物）",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读疑问限定词一节，抄出 welcher 的四格"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 Was für ein Auto / Was für einen Wagen，说明 ein 变了而 was für 没变"
+      },
+      {
+        "operator": "practice",
+        "instruction": "用 welcher 与 was für ein 各问一句关于 Wein 的话"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释为什么 was für ein 里只有 ein 变格"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出两套疑问限定词的变格载体与提问对象差别"
+      }
+    ],
+    "selfCheck": [
+      "能正确变格 welcher",
+      "能说出 was für ein 里哪部分变格"
+    ],
+    "estMinutes": 8
+  },
+  "german/art-quantifier": {
+    "summary": "alle / viele / einige 在复数里按定冠词变尾，单数用法的形态要单独记。",
+    "body": "复数：词尾同定冠词\nalle Bücher（主/宾）      allen Kindern（与格）     aller Bücher（属格）\nviele Leute               mit vielen Freunden\neinige Fragen             wenige Tage\nmanche Leute              beide Hände\n\n单数固定说法\naller Anfang ist schwer.（阳性主格 aller）\nalles Gute（中性）        allem Anfang（与格）\nallen Ernstes（属格固定短语）\n\nviel / wenig 无词尾时表量，带词尾时表「许多的」\nViel Zeit ist vergangen. / Viele Leute kamen.\n\njeder 走定冠词变格，但只用单数\njeder Tag / jedes Kind / jedem Menschen\n\nsämtliche / mehrere 只用复数，词尾同定冠词\nsämtliche Unterlagen / mehrere Fragen",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读不定量词一节，抄出复数与单数两组"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 alle Bücher / allen Kindern / aller Bücher，标出词尾"
+      },
+      {
+        "operator": "practice",
+        "instruction": "用 jeder 造三句（阳性、中性、与格），再用 viele 造一句与格"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释 viel 与 viele 的分工"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出四个复数不定量词、两个只用复数的词"
+      }
+    ],
+    "selfCheck": [
+      "能正确变格 alle 与 viel",
+      "能说出 jeder 为什么只用单数"
+    ],
+    "estMinutes": 9
+  },
+  "german/art-use": {
+    "summary": "定冠词表示可指认或唯一，不定冠词引入新信息，选择取决于听话人能否定位所指。",
+    "body": "首次提及用不定，再提及用定\nIch kaufe ein Buch. Das Buch ist spannend.\n\n语境可指认或唯一 -> 定冠词\nGib mir den Schlüssel.（就在桌上那一把）\nDie Sonne geht auf. / Der Bundeskanzler spricht.\n\n类别泛指：单数用不定冠词，复数用零冠词\nEin Hund bellt. / Hunde bellen.\n\n职业、身份、国籍作表语不加冠词\nSie ist Lehrerin. / Er ist Deutscher.\n但带形容词定语时冠词回来：Sie ist eine gute Lehrerin.\n\n专名与称呼\nHerr Doktor, ... / Liebe Anna,\n\n冠词还能承担语篇功能：der 指上文提过的、dieser 指近指的、jener 指远指的",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读冠词语篇条件一节，抄出「首次/再提」那一组例句"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 Sie ist Lehrerin 与 Sie ist eine gute Lehrerin，说明冠词为什么回来"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 Ich kaufe ein Buch. ___ Buch ist spannend. 补完整，并解释"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释定冠词与指示冠词的分工"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出定冠词三种用法、不定冠词两种、零冠词两种"
+      }
+    ],
+    "selfCheck": [
+      "能说出定冠词与不定冠词的选择依据",
+      "能解释职业表语为什么不加冠词"
+    ],
+    "estMinutes": 9
+  },
+  "german/art-zero": {
+    "summary": "零冠词出现在物质与抽象名词泛指、复数泛指、职业表语与固定搭配里。",
+    "body": "物质名词泛指\nIch trinke gern Kaffee.\nBrot ist teuer geworden.\n\n抽象名词泛指\nZeit ist Geld. / Ich habe Angst. / Er hat Geduld.\n\n复数泛指\nKinder brauchen Schlaf. / Bücher sind teuer.\n\n职业、身份、国籍作表语\nEr ist Arzt. / Sie ist Deutsche. / Ich bin Student.\n\n固定短语\nzu Hause / nach Hause / auf Deutsch / mit Absicht / ohne Grund / Rad fahren\n\n有定语后冠词常常回来\nIch trinke den Kaffee aus Kolumbien.\nIch trinke einen Kaffee.（一份，可数化）\n\n对比例句\nIch mag Wein.（类别）  /  Der Wein hier ist gut.（特定）\nSie hat Hunger.（固定）  /  Sie hat einen großen Hunger.（口语强调程度）",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读零冠词一节，抄出四类用法"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 Ich trinke gern Kaffee 与 Ich trinke den Kaffee aus Kolumbien，说明冠词为什么出现"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 Er ist Lehrer 与 Er ist ein guter Lehrer 各写一遍，说明差别"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释为什么物质名词泛指时不用冠词"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出零冠词四类场合、四个固定短语"
+      }
+    ],
+    "selfCheck": [
+      "能说出零冠词的四类场合",
+      "能解释定语为什么让冠词回来"
+    ],
+    "estMinutes": 8,
+    "criteria": [
+      {
+        "quiz": "q-art-zero",
+        "statement": "能说出 Ich trinke gern Kaffee 用零冠词，因为物质名词泛指"
+      }
+    ]
+  },
+  "german/art-proper": {
+    "summary": "人名与地名通常不带冠词，带定语、成复数或属特定地名类别时才加。",
+    "body": "零冠词\nBerlin ist groß. / Anna kommt. / Deutschland liegt in Mitteleuropa.\n\n带形容词定语就加定冠词\ndas alte Berlin / die Schweiz von heute\nder junge Goethe\n\n必须带冠词的地名类别\n阴性国名：die Schweiz / die Türkei / die Ukraine / die Slowakei\n复数国名：die USA / die Niederlande / die Philippinen\n阳性国名：der Iran / der Irak / der Libanon\n\n山川湖海也带冠词\ndie Alpen / der Rhein / der Bodensee / die Nordsee\n\n人名二格与 von\nGoethes Werke / die Werke von Goethe\n口语替代：das Buch von Anna\n\n机构名常带定冠词\nder Bundestag / die Bundesrepublik / das Goethe-Institut",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读专名冠词一节，抄出三类必须带冠词的国名"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 das alte Berlin 与 Berlin，说明定语为什么带来冠词"
+      },
+      {
+        "operator": "practice",
+        "instruction": "给 Schweiz / USA / Iran 各配冠词并说明类别"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释为什么阴性国名必须带冠词而中性国名不带"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出三类带冠词国名各一例、两个人名二格形式"
+      }
+    ],
+    "selfCheck": [
+      "能说出三类必须带冠词的国名",
+      "能解释定语对专名冠词的影响"
+    ],
+    "estMinutes": 8
+  },
+  "german/adj-weak": {
+    "summary": "定冠词之后形容词走弱变化，整个变格只用 -e 与 -en 两种词尾。",
+    "body": "        阳性     阴性     中性     复数\n主格    -e       -e       -e       -en\n宾格    -en      -e       -e       -en\n与格    -en      -en      -en      -en\n属格    -en      -en      -en      -en\n\nder gute Wein / die gute Idee / das gute Bier / die guten Freunde\nden guten Wein / dem guten Wein / des guten Weines\n\n只有五个位置用 -e\n单数主格三性 + 阴性单数宾格；其余全 -en\n\n触发词（都带词尾、都能标格）\nder / die / das / dieser / jener / derselbe / derjenige / alle / beide\nmit diesem guten Wein / alle neuen Bücher\n\n易错：复数弱变化一律 -en，包括主格\ndie guten Freunde（不是 die gute Freunde）",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读弱变化表，抄下 -e 出现的五个位置"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 der gute Wein / den guten Wein / dem guten Wein，标出词尾"
+      },
+      {
+        "operator": "practice",
+        "instruction": "给 die guten Freunde 改成单数主格与与格各一遍"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释为什么复数主格也用 -en"
+      },
+      {
+        "operator": "recall",
+        "instruction": "默写弱变化表，说出 -e 的全部位置"
+      }
+    ],
+    "selfCheck": [
+      "能默写弱变化全表",
+      "能说出 -e 出现的五个位置"
+    ],
+    "estMinutes": 8,
+    "criteria": [
+      {
+        "quiz": "q-adj-weak",
+        "statement": "能说出定冠词后的形容词只有 -e 与 -en 两种词尾，单数主格用 -e，其余多为 -en"
+      }
+    ]
+  },
+  "german/adj-mixed": {
+    "summary": "不定冠词、物主冠词、kein 之后走混合变化：冠词没标出的格，形容词补上。",
+    "body": "        阳性     阴性     中性\n主格    -er      -e       -es\n宾格    -en      -e       -es\n与格    -en      -en      -en\n属格    -en      -en      -en\n\nein guter Wein / eine gute Idee / ein gutes Bier\neinen guten Wein / einem guten Wein / eines guten Weines\n\n为什么叫混合\nein 在阳性主格、中性主格与第四格上没有词尾，格标就落到形容词上（-er / -es）\n其余位置 ein 已有词尾（-en / -er / -em），形容词退回 -en\n\n复数不走混合：mein / kein 的复数形 meine / keine 带词尾、已标格，\n形容词退回弱变化\nmeine guten Freunde（主格） / mit meinen guten Freunden（与格）\nkeine guten Ideen\n\n易错：单数混合、复数弱变化，两者不能混\nein guter Freund（混合） / meine guten Freunde（弱）",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读混合变化表，抄下 -er / -es 出现的两个位置"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 ein guter Wein / einen guten Wein，说明词尾为什么换"
+      },
+      {
+        "operator": "practice",
+        "instruction": "用 kein 造三句（阳性第四格、阴性第三格、复数与格）"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释「混合」这个名字的来由"
+      },
+      {
+        "operator": "recall",
+        "instruction": "默写混合变化表，说出它与强变化在复数上的分工"
+      }
+    ],
+    "selfCheck": [
+      "能默写混合变化全表",
+      "能解释为什么复数要改用强变化"
+    ],
+    "estMinutes": 9
+  },
+  "german/adj-strong": {
+    "summary": "没有冠词时形容词独扛格标记，词尾几乎等于定冠词去掉首字母。",
+    "body": "        阳性     阴性     中性     复数\n主格    -er      -e       -es      -e\n宾格    -en      -e       -es      -e\n与格    -em      -er      -em      -en\n属格    -en      -er      -en      -er\n\nguter Wein / gute Idee / gutes Bier / gute Freunde\nmit gutem Wein / trotz guter Ideen / aus gutem Grund\n\n记忆法：词尾 = 定冠词去掉首字母\nder -> -er / die -> -e / das -> -es / dem -> -em / den -> -en / des -> -en\n\n触发条件\n没有任何限定词：kaltes Wasser / frische Milch\n不定量词 viele / einige / wenige / manche 之后：viele junge Leute / einige gute Ideen\n注意：复数物主冠词 meine / keine 之后是弱变化，不是强变化\nmeine guten Freunde（不是 meine gute Freunde）\n\n易错：物质名词与抽象名词前无冠词，形容词就必须强变化\nIch trinke kalten Kaffee.（阳性第四格 -en）",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读强变化表，抄下与定冠词的对应关系"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 guter Wein / gutes Bier / mit gutem Wein，标出词尾"
+      },
+      {
+        "operator": "practice",
+        "instruction": "给 kalt 搭配 Kaffee（阳性第四格）与 Milch（阴性第四格）各写一遍"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释为什么无冠词时形容词必须承担格标"
+      },
+      {
+        "operator": "recall",
+        "instruction": "默写强变化表，说出它与定冠词的对应规律"
+      }
+    ],
+    "selfCheck": [
+      "能默写强变化全表",
+      "能说出强变化的两类触发条件"
+    ],
+    "estMinutes": 9
+  },
+  "german/adj-choice": {
+    "summary": "三种变格的选择只看形容词左边有没有限定词、限定词带不带词尾。",
+    "body": "左边是什么                            用哪种变格\n定冠词 / dieser / jener / derselbe / alle / beide        弱变化\nein / kein / 物主冠词（单数）                            混合变化\n复数物主冠词 meine / keine（已带词尾）                  弱变化\n什么都没有 / viele / einige / wenige / manche            强变化\n\n三句对照\nder gute Wein        弱：左边 der 已标格，形容词只 -e\nein guter Wein       混合：ein 无词尾，形容词补 -er\nguter Wein           强：没有限定词，形容词独扛 -er\n\n判据一句话\n先看左边有没有「带词尾的限定词」，有限定词且已标格 -> 形容词只 -e / -en；\n无限定词或限定词本身不标格（viele 类）-> 形容词自己标格。\n\n易错\n① 复数物主冠词后是弱变化：meine guten Freunde（不是 meine gute Freunde）\n② viele 之后是强变化：viele gute Freunde（不是 viele guten Freunde）\n③ alle 之后是弱变化：alle guten Freunde",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读三种变格的触发条件表"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 der gute Wein / ein guter Wein / guter Wein 三句，标出左边有什么"
+      },
+      {
+        "operator": "practice",
+        "instruction": "给 mein 造主格复数与与格复数各一句，说明用的是哪种变格"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释为什么 meine 复数之后走弱变化，而 viele 之后走强变化"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出三种变格各一个触发词，并给出判据那一句"
+      }
+    ],
+    "selfCheck": [
+      "能对任意短语判断用哪种变格",
+      "能说出复数物主冠词后的变格类型"
+    ],
+    "estMinutes": 9,
+    "criteria": [
+      {
+        "quiz": "q-adj-choice",
+        "statement": "能说出没有冠词时用强变化，因为形容词要自己承担冠词的格标记"
+      }
+    ]
+  },
+  "german/adj-predicative": {
+    "summary": "表语与状语的形容词不变格，只有定语位置才加词尾。",
+    "body": "Der Wein ist gut.           表语：gut 不变\nDer Wein schmeckt gut.      副词性表语：不变\nEr fährt schnell.           方式状语：不变\nSie kommt müde nach Hause.  结果状语：不变\n\n定语才变格\nein guter Wein / der gute Wein / guter Wein（三种变格）\n\n比较等级同样不变格（作表语时）\nDer Wein ist besser. / Der Wein ist am besten.\n\n分词作表语也不变\nDie Tür ist geöffnet. / Das Buch ist interessant.\n\n易错：表语形容词后面不能加词尾，即使主语是复数\nDie Weine sind gut.（不是 guten）\nDie Häuser sind alt.（不是 alten）",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读表语形容词一节，抄出三个表语例句"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 Der Wein ist gut 与 ein guter Wein，说明词尾为什么只在后一句出现"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 Die Häuser sind alt 与 ein altes Haus 各写一遍，标出词尾"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释为什么表语位置不需要格标记"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出形容词加词尾的唯一位置条件，以及两个不变格的例子"
+      }
+    ],
+    "selfCheck": [
+      "能说出表语形容词为什么不变格",
+      "能区分定语与表语的形态"
+    ],
+    "estMinutes": 7
+  },
+  "german/adj-comparative": {
+    "summary": "比较级加 -er，单音节多同时变音，比较对象用 als 引导。",
+    "body": "schnell -> schneller\nalt -> älter\njung -> jünger\ngroß -> größer\ngesund -> gesünder（也 gesunder，不变音）\n\n表语比较级不变格\nDer Zug ist schneller.\n\n定语比较级照常变格\nein schnellerer Zug / der schnellere Zug / mit schnellerem Zug\n\n比较对象用 als\nEr läuft schneller als ich.\n书面完整形式：Er läuft schneller, als ich laufe.\n\n程度修饰放在比较级前\nviel / weit / noch / etwas + 比较级\nEr ist viel größer als ich. / Sie ist noch jünger.\n\n易错：比较级不与 wie 连用（见 adj-comparison）",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读比较级构成一节，抄出五个例词"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 schnell / schneller 与 alt / älter，标出是否变音"
+      },
+      {
+        "operator": "practice",
+        "instruction": "写出 groß 的比较级，并造一句带 als 的比较句"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释为什么定语比较级还要再加变格词尾"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出比较级两条构成规则、三个变音例词"
+      }
+    ],
+    "selfCheck": [
+      "能构成常见形容词的比较级",
+      "能说出比较级作定语时为什么要再变格"
+    ],
+    "estMinutes": 8
+  },
+  "german/adj-superlative": {
+    "summary": "最高级有两形：am + -sten 作状语，der/die/das + -ste 作定语。",
+    "body": "状语形式：am + -sten\nEr läuft am schnellsten.\nSie arbeitet am besten.\n\n定语形式：定冠词 + -ste + 变格词尾\nder schnellste Zug / die beste Idee / das schönste Bild\nmit dem schnellsten Zug\n\n词干以 -e、-s、-ß、-z 结尾加 -esten\nam leisesten / am heißesten / am kürzesten / am süßesten\n\n不规则\ngut / besser / am besten\nviel / mehr / am meisten\ngern / lieber / am liebsten\nhoch / höher / am höchsten\n\n易错\n① 状语最高级必须有 am，不能光说 schnellsten；\n② 定语最高级必须有定冠词，不能光说 schnellster Zug。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读最高级两形一节，抄出状语与定语各三例"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 am schnellsten 与 der schnellste Zug，说明形态差别"
+      },
+      {
+        "operator": "practice",
+        "instruction": "写出 leise / heiß 的最高级状语形式"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释为什么最高级必须有 am 或定冠词"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出最高级两形的构成、三个不规则词"
+      }
+    ],
+    "selfCheck": [
+      "能区分最高级两形的用法",
+      "能写出四个加 -esten 的例词"
+    ],
+    "estMinutes": 9
+  },
+  "german/adj-irregular": {
+    "summary": "高频形容词的比较等级用异干，必须整组记，不能靠规则推。",
+    "body": "gut    besser   am besten\nviel   mehr     am meisten\ngern   lieber   am liebsten\nhoch   höher    am höchsten\nnah    näher    am nächsten\nbald   eher     am ehesten\nteuer  teurer   am teuersten（词干 -er 去 e）\n\n用法差别\ngern 的等级只作状语：Ich trinke lieber Tee.\nviel / mehr 表量：Er hat mehr Zeit.\n\nhoch 作定语时要复原 ch\nein hoher Turm（不是 hoher 的 h 脱落）\n正确：ein hoher Turm；比较级 ein höherer Turm\n\nnah 的等级\nder nächste Zug / am nächsten\n\n记忆法：按「好 / 多 / 愿 / 高 / 近 / 早 / 贵」七组一起背。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读不规则等级表，抄下七组"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 gut / besser / am besten 与 hoch / höher / am höchsten"
+      },
+      {
+        "operator": "practice",
+        "instruction": "写出 gern 的三个等级，并造一句用 lieber 的句子"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释为什么 hoch 作定语时要写成 hoher"
+      },
+      {
+        "operator": "recall",
+        "instruction": "默写七组不规则等级"
+      }
+    ],
+    "selfCheck": [
+      "能默写七组不规则等级",
+      "能说出 gern 等级的用法限制"
+    ],
+    "estMinutes": 8
+  },
+  "german/adj-comparison": {
+    "summary": "不等比较用 als，同等比较用 so ... wie，两者不能互换。",
+    "body": "不等：比较级 + als\nEr ist größer als ich.\n\n同等：so + 原级 + wie\nEr ist so groß wie ich.\n\n否定同等：nicht so ... wie\nSie ist nicht so schnell wie ihre Schwester.\n\n常见错：besser wie（口语出现，书面判错）\n正确：besser als\n\n比较级前的程度修饰\nviel / weit / noch / etwas + 比较级\nEr ist viel größer als ich. / Sie ist etwas älter als du.\n\n相同程度也可用 genauso ... wie\nEr ist genauso groß wie ich.\n\n易错：als 后面用主格（口语）或与主语一致的格\nEr ist größer als ich.（口语常用主格 ich）\n正式：Er ist größer als ich es bin.",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读比较结构一节，抄出 als 与 wie 两组例句"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 Er ist größer als ich 与 Er ist so groß wie ich，标出差别"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 Er ist besser wie ich 改对，再用 nicht so ... wie 造一句"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释 als 与 wie 分别对应哪种比较关系"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出不等、同等、否定同等三种结构各一个公式"
+      }
+    ],
+    "selfCheck": [
+      "能正确选用 als 与 wie",
+      "能说出 besser wie 为什么错"
+    ],
+    "estMinutes": 8,
+    "criteria": [
+      {
+        "quiz": "q-adj-comparison",
+        "statement": "能说出不等比较用 als，wie 只用于同等比较（so ... wie）"
+      }
+    ]
+  },
+  "german/adj-participle-attribute": {
+    "summary": "第一分词与第二分词都能作定语并变格，扩展定语把整个短语塞进冠词与名词之间。",
+    "body": "第一分词（主动、进行）\ndas schlafende Kind / die steigende Temperatur\nder laut singende Mann\n\n第二分词（被动、完成）\ndas gebaute Haus / die geöffnete Tür\nder gut gekochte Fisch\n\n扩展定语（erweitertes Attribut）\nder [gestern von ihm geschriebene] Brief\ndie [in Berlin stattfindende] Konferenz\nein [seit Jahren bewährtes] Verfahren\n\n解码顺序：从名词往前读\nder gestern von ihm geschriebene Brief\n① Brief 是中心名词 ② geschriebene 说明它 ③ gestern von ihm 说明写的时间与施事\n\n分词作定语必须变格\nein schlafendes Kind / mit dem schlafenden Kind\n\n注意第一分词不等于进行时，它只表主动与同时；被动关系要用第二分词",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读分词定语一节，抄出第一分词与第二分词各三例"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 das schlafende Kind 与 das gebaute Haus，说明主动与被动的差别"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 der Brief, der gestern geschrieben wurde 压成扩展定语"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释扩展定语为什么难读，解码顺序是什么"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出第一分词与第二分词各表什么，以及扩展定语的位置"
+      }
+    ],
+    "selfCheck": [
+      "能区分第一分词与第二分词的语义",
+      "能把一个关系从句压成扩展定语"
+    ],
+    "estMinutes": 9
+  },
+  "german/vc-present": {
+    "summary": "现在时词尾按人称变化，词干以 -t / -d 结尾时在 du、er、ihr 前插 -e。",
+    "body": "wohnen    wohne   wohnst  wohnt   wohnen  wohnt   wohnen\narbeiten  arbeite arbeitest arbeitet arbeiten arbeitet arbeiten\nheißen    heiße   heißt   heißt   heißen  heißt   heißen\n\n词干以 -s / -ß / -z 结尾：du 只加 -t\ndu reist / du sitzt / du heißt\n\n词干以 -t / -d / -m / -n 结尾（后接辅音）：插 -e\ndu arbeitest / er arbeitet / ihr arbeitet\ndu atmest / er atmet\n\n强变化动词的元音交替只发生在 du 与 er\nfahren  du fährst  er fährt  wir fahren\nnehmen  du nimmst  er nimmt  wir nehmen\n\n易错：ihr 的词尾是 -t，与 er 同形，靠主语区分\nEr wohnt hier. / Ihr wohnt hier.",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读现在时词尾表，抄出 wohnen 的六个人称"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 du arbeitest / er arbeitet，标出插入的 -e"
+      },
+      {
+        "operator": "practice",
+        "instruction": "给 heißen 变位六个人称，注意 du 只加 -t"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释为什么 arbeit 后面要插 -e，而 wohn 不要"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出六个人称词尾、插 -e 的条件、元音交替发生的两个人称"
+      }
+    ],
+    "selfCheck": [
+      "能正确变位规则动词与 -t/-d 结尾动词",
+      "能说出元音交替只发生在哪两个人称"
+    ],
+    "estMinutes": 8
+  },
+  "german/vc-strong": {
+    "summary": "强变化动词在 du 与 er 变音或换音，过去时与第二分词另有词形，三处一起记。",
+    "body": "nehmen   du nimmst   er nimmt   nahm    genommen\ngeben    du gibst    er gibt    gab     gegeben\nsehen    du siehst   er sieht   sah     gesehen\nfahren   du fährst   er fährt   fuhr    gefahren\nlaufen   du läufst   er läuft   lief    gelaufen\nsprechen du sprichst  er spricht  sprach  gesprochen\n\n两类元音交替\n变音（Umlaut）：a -> ä / o -> ö / u -> ü      fahren / laufen\n换音（Brechung）：e -> i / ie                  nehmen / geben / sehen\n\n交替只出现在 du 与 er 现在时；wir / sie 用原词干\nwir nehmen / sie fahren\n\n过去时与第二分词不能推，必须逐个记\nsingen sang gesungen / trinken trank getrunken\n\n查找方法：词表按「不定式 - 过去时 - 第二分词」三形排列（如 nehmen - nahm - genommen）。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读强变化表，抄出五个动词的三形（不定式/过去/第二分词）"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 du nimmst / er nimmt / wir nehmen，标出交替只在哪两个人称"
+      },
+      {
+        "operator": "practice",
+        "instruction": "给 sehen 变位现在时六个人称，再写它的过去时与第二分词"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释变音与换音的区别"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出五个强变化动词的三形，以及交替发生的人称"
+      }
+    ],
+    "selfCheck": [
+      "能说出三形记词法",
+      "能正确变位 nehmen 与 sehen"
+    ],
+    "estMinutes": 9
+  },
+  "german/vc-modal-present": {
+    "summary": "情态动词现在时第一、三人称同形且无词尾，过去时也不加人称词尾。",
+    "body": "können  kann   kannst  kann   können  könnt   können\nmüssen  muss   musst   muss   müssen  müsst   müssen\nwollen  will   willst  will   wollen  wollt   wollen\ndürfen  darf   darfst  darf   dürfen  dürft   dürfen\nsollen  soll   sollst  soll   sollen  sollt   sollen\nmögen   mag    magst   mag    mögen   mögt    mögen\n\n第一人称与第三人称单数同形（ich kann / er kann），这是情态动词的标志\n\n过去时（Präteritum）同样一、三同形、无词尾\nkonnte konntest konnte konnten konntet konnten\nmusste musstest musste mussten musstet mussten\n\n语义需与用法一起记（见 vf-modal-use）\nmüssen 客观义务 vs 主观推测；dürfen 许可 vs 推测可能\n\n易错：情态动词作助动词时，另一动词用不定式放句末\nIch muss heute länger arbeiten.",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读情态动词现在时表，抄出六个词的六个人称"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 ich kann / er kann / du kannst，标出一、三同形"
+      },
+      {
+        "operator": "practice",
+        "instruction": "写出 können 与 müssen 的过去时六个人称"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释为什么情态动词第一人称不需要词尾"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出六个情态动词的现在时一、三人称，以及过去时的一、三人称"
+      }
+    ],
+    "selfCheck": [
+      "能默写六个情态动词的现在时与过去时",
+      "能说出情态动词的句末不定式规则"
+    ],
+    "estMinutes": 9
+  },
+  "german/vc-past": {
+    "summary": "过去时用于书面叙述，弱变化加 -te，强变化换词干并单复数分用词尾。",
+    "body": "弱变化：machen -> machte\nmachte machtest machte machten machtet machten\n\n强变化：gehen -> ging\nging gingst ging gingen gingt gingen\n\n混合变化：bringen -> brachte\nbrachte brachtest brachte brachten brachtet brachten\n（词干换音，但加弱变化词尾）\n\n用法分工\n口语叙述多用完成时：Ich habe in Bonn gewohnt.\n书面叙述用过去时：Ich wohnte in Bonn.\n情态动词、sein、haben 在口语里也用过去时：Ich war müde. / Ich hatte Zeit.\n\n易错：过去时与完成时不能混在同一叙述层\n书面里若用过去时开头，后面不要跳回完成时，除非有意表示先时（那时用过去完成时）",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读过去时一节，抄出弱、强、混合各一个动词的六个人称"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 machte 与 ging 的各人称形式，标出词尾差别"
+      },
+      {
+        "operator": "practice",
+        "instruction": "写出 bringen 的过去时六个人称，说明它为什么叫混合变化"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释口语与书面语为什么选用不同的过去表达"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出三类过去时的构成方式，以及口语常用过去时的三个动词"
+      }
+    ],
+    "selfCheck": [
+      "能构成弱变化与强变化的过去时",
+      "能说出过去时与完成时的语体分工"
+    ],
+    "estMinutes": 9
+  },
+  "german/vc-perfect-haben": {
+    "summary": "完成时由 haben 的现在时加第二分词构成，多数动词走这一组。",
+    "body": "Ich habe gelesen. / Er hat gearbeitet. / Wir haben gewartet.\n\n第二分词构成\n弱变化：ge- + 词干 + -t          gemacht / gekauft / gearbeitet\n强变化：ge- + 词干（常换元音）+ -en   gelesen / gesehen / genommen\n\n不加 ge- 的两类\n不可分前缀：verstehen -> verstanden / besuchen -> besucht\n-ieren 结尾：studieren -> studiert / telefonieren -> telefoniert\n\n可分动词：ge- 夹在前缀与词干之间\naufstehen -> aufgestanden / einkaufen -> eingekauft / anrufen -> angerufen\n\n语序：分词在句末，haben 在第二位\nIch habe das Buch gestern gekauft.\n\n易错：完成时不能与过去时分混\n正确：Ich habe das gemacht.（口语）\n书面：Ich machte das.",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读完成时一节，抄出第二分词的四种构成"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 gemacht / gelesen / verstanden / aufgestanden，标出 ge- 的位置"
+      },
+      {
+        "operator": "practice",
+        "instruction": "写出 studieren / anrufen / besuchen 的第二分词"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释为什么 verstehen 与 studieren 不加 ge-"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出第二分词的四种构成规则，并各举一例"
+      }
+    ],
+    "selfCheck": [
+      "能写出三类动词的第二分词",
+      "能说出 ge- 缺席的两个条件"
+    ],
+    "estMinutes": 9
+  },
+  "german/vc-perfect-sein": {
+    "summary": "完成时用 sein 的有三类：位置移动、状态变化，以及 sein / werden / bleiben 本身。",
+    "body": "位移（从一处到另一处）\nIch bin nach Berlin gefahren.\nSie ist gekommen.\nEr ist gestern abgereist.\n\n状态变化\nDas Eis ist geschmolzen.\nEr ist eingeschlafen.\nSie ist aufgewacht.\n\nsein / werden / bleiben\nIch bin zu Hause gewesen.\nEr ist Lehrer geworden.\nSie ist lange geblieben.\n\n判据不是「有没有移动」，而是「主语有没有换位置或换状态」\nIch habe das Auto gefahren.（及物、带第四格 -> haben）\nIch bin nach Hause gefahren.（不及物、换了位置 -> sein）\n\n仍用 haben 的\n情态动词：Ich habe das nicht gekonnt.\n反身动词：Er hat sich gewaschen.\n他动词带宾语：Sie hat den Kuchen gebacken.\n\n易错：bleiben 虽无位移也用 sein —— 请把它与 sein / werden 一起当例外背。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读 sein 组完成时一节，抄出三类动词"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 Ich bin gefahren 与 Ich habe das Auto gefahren，说明差别"
+      },
+      {
+        "operator": "practice",
+        "instruction": "判断 einschlafen / lesen / bleiben 各用 haben 还是 sein"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释为什么 bleiben 用 sein 而没有位移"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出用 sein 的三类动词，以及仍然用 haben 的三类"
+      }
+    ],
+    "selfCheck": [
+      "能判断一个动词该用 haben 还是 sein",
+      "能说出 bleiben 为什么是例外"
+    ],
+    "estMinutes": 9,
+    "criteria": [
+      {
+        "quiz": "q-vc-perfect-sein",
+        "statement": "能说出位移动词、状态变化动词以及 sein / werden / bleiben 用 sein 构成完成时"
+      }
+    ]
+  },
+  "german/vc-plusquamperfect": {
+    "summary": "过去完成时由 hatte 或 war 加第二分词构成，标记「在过去的某点之前已完成」。",
+    "body": "Als ich ankam, hatte er schon gegessen.\nSie war vorher eingeschlafen.\n\nhaben 组与 sein 组的分工同完成时\nEr hatte gearbeitet. / Er war gefahren. / Sie war geblieben.\n\n常与 nachdem 连用：从句用过去完成，主句用过去时\nNachdem er gegessen hatte, ging er los.\nNachdem sie angekommen war, rief sie an.\n\n也能表示未实现的过去愿望（虚拟语气，见 cc-konjunktiv-2）\nHätte ich das gewusst!\n\n易错：过去完成时不能在口语里替代完成时\n口语谈过去仍用完成时；过去完成只在明确有「更早」参照点时使用。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读过去完成时一节，抄出三个例句"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 Nachdem er gegessen hatte, ging er los，标出两个时态"
+      },
+      {
+        "operator": "practice",
+        "instruction": "用 nachdem 造一句：先到，再打电话"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释过去完成时与完成时的使用条件差别"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出过去完成时的两个助动词形式，以及最常连用的连词"
+      }
+    ],
+    "selfCheck": [
+      "能构成过去完成时",
+      "能说出它与完成时的分工"
+    ],
+    "estMinutes": 8
+  },
+  "german/vc-future-1": {
+    "summary": "将来时 I 由 werden 加不定式构成，口语更常用现在时加时间状语。",
+    "body": "Ich werde morgen kommen.\nEs wird regnen.\n\nwerden 变位：werde wirst wird werden werdet werden\n（第一人称与第三人称不同形，与情态动词相反）\n\n口语替代：现在时 + 时间状语\nMorgen fahre ich nach Hamburg.\nNächste Woche beginnt der Kurs.\n\n推测用法（对现在）\nEr wird jetzt zu Hause sein.（他现在大概在家）\n\n语序：不定式在句末\nIch werde das Buch morgen lesen.\n\n易错：werden 作实义动词是「成为」\nEr wird Lehrer.（不是将来时）",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读将来时 I 一节，抄出 werden 的六个人称"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 Ich werde kommen 与 Morgen komme ich，说明两者语体差别"
+      },
+      {
+        "operator": "practice",
+        "instruction": "用 werden 造一句将来时，再改成现在时加时间状语的同义句"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释 Er wird Lehrer 为什么不是将来时"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出 werden 的变位、将来时语序、两种口语替代方式"
+      }
+    ],
+    "selfCheck": [
+      "能正确变位 werden",
+      "能区分将来时与现在时替代、werden 的实义用法"
+    ],
+    "estMinutes": 8
+  },
+  "german/vc-future-2": {
+    "summary": "将来时 II 由 werden 加第二分词加 haben/sein 构成，既表将来完成，也表对过去的推测。",
+    "body": "将来完成\nBis morgen werde ich die Arbeit gemacht haben.\nIn einer Woche wird er angekommen sein.\n\n对过去的推测\nEr wird das gemacht haben.（他大概已经做完了）\nSie wird eingeschlafen sein.\n\n构成：werden（现在时）+ 第二分词 + haben / sein\nhaben 组与 sein 组的分工与完成时一致\n\n判读靠上下文与时间状语\nBis morgen ... 将来完成\nEr wird das gemacht haben. 单独出现时多为推测\n\n虚拟形式（第二虚拟式 + 完成不定式）表未实现的过去\nEr hätte das gemacht haben können.（本可以做到）\n\n易错：将来时 II 极少用于平铺叙述，多用于推测与「到某时为止已完成」。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读将来时 II 一节，抄出两个例句"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 Bis morgen werde ich ... haben 与 Er wird das gemacht haben，说明两解"
+      },
+      {
+        "operator": "practice",
+        "instruction": "用将来时 II 写一句「到周五他已经到了」"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释同一形态为什么能表将来完成与过去推测"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出将来时 II 的构成公式与两种用法"
+      }
+    ],
+    "selfCheck": [
+      "能构成将来时 II",
+      "能说出它的两种解读"
+    ],
+    "estMinutes": 9,
+    "criteria": [
+      {
+        "quiz": "q-vc-future-2",
+        "statement": "能说出 Er wird das gemacht haben 既可表将来完成，也可表对过去事实的推测"
+      }
+    ]
+  },
+  "german/vc-passive": {
+    "summary": "过程被动用 werden 加第二分词，状态被动用 sein 加第二分词，两者视角不同。",
+    "body": "过程被动（Vorgangspassiv）：动作在进行\nDas Haus wird gebaut.          正在被建\nDer Brief wurde geschrieben.   过去的过程\n\n状态被动（Zustandspassiv）：动作已完成、状态在持续\nDas Haus ist gebaut.           已建成\nDie Tür ist geöffnet.          门开着\n\n带情态动词\nDas Haus muss gebaut werden.   过程：必须被建\nDas Haus muss gebaut sein.     状态：必须处于已建状态\n\n施事与手段\nvon + 与格（人或拟人力量）：von mir / von der Regierung\ndurch + 第四格（手段、中介）：durch den Sturm / durch einen Boten\n\n被动里的主语是原句的第四格宾语；原句的与格宾语留在与格（无人称被动）\nDem Kind wird geholfen.\n\n易错：状态被动不能带 von 短语表施事（*Das Haus ist von ihm gebaut 应理解为状态还是过程要看清）",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读两种被动一节，抄出过程与状态各两例"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 Das Haus wird gebaut 与 Das Haus ist gebaut，说明差别"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 Der Lehrer erklärt die Regel 改成过程被动，再改成带情态动词的被动"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释过程被动与状态被动各回答什么问题"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出两种被动的构成、von 与 durch 的分工"
+      }
+    ],
+    "selfCheck": [
+      "能区分过程被动与状态被动",
+      "能正确使用 von 与 durch"
+    ],
+    "estMinutes": 9,
+    "criteria": [
+      {
+        "quiz": "q-vc-passive",
+        "statement": "能说出 Das Haus wird gebaut 是过程被动（正在被建），Das Haus ist gebaut 是状态被动（已建成）"
+      }
+    ]
+  },
+  "german/vf-transitive": {
+    "summary": "及物动词带第四格宾语，完成时用 haben，可构成过程被动。",
+    "body": "sehen   Ich sehe den Turm.\nbauen   Sie bauen ein Haus.\nessen   Er isst einen Apfel.\n\n及物性三条判据\n① 有第四格宾语 ② 完成时用 haben ③ 可构成过程被动\nDas Haus wird gebaut.\n\n反身代词也能占第四格位置\nIch wasche mich.（mich 是第四格宾语）\nIch wasche das Kind.（第四格换成名词，动词仍是及物）\n\n不及物但有第四格状语的假象\nIch gehe den Weg.（den Weg 是第四格，但动词不可被动化，属「同源宾语」类，需单独记）\n\n易错：及物不等于「有宾语」，helfen 带与格宾语仍不是及物动词\nDem Lehrer wird geholfen.（只能无人称被动）",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读及物动词一节，抄出三条判据"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 Ich sehe den Turm 与 Das Haus wird gebaut，说明两条判据怎么用"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 Ich wasche mich 改成带名词宾语的句子，再改成被动"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释为什么 helfen 不是及物动词，尽管它也带宾语"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出及物性三条判据，以及一个反例"
+      }
+    ],
+    "selfCheck": [
+      "能用三条判据判断及物性",
+      "能解释 helfen 为什么不算及物"
+    ],
+    "estMinutes": 8
+  },
+  "german/vf-dative": {
+    "summary": "一批动词只带与格宾语，没有第四格、完成时用 haben、只能构成无人称被动。",
+    "body": "helfen danken gehören folgen gratulieren antworten passen gefallen schmecken\n\nIch helfe dem Lehrer.\nDas Buch gehört meiner Schwester.\nDas Kleid passt dir.\nDer Film gefällt mir.\n\n被动只能走无人称式：保留与格，主语用 es（或省略）\nDem Lehrer wird geholfen.\nEs wird ihm geholfen.\n不能说 Der Lehrer wird geholfen.\n\n与格宾语的语序：代词在前、名词在后（见 wo-pronoun-order）\nIch helfe ihm. / Ich helfe dem Lehrer.\n\n易错：antworten 带与格（回答某人），beantworten 带第四格（回答问题）\nIch antworte dem Lehrer. / Ich beantworte die Frage.",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读与格动词一节，抄出八个动词"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 Ich helfe dem Lehrer 与 Dem Lehrer wird geholfen，说明被动形"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 Er hilft die Frau 改对，再改成无人称被动"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释为什么这类动词不能有被动主语"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出六个只带与格的动词、两个人称对应的第四格动词"
+      }
+    ],
+    "selfCheck": [
+      "能列出六个只带与格的动词",
+      "能构造无人称被动"
+    ],
+    "estMinutes": 9
+  },
+  "german/vf-genitive": {
+    "summary": "属格宾语只剩少数动词，书面且多固定，口语常换成介词宾语或第四格。",
+    "body": "bedürfen + G      Der Fall bedarf einer Erklärung.\ngedenken + G      Wir gedenken der Opfer.\nsich erinnern + G（也 an + A）  Ich erinnere mich des Tages.\nsich bedienen + G Er bediente sich einer List.\nanklagen + G      Er wurde des Betrugs angeklagt.\nsich annehmen + G Sie nahm sich des Kindes an.\n\n特点\n① 属格宾语不能变被动主语\n② 名词多用无冠词或定冠词，口语里常整条被替换\n\n口语替代路径\ngedenken + G -> gedenken + D（口语）\nsich erinnern + G -> sich erinnern an + A（最常用）\nbedürfen -> brauchen + A\n\n易错：这类动词数量少但高频出现在正式文本，读到 des / der 开头不必当定语，先看动词配价。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读属格动词一节，抄出五个动词及例句"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 Wir gedenken der Opfer 与 Ich erinnere mich an den Tag，说明新旧两形"
+      },
+      {
+        "operator": "practice",
+        "instruction": "用 bedürfen 造一句，再改成 brauchen 的同义句"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释属格宾语为什么不能作被动主语"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出四个支配属格的动词，以及两条口语替代路径"
+      }
+    ],
+    "selfCheck": [
+      "能说出四个属格动词",
+      "能说出属格宾语的口语替代形式"
+    ],
+    "estMinutes": 9
+  },
+  "german/vf-prepositional": {
+    "summary": "介词宾语是动词的固定搭配，介词与它支配的格都要整条记。",
+    "body": "warten auf + A           Ich warte auf den Bus.\nsich interessieren für + A   Ich interessiere mich für Musik.\nteilnehmen an + D        Ich nehme an dem Kurs teil.\ndenken an + A            Ich denke an dich.\nsprechen über + A        Wir sprechen über das Problem.\nsprechen mit + D         Ich spreche mit dem Lehrer.\nabhängen von + D         Das hängt vom Wetter ab.\nsich freuen auf + A（期待）/ über + A（已发生）\n\n代词化：介词 + 事物用 da(r)- 复合词\nIch warte darauf.（不是 auf es）\nIch freue mich darüber. / Ich denke daran.\n人用介词 + 人称代词：Ich warte auf ihn.\n\n疑问形式\nWorauf wartest du? / Auf wen wartest du?\n\n易错：同一动词换介词换义\nsich freuen auf（期待） / sich freuen über（为已发生的事高兴）",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读介词宾语一节，抄出六个搭配"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 Ich warte auf den Bus 与 Ich warte darauf，说明代词化"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 Ich warte auf es 改对，再写出它的疑问句"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释 sich freuen auf 与 über 的意义差别"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出五个介词搭配、代词化的规则"
+      }
+    ],
+    "selfCheck": [
+      "能记住五个常用介词搭配",
+      "能正确使用 da(r)- 代词化"
+    ],
+    "estMinutes": 9
+  },
+  "german/vf-reflexive": {
+    "summary": "反身代词可占第四格或与格位置，取决于句子里有没有另一个宾语。",
+    "body": "真反身（必须带 sich）\nsich beeilen / sich erholen / sich freuen / sich interessieren\nIch beeile mich. / Er interessiert sich für Musik.\n\n假反身（可换成非反身宾语）\nIch wasche mich.        反身代词占第四格\nIch wasche das Kind.    第四格换成名词\n\n与格反身 + 第四格宾语（身体部位、所属物）\nIch wasche mir die Hände.    mir 与格，die Hände 第四格\nEr putzt sich die Zähne.\nSie kämmt sich die Haare.\n\n反身代词表\n         mich  dich  sich  uns  euch  sich\n与格     mir   dir   sich  uns  euch  sich\n\n易错：反身动词的完成时用 haben\nEr hat sich gewaschen.（不是 ist）",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读反身动词一节，抄出真反身与假反身各三例"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 Ich wasche mich 与 Ich wasche mir die Hände，标出格差别"
+      },
+      {
+        "operator": "practice",
+        "instruction": "用 sich die Zähne putzen 造一句，标出哪个成分是与格"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释什么情况下反身代词用与格"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出反身代词第四格与与格两套形式，以及真假反身的区别"
+      }
+    ],
+    "selfCheck": [
+      "能默写反身代词两套形式",
+      "能解释反身代词什么时候用与格"
+    ],
+    "estMinutes": 9,
+    "criteria": [
+      {
+        "quiz": "q-vf-reflexive",
+        "statement": "能说出 Ich wasche mich 的反身代词是第四格（直接宾语），Ich wasche mir die Hände 的是第三格（与格 + 第四格身体部位）"
+      }
+    ]
+  },
+  "german/vf-separable": {
+    "summary": "可分动词由重读前缀加动词构成，主句里前缀甩到句末，从句与不定式里不分开。",
+    "body": "主句：前缀到句末\nIch stehe früh auf.\nEr ruft mich an.\nWir kaufen im Supermarkt ein.\n\n从句：不分开，整体在末位\n..., weil ich früh aufstehe.\n..., obwohl er mich anruft.\n\n带 zu 的不定式：zu 夹在中间（见 vf-infinitive-zu）\naufzustehen / anzurufen / einzukaufen\n\n第二分词：ge- 夹在中间\naufgestanden / angerufen / eingekauft\n\n常见可分前缀\nauf an aus ein mit nach vor weg zu zurück fest los\n\n判据：重音\n'aufstehen 重音在前缀 -> 可分\nver'stehen / be'suchen 重音在词干 -> 不可分（见 vf-inseparable）\n\n易错：可分前缀不是介词，意义常整体化\naufhören（停止）不是「听上去」",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读可分动词一节，抄出主句与从句两组例句"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 Ich stehe auf 与 weil ich aufstehe，说明位置差别"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 anrufen 放进主句与 weil 从句各一次"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释重音为什么能区分可分与不可分"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出六个可分前缀，以及从句里的位置规则"
+      }
+    ],
+    "selfCheck": [
+      "能正确安放可分前缀",
+      "能说出判断可分与否的重音判据"
+    ],
+    "estMinutes": 9,
+    "criteria": [
+      {
+        "quiz": "q-vf-separable",
+        "statement": "能说出可分动词在从句里不分开、整体放在句末：..., weil ich früh aufstehe"
+      }
+    ]
+  },
+  "german/vf-inseparable": {
+    "summary": "不可分前缀与动词连写不分离，第二分词不加 ge-。",
+    "body": "前缀：be- ge- er- ver- zer- ent- emp- miss-\nverstehen  Ich verstehe das.\nbesuchen     Er besucht uns.\nerzählen     Sie erzählt eine Geschichte.\nzerbrechen   Das Glas zerbrach.\nempfehlen    Ich empfehle dir das Buch.\nmissverstehen  Du hast mich missverstanden.\n\n第二分词不加 ge-\nverstanden / besucht / erzählt / zerbrochen / empfohlen / missverstanden\n\n重音在词干，前缀弱读 —— 与可分前缀的重读正好相反\nver'stehen / be'suchen / er'zählen\n\n例外提醒\nge- 开头也可能是可分前缀的 ge-（极少），判据仍看重音与词义\nmiss- 通常不可分，但 misstrauen 同属不可分\n\n易错：不可分动词也能带与格或第四格宾语，配价要单独记\nIch empfehle dir das Buch.（dir 与格 / das Buch 第四格）",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读不可分前缀清单，抄出七个前缀"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 verstehen / verstanden 与 aufstehen / aufgestanden，说明 ge- 的差别"
+      },
+      {
+        "operator": "practice",
+        "instruction": "写出 besuchen / empfehlen / zerbrechen 的第二分词"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释为什么不可分动词的第二分词不加 ge-"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出七个不可分前缀、三个第二分词例子"
+      }
+    ],
+    "selfCheck": [
+      "能识别不可分前缀",
+      "能写出不可分动词的第二分词"
+    ],
+    "estMinutes": 8
+  },
+  "german/vf-modal-use": {
+    "summary": "情态动词有客观（义务、能力、许可）与主观（推测、转述）两套用法。",
+    "body": "客观用法\nIch muss zum Arzt.（义务）\nIch kann schwimmen.（能力）\nSie darf hier parken.（许可）\nDu sollst mehr schlafen.（他人要求）\n\n主观推测\nEr muss krank sein.       一定是（强推测）\nEr kann krank sein.       可能是\nEr dürfte krank sein.     大概是（第二虚拟式，更委婉）\nEr müsste jetzt da sein.  按理该到了\n\n主观转述（用 sollen / wollen）\nEr soll krank sein.       据说他病了\nEr will das selbst gesehen haben.  他自称亲眼看见\n\n判读线索\n① 主观用法的重音落在情态动词上\n② 主观用法常与另一动词的不定式连用，且不能用 nicht 否定整句（否定要靠 nicht können）\n③ 客观用法可用 nicht 自由否定\n\n易错：müssen 的否定是 nicht müssen（不必），不是 nicht dürfen（不许）\nDu musst nicht kommen.（不必来） / Du darfst nicht kommen.（不许来）",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读情态动词两套用法，抄出客观与主观各三例"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 Er muss krank sein 与 Ich muss zum Arzt，说明差别"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 Du musst nicht kommen 与 Du darfst nicht kommen 各译一遍，说明差别"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释主观用法为什么重音落在情态动词上"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出客观三类、主观两类，以及 müssen 与 dürfen 的否定差别"
+      }
+    ],
+    "selfCheck": [
+      "能区分情态动词的客观与主观用法",
+      "能说出 müssen 与 dürfen 否定的差别"
+    ],
+    "estMinutes": 9
+  },
+  "german/vf-infinitive-zu": {
+    "summary": "zu 加不定式有三种形态：不带 zu、带 zu、可分动词的 zu 夹在中间。",
+    "body": "不带 zu（情态动词、werden、lassen、感官动词、 gehen/lehren/lernen 类）\nIch muss gehen.\nEr will kommen.\nSie lässt mich warten.\nIch sehe ihn kommen.\nIch gehe schwimmen.\n\n带 zu\nIch versuche zu schlafen.\nEs ist schwer zu verstehen.\nIch habe vergessen, ihn anzurufen.\n\n可分动词：zu 夹在前缀与词干之间\naufzustehen / anzufangen / mitzukommen / einzukaufen / anzurufen\n\n带 zu 的主语从句（用 es 占位）\nEs ist wichtig, pünktlich zu sein.\nEs freut mich, dich zu sehen.\n\n易错：zu 的位置\n正确：Ich hoffe, dich bald zu sehen.\n错误：Ich hoffe, zu dich bald sehen.",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读 zu 不定式一节，抄出三种形态"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 aufzustehen 与 zu verstehen，标出 zu 的位置"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 anfangen 放进带 zu 的不定式结构，再放进带情态动词的句子"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释为什么可分动词的 zu 要夹在中间"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出不带 zu 的四个触发词、zu 夹在中间的规则"
+      }
+    ],
+    "selfCheck": [
+      "能正确安放 zu",
+      "能说出哪些动词后不带 zu"
+    ],
+    "estMinutes": 9,
+    "criteria": [
+      {
+        "quiz": "q-vf-infinitive-zu",
+        "statement": "能说出可分动词加 zu 时 zu 夹在前缀与词干之间：aufzustehen"
+      }
+    ]
+  },
+  "german/vf-imperative": {
+    "summary": "命令式按 du / ihr / Sie 三套变形，du 形式去掉词尾与 du，可分前缀回句末。",
+    "body": "du：词干（去 -st 与 du）\nMach! / Komm! / Warte!\n强变化：换音保留（e -> i），变音复原（a -> ä 变回 a）\nsprechen -> Sprich! / nehmen -> Nimm!\nfahren -> Fahr!（不是 Fähr!）\n\nihr：与现在时第二人称同形，去掉 ihr\nMacht! / Kommt! / Sprecht!\n\nSie：动词 + Sie，语序倒装\nMachen Sie! / Kommen Sie! / Warten Sie bitte!\n\n可分动词：前缀回句末\nSteh auf! / Ruf mich an! / Kauf ein!\n\nsein 的命令式不规则\nSei ruhig! / Seid ruhig! / Seien Sie ruhig!\n\n礼貌与委婉\nMachen Sie bitte ... / Würden Sie bitte ...（第二虚拟式最客气）",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读命令式一节，抄出三套变形的例词"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 Sprich! / Sprecht! / Sprechen Sie!，说明三套差别"
+      },
+      {
+        "operator": "practice",
+        "instruction": "写出 aufstehen 的三套命令式"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释为什么 fahren 的命令式不改音"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出三套命令式的构成规则、sein 的特殊形式"
+      }
+    ],
+    "selfCheck": [
+      "能写出三套命令式",
+      "能说出可分动词前缀位置"
+    ],
+    "estMinutes": 8
+  },
+  "german/wo-verb-second": {
+    "summary": "主句的变位动词固定在第二位，第一位可以是任何成分，主语随之后移。",
+    "body": "Gestern ging ich ins Kino.       第一位 Gestern，动词 ging，主语 ich\nIns Kino ging ich gestern.       第一位 Ins Kino\nIch ging gestern ins Kino.       第一位 Ich\n\n错例\nGestern ich ging ins Kino.       动词掉到第三位，错\n\n判据：数「成分位」，不是数词\nAm nächsten Morgen fuhr er nach Bonn.\n第一位是一个介词短语，整体算一个成分位\n\n主语不一定在第一位，但动词一定在第二位\n例外：是非问句、命令句、条件从句无连词时动词居首（见 wo-question）\n\n易错：把时间状语放前面后忘了倒装\n正确：Morgen fahre ich. 错误：Morgen ich fahre.",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读动词第二位一节，抄出三个语序变体"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 Gestern ging ich ins Kino 并标出三个成分位"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 Ich fahre morgen nach Berlin 改成以 Morgen 开头"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释为什么动词第二位会带动主语后移"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出动词第二位的规则、三个可变的第一位成分、三类例外"
+      }
+    ],
+    "selfCheck": [
+      "能正确倒装",
+      "能说出动词第二位的三类例外"
+    ],
+    "estMinutes": 8,
+    "criteria": [
+      {
+        "quiz": "q-wo-verb-second",
+        "statement": "能说出主句动词必须占第二位，Gestern ich ging 错在动词落到第三位"
+      }
+    ]
+  },
+  "german/wo-vorfeld": {
+    "summary": "前置场放已知信息或对比焦点，放什么决定句子的信息结构。",
+    "body": "中性语序：主语在前\nIch habe das Buch gestern gekauft.\n\n把时间提前：强调时间\nGestern habe ich das Buch gekauft.\n\n把宾语提前：对比\nDas Buch habe ich gestern gekauft.（不是杂志）\n\n前置场只能有一个成分\nGestern Abend um acht habe ich ...（一个时间短语，整体算一位）\n\n不宜放前置场的成分\nnicht / 反身代词 / 弱读代词宾语\n错：Nicht habe ich das gesagt.（应 Das habe ich nicht gesagt.）\n\n前置场与信息结构\n已知信息（上文提过的）适合前置；全新信息留在中场靠后\nDas Buch kenne ich schon.（书已知） / Ich kenne ein Buch, das ...（书是新信息）",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读前置场一节，抄出三个语序变体"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 Das Buch habe ich gestern gekauft，说明强调的是什么"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 Ich habe das Buch gestern gekauft 改成以时间、以宾语开头的两种"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释为什么 nicht 不宜放前置场"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出前置场的容量、三类不宜成分、信息结构原则"
+      }
+    ],
+    "selfCheck": [
+      "能正确改变前置场",
+      "能说出前置场与信息结构的关系"
+    ],
+    "estMinutes": 9
+  },
+  "german/wo-satzklammer": {
+    "summary": "句框把变位动词放第二位、非变位部分放末位，中间的部分叫中场。",
+    "body": "完成时：habe ... gekauft\nIch [habe] das Buch gestern [gekauft].\n\n情态：muss ... arbeiten\nEr [muss] heute länger [arbeiten].\n\n可分动词：stehe ... auf\nIch [stehe] früh [auf].\n\n带 zu 不定式：versuche ... zu schlafen\nIch [versuche] heute früh [zu schlafen].\n\n被动：wird ... gebaut\nDas Haus [wird] seit Monaten [gebaut].\n\n框内是中场（Mittelfeld），顺序见 wo-mittelfeld\n框外是后场（Nachfeld），只在成分过长时使用（见 wo-ausklammerung）\n\n作用：德语靠这个框把「动词的语法信息」与「动词的词汇内容」分开\n前半给时态与人称，后半给意义 —— 听话人在句末才拿到完整命题。",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读句框一节，抄出四种框型"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 Ich habe das Buch gestern gekauft，标出框的两端与中场"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 Er arbeitet heute länger 改成带情态动词的句框形式"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释句框把什么信息放在两端"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出四种句框形式，以及句框两端各承担什么"
+      }
+    ],
+    "selfCheck": [
+      "能识别并构造句框",
+      "能说出框内成分的名称"
+    ],
+    "estMinutes": 9
+  },
+  "german/wo-mittelfeld": {
+    "summary": "中场默认顺序是 TeKaMoLo：时间 → 原因 → 方式 → 地点，再由信息新旧微调。",
+    "body": "Ich fahre heute wegen des Termins mit dem Zug nach Berlin.\n         T     K                  M           L\n\n默认序列\nTemporal（wann）-> Kausal（warum）-> Modal（wie）-> Lokal（wohin/wo）\n\n已知信息靠前，新信息靠后\nIch habe es gestern meinem Bruder gegeben.（es 已知，靠前）\nIch habe meinem Bruder gestern das Buch gegeben.（das Buch 是新信息，靠后）\n\n代词优先于名词\nIch gebe ihm das Buch. / Ich gebe es ihm.（两个代词时第四格在前）\n\n名词短语内部：定指在前、不定在后\nIch schenke dem alten Mann ein Buch.\n\n易错：TeKaMoLo 是默认值，不是铁律；强调与信息结构可以打破它\nHeute fahre ich mit dem Zug nach Berlin.（时间提前）",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读中场顺序一节，抄出 TeKaMoLo 四项"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 Ich fahre heute wegen des Termins mit dem Zug nach Berlin，标出四项"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把时间、原因、方式、地点四个成分排成一句"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释为什么已知信息要靠前"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出 TeKaMoLo 四项的全称与顺序、两条附加规则"
+      }
+    ],
+    "selfCheck": [
+      "能按 TeKaMoLo 排列中场",
+      "能说出信息结构如何微调顺序"
+    ],
+    "estMinutes": 9,
+    "criteria": [
+      {
+        "quiz": "q-wo-mittelfeld",
+        "statement": "能说出 TeKaMoLo 是 Temporal→Kausal→Modal→Lokal（时间→原因→方式→地点）"
+      }
+    ]
+  },
+  "german/wo-negation": {
+    "summary": "nicht 否定整句或局部并尽量靠后，kein 否定带不定冠词或零冠词的名词。",
+    "body": "kein 否定名词\nIch habe kein Geld. / Ich habe keine Zeit. / Ich habe keine Bücher.\n\nnicht 否定其余\nIch komme nicht.（否定动词）\nDas Buch ist nicht interessant.（否定形容词）\nEr wohnt nicht in Berlin.（否定地点）\n\n位置：尽量靠后，但在固定成分之前\nIch habe das Buch gestern nicht gelesen.（在第二分词前）\nIch fahre nicht nach Berlin.（在地点前）\nEr kommt heute nicht.（在时间之后）\n\n否定范围靠位置与重音\nIch habe ihn nicht gestern gesehen.（不是昨天，是别的日子）\nIch habe ihn gestern nicht gesehen.（昨天没见到他）\n\n易错：nicht 不放在句首否定整句（除非对比）\nNicht ich habe das gesagt, sondern er.",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读否定位置一节，抄出四个 nicht 例句"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 Ich habe kein Geld 与 Ich habe das nicht gelesen，说明 kein 与 nicht 的分工"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 Ich fahre nach Berlin 改成否定句，再用 nicht 否定时间"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释 nicht 的位置为什么尽量靠后"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出 kein 与 nicht 的分工、nicht 的三条位置规则"
+      }
+    ],
+    "selfCheck": [
+      "能正确选择 kein 或 nicht",
+      "能说出 nicht 的位置原则"
+    ],
+    "estMinutes": 9
+  },
+  "german/wo-pronoun-order": {
+    "summary": "代词宾语的顺序是第四格在第三格前，与名词宾语的顺序相反。",
+    "body": "名词 + 名词：与格在前\nIch gebe dem Mann das Buch.\n\n代词 + 代词：第四格在前\nIch gebe es ihm.（不是 ihm es）\nEr zeigt sie mir. / Sie schenkt ihn mir.\n\n代词 + 名词：代词在前\nIch gebe ihm das Buch.（与格代词在前，名词在后）\nIch gebe es dem Mann.（第四格代词在前）\n\n反身代词占第四格时，与格名词/代词在后\nIch wasche mich. / Ich wasche mir die Hände.（与格 mir + 第四格名词）\n\n易错：两个名词时的顺序与两个代词时相反，这是德语最常考的一处\nDem Mann das Buch geben? -> Ich gebe dem Mann das Buch.\nEs ihm geben? -> Ich gebe es ihm.",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读代词顺序一节，抄出四组对照"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 Ich gebe es ihm 与 Ich gebe dem Mann das Buch，说明顺序相反"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 Ich gebe ihm das Buch 改成两个代词，再改成两个名词"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释为什么代词顺序与名词顺序相反"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出四条排序规则各一个例句"
+      }
+    ],
+    "selfCheck": [
+      "能正确排列两个代词宾语",
+      "能说出代词与名词顺序的差别"
+    ],
+    "estMinutes": 9
+  },
+  "german/wo-question": {
+    "summary": "是非问句动词居首，补充问句用疑问词占第一位、动词第二位。",
+    "body": "是非问句（Ja/Nein-Frage）：动词第一位\nKommst du mit? / Haben Sie Zeit? / Ist das dein Buch?\n\n补充问句（W-Frage）：疑问词第一位，动词第二位\nWann kommst du? / Warum hast du das gemacht? / Wer ist das?\n\n介词 + 疑问词\nMit wem fährst du? / Worauf wartest du? / Über was sprichst du?\n\n疑问词表\nwer was wann wo warum wie wohin woher welcher\n\n主语疑问词例外：wer / was 作主语时语序像陈述句\nWer kommt?（不是 Wer kommt er?）\n\n间接疑问句见 cc-indirect-question\nEr fragt, ob ich komme.\n\n易错：是非问句不能用 doch 之外的小品词占第一位\nKommst du doch mit?（确实来吧）",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读疑问句一节，抄出两类问句各三例"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 Kommst du mit 与 Wann kommst du，标出动词位置"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 Du fährst mit dem Zug 改成是非问与补充问各一句"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释为什么 wer 作主语时语序不同"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出两类问句的动词位置、六个疑问词"
+      }
+    ],
+    "selfCheck": [
+      "能构造两类问句",
+      "能说出主语疑问词为什么是例外"
+    ],
+    "estMinutes": 8
+  },
+  "german/wo-subordinate": {
+    "summary": "从句由连词引导，变位动词移到末位，主句的句框被整体撑开。",
+    "body": "..., weil ich krank bin.\n..., dass er morgen kommt.\n..., obwohl es regnet.\n..., wenn du Zeit hast.\n\n主从整体占位：从句在主句第一位时，主句动词紧跟其后\nWeil ich krank bin, bleibe ich zu Hause.\n（整个从句算第一位，bleibe 是第二位）\n\n带情态动词：变位动词更靠后\n..., weil ich heute länger arbeiten muss.\n（arbeiten 是不定式，muss 在最末）\n\n完成时：两个动词都在末位\n..., weil er das Buch gelesen hat.\n\n关系从句与间接疑问同样动词末位\nDer Mann, den ich sehe, ...  /  Er fragt, ob ich komme.\n\n易错：从句不能保留主句语序\n错误：..., weil ich bin krank. 正确：..., weil ich krank bin.",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读从句语序一节，抄出四类从句例句"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 weil ich krank bin，标出动词位置"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 Ich bleibe zu Hause, weil ich krank bin 改成从句在前"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释从句在主句第一位时，主句动词为什么仍在第二位"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出从句动词位置、带情态动词与完成时的末位顺序"
+      }
+    ],
+    "selfCheck": [
+      "能正确构造从句语序",
+      "能说出从句前置时主句的语序"
+    ],
+    "estMinutes": 9,
+    "criteria": [
+      {
+        "quiz": "q-wo-subordinate",
+        "statement": "能说出 weil 从句里变位动词在末位，如 ..., weil ich krank bin"
+      }
+    ]
+  },
+  "german/wo-emphasis-shift": {
+    "summary": "强调靠前置场与重音实现，不在句中随意挪位，挪位会改变信息结构。",
+    "body": "常规：Ich habe das Buch gestern in Berlin gekauft.\n强调宾语：Das Buch habe ich gestern in Berlin gekauft.\n强调时间：Gestern habe ich das Buch in Berlin gekauft.\n强调地点：In Berlin habe ich das Buch gestern gekauft.\n\n手段\n① 前置场（最常用）\n② 重音：DEN habe ich gemeint.\n③ 小品词：Das ist doch klar.（doch 承担「显而易见」的强调）\n\n不宜用打乱中场默认序列来强调\n不自然：Ich habe gestern in Berlin das Buch gekauft.\n\nnur / sogar / selbst 紧贴被强调成分\nIch habe nur das Buch gekauft.（只买了书）\nSogar der Lehrer war da.（连老师都在）\n\n易错：强调不改变格，所以前置宾语仍带原来的格\nDen Mann habe ich gesehen.（den 仍是第四格）",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读强调手段一节，抄出四种前置场强调"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 Den Mann habe ich gesehen，说明 den 为什么还是第四格"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 Ich habe nur das Buch gekauft 改成强调时间，注意语序"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释为什么不能靠打乱中场顺序来强调"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出三种强调手段、nur 的位置规则"
+      }
+    ],
+    "selfCheck": [
+      "能用前置场强调成分",
+      "能说出强调时格不改变"
+    ],
+    "estMinutes": 9
+  },
+  "german/wo-ausklammerung": {
+    "summary": "外置把重成分挪到句框之后，读起来轻，但受成分类型限制。",
+    "body": "可外置：介词短语、从句、比较结构\nIch habe ihn gestern im Kino gesehen. -> Ich habe ihn gesehen [gestern im Kino].\nEr hat mir beim Umzug geholfen. -> Er hat mir geholfen [beim Umzug].\nIch freue mich darauf, dass du kommst. -> Ich freue mich [darauf, dass du kommst].\n\n不宜外置：第二分词、可分前缀、名词宾语\n错误：Ich habe gesehen das Buch.（名词宾语不能外置）\n错误：Ich habe das Buch gekauft gestern in Berlin.（分词不能离开框末）\n\n判据\n① 句中成分太长或太复杂 -> 外置减轻理解负担\n② 常规语体不外置，外置多见于口语与新闻\n③ 外置不改变格与人称\n\n易错：外置后句框不完整，考试写作里尽量不用",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读外置一节，抄出三个可外置的例子"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 Ich habe ihn gestern im Kino gesehen 与其外置形式，说明差别"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 Er hat mir beim Umzug geholfen 改成外置形式"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释为什么名词宾语不能外置"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出三类可外置成分、三类不可外置成分"
+      }
+    ],
+    "selfCheck": [
+      "能判断什么成分可外置",
+      "能说出外置的语体限制"
+    ],
+    "estMinutes": 9
+  },
+  "german/cc-dass": {
+    "summary": "dass 从句补足主句的宾语或主语位置，动词末位，主句常用 es 占位。",
+    "body": "Ich glaube, dass er kommt.\nIch weiß, dass sie Recht hat.\n\n主语从句：主句用 es 占位\nEs ist wichtig, dass du pünktlich bist.\nEs freut mich, dass du kommst.\n\n宾语从句的替代：zu 不定式（主语一致时）\nIch hoffe, dass ich ihn sehe. -> Ich hoffe, ihn zu sehen.\n\n口语可省 dass，但语序保持（动词仍末位）\nIch glaube, er kommt.\n\n不能省 dass：从句在主句第一位\nDass er kommt, freut mich.\n\n同类连词：ob（是否）、wenn（如果）、weil、obwohl、dass 引导的间接引语",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读 dass 从句一节，抄出三个例句"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 Es ist wichtig, dass du pünktlich bist，说明 es 占位"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 Ich glaube, er kommt 改成带 dass 的从句，再放到句首"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释 dass 从句在句首时为什么不能省 dass"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出 dass 从句的两个功能、es 占位的条件"
+      }
+    ],
+    "selfCheck": [
+      "能构造 dass 从句",
+      "能说出 es 占位与 dass 不可省的条件"
+    ],
+    "estMinutes": 8
+  },
+  "german/cc-relative": {
+    "summary": "关系从句紧跟先行词，关系代词按其在从句里的角色变格，动词末位。",
+    "body": "Der Mann, der dort steht, ist mein Nachbar.      关系代词作主语（主格）\nDer Mann, den ich sehe, ist mein Nachbar.        作宾语（第四格）\nDer Mann, dem ich helfe, ist mein Nachbar.       作与格\nDer Mann, dessen Buch ich las, ist mein Nachbar. 二格作定语\n\n关系代词占从句第一位，动词末位 —— 从句内部也是句框\nDer Mann, [den ich gestern gesehen habe], ist mein Nachbar.\n（den 第一位，habe 与 gesehen 在末位）\n\n主句继续：主句动词仍在第二位\nDer Mann ist mein Nachbar.（从句插入不改变主句框架）\n\n介词 + 关系代词：介词决定格\nDie Stadt, in der ich wohne / Der Freund, mit dem ich reise\n\n易错：关系代词的格看从句，不看先行词\nDer Mann, dessen Buch ich las（先行词主格，关系代词属格）",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读关系从句一节，抄出四个格的例句"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 Der Mann, den ich sehe，说明 den 为什么是第四格"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 Der Mann hilft mir 改成关系从句，修饰 Der Mann"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释关系代词的格由什么决定"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出四个格的关系代词形式、介词短语的用法"
+      }
+    ],
+    "selfCheck": [
+      "能正确选关系代词的格",
+      "能构造带介词的关系从句"
+    ],
+    "estMinutes": 9
+  },
+  "german/cc-relative-special": {
+    "summary": "先行词是代词化、不定或整体性成分时用 was / wo，不用 der。",
+    "body": "用 was（先行词为不定代词或整句）\nDas ist alles, was ich weiß.\nEr hat mir geholfen, was mich freut.（指代整句）\nIch habe nichts, was mich interessiert.\nDas ist das Beste, was du tun kannst.\n\n用 wo（先行词为地名、时间）\nBerlin, wo ich geboren bin.\nDer Tag, wo wir uns trafen.（口语；书面常用 an dem）\nDie Stelle, wo das Unglück geschah.\n\n用 wer / was 的泛指关系句（无先行词）\nWer zu spät kommt, muss warten.\nWas du sagst, stimmt nicht.\n\nwas für 与 wofür\nDas, wofür ich mich interessiere, ...\n\n易错：先行词是 das 指代整句时用 was，不是 das\nEr kam zu spät, was mich ärgerte.",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读特殊关系代词一节，抄出 was / wo 各三例"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 Das ist alles, was ich weiß，说明为什么用 was"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 Er hat mir geholfen. Das freut mich. 合成一句用 was"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释先行词为整句时为什么用 was"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出 was 的三类先行词、wo 的两类先行词"
+      }
+    ],
+    "selfCheck": [
+      "能正确使用 was 与 wo",
+      "能说出 wer 泛指关系句的结构"
+    ],
+    "estMinutes": 9,
+    "criteria": [
+      {
+        "quiz": "q-cc-relative-special",
+        "statement": "能说出先行词是 alles / nichts 这类不定代词时关系代词用 was"
+      }
+    ]
+  },
+  "german/cc-time": {
+    "summary": "时间从句按「一次性 / 重复 / 同时 / 之前」分选 als、wenn、während、nachdem。",
+    "body": "als：过去的一次性事件\nAls ich zwölf war, zogen wir um.\nAls er ankam, war sie schon weg.\n\nwenn：现在或未来的重复、每次\nWenn ich Zeit habe, lese ich.\nImmer wenn es regnet, bleibt er zu Hause.\n\nwährend：同时进行\nWährend ich koche, hört er Musik.\n\nnachdem：主从句时态错开（从句先完成）\nNachdem er gegessen hatte, ging er los.\nNachdem sie angekommen ist, ruft sie an.\n\nbevor / bis\nBevor du gehst, ruf mich an.\nWarte, bis ich komme.\n\nseit / seitdem\nSeitdem er hier wohnt, ist er ruhiger.\n\n易错：als 只用过去一次性，wenn 用于现在与重复\n错误：Wenn ich zwölf war, ...（应为 Als）",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读时间从句一节，抄出 als / wenn / während / nachdem 四例"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 Als ich zwölf war 与 Wenn ich Zeit habe，说明两者条件"
+      },
+      {
+        "operator": "practice",
+        "instruction": "用 nachdem 造一句：先吃，再走"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释 als 与 wenn 的分工"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出四个时间连词各对应哪种时间关系"
+      }
+    ],
+    "selfCheck": [
+      "能正确选 als 与 wenn",
+      "能说出 nachdem 的时态要求"
+    ],
+    "estMinutes": 9
+  },
+  "german/cc-causal": {
+    "summary": "原因、条件、让步三类从句都用动词末位，靠连词区分逻辑关系。",
+    "body": "原因\nweil + 从句：Ich bleibe zu Hause, weil es regnet.\ndenn + 并列句（语序不变）：Ich bleibe zu Hause, denn es regnet.\ndeshalb / daher + 主句倒装：Es regnet, deshalb bleibe ich zu Hause.\n\n条件\nwenn / falls：Wenn du kommst, freue ich mich.\n虚拟条件（见 cc-konjunktiv-2）：Wenn ich Zeit hätte, ...\n\n让步\nobwohl（事实）：Obwohl es regnete, gingen wir spazieren.\nauch wenn（假定）：Auch wenn es regnet, gehe ich.\n\n目的\ndamit + 从句：Ich spreche langsam, damit du mich verstehst.\num ... zu + 不定式（主语一致）：Ich spreche langsam, um verstanden zu werden.\n\n易错：weil 与 denn 的语序完全不同\nweil es regnet（动词末位） / denn es regnet（动词第二位）",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读原因/条件/让步三类从句，抄出四组连词"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 weil es regnet 与 denn es regnet，说明语序差别"
+      },
+      {
+        "operator": "practice",
+        "instruction": "用 obwohl 与 auch wenn 各造一句，说明事实与假定的区别"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释 damit 与 um ... zu 的使用条件差别"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出原因、条件、让步、目的各两个连词"
+      }
+    ],
+    "selfCheck": [
+      "能区分 weil 与 denn 的语序",
+      "能正确选 damit 与 um ... zu"
+    ],
+    "estMinutes": 9
+  },
+  "german/cc-indirect-question": {
+    "summary": "间接疑问句用 ob（是非问）或疑问词（补充问），动词末位。",
+    "body": "是非问 -> ob\nEr fragt, ob ich komme.        原句：Kommst du?\nSie will wissen, ob das stimmt.\n\n补充问 -> 疑问词\nEr fragt, wann ich komme.      原句：Wann kommst du?\nSie fragt, wo ich wohne.\n\n介词疑问词\nEr fragt, worauf ich warte.\nIch weiß nicht, mit wem er spricht.\n\ndass 不带疑问语义，不能替换 ob\n错误：Er fragt, dass ich komme.\n\n语序：从句动词末位，与 dass 从句相同\n直接问：Kommst du? -> 间接问：..., ob du kommst.\n\n易错：间接问句里不用问号（整句是陈述）\nEr fragt, ob ich komme.（句末用句号）",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读间接疑问一节，抄出 ob 与疑问词各两例"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 Er fragt, ob ich komme 与其直接问句形式"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 Wann kommst du? 改成间接问句"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释为什么不能用 dass 替换 ob"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出两类间接问句的引导词、语序与标点"
+      }
+    ],
+    "selfCheck": [
+      "能构造两类间接问句",
+      "能说出 ob 与 dass 的语义差别"
+    ],
+    "estMinutes": 8,
+    "criteria": [
+      {
+        "quiz": "q-cc-indirect-question",
+        "statement": "能说出是非问转间接引语用 ob（是否），dass 不带疑问语义"
+      }
+    ]
+  },
+  "german/cc-konjunktiv-2": {
+    "summary": "第二虚拟式表非现实：与现在或过去事实相反，以及委婉请求。",
+    "body": "与现在事实相反\nWenn ich Zeit hätte, würde ich kommen.（其实没时间）\nWenn ich reich wäre, würde ich reisen.\n\n与过去事实相反（过去完成虚拟）\nWenn ich Zeit gehabt hätte, wäre ich gekommen.\nWenn er das gewusst hätte, hätte er geholfen.\n\n混合时间\nWenn ich damals studiert hätte, wäre ich jetzt Arzt.\n\n委婉请求与建议\nIch hätte gern einen Kaffee.\nKönnten Sie mir helfen? / Du solltest mehr schlafen.\n\n构成\n过去时词干 + 虚拟词尾（-e -est -e -en -et -en），强变化加变音\nkam -> käme / ging -> ginge / war -> wäre / hatte -> hätte\n替代形式：würde + 不定式（口语常用）\n\n易错：würde 只与不定式连用，不与第二分词叠加\n正确：Ich würde kommen. / Ich wäre gekommen.\n错误：Ich würde gekommen sein.",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读第二虚拟式一节，抄出与现在、与过去各两句"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 Wenn ich Zeit hätte 与 Wenn ich Zeit gehabt hätte，说明时态差别"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 Wenn ich reich bin, reise ich 改成反事实句"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释过去完成虚拟为什么要用 hätte / wäre + 第二分词"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出第二虚拟式的构成、两类反事实、委婉用法"
+      }
+    ],
+    "selfCheck": [
+      "能构造与现在、与过去相反的两类虚拟句",
+      "能说出 würde 的替代作用"
+    ],
+    "estMinutes": 9,
+    "criteria": [
+      {
+        "quiz": "q-cc-konjunktiv-2",
+        "statement": "能说出 Wenn ich Zeit hätte, würde ich kommen 是与现在事实相反的虚拟（第二虚拟式）"
+      }
+    ]
+  },
+  "german/cc-konjunktiv-1": {
+    "summary": "第一虚拟式用于间接引语，动词词干加 -e 词尾，与直陈现在时区分。",
+    "body": "直陈：Er sagt, er kommt.\n第一虚拟：Er sagt, er komme.（中性转述，不表态）\n\n变位（以 sein 最常用）\nsei seiest sei seien seiet seien\nhabe habest habe haben habet haben\nkomme kommest komme kommen kommet kommen\n\n过去：Er sagte, er sei gekommen.\n将来：Er sagte, er werde kommen.\n\n用途\n① 新闻与学术转述，保持距离\n② 报告他人话语而不认可其内容\n\n替代：第二虚拟式或 würde 形式（口语更常用，因为第一虚拟式常与直陈同形）\nEr sagt, er käme. / Er sagt, er würde kommen.\n\n易错：第一虚拟式第三人称单数是 -e（komme），不要与直陈第一人称混淆\nIch komme（直陈）与 er komme（虚拟）同形，靠主语与语境分",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读第一虚拟式一节，抄出 sein / haben / kommen 的变位"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 Er sagt, er kommt 与 Er sagt, er komme，说明差别"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 Er sagt: Ich habe keine Zeit 改成第一虚拟式转述"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释为什么口语更常用第二虚拟式替代"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出第一虚拟式的用途、sein 的变位、与直陈同形的问题"
+      }
+    ],
+    "selfCheck": [
+      "能构造第一虚拟式转述",
+      "能说出它与直陈同形时怎么区分"
+    ],
+    "estMinutes": 9
+  },
+  "german/cc-modal-particle": {
+    "summary": "情态小品词不改变句子真假，只调节语气与人际距离。",
+    "body": "doch    加强、反驳、催促\nKomm doch mit!（邀请）/ Das ist doch klar.（不言而喻）\nDu weißt das doch.（你明明知道）\n\nmal     弱化请求，使其随意\nGuck mal! / Komm mal her! / Warte mal.\n\nja      表示共识、惊讶或提醒\nDas ist ja interessant. / Du weißt ja, dass ...\nIch habe es ja gesagt.（我早说过）\n\nhalt / eben  无可奈何的接受\nDas ist halt so. / Dann müssen wir eben warten.\n\nwohl    推测\nEr ist wohl krank. / Das wird wohl stimmen.\n\ndenn    疑问句里的关切\nWas machst du denn? / Wo warst du denn?\n\n位置：中场，不能放句首，也不能在末位\n错误：Doch komm mit! / Komm mit doch!\n\n易错：小品词不能译成实词，只能靠语境体会（mal ≠ 一次，doch ≠ 但是）",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读情态小品词一节，抄出六个词及例句"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 Komm doch mit 与 Komm mal her，说明语气差别"
+      },
+      {
+        "operator": "practice",
+        "instruction": "给 Warte 加上 mal，再给 Das ist klar 加上 doch，体会变化"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释情态小品词为什么不改变句子的真假"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出六个小品词的语气功能、它们的位置限制"
+      }
+    ],
+    "selfCheck": [
+      "能说出四个小品词的语气功能",
+      "能说出小品词的位置限制"
+    ],
+    "estMinutes": 9
+  },
+  "german/cc-nominalization": {
+    "summary": "从句可以压成名词短语或介词短语，语体更书面，但信息密度上升。",
+    "body": "dass 从句 -> 名词化\nNachdem er angekommen war, ... -> Nach seiner Ankunft ...\nWeil er krank war, ... -> Wegen seiner Krankheit ...\n\nzu 不定式替代\nIch hoffe, dass ich ihn sehe. -> Ich hoffe, ihn zu sehen.\n\n介词 + 名词化（属格或 von）\nwegen / trotz / während / aufgrund + 属格\naufgrund der schlechten Wetterlage\n\n代价：施事与时间信息易丢，需要用定语补回\nnach seiner schnellen Ankunft in Berlin\n（seiner = 施事，schnellen = 方式，in Berlin = 地点）\n\n反向操作：名词短语还原成从句\nWegen des Regens blieben wir zu Hause. -> Weil es regnete, blieben wir zu Hause.\n\n易错：名词化的介词决定格，不能照搬原从句的格\nwegen + 属格，不是 wegen + 与格（正式文本）",
+    "steps": [
+      {
+        "operator": "read",
+        "instruction": "读名词化一节，抄出两组从句与名词短语的对应"
+      },
+      {
+        "operator": "example",
+        "instruction": "抄 Nachdem er angekommen war 与 Nach seiner Ankunft，说明信息怎么压缩"
+      },
+      {
+        "operator": "practice",
+        "instruction": "把 Weil es regnete, blieben wir zu Hause 压成介词短语"
+      },
+      {
+        "operator": "explain",
+        "instruction": "解释名词化会丢哪些信息，怎么补回"
+      },
+      {
+        "operator": "recall",
+        "instruction": "说出三种名词化路径、一个信息丢失的例子"
+      }
+    ],
+    "selfCheck": [
+      "能把从句压成名词短语",
+      "能说出名词化的信息代价"
+    ],
+    "estMinutes": 9
+  }
+}
