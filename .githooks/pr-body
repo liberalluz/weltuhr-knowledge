@@ -11,6 +11,7 @@
 #   `变更摘要` 与 `改动面` / `反证` / `如实登记` 的多行条目**都是缩进项目符号、
 #   一条一行、无编号前缀**（圈号 · 罗马 i. · 阿拉伯 1. 三种都不行）
 #   `反证` 须写明哪些没验
+#   PR / issue 号须写成显示链接 `[#N](…/pull/N)`（裸号 / 反引号包号都不行）
 #
 # 用法：
 #   bash .githooks/pr-body --file <正文.md> [--diff-base origin/main]   # 本地，开 PR 前
@@ -426,6 +427,36 @@ check_body() {
   fi
   [ "$nx" -eq 0 ] && ok '自审留痕与 AI 参与提到的文件都在本仓'
 
+  # 12 —— PR / issue 号须写成显示链接 `[#N](…/pull/N)`（2026-10-25 立，`#164` 踩坑）
+  # ⚠️ 为什么不是「裸写」：裸 `#NNN` 渲染成 `<a class="issue-link">` 后，页面会把它
+  #    **展开成「标题 + 号」**（`data-hovercard` 那一套）—— 一行「8 条历史笔」被撑成
+  #    八行标题；反引号包号则变 `<code>`、点不动。显示链接两头都占：文字由写的人定，
+  #    渲染后仍是 `<a href>`。
+  # ⚠️ 仓内标识（ADR 号 / 批次号 / 规格条 / §章节号）**不适用**本条 —— 它们不是 GitHub
+  #    对象、本来就不成链，仍用反引号。
+  # ⚠️ 判「反引号包号」只认**具体数字**：行内代码里写 `#NNN` 占位（讨论本条规则时的
+  #    反例）不算违规，否则这条判据会把自己的说明文字判红。
+  local nr=0 rest2
+  for l in "${BL[@]}"; do
+    case "$l" in
+      *'`#'[0-9]*'`'*)
+        bad "PR 号被反引号包住，点不动（改成显示链接）：$l"
+        nr=$((nr + 1))
+        continue
+        ;;
+    esac
+    strip_code "$l"
+    rest2="$SC"
+    while [[ "$rest2" =~ \[#[0-9]+\]\([^\)]*\) ]]; do
+      rest2="${rest2/"${BASH_REMATCH[0]}"/}"
+    done
+    if [[ "$rest2" =~ (^|[^[:alnum:]_])#[0-9]+ ]]; then
+      bad "PR 号写成裸号，页面会把它展开成「标题 + 号」（改成显示链接）：$l"
+      nr=$((nr + 1))
+    fi
+  done
+  [ "$nr" -eq 0 ] && ok 'PR 号均为显示链接'
+
   if [ "$fail" -ne 0 ]; then
     printf '\npr-body：有违规，改正文后重跑（不必重开 PR）\n'
     return 1
@@ -509,6 +540,10 @@ EOF
   # 负例九：正文提到本仓没有的路径（`#151` 列了五条不在本仓的改动）
   derive "$dir/bad9.md" "纯人工" \
     $'纯人工\n\n- `docs/nonexistent/file.md` 改了四处'
+  # 负例十：PR 号写成裸号（`#164` 的真实形态：页面上被展开成「标题 + 号」）
+  derive "$dir/bad10.md" "[#148](https://github.com/liberalluz/weltuhr-knowledge/pull/148)" "#148"
+  # 负例十一：PR 号被反引号包住（`#126` / `#164` 踩过：渲染成 `<code>`、点不动）
+  derive "$dir/bad11.md" "[#148](https://github.com/liberalluz/weltuhr-knowledge/pull/148)" '`#148`'
 
   printf -- '--- self-test 正例（应 exit 0）---\n'
   fail=0
@@ -520,7 +555,7 @@ EOF
   fi
 
   local n=0 nf
-  for nf in "$dir/bad1.md" "$dir/bad2.md" "$dir/bad3.md" "$dir/bad4.md" "$dir/bad5.md" "$dir/bad6.md" "$dir/bad7.md" "$dir/bad8.md" "$dir/bad9.md"; do
+  for nf in "$dir/bad1.md" "$dir/bad2.md" "$dir/bad3.md" "$dir/bad4.md" "$dir/bad5.md" "$dir/bad6.md" "$dir/bad7.md" "$dir/bad8.md" "$dir/bad9.md" "$dir/bad10.md" "$dir/bad11.md"; do
     n=$((n + 1))
     fail=0
     printf -- '--- self-test 负例 %d（应 exit 1）---\n' "$n"
