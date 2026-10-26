@@ -13,6 +13,7 @@
 | `BL-2` | `未登记` | 2026-10-17 | `app/` 客户端的全部已跟踪内容（三端脚手架 + `core/` 九份） | [`specs/controlled/scmp.md`](specs/controlled/scmp.md) §3.2 | **有**，见 §3.2 表（三端只验 Windows · 非 `dart format` 干净） |
 | `BL-3` | `未登记` | 2026-10-17 | `app/` 全部已跟踪内容 + `content/` 源数据与工具链 | [`specs/controlled/scmp.md`](specs/controlled/scmp.md) §3.4 | **有**，见 §3.4 表（帧率单机单窗口 · 合成场景虚线比例偏差 · `features/universe/` 是装置） |
 | `BL-4` | `1e0a7b4` | 2026-10-24 | `content/skeleton/` 的全部已跟踪内容 —— 三份官方目录原件（`source/`）+ 三份结构化 JSON + 抓取与抽取脚本；三轴 **3,375** 条（学科 199 · 专业 951 · 角色 2,225） | [`specs/controlled/scmp.md`](specs/controlled/scmp.md) §3.5 | **有**，见 §3.5 表（角色轴 `+52` 增补无法逐条证明 · 68 个小类无细类 · `skeleton` 包未构建） |
+| `BL-5` | `1027d6d` | 2026-10-26 | `app/` 全部已跟踪内容（`core/` **57** · `features/` **9** · `tool/` **11** · `test/` **78**）+ `content/` 三个载荷空间与骨架轴（含装配脚本，`dist/` 不入库）+ `docs/` 现状（`specs/` 根 **22** + `controlled/` **5** · `decisions/` **14**） | [`specs/controlled/scmp.md`](specs/controlled/scmp.md) §3.6 | **有**，见 §3.6 表（帧率单机单窗口 · 三端只验 Windows · 骨架包产物未验 · 两条旧缺口待重判或已空指） |
 
 ## 登记纪律
 
@@ -40,13 +41,19 @@
 | 标识单调递增 | `BL-n` 不复用，废弃不删号 |
 | 缺口写在登记处 | 带缺口仍可登记，但缺口必须写在本表「已知缺口」列 + `specs/controlled/scmp.md` 对应 §3.x 里，**不留口头** |
 
+### 四、已知缺口后来关闭了怎么记
+
+本文件「只 append 不改历史行」，`SCMP` §3.3 只允许「勘误」原地修正 —— 而**缺口关闭既不是勘误、也不该改历史行**：勘误是「当时写错了」，关闭是「当时写对了、后来条件变了」。两者混用，会让「这条缺口从未存在过」和「这条缺口被解决了」变成同一个动作，追溯时分不开。
+
+**判据**：在新基线该写的位置追一条「`BL-n` 的哪条缺口关闭 · 依据笔号 · 关闭边界」，旧行一字不动。**关闭边界必填** —— 判据只覆盖了一部分时（例如脚本已落但产物未验），写「路径已建、产物未验」，不写成「已构建」。
+
 ## 与 `SCMP` 的分工
 
 | 问题 | 查哪里 |
 |---|---|
 | 现在有哪些基线、哪天冻结、切在哪一刻 | **本文件** |
 | 哪些配置项受控、基线怎么切、何时该新开基线 | [`specs/controlled/scmp.md`](specs/controlled/scmp.md) §二 / §三 |
-| 某条基线具体由哪些笔组成、缺口是什么 | [`specs/controlled/scmp.md`](specs/controlled/scmp.md) §3.1 / §3.2 / §3.4 / §3.5 |
+| 某条基线具体由哪些笔组成、缺口是什么 | [`specs/controlled/scmp.md`](specs/controlled/scmp.md) §3.1 / §3.2 / §3.4 / §3.5 / §3.6 |
 | 交付物各自的版号分布 | [`specs/controlled/scmp.md`](specs/controlled/scmp.md) §5.1 |
 
 > 本文件与 `SCMP` 的分工由 [`decisions/0009-deliverables-dissolve.md`](decisions/0009-deliverables-dissolve.md) §1 定：**策略归 `SCMP`、登记归本文件**。在此之前登记写在 `SCMP` §三，两个「唯一权威处」不可能并存。
