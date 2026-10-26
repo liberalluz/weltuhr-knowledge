@@ -57,7 +57,7 @@ void main() {
       );
     });
 
-    test('TC-FND-013 两份边集交替调用互不污染，返回值改动不影响下次（`V1` 不物化闭包）', () {
+    test('TC-FND-013 两份边集交替调用互不污染，返回值改动不影响下次（SPEC-FND-005）', () {
       final List<PrerequisiteEdge> left = <PrerequisiteEdge>[_edge('a', 'b')];
       final List<PrerequisiteEdge> right = <PrerequisiteEdge>[_edge('x', 'y')];
 
