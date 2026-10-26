@@ -61,7 +61,7 @@ jobs:
           windows=false
           macos=false
           ios=false
-          if printf '%s\n' "$files" | grep -Eq '^app/'; then
+          if printf '%s\n' "$files" | grep -Eq '^app/(lib|test|tool|windows|macos|ios|pubspec|analysis_options)'; then
             windows=true
             macos=true
             ios=true
@@ -86,7 +86,9 @@ jobs:
         with:
           flutter-version: "3.47.7"
           channel: stable
-          cache: true
+          # Windows post-step cache save has hung repeatedly after a successful
+          # build; keep this job cache-free. The build is advisory, not gated.
+          cache: false
       - name: Dependencies
         run: flutter pub get
       - name: Build Windows
