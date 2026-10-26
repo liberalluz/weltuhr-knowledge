@@ -310,5 +310,100 @@ void main() {
         ),
       );
     });
+
+    test('TC-FND-016 terrain 的 `required` 条数与实扫不符即拒（无 SPEC：entity-fields §1 `edge_counts`）', () {
+      final String json = mutateM4((JsonMap pack) {
+        final JsonMap terrain = pack['terrain']! as JsonMap;
+        final JsonMap counts = terrain['edge_counts']! as JsonMap;
+        counts['required'] = 2;
+      });
+      expect(
+        () => readPack(json),
+        throwsA(
+          isA<PackContentException>().having(
+            (PackContentException e) => e.problems.join('\n'),
+            'problems',
+            allOf(contains('terrain.edge_counts.required'), contains('edges[]')),
+          ),
+        ),
+      );
+    });
+
+    test('TC-FND-017 `recommended` 条数与 `required` 一多一少、总数不变时仍拒（无 SPEC：同上）', () {
+      final String json = mutateM4((JsonMap pack) {
+        final JsonMap terrain = pack['terrain']! as JsonMap;
+        final JsonMap counts = terrain['edge_counts']! as JsonMap;
+        // 声明 2 + 1 = 3、实扫 1 + 2 = 3 —— **总数一样**，只有分类不同。
+        // 若解析器对「边总数」，这条会静默通过；而这两类在语义上不可互换
+        // （一类构成 `⪯`，一类不构成），所以必须分开对。
+        counts['required'] = 2;
+        counts['recommended'] = 1;
+      });
+      expect(
+        () => readPack(json),
+        throwsA(
+          isA<PackContentException>().having(
+            (PackContentException e) => e.problems.join('\n'),
+            'problems',
+            allOf(
+              contains('terrain.edge_counts.required'),
+              contains('terrain.edge_counts.recommended'),
+            ),
+          ),
+        ),
+      );
+    });
+
+    test('TC-FND-018 `axes_covered` 为空即拒（无 SPEC：entity-fields §1）', () {
+      final String json = mutateM4((JsonMap pack) {
+        (pack['terrain']! as JsonMap)['axes_covered'] = <String>[];
+      });
+      expect(
+        () => readPack(json),
+        throwsA(
+          isA<PackContentException>().having(
+            (PackContentException e) => e.problems.join('\n'),
+            'problems',
+            contains('不得为空'),
+          ),
+        ),
+      );
+    });
+
+    test('TC-FND-019 `axes_covered` 出现 `axes[]` 之外的轴即拒（无 SPEC：entity-fields §1，两份声明互相打脸）', () {
+      final String json = mutateM4((JsonMap pack) {
+        // `occupation` 是合法轴名，但 M4 的 `axes[]` 只声明了 `major`。
+        (pack['terrain']! as JsonMap)['axes_covered'] = <String>[
+          'major',
+          'occupation',
+        ];
+      });
+      expect(
+        () => readPack(json),
+        throwsA(
+          isA<PackContentException>().having(
+            (PackContentException e) => e.problems.join('\n'),
+            'problems',
+            allOf(contains('occupation'), contains('里没有的轴')),
+          ),
+        ),
+      );
+    });
+
+    test('TC-FND-020 `axes_covered` 元素重复即拒（无 SPEC：entity-fields §1）', () {
+      final String json = mutateM4((JsonMap pack) {
+        (pack['terrain']! as JsonMap)['axes_covered'] = <String>['major', 'major'];
+      });
+      expect(
+        () => readPack(json),
+        throwsA(
+          isA<PackContentException>().having(
+            (PackContentException e) => e.problems.join('\n'),
+            'problems',
+            contains('重复'),
+          ),
+        ),
+      );
+    });
   });
 }
