@@ -6,6 +6,18 @@
 
 本文件内所有相对路径**以本目录（`app/`）为基准**。
 
+## 编辑与平台规则
+
+仓库根 `.agents/rules/` 是 always-on 约束；细则仍以 `docs/` 为准，本文件不复制：
+
+| 文件 | 覆盖 |
+|---|---|
+| [`flutter-editing.md`](../.agents/rules/flutter-editing.md) | format / analyze / 层边界 / codegen 白名单 |
+| [`platform-common.md`](../.agents/rules/platform-common.md) | 条件导入 / 路径 / 插件支持 |
+| [`windows.md`](../.agents/rules/windows.md) | Windows 构建、工具链、签名边界 |
+| [`apple.md`](../.agents/rules/apple.md) | macOS / iOS 构建、签名与 entitlement |
+| [`docs-editing.md`](../.agents/rules/docs-editing.md) | 受控文档、单一来源、docs 批次 |
+
 ## 职责边界
 
 - **负责**：五视图渲染（宇宙 / 树 / 详情 / 定位结果 / 进展）· 定位匹配（纯规则，离线）· Planner 三段与实时预览 · Runner 执行与步骤游标 · 笔记渲染与导出 · 本地事件写入（带 HLC 戳）
