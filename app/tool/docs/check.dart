@@ -1,7 +1,10 @@
 /// 交付物一致性检查器。
 ///
-/// 用法（在 `app/` 下）：`dart run tool/docs/check.dart [仓库根]`
+/// 用法（在 `app/` 下）：`dart run tool/docs/check.dart [仓库根] [--fix]`
 /// 退出码：0 无问题（警告不算）· 1 有违规 · 2 参数 / 目录错误。
+///
+/// `--fix` 只自动修能从正文唯一推导的值（`D3` 用例数、`SCMP` §5.1 版号），
+/// 其余规则仍只报不改；修完会重新跑一遍，按剩余违规决定退出码。
 ///
 /// 与 `tool/lint/check.dart` 分工：那支管**代码**的架构不变量（`R1`–`R5`），这支管
 /// **受控文档之间的口径**（`D1`–`D5`）与**全仓 Markdown 的相对链接**（`D6`）。
@@ -18,6 +21,7 @@ library;
 
 import 'dart:io';
 
+import 'fix.dart';
 import 'rules.dart';
 
 /// `D6` 遍历时整棵跳过的目录。
@@ -35,9 +39,11 @@ const Set<String> linkSkipDirs = <String>{
 };
 
 void main(List<String> args) {
-  final List<String> positional =
-      args.where((String a) => !a.startsWith('-')).toList();
+  final List<String> positional = args
+      .where((String a) => !a.startsWith('-'))
+      .toList();
   final String repoRoot = positional.isEmpty ? '..' : positional.first;
+  final bool fix = args.contains('--fix');
 
   if (!Directory(repoRoot).existsSync()) {
     stderr.writeln('[docs] 仓库根不存在：$repoRoot（请在 app/ 下执行）');
@@ -63,14 +69,17 @@ void main(List<String> args) {
     exit(2);
   }
   final Map<String, String> tests = <String, String>{};
-  final List<File> testFiles = testDir
-      .listSync(recursive: true)
-      .whereType<File>()
-      .where((File f) => f.path.endsWith('.dart'))
-      .toList()
-    ..sort((File a, File b) => a.path.compareTo(b.path));
+  final List<File> testFiles =
+      testDir
+          .listSync(recursive: true)
+          .whereType<File>()
+          .where((File f) => f.path.endsWith('.dart'))
+          .toList()
+        ..sort((File a, File b) => a.path.compareTo(b.path));
   for (final File f in testFiles) {
-    final String rel = f.path.replaceAll(r'\', '/').replaceFirst(RegExp(r'^\./'), '');
+    final String rel = f.path
+        .replaceAll(r'\', '/')
+        .replaceFirst(RegExp(r'^\./'), '');
     // `STD` 落点列写的是仓库相对路径（`app/test/...`），键跟着它走。
     tests['app/$rel'] = f.readAsStringSync();
   }
@@ -85,13 +94,35 @@ void main(List<String> args) {
     markdown: markdown,
     repoPaths: repoPaths,
   );
-  final List<DocIssue> issues = checkAll(context);
-  final LinkScan links = scanLinks(context);
+  List<DocIssue> issues = checkAll(context);
+  LinkScan links = scanLinks(context);
 
-  final List<DocIssue> errors =
-      issues.where((DocIssue i) => !i.isWarning).toList();
-  final List<DocIssue> warnings =
-      issues.where((DocIssue i) => i.isWarning).toList();
+  if (fix) {
+    final FixResult fixed = applyFixes(repoRoot, docs);
+    for (final String change in fixed.changes) {
+      stdout.writeln('[docs] fix: $change');
+    }
+    for (final String error in fixed.errors) {
+      stderr.writeln('[docs] 无法自动修：$error');
+    }
+    if (fixed.changed) {
+      final DocContext updated = DocContext(
+        docs: docs,
+        tests: tests,
+        markdown: markdown,
+        repoPaths: repoPaths,
+      );
+      issues = checkAll(updated);
+      links = scanLinks(updated);
+    }
+  }
+
+  final List<DocIssue> errors = issues
+      .where((DocIssue i) => !i.isWarning)
+      .toList();
+  final List<DocIssue> warnings = issues
+      .where((DocIssue i) => i.isWarning)
+      .toList();
 
   for (final DocIssue i in <DocIssue>[...errors, ...warnings]) {
     stdout.writeln(i.toString());

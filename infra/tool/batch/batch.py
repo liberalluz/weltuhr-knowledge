@@ -251,6 +251,16 @@ def find_bash() -> str | None:
 
 
 def run_command(command: Sequence[str], cwd: Path) -> tuple[int, str, str]:
+    argv: list[str] | str = list(command)
+    shell = False
+    if os.name == "nt":
+        executable = shutil.which(argv[0])
+        if executable and executable.lower().endswith((".bat", ".cmd")):
+            # Dart/Flutter on Windows are .bat shims; CreateProcess cannot run
+            # them directly. shell=True goes through cmd.exe with one command
+            # string, avoiding the quote-escaping trap of `/c` + a list.
+            argv = subprocess.list2cmdline([executable, *argv[1:]])
+            shell = True
     with tempfile.TemporaryDirectory(prefix="batch-cmd-") as tmp:
         out_path = Path(tmp) / "stdout"
         err_path = Path(tmp) / "stderr"
@@ -258,8 +268,9 @@ def run_command(command: Sequence[str], cwd: Path) -> tuple[int, str, str]:
             "w", encoding="utf-8"
         ) as err:
             proc = subprocess.run(
-                list(command),
+                argv,
                 cwd=cwd,
+                shell=shell,
                 stdout=out,
                 stderr=err,
                 text=True,
@@ -408,9 +419,31 @@ def build_pr_body(card: dict[str, Any], changed: Sequence[str], evidence_text: s
     ]
     for item in items:
         lines.append(f"  - {item}")
+    lines.append("  - 未动：未声明")
+
+    stacks = sorted(
+        {
+            path.split("/", 1)[0]
+            for path in changed
+            if "/" in path and path.split("/", 1)[0] in {"app", "server", "content", "infra"}
+        }
+    )
+    if len(stacks) >= 2:
+        lines.extend(
+            [
+                "",
+                "| 模块 | 是否改动 | 说明 |",
+                "|---|---|---|",
+                *[
+                    f"| {stack} | {'是' if stack in stacks else '否'} | "
+                    f"{'本批有改动' if stack in stacks else '未改动'} |"
+                    for stack in ("app", "server", "content", "infra")
+                ],
+            ]
+        )
+
     lines.extend(
         [
-            "  - 未动：未声明",
             "- **版号**：不变 —— 未在 card 中声明版本变更",
             "- **反证**：",
             "  - 为推翻“改动超出 scope”，batch check 运行 scope 比对 → PASS",
