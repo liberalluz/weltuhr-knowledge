@@ -1,42 +1,35 @@
 #!/usr/bin/env python3
-"""Batch state CLI skeleton.
+"""Batch state and card CLI.
 
-C1 keeps this deliberately small: it discovers a batch directory, reads the
-state/scope/card files that later stages will write, and reports where the
-batch is. It does not create branches, cards or pull requests; those are C2/C4.
+C2 adds the human-owned batch card:
 
-Usage (from the repository root):
+    batch plan <id> --type ... --goal ... --allowed ...   # draft card.yaml
+    batch approve <id> --yes                              # hash-lock the card
+    batch start <id> [--no-branch]                        # branch + state + scope
+    batch status [--batch <id>] [--json]
+    batch list [--json]
 
-    python3 infra/tool/batch/batch.py status
-    python3 infra/tool/batch/batch.py status --batch M2 --json
-    python3 infra/tool/batch/batch.py list
-
-State layout (all under `.batch/`, gitignored):
-
-    .batch/active                 # optional: path to the current batch dir
-    .batch/<id>/state.json        # batch, type, branch, base, created_at
-    .batch/<id>/scope.json        # produced by the C2 card/approval step
-    .batch/<id>/card.yaml         # produced by C2 (optional here)
-    .batch/<id>/evidence.log      # produced by C3/C4 (optional here)
+The command is deliberately thin: it writes state under `.batch/`, then the
+existing scope guard and merge gate enforce the result.
 """
 
 from __future__ import annotations
 
 import argparse
+import getpass
 import json
 import subprocess
 import sys
 import tempfile
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Sequence
 
+from card import approve_card, read_card, verify_card, write_card
+from check import PROCESS_PATTERNS, sign_scope, verify_scope
+
 REPO_ROOT = Path(__file__).resolve().parents[3]
 DEFAULT_ROOT = REPO_ROOT / ".batch"
-
-try:
-    from check import verify_scope  # same directory; optional for status
-except Exception:  # pragma: no cover - only a degraded status path
-    verify_scope = None  # type: ignore[assignment]
 
 
 def _configure_stdio() -> None:
@@ -75,6 +68,10 @@ def load_json(path: Path) -> dict[str, Any] | None:
     except (FileNotFoundError, json.JSONDecodeError):
         return None
     return value if isinstance(value, dict) else None
+
+
+def root_path(root: Path) -> Path:
+    return root if root.is_absolute() else REPO_ROOT / root
 
 
 def resolve_batch(root: Path, batch_id: str | None) -> Path | None:
@@ -123,63 +120,91 @@ def changed_paths(base: str | None) -> list[str]:
     return sorted(paths)
 
 
+def read_card_safe(batch_dir: Path) -> tuple[dict[str, Any] | None, str | None]:
+    path = batch_dir / "card.yaml"
+    if not path.exists():
+        return None, None
+    try:
+        return read_card(path), None
+    except (OSError, ValueError) as exc:
+        return None, str(exc)
+
+
 def batch_payload(batch_dir: Path) -> dict[str, Any]:
     state = load_json(batch_dir / "state.json") or {}
     scope = load_json(batch_dir / "scope.json")
-    card = next(
-        (batch_dir / name for name in ("card.yaml", "card.yml", "card.md") if (batch_dir / name).exists()),
-        None,
-    )
+    card, card_error = read_card_safe(batch_dir)
     evidence = batch_dir / "evidence.log"
 
     base = state.get("base")
     changed = changed_paths(base if isinstance(base, str) else None)
     approval_error = None
-    if scope is not None and verify_scope is not None:
+    if scope is not None:
         approval_error = verify_scope(scope)
+    card_approval_error = verify_card(card) if card is not None else None
 
     if card is None:
         stage = "card"
+    elif card_approval_error:
+        stage = "approve"
     elif scope is None:
-        stage = "scope"
+        stage = "start"
     elif evidence.exists():
         stage = "pr"
     else:
         stage = "check"
 
     return {
-        "batch": state.get("batch") or batch_dir.name,
-        "type": state.get("type") or (scope or {}).get("type") or "(unknown)",
+        "batch": state.get("batch") or (card or {}).get("batch") or batch_dir.name,
+        "type": state.get("type")
+        or (card or {}).get("type")
+        or (scope or {}).get("type")
+        or "(unknown)",
         "stateDir": str(batch_dir),
-        "branch": state.get("branch") or current_branch(),
-        "base": base or "(unknown)",
+        "branch": state.get("branch") or (card or {}).get("branch") or current_branch(),
+        "base": base or (card or {}).get("base") or "(unknown)",
         "changed": changed,
+        "card": {
+            "present": card is not None,
+            "error": card_error,
+            "approvalError": card_approval_error,
+            "goal": (card or {}).get("goal"),
+        },
         "scope": {
             "present": scope is not None,
             "allowed": len((scope or {}).get("allowed") or []),
             "forbidden": len((scope or {}).get("forbidden") or []),
             "approvalError": approval_error,
         },
-        "card": str(card) if card else None,
         "evidence": str(evidence) if evidence.exists() else None,
         "stage": stage,
-        "next": "C2 card" if stage == "card" else "implement / C3 check",
+        "next": {
+            "card": "batch plan",
+            "approve": "batch approve",
+            "start": "batch start",
+            "check": "implement / C3 check",
+            "pr": "C4 batch pr",
+        }[stage],
     }
 
 
 def render_status(payload: dict[str, Any]) -> str:
     scope = payload["scope"]
+    card = payload["card"]
     approval = "missing"
     if scope["present"]:
         approval = scope["approvalError"] or "OK"
+    card_approval = "missing"
+    if card["present"]:
+        card_approval = card["error"] or card["approvalError"] or "OK"
     lines = [
         f"Batch: {payload['batch']} ({payload['type']})",
         f"State: {payload['stateDir']}",
         f"Branch: {payload['branch']}",
         f"Base: {payload['base']}",
         f"Changed: {len(payload['changed'])} paths",
+        f"Card: {card_approval}",
         f"Scope: {scope['allowed']} allowed / {scope['forbidden']} forbidden; approval: {approval}",
-        f"Card: {payload['card'] or 'missing'}",
         f"Evidence: {payload['evidence'] or 'missing'}",
         f"Stage: {payload['stage']}",
         f"Next: {payload['next']}",
@@ -187,8 +212,147 @@ def render_status(payload: dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
+def command_plan(args: argparse.Namespace) -> int:
+    root = root_path(args.root)
+    target = root / args.batch_id
+    card_path = target / "card.yaml"
+    if card_path.exists() and not args.force:
+        print(f"card already exists: {card_path} (use --force to replace draft)", file=sys.stderr)
+        return 1
+
+    branch = args.branch or (
+        f"process/{args.batch_id}" if args.type == "process" else f"{args.type}/{args.batch_id}"
+    )
+    code, out, _ = run_git(["rev-parse", args.base])
+    base = out if code == 0 and out else args.base
+    forbidden = args.forbidden or ([] if args.type == "process" else list(PROCESS_PATTERNS))
+
+    card = {
+        "batch": args.batch_id,
+        "type": args.type,
+        "goal": args.goal,
+        "branch": branch,
+        "base": base,
+        "allowed": args.allowed or [],
+        "forbidden": forbidden,
+        "acceptance": args.acceptance or [],
+        "platforms": args.platforms or [],
+        "docs": args.docs,
+        "size_budget": args.size_budget,
+    }
+    write_card(card_path, card)
+    print(f"card draft: {card_path}")
+    print("edit goal / allowed / acceptance / forbidden, then: batch approve " + args.batch_id)
+    return 0
+
+
+def command_approve(args: argparse.Namespace) -> int:
+    if not args.yes:
+        print("refusing approval: pass --yes after a human reviews the card", file=sys.stderr)
+        return 2
+    root = root_path(args.root)
+    target = root / args.batch_id
+    card_path = target / "card.yaml"
+    if not card_path.exists():
+        print(f"card not found: {card_path}", file=sys.stderr)
+        return 1
+    try:
+        card = read_card(card_path)
+    except (OSError, ValueError) as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 3
+    if not str(card.get("goal") or "").strip():
+        print("card.goal is required", file=sys.stderr)
+        return 1
+    if not card.get("allowed"):
+        print("card.allowed is required", file=sys.stderr)
+        return 1
+    approved = approve_card(card, args.by or getpass.getuser())
+    write_card(card_path, approved)
+    print(f"approved {args.batch_id}: {approved['approval']['hash']}")
+    return 0
+
+
+def command_start(args: argparse.Namespace) -> int:
+    root = root_path(args.root)
+    target = root / args.batch_id
+    card_path = target / "card.yaml"
+    if not card_path.exists():
+        print(f"card not found: {card_path}", file=sys.stderr)
+        return 1
+    try:
+        card = read_card(card_path)
+    except (OSError, ValueError) as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 3
+    approval_error = verify_card(card)
+    if approval_error:
+        print(approval_error, file=sys.stderr)
+        return 1
+
+    branch = str(card.get("branch") or "")
+    base = str(card.get("base") or "origin/main")
+    if not branch:
+        print("card.branch is required", file=sys.stderr)
+        return 1
+
+    if not args.no_branch:
+        exists = run_git(["rev-parse", "--verify", "--quiet", f"refs/heads/{branch}"])[0] == 0
+        if exists:
+            current = current_branch()
+            if current != branch:
+                code, out, err = run_git(["switch", branch])
+                if code != 0:
+                    print(f"error: cannot switch to {branch}: {err or out}", file=sys.stderr)
+                    return 3
+        else:
+            code, out, err = run_git(["switch", "-c", branch, base])
+            if code != 0:
+                print(f"error: cannot create {branch} from {base}: {err or out}", file=sys.stderr)
+                return 3
+
+    state = {
+        "batch": args.batch_id,
+        "type": card.get("type"),
+        "branch": branch,
+        "base": base,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    target.mkdir(parents=True, exist_ok=True)
+    (target / "state.json").write_text(
+        json.dumps(state, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+    )
+
+    scope = {
+        "batch": args.batch_id,
+        "type": card.get("type"),
+        "allowed": card.get("allowed") or [],
+        "forbidden": card.get("forbidden") or [],
+        "acceptance": card.get("acceptance") or [],
+        "platforms": card.get("platforms") or [],
+        "docs": card.get("docs"),
+    }
+    signed = sign_scope(scope, (card.get("approval") or {}).get("by"))
+    (target / "scope.json").write_text(
+        json.dumps(signed, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+    )
+
+    active = root / "active"
+    try:
+        active_value = str(target.relative_to(REPO_ROOT))
+    except ValueError:
+        active_value = str(target)
+    active.parent.mkdir(parents=True, exist_ok=True)
+    active.write_text(active_value + "\n", encoding="utf-8")
+
+    print(f"started {args.batch_id}: branch={branch} base={base}")
+    print(f"state: {target / 'state.json'}")
+    print(f"scope: {target / 'scope.json'}")
+    return 0
+
+
 def command_status(args: argparse.Namespace) -> int:
-    root = args.root if args.root.is_absolute() else REPO_ROOT / args.root
+    root = root_path(args.root)
     batch_dir = resolve_batch(root, args.batch)
     if batch_dir is None:
         print(f"no batch found under {root}", file=sys.stderr)
@@ -202,7 +366,7 @@ def command_status(args: argparse.Namespace) -> int:
 
 
 def command_list(args: argparse.Namespace) -> int:
-    root = args.root if args.root.is_absolute() else REPO_ROOT / args.root
+    root = root_path(args.root)
     rows: list[dict[str, Any]] = []
     if root.is_dir():
         for child in sorted(root.iterdir(), key=lambda path: path.name):
@@ -229,12 +393,38 @@ def command_list(args: argparse.Namespace) -> int:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Batch state CLI skeleton")
+    parser = argparse.ArgumentParser(description="Batch state and card CLI")
     parser.add_argument("--root", type=Path, default=DEFAULT_ROOT, help="batch state root")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
+    plan = subparsers.add_parser("plan", help="write a draft card.yaml")
+    plan.add_argument("batch_id")
+    plan.add_argument("--type", required=True)
+    plan.add_argument("--goal", default="")
+    plan.add_argument("--allowed", action="append", default=[])
+    plan.add_argument("--forbidden", action="append", default=[])
+    plan.add_argument("--acceptance", action="append", default=[])
+    plan.add_argument("--platforms", action="append", default=[])
+    plan.add_argument("--docs", default="none")
+    plan.add_argument("--size-budget", type=int, default=400)
+    plan.add_argument("--base", default="origin/main")
+    plan.add_argument("--branch")
+    plan.add_argument("--force", action="store_true")
+    plan.set_defaults(func=command_plan)
+
+    approve = subparsers.add_parser("approve", help="hash-lock a reviewed card")
+    approve.add_argument("batch_id")
+    approve.add_argument("--yes", action="store_true")
+    approve.add_argument("--by")
+    approve.set_defaults(func=command_approve)
+
+    start = subparsers.add_parser("start", help="create branch, state and scope")
+    start.add_argument("batch_id")
+    start.add_argument("--no-branch", action="store_true", help="state only; branch already exists")
+    start.set_defaults(func=command_start)
+
     status = subparsers.add_parser("status", help="show one batch")
-    status.add_argument("--batch", help="batch id; defaults to .batch/active or latest")
+    status.add_argument("--batch")
     status.add_argument("--json", action="store_true")
     status.set_defaults(func=command_status)
 
