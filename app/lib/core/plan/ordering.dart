@@ -24,6 +24,7 @@ import '../entities/method.dart';
 import '../entities/node.dart';
 import '../entities/scheme.dart';
 import '../enums.dart';
+import '../graph/precedence.dart';
 
 // ────────────────────────────── 源 ──────────────────────────────
 
@@ -116,10 +117,7 @@ SchemeOrderCost schemeOrderCost({
   int? blockedAt;
   String? blockedId;
 
-  for (final PrerequisiteEdge edge in edges) {
-    if (edge.strength != EdgeStrength.required) {
-      continue;
-    }
+  for (final PrerequisiteEdge edge in requiredEdgesOf(edges)) {
     final int? fromPos = position[edge.fromId];
     final int? toPos = position[edge.toId];
     if (fromPos == null || toPos == null) {
