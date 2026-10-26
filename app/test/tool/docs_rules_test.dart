@@ -510,5 +510,58 @@ void main() {
         reason: '只报「超了」不够 —— 得给出实测值，才知道要删多少',
       );
     });
+
+    test('TC-DOC-026 头部把历史表首行整句搬过来就报，判 error（无 SPEC：检查器规则）', () {
+      // 本判据量的是「抄」不是「长」。`STP` 曾把历史表那句
+      // 「6 条（新增 `TC-INF-063`：…），」搬进头部，压到 134 字之后
+      // 前两条判据一条都不响 —— 字数合规与没抄是两件事。
+      const String summary = '首次建立基线，内容为一份最小夹具，不含任何真实数据';
+      Map<String, String> docs = _patch(
+        _docs(),
+        stdFile,
+        '| `v0.1.0` | 2026-10-17 | 首建 |',
+        '| `v0.1.0` | 2026-10-17 | $summary |',
+      );
+      docs = _patch(
+        docs,
+        stdFile,
+        '> **状态**：§三 用例表 **2 条**',
+        '> **状态**：§三 用例表 **2 条**；$summary',
+      );
+
+      final List<DocIssue> got = _run(docs)
+          .where((DocIssue i) => i.ruleId == 'D7')
+          .toList();
+      expect(got, hasLength(1));
+      expect(got.single.file, stdFile);
+      expect(got.single.line, 1, reason: '多行字符串开头的换行被吃掉，状态行是第 1 行');
+      expect(
+        got.single.isWarning,
+        isFalse,
+        reason: 'warning 不阻断 —— 前两条判据就是这样被连续三笔「绿着交」的',
+      );
+      expect(got.single.message, contains('${summary.length} 字'));
+      expect(got.single.message, contains(summary));
+
+      // 反例：只有标识符重合不算抄 —— 阈值若定得比一个标识符还短，这条会红。
+      const String ident = '`GetSystemMetrics`';
+      Map<String, String> ok = _patch(
+        _docs(),
+        stdFile,
+        '| `v0.1.0` | 2026-10-17 | 首建 |',
+        '| `v0.1.0` | 2026-10-17 | 删掉 $ident 那一步 |',
+      );
+      ok = _patch(
+        ok,
+        stdFile,
+        '> **状态**：§三 用例表 **2 条**',
+        '> **状态**：§三 用例表 **2 条**；$ident 已不再使用',
+      );
+      expect(
+        _run(ok).where((DocIssue i) => i.ruleId == 'D7'),
+        isEmpty,
+        reason: '标识符与版号必须写全，那是正当重合，不该被这条判据反咬',
+      );
+    });
   });
 }
