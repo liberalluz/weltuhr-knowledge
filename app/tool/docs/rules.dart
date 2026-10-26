@@ -1164,17 +1164,95 @@ String _delta(Set<String> scanned, int claimed) {
 
 /// 头部状态行超过这个字数就警告。
 ///
-/// 取 600 的依据：`#143` 压缩后的实测值是 `SCMP` 454 · `STD` 432 · `SDD` 240 ·
-/// `STP` 131，留约一倍余量。不取 1000 —— 那等于不管，压缩前 `SCMP` 是 **5,809**；
-/// 也不取 200 —— 「本笔契约变化 + 本笔的发现」两件事 450 字才说得清，阈值压到
-/// 叙述装不下，人只会删事实而不是删重复。
-const int headerStatusMaxChars = 600;
+/// 取 200 的依据是**规则本体**：这一行只装两句 ——「现在是什么」+「本笔改了什么」。
+/// 实测三份按这两句写是 `STD` 160 · `STP` 134 · `SCMP` 96，200 留出把事实说全的余量；
+/// 而「本笔为什么这么改」属历史表的「修订摘要」列，写在这里就是抄第二份。
+///
+/// ⚠️ **原为 600，2026-10-26 收到 200**：600 是照着 `#143` 压缩后的实测值
+/// （`SCMP` 454 · `STD` 432 · `SDD` 240 · `STP` 131）定的「留一倍余量」，
+/// 但那四个值本身就说明 `#143` 只把 5,809 压到了「一段」，没压到「一句」。
+/// 于是三笔之内头部又涨回 444–579：**没超 600 ⇒ 检查器全绿 ⇒ 当成合规**，
+/// 而规则本体（别在头部抄历史表）一次都没被检查过。
+/// 教训：阈值按「本体能装下多少」定，不按「上一版实际多大」定。
+const int headerStatusMaxChars = 200;
 
 /// 堆叠化石：出现即说明有人「把上一段降级、再追加一段」。
 ///
 /// 不收裸 `此前` —— 历史表的行里合法写「此前 597 → **608**」，那是叙述不是堆叠；
 /// 只收 `再此前`，它几乎只出现在堆叠链里。
 const List<String> headerStackMarks = <String>['的历史状态', '上一版', '上一笔', '再此前'];
+
+/// 头部状态行与历史表首行允许的**最长连续重合**字数。
+///
+/// 这条量的是「抄」，不是「长」——`STP` 曾把历史表那句
+/// 「6 条（新增 `TC-INF-063`：Win32 符号必须全部绑得上），」整句搬进头部，
+/// 压到 134 字后字数判据全绿，重合仍有 **41** 字。
+///
+/// 24 的依据是实测的**正当重合上限**：`STD` 19（`GetSystemMetrics` 这类
+/// 标识符必须写全）· `SCMP` 14（版号必须写全）· `SDD` 4，24 留 5 字余量。
+const int headerHistOverlapMaxChars = 24;
+
+/// 文末「历史（迁移前版号序列）」表的第一条数据行。
+///
+/// 只认 `## 历史` 这一节之后第一条以 `| \`v` 开头的行 —— 表头与分隔行
+/// 不含版号，跳过；本节之前的任何表格不参与。
+String? _firstHistoryRow(List<String> lines) {
+  int start = -1;
+  for (int i = 0; i < lines.length; i++) {
+    if (lines[i].startsWith('## 历史')) {
+      start = i;
+      break;
+    }
+  }
+  if (start < 0) {
+    return null;
+  }
+  for (int i = start + 1; i < lines.length; i++) {
+    if (lines[i].startsWith('| `v')) {
+      return lines[i];
+    }
+  }
+  return null;
+}
+
+/// 两行的最长连续公共子串。滚动数组，只留两行。
+_Overlap _longestOverlap(String a, String b) {
+  int best = 0;
+  int endA = 0;
+  List<int> prev = List<int>.filled(b.length + 1, 0);
+  List<int> cur = List<int>.filled(b.length + 1, 0);
+  for (int i = 1; i <= a.length; i++) {
+    for (int j = 1; j <= b.length; j++) {
+      if (a.codeUnitAt(i - 1) == b.codeUnitAt(j - 1)) {
+        cur[j] = prev[j - 1] + 1;
+        if (cur[j] > best) {
+          best = cur[j];
+          endA = i;
+        }
+      } else {
+        cur[j] = 0;
+      }
+    }
+    final List<int> swap = prev;
+    prev = cur;
+    cur = swap;
+    for (int k = 0; k < cur.length; k++) {
+      cur[k] = 0;
+    }
+  }
+  return _Overlap(best, a.substring(endA - best, endA));
+}
+
+/// [`_longestOverlap`] 的返回值。用类不用 record —— 本文件全篇显式类型。
+class _Overlap {
+  const _Overlap(this.length, this.text);
+
+  final int length;
+  final String text;
+}
+
+/// 报错时把重合片段截断，太长会撑爆一行。
+String _clipOverlap(String s) => s.length <= 40 ? s : '${s.substring(0, 40)}…';
 
 /// `D7`：受控四份的头部只写当前，不写历史。
 ///
@@ -1185,12 +1263,25 @@ const List<String> headerStackMarks = <String>['的历史状态', '上一版', '
 /// `D5` 的「结构消灭：只有一个地方能写」说的都是这件事。`#143` 已压到单句，
 /// 本规则防回涨。
 ///
-/// **两条判据**（都报 warning）：
+/// **三条判据**（前两条 `warning`，第三条 `error`）：
 /// 1. 第一个 `## ` 之前不得出现 [headerStackMarks] 任一；
-/// 2. `> **状态**：` 那一行不得超过 [headerStatusMaxChars] 字。
+/// 2. `> **状态**：` 那一行不得超过 [headerStatusMaxChars] 字；
+/// 3. 该行与历史表首行不得有 ≥ [headerHistOverlapMaxChars] 的**连续重合**。
 ///
-/// 为什么是 warning 不是 error：头部臃肿是**信息组织**问题，不是两个数打架 ——
-/// 与 `D5`「缺当前读数节只警告」同一档。要它阻断，先改 `isWarning`。
+/// 前两条为什么是 warning：头部臃肿是**信息组织**问题，不是两个数打架 ——
+/// 与 `D5`「缺当前读数节只警告」同一档。
+///
+/// ⚠️ **第三条为什么是 error**：前两条是 `warning`，而 warning 不阻断 ⇒
+/// 2026-10-26 三笔连续「全绿着交」，头部与历史表逐句同义。**一条抓不住错的
+/// 判据判 warning，等于给它自己和违规同时开了绿灯**。第三条量与长无关，
+/// 只量「是不是把历史表那句搬过来了」，判错就是搬了，没有中间态。
+///
+/// ⚠️ **三条都是代理，不是本体**。本体是「头部与历史表的修订摘要列不得是
+/// 同一批事实的两份副本」；三条只抓得住其中三种形态（堆叠词、过长、整句照搬）。
+/// 第三条仍抓不住「同义改写」—— 换了词、换了语序的复述照样能过。
+/// 2026-10-26 实测：把事故复盘写成 444–579 字、避开四个堆叠词，两条全绿，
+/// 而头部与历史表 `v0.81.0` 行逐句同义 —— **全绿只证明「不是这三种形态」**，
+/// 剩下的只能靠人把两行并排读一遍。
 ///
 /// ⚠️ **只扫第一个 `## ` 之前**：历史表在那之后，表行里的「此前」是合法叙述，
 /// 全文件扫会把六份历史表全部误报 —— 一条会误报的规则活不过三次改动。
@@ -1212,7 +1303,13 @@ List<DocIssue> checkD7HeaderBlock(DocContext c) {
 
     final Set<String> reported = <String>{};
     bool statusReported = false;
+    String? statusLine;
+    int statusLineNo = 0;
     for (int i = 0; i < headEnd; i++) {
+      if (statusLine == null && lines[i].startsWith('> **状态**')) {
+        statusLine = lines[i];
+        statusLineNo = i + 1;
+      }
       for (final String mark in headerStackMarks) {
         if (reported.contains(mark) || !lines[i].contains(mark)) {
           continue;
@@ -1243,6 +1340,27 @@ List<DocIssue> checkD7HeaderBlock(DocContext c) {
             isWarning: true,
           ),
         );
+      }
+    }
+
+    if (statusLine != null) {
+      final String? histRow = _firstHistoryRow(lines);
+      if (histRow != null) {
+        final _Overlap overlap = _longestOverlap(statusLine, histRow);
+        if (overlap.length >= headerHistOverlapMaxChars) {
+          out.add(
+            DocIssue(
+              ruleId: 'D7',
+              file: f,
+              line: statusLineNo,
+              message:
+                  '头部状态行与历史表首行有 ${overlap.length} 字连续重合'
+                  '（「${_clipOverlap(overlap.text)}」）—— '
+                  '只写当前，逐版摘要归文末表，别搬第二份',
+              isWarning: false,
+            ),
+          );
+        }
       }
     }
   }
