@@ -26,8 +26,14 @@
 /// 由调用方退回「说清楚基准尺寸，等人手调」的老路。它只把前提自动化，不承担
 /// 测量是否成立。
 ///
-/// 只取**前台窗口**并校验进程号：`SetWindowPos` 用错句柄会把别人正在用的窗口
-/// 改成 `1920×1080`，那比设不上更糟 —— 所以宁可返回 `null`。
+/// 取窗口时**校验进程号**：`SetWindowPos` 用错句柄会把别人正在用的窗口改成
+/// `1920×1080`，那比设不上更糟 —— 所以找不到本进程的窗口就返回 `null`。
+///
+/// ## 为什么要把它提到前台
+///
+/// 尺寸设对但窗口留在后台，Windows 会判它**被遮挡**、引擎跳过光栅 ⇒ 采样期一个
+/// `FrameTiming` 都收不到（实测 20 秒 0 个帧间隔）。所以设完尺寸还要
+/// `BringWindowToTop` + `SetForegroundWindow` —— 那不是为了好看，是为了有帧。
 library;
 
 import 'dart:ffi';
@@ -70,11 +76,12 @@ const int _swpShowWindow = 0x0040;
 const int _smCxScreen = 0;
 const int _smCyScreen = 1;
 const int _lmemZeroInit = 0x0040;
+const int _swRestore = 9;
 
-/// 把前台窗口设成 [width]×[height] 物理像素的无边框客户区，并居中。
+/// 把本进程的窗口设成 [width]×[height] 物理像素的无边框客户区、居中、并**提到前台**。
 ///
-/// 成功返回设定值；任何一步不成立返回 `null`（非 Windows、拿不到本进程的前台
-/// 窗口、API 绑定失败、`SetWindowPos` 返回 0）。
+/// 成功返回设定值；任何一步不成立返回 `null`（非 Windows、找不到本进程的可见
+/// 顶层窗口、API 绑定失败、`SetWindowPos` 返回 0）。
 BenchWindowFit? fitBenchWindow({required int width, required int height}) {
   if (!Platform.isWindows) {
     return null;
@@ -83,10 +90,13 @@ BenchWindowFit? fitBenchWindow({required int width, required int height}) {
   if (win32 == null) {
     return null;
   }
-  final int hWnd = win32.getForegroundWindow();
-  if (hWnd == 0 || !_isOwnWindow(win32, hWnd)) {
+  final int? window = _ownWindow(win32);
+  if (window == null) {
     return null;
   }
+  final int hWnd = window;
+  // 最小化的窗口改尺寸不会显示出来，先还原。
+  win32.showWindow(hWnd, _swRestore);
   final int style = win32.getWindowLongPtr(hWnd, _gwlStyle);
   final int framelessStyle = style & ~(_wsCaption | _wsThickFrame);
   win32.setWindowLongPtr(hWnd, _gwlStyle, framelessStyle);
@@ -106,6 +116,11 @@ BenchWindowFit? fitBenchWindow({required int width, required int height}) {
   if (ok == 0) {
     return null;
   }
+  // ⚠️ **必须在最后提到前台**，而且这不是「好看一点」：后台窗口会被 Windows 判成
+  // 被遮挡（occluded），引擎跳过光栅 ⇒ 采样期一个 `FrameTiming` 都收不到（实测
+  // 20 秒 0 帧间隔）。窗口尺寸设对了但没到前台，读数是零样本。
+  win32.bringWindowToTop(hWnd);
+  win32.setForegroundWindow(hWnd);
   return BenchWindowFit(
     width: width,
     height: height,
@@ -124,30 +139,75 @@ _Win32? _bind() {
   }
 }
 
-/// 句柄属于本进程、且可见。
+/// 找出本进程那个**可见的顶层窗口**。
+///
+/// ⚠️ **不能用 `GetForegroundWindow`**：`flutter run` 从终端启动时前台是终端 ——
+/// 第一版正是这么写的，于是每次都拿到终端窗口、进程号对不上、返回 `null`，而错误
+/// 信息还写成「前台不是本进程的窗口」，把「窗口在后台」说成了「窗口不存在」。
+///
+/// 也没用 `FindWindowW`（按 `FLUTTER_RUNNER_WIN32_WINDOW` 类名找）：那要拼 UTF-16
+/// 串并依赖 runner 的私有类名，Flutter 升级改了名就静默失效。`EnumWindows` 只依赖
+/// 「本进程有一个可见顶层窗口」这个事实。
+int? _ownWindow(_Win32 win32) {
+  int? found;
+  final NativeCallable<_EnumProcNative> callable =
+      NativeCallable<_EnumProcNative>.isolateLocal(
+    (int hWnd, int lParam) {
+      if (win32.isWindowVisible(hWnd) == 0) {
+        return 1; // 继续枚举
+      }
+      if (_processIdOf(win32, hWnd) != win32.getCurrentProcessId()) {
+        return 1;
+      }
+      found = hWnd;
+      return 0; // 找到了，停
+    },
+    // 回调不该抛错，但真抛了也不能让枚举继续 —— 用 `0`（停止）当异常返回，
+    // 于是「找不到窗口」与「回调出错」都表现为返回 `null`，由调用方降级。
+    0,
+  );
+  try {
+    win32.enumWindows(callable.nativeFunction, 0);
+  } finally {
+    callable.close();
+  }
+  return found;
+}
+
+/// 句柄属于哪个进程。
 ///
 /// 进程号靠 `GetWindowThreadProcessId` 的第二个出参拿 —— 它要一块可写内存，
 /// 而 `dart:ffi` 不自带分配器（本项目零运行时依赖）。用 `LocalAlloc` / `LocalFree`：
 /// 4 字节的临时缓冲，不引 `package:ffi` 只为这两个函数。
-bool _isOwnWindow(_Win32 win32, int hWnd) {
-  if (win32.isWindowVisible(hWnd) == 0) {
-    return false;
-  }
+int _processIdOf(_Win32 win32, int hWnd) {
   final int memory = win32.localAlloc(_lmemZeroInit, 4);
   if (memory == 0) {
-    return false;
+    return -1;
   }
   try {
     win32.getWindowThreadProcessId(hWnd, memory);
-    return Pointer<Uint32>.fromAddress(memory).value ==
-        win32.getCurrentProcessId();
+    return Pointer<Uint32>.fromAddress(memory).value;
   } finally {
     win32.localFree(memory);
   }
 }
 
-typedef _GetForegroundWindowC = IntPtr Function();
-typedef _GetForegroundWindowD = int Function();
+typedef _EnumProcNative = Int32 Function(IntPtr hWnd, IntPtr lParam);
+
+typedef _EnumWindowsC = Int32 Function(
+  Pointer<NativeFunction<_EnumProcNative>> lpEnumFunc,
+  IntPtr lParam,
+);
+typedef _EnumWindowsD = int Function(
+  Pointer<NativeFunction<_EnumProcNative>> lpEnumFunc,
+  int lParam,
+);
+
+typedef _IntPtrIntC = Int32 Function(IntPtr hWnd, Int32 nCmdShow);
+typedef _IntPtrIntD = int Function(int hWnd, int nCmdShow);
+
+typedef _IntPtrToIntC = Int32 Function(IntPtr hWnd);
+typedef _IntPtrToIntD = int Function(int hWnd);
 
 typedef _GetWindowLongPtrC = IntPtr Function(IntPtr hWnd, Int32 nIndex);
 typedef _GetWindowLongPtrD = int Function(int hWnd, int nIndex);
@@ -206,8 +266,13 @@ class _Win32 {
   _Win32() {
     final DynamicLibrary user32 = DynamicLibrary.open('user32.dll');
     final DynamicLibrary kernel32 = DynamicLibrary.open('kernel32.dll');
-    getForegroundWindow = user32.lookupFunction<
-        _GetForegroundWindowC, _GetForegroundWindowD>('GetForegroundWindow');
+    enumWindows =
+        user32.lookupFunction<_EnumWindowsC, _EnumWindowsD>('EnumWindows');
+    showWindow = user32.lookupFunction<_IntPtrIntC, _IntPtrIntD>('ShowWindow');
+    bringWindowToTop = user32
+        .lookupFunction<_IntPtrToIntC, _IntPtrToIntD>('BringWindowToTop');
+    setForegroundWindow = user32
+        .lookupFunction<_IntPtrToIntC, _IntPtrToIntD>('SetForegroundWindow');
     getWindowLongPtr = user32.lookupFunction<
         _GetWindowLongPtrC, _GetWindowLongPtrD>('GetWindowLongPtrW');
     setWindowLongPtr = user32.lookupFunction<
@@ -228,7 +293,13 @@ class _Win32 {
     localFree = kernel32.lookupFunction<_LocalFreeC, _LocalFreeD>('LocalFree');
   }
 
-  late final int Function() getForegroundWindow;
+  late final int Function(
+    Pointer<NativeFunction<_EnumProcNative>> lpEnumFunc,
+    int lParam,
+  ) enumWindows;
+  late final int Function(int hWnd, int nCmdShow) showWindow;
+  late final int Function(int hWnd) bringWindowToTop;
+  late final int Function(int hWnd) setForegroundWindow;
   late final int Function(int hWnd, int nIndex) getWindowLongPtr;
   late final int Function(int hWnd, int nIndex, int dwNewLong) setWindowLongPtr;
   late final int Function(

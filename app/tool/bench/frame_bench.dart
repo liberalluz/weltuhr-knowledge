@@ -19,6 +19,11 @@
 /// 而 `R-22` 要的正是可复跑。现在装置启动时自己把窗口设成那个尺寸（`window_fit.dart`
 /// 去掉边框后客户区等于窗口矩形），判定一律读视口的 `physicalSize`。
 ///
+/// ⚠️ 设完之后还要把窗口**提到前台**。这不是锦上添花：后台窗口会被 Windows 判成
+/// 被遮挡（occluded），引擎跳过光栅 ⇒ 采样期一个 `FrameTiming` 都收不到。实测过
+/// 一次「尺寸全对、20 秒 0 个帧间隔」，报出来的却是「样本不足」—— 那句话把人引向
+/// 采样时长，而问题在窗口没到前台。
+///
 /// ⚠️ **逻辑像素不是物理像素**：`MediaQuery.sizeOf` 给的是逻辑尺寸。两者在 100%
 /// 缩放下恰好相等，于是「读错了单位」在那种机器上永远看不见 —— 到 125% 缩放的
 /// 机器上逻辑宽 `1536` 永远够不到基准 `1920`，装置只会安静地等到超时，而那段
@@ -92,9 +97,10 @@ const Duration benchGatePoll = Duration(milliseconds: 200);
 
 /// 最多尝试自动设窗几次。
 ///
-/// 不止一次是因为「前台窗口不是本进程」可以自愈：装置起来时窗口可能还没抢到
-/// 前台，人点一下就有了。15 次 × 200 ms ≈ 3 秒 —— 再久也等不到，那时该说清楚
-/// 失败原因，而不是继续每 200 ms 调一次 `SetWindowPos`。
+/// 正常情况下第一次就成 —— `EnumWindows` 找的是**本进程**的窗口，不看谁在前台
+/// （第一版用 `GetForegroundWindow`，从终端 `flutter run` 起来时拿到的永远是终端）。
+/// 留多次是为了「窗口还没建出来」这类启动竞态：15 次 × 200 ms ≈ 3 秒。再久就不再
+/// 反复调 `SetWindowPos` 了 —— 那会跟人抢焦点，而失败原因该由一行日志说清。
 const int benchFitTries = 15;
 
 void main() {
@@ -225,8 +231,11 @@ class _TreeBenchState extends State<_TreeBench>
   }
 
   /// 把窗口设成基准客户区。失败不阻断 —— 只把「为什么等不到」说出来。
+  ///
+  /// 设上了就不再试：反复调 `SetWindowPos` + `SetForegroundWindow` 会跟人抢焦点，
+  /// 而窗口一旦对了，后面只该由闸门判「视口跟上没跟上」。
   void _tryFitWindow() {
-    if (!Platform.isWindows || _fitTries >= benchFitTries) {
+    if (!Platform.isWindows || _fit != null || _fitTries >= benchFitTries) {
       return;
     }
     _fitTries++;
@@ -237,11 +246,12 @@ class _TreeBenchState extends State<_TreeBench>
     if (fit != null) {
       _fit = fit;
       stdout.writeln('frame_bench: 窗口已设成 ${fit.width}x${fit.height}'
-          ' 物理客户区${fit.frameless ? '（无边框）' : '（边框没去掉，客户区会比设定值小）'}');
+          ' 物理客户区并提到前台'
+          '${fit.frameless ? '（无边框）' : '（边框没去掉，客户区会比设定值小）'}');
       return;
     }
     if (_fitTries >= benchFitTries) {
-      stdout.writeln('frame_bench: 没能自动设窗口（前台不是本进程的窗口？）'
+      stdout.writeln('frame_bench: 没能自动设窗口（枚举不到本进程的可见顶层窗口？）'
           '—— 请手动把客户区调成 ${frameBenchWidth.toInt()}x'
           '${frameBenchHeight.toInt()} 物理像素，否则本组读数不可按 C-32 解释');
     }
@@ -385,7 +395,9 @@ class _TreeBenchState extends State<_TreeBench>
     final FrameSnapshot? snapshot = _stats.snapshot();
     if (tree == null || rootId == null || address == null || snapshot == null) {
       _fail(2, '样本不足：只有 ${_stats.intervals} 个帧间隔'
-          '（至少要 $frameStatsMinIntervals 个）');
+          '（至少要 $frameStatsMinIntervals 个）'
+          '${_stats.intervals == 0 ? ' —— 一帧都没有，先看窗口在不在前台：'
+              '后台窗口会被判成被遮挡，引擎跳过光栅，帧时序根本不产生' : ''}');
       return;
     }
     final double extents = _scroll.hasClients &&
