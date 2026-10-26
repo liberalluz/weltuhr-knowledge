@@ -10,6 +10,8 @@
   "defaultPrimaryAxis": "ability",
   "accent": "#8c1515",
   "order": 30,
+  "axis": "major",
+  "attach_to": "skeleton:major/050203",
   "domainIds": [
     "german/case-system",
     "german/noun-gender",

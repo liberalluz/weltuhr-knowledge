@@ -36,7 +36,7 @@ void main() {
     );
     expect(
       tree.childrenOf('skeleton:d-01').map((TreeRow r) => r.label).toList(),
-      <String>['马克思主义哲学', '编外方向'],
+      <String>['马克思主义哲学', '补充方向'],
       reason: '无码的排在有码的之后',
     );
   });

@@ -107,7 +107,7 @@ void main() {
     test('下划线只允许作为保留段前缀，且保留段不由作者使用（ADR-0005 决策 7）', () {
       expect(slugPattern.hasMatch('cs-core'), isTrue);
       expect(slugPattern.hasMatch('a1'), isTrue);
-      expect(slugPattern.hasMatch('_extra'), isFalse, reason: '`_` 不在字符集内');
+      expect(slugPattern.hasMatch('_reserved'), isFalse, reason: '`_` 不在字符集内');
       expect(slugPattern.hasMatch('Func'), isFalse);
       expect(slugPattern.hasMatch('func_2'), isFalse);
       expect(reservedSegmentPrefix, '_');

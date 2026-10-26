@@ -43,7 +43,7 @@ PackContent skeletonFixture() => fixturePack(
     ),
     FixtureNode(
       'skeleton:d-x',
-      '编外方向',
+      '补充方向',
       slot: LevelSlot.star,
       axis: Axis.discipline,
       parentId: 'skeleton:d-01',

@@ -9,5 +9,11 @@
   },
   "accent": "#3776ab",
   "order": 10,
-  "domainIds": ["python/basics", "python/functions", "python/oop"]
+  "domainIds": [
+    "python/basics",
+    "python/functions",
+    "python/oop"
+  ],
+  "axis": "major",
+  "attach_to": "skeleton:major/080901"
 }

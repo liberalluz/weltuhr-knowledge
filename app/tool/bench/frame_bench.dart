@@ -39,6 +39,7 @@ import 'dart:ui' show FramePhase, FrameTiming;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:project_knowledge/core/bench/bench_gate.dart';
 import 'package:project_knowledge/core/bench/frame_stats.dart';
 import 'package:project_knowledge/core/constants.dart';
 import 'package:project_knowledge/core/tree/tree_index.dart';
@@ -65,6 +66,17 @@ const Duration benchSweep = Duration(seconds: 8);
 /// 沿子链最多下钻多少级（到不了就停在叶子上）。
 const int benchMaxDrillDepth = 8;
 
+/// 等窗口进基准的最长时间（`C-33`）。
+///
+/// 3 秒的 [benchWarmup] 是给渲染管线热身的，不是给人调窗口的 —— 装置原来在这里
+/// 直接开测，于是人手还没拖完窗口，采样已经开始了。等多久是**耐心**而不是判据：
+/// 到点仍不是基准就照测，读数标 `premiseOk=false`，不让一次真机运行白跑。
+const Duration benchPremisePatience = Duration(seconds: 90);
+
+/// 等待期间多久看一次视口尺寸。取 200 ms：人手拖窗口是「松手才变」的，
+/// 再密也看不出更多，而每帧都查等于给待机状态凭空加负担。
+const Duration benchGatePoll = Duration(milliseconds: 200);
+
 /// 基准窗口提示 —— 打印给人看，不参与任何判据。
 const String benchWindowHint = '请把窗口客户区调成 1920x1080（C-33），否则读数只作参考';
 
@@ -90,6 +102,13 @@ class _TreeBenchState extends State<_TreeBench>
   late final AnimationController _sweep;
   Timer? _warmupTimer;
   Timer? _stopTimer;
+  Timer? _gateTimer;
+
+  /// 从「进入等待」开始计时，交给 [benchGate] 判耐心。
+  final Stopwatch _waited = Stopwatch();
+
+  /// 最近一次闸门判定，只用于界面提示（判据在 [benchGate] 里）。
+  BenchGate? _gate;
 
   TreeIndex? _tree;
   String? _rootId;
@@ -100,6 +119,14 @@ class _TreeBenchState extends State<_TreeBench>
   bool _finished = false;
   Size _windowSize = Size.zero;
   double _devicePixelRatio = 1;
+
+  /// 开测那一刻的视口尺寸 —— **读数行写它，不写「出读数时」的尺寸**。
+  ///
+  /// 采样跨 20 秒，这期间窗口完全可能被拖动；用末帧尺寸写进读数行，等于把
+  /// 一段跨两个尺寸的样本标成单一前提。冻结之后中途变过就记进 [_sizeDrifted]，
+  /// 由 [_report] 明说这组数不可解释，而不是悄悄取最后一帧。
+  Size _measureSize = Size.zero;
+  bool _sizeDrifted = false;
 
   @override
   void initState() {
@@ -114,6 +141,7 @@ class _TreeBenchState extends State<_TreeBench>
   @override
   void dispose() {
     SchedulerBinding.instance.removeTimingsCallback(_onTimings);
+    _gateTimer?.cancel();
     _warmupTimer?.cancel();
     _stopTimer?.cancel();
     _sweep.dispose();
@@ -149,6 +177,50 @@ class _TreeBenchState extends State<_TreeBench>
       _address = chain.last;
       _drillDepth = chain.length - 1;
     });
+    _awaitPremise();
+  }
+
+  /// 等视口进基准窗口（`C-33`）再开测。
+  ///
+  /// 判据本身在 [benchGate]，这里只管「每隔一会儿问一次、并把答案说给人听」。
+  /// 等的时候把当前尺寸与剩余时间显示在界面上：只往 stdout 打一行提示，等人的人
+  /// 看不见还剩几秒，于是会在采样开始之后才拖窗口 —— 那正是这一笔要修的东西。
+  void _awaitPremise() {
+    if (_finished) {
+      return;
+    }
+    _waited
+      ..reset()
+      ..start();
+    _gateTimer = Timer.periodic(benchGatePoll, (_) => _pollGate());
+    _pollGate();
+  }
+
+  void _pollGate() {
+    if (_finished) {
+      _gateTimer?.cancel();
+      return;
+    }
+    final BenchGate gate = benchGate(
+      width: _windowSize.width,
+      height: _windowSize.height,
+      waited: _waited.elapsed,
+      patience: benchPremisePatience,
+    );
+    if (gate == BenchGate.wait) {
+      setState(() => _gate = gate);
+      return;
+    }
+    _gateTimer?.cancel();
+    _waited.stop();
+    stdout.writeln(gate == BenchGate.start
+        ? 'frame_bench: 视口 ${_windowSize.width.toInt()}x'
+            '${_windowSize.height.toInt()} 已进基准窗口，预热 '
+            '${benchWarmup.inSeconds} s 后开测'
+        : 'frame_bench: 等了 ${benchPremisePatience.inSeconds} s 视口仍不是基准'
+            '（当前 ${_windowSize.width.toInt()}x'
+            '${_windowSize.height.toInt()}）—— 照测，但读数不可按 C-32 解释');
+    setState(() => _gate = gate);
     _warmupTimer = Timer(benchWarmup, _startMeasuring);
   }
 
@@ -173,6 +245,8 @@ class _TreeBenchState extends State<_TreeBench>
       return;
     }
     _stats.reset();
+    _measureSize = _windowSize;
+    _sizeDrifted = false;
     _collecting = true;
     _stopTimer = Timer(benchMeasure, _report);
   }
@@ -234,15 +308,23 @@ class _TreeBenchState extends State<_TreeBench>
     final BenchReport report = BenchReport(
       scenario: '$benchScenarioPrefix/root=$rootId/depth=$_drillDepth'
           '/rows=$rows/sweepMs=${benchSweep.inMilliseconds}',
-      windowWidth: _windowSize.width,
-      windowHeight: _windowSize.height,
+      windowWidth: _measureSize.width,
+      windowHeight: _measureSize.height,
       devicePixelRatio: _devicePixelRatio,
       snapshot: snapshot,
     );
     stdout.writeln('frame_bench: 场景 ${report.scenario}');
-    stdout.writeln('frame_bench: 窗口 ${_windowSize.width.toInt()}x'
-        '${_windowSize.height.toInt()} @${_devicePixelRatio}x'
+    stdout.writeln('frame_bench: 窗口 ${_measureSize.width.toInt()}x'
+        '${_measureSize.height.toInt()} @${_devicePixelRatio}x'
         ' ⇒ premiseOk=${report.premiseOk}');
+    if (_sizeDrifted) {
+      // 不进读数行：行里写的是开测时的尺寸，而这一句说的是「这组数跨了两个尺寸」。
+      // 两者放同一行的话，读的人会以为尺寸就是行里那个、只是标了一个 false。
+      stdout.writeln('frame_bench: ⚠️ 测中窗口变过（开测 '
+          '${_measureSize.width.toInt()}x${_measureSize.height.toInt()} → 现在 '
+          '${_windowSize.width.toInt()}x${_windowSize.height.toInt()}）'
+          '—— 本组读数不可按 C-33 解释');
+    }
     stdout.writeln(report.toLine());
     await stdout.flush();
     exit(0);
@@ -259,6 +341,9 @@ class _TreeBenchState extends State<_TreeBench>
   Widget build(BuildContext context) {
     _windowSize = MediaQuery.sizeOf(context);
     _devicePixelRatio = MediaQuery.devicePixelRatioOf(context);
+    if (_collecting && _windowSize != _measureSize) {
+      _sizeDrifted = true;
+    }
     final TreeIndex? tree = _tree;
     final String? address = _address;
     final String? rootId = _rootId;
@@ -267,21 +352,72 @@ class _TreeBenchState extends State<_TreeBench>
         body: Center(child: Text('frame_bench 正在装载包…')),
       );
     }
+    final Widget treeView = TreeView(
+      tree: tree,
+      rootId: rootId,
+      selectedId: address,
+      scrollController: _scroll,
+      onDrill: _noop,
+      onChangeRoot: _noop,
+    );
     return Scaffold(
       appBar: AppBar(
         title: TreeBreadcrumb(tree: tree, nodeId: address, onJump: _noop),
       ),
-      body: TreeView(
-        tree: tree,
-        rootId: rootId,
-        selectedId: address,
-        scrollController: _scroll,
-        onDrill: _noop,
-        onChangeRoot: _noop,
+      // 提示是**浮层**，不进 `Column`：它是给人在等待时看的，而任何改视口高度的
+      // 东西都会改掉被量的面积 —— 开测那一刻提示消失，读数就会与「没提示」时不同。
+      body: Stack(
+        children: <Widget>[
+          treeView,
+          if (_gate == BenchGate.wait && !_collecting)
+            Positioned(
+              left: 0,
+              right: 0,
+              top: 0,
+              child: _GateNotice(
+                width: _windowSize.width.toInt(),
+                height: _windowSize.height.toInt(),
+                remainSeconds: (benchPremisePatience - _waited.elapsed)
+                    .inSeconds
+                    .clamp(0, benchPremisePatience.inSeconds),
+              ),
+            ),
+        ],
       ),
     );
   }
 
   /// 装置里不接手势：剧本是滚，不是点。空实现比「假装能点」诚实。
   void _noop(String _) {}
+}
+
+/// 等待提示条：当前尺寸、还差多少、还剩几秒。
+///
+/// 不给「还差多少」的话，人会去猜 `C-33` 的容差；不给「还剩几秒」的话，人不知道
+/// 这件事故意会到期 —— 到点照测，不是失败。
+class _GateNotice extends StatelessWidget {
+  const _GateNotice({
+    required this.width,
+    required this.height,
+    required this.remainSeconds,
+  });
+
+  final int width;
+  final int height;
+  final int remainSeconds;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Theme.of(context).colorScheme.secondaryContainer,
+      child: Padding(
+        padding: const EdgeInsets.all(8),
+        child: Text(
+          '把窗口客户区调成 ${frameBenchWidth.toInt()}x${frameBenchHeight.toInt()}'
+          '（C-33）后自动开测 —— 当前 $width x $height · 还剩 $remainSeconds s',
+          style: Theme.of(context).textTheme.bodyMedium,
+        ),
+      ),
+    );
+  }
 }

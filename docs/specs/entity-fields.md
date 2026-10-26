@@ -46,7 +46,7 @@
 
 | kind | 字段 | 说明 |
 |---|---|---|
-| `payload` | `attach_to` | **节点 id**（非 path）。骨架已有该恒星时填其 id；编外节点填 `@extra/root` |
+| `payload` | `attach_to` | **节点 id**（非 path），必须是骨架里**真实存在**的那颗恒星。`@` 开头的令牌不算 id —— 装配出来的父边会悬空，而包照样读得进 |
 | | `subtree_root` | `star` / `system` —— 本包提供的最上层槽位 |
 | | `level_range` | 实际覆盖的槽位区间 |
 | | `counts` | `{star, system, planet}` —— **必须分级**：`Node` = 行星层，七步能否跑取决于 planet 数 |
@@ -77,7 +77,7 @@
 | `level_slot` | enum | **语义槽位，不是深度序号**。取值见下表 |
 | `official_code` | string? | **可空**。学科轴 676 个二级/方向属「自设方向·无国标码」 |
 | `name` | string | 展示名 |
-| `slug` | string | path 段。`^[a-z0-9-]+$`；`_` 开头为保留段（如 `_extra`） |
+| `slug` | string | path 段。`^[a-z0-9-]+$`；`_` 开头为保留段，只允许系统生成 |
 | `scope` | enum | `S0` 官方 / `S1` 平台 / `S2` 机构 / `S3` 团队 / `S4` 个人 |
 | `pack_id` | string | 来源包；骨架为 `skeleton` |
 | `status` | enum | `live` / `tombstone` / `revoked` |
@@ -86,7 +86,7 @@
 | `type` | enum? | **仅可学项**：`declarative` / `procedural` / `skill` / `tacit` |
 | `layer` | enum? | **仅可学项**：`persistent` / `view` / `ephemeral` |
 | `requirements` | object? | **仅可学项**：六要件 × 三态，取值见下 |
-| `path` | string | **派生** = 父链 `slug` 串联。同子树内段数 = 该子树层数；官方与编外可不同。**16 条规则见 [`path-rules.md`](path-rules.md)**，本表不复述 |
+| `path` | string | **派生** = 父链 `slug` 串联。同子树内段数 = 该子树层数；不同轴的子树段数不同（官方目录逐轴不同）。**16 条规则见 [`path-rules.md`](path-rules.md)**，本表不复述 |
 | `inScope` | bool | **派生** = 是否在 `Plan.subtree_root` 子树下 |
 | `depth` | int | **派生** = `level_slot` 在轴内的序号，**仅供展示**，不得用于判据 |
 
