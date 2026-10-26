@@ -105,6 +105,22 @@ to `Stage: pr` when that file contains `RESULT: PASS`. `--quick` is scope-only
 and does not write evidence. `--no-format` / `--no-tests` are explicit escape
 hatches, not defaults.
 
+## Batch PR
+
+`batch pr` builds the v2 PR body from `card.yaml` and `evidence.log`, writes it
+to `.batch/<id>/pr-body.md`, and runs the same `pr-body` check as CI:
+
+```bash
+python3 infra/tool/batch/batch.py pr --batch B15-2 --base main
+# review .batch/B15-2/pr-body.md, then:
+python3 infra/tool/batch/batch.py pr --batch B15-2 --base main --create --yes
+```
+
+Without `--create` it only writes and validates; `--create` additionally requires
+`--yes` and calls `gh pr create`. Generated `N` counts the actual changed paths;
+edit the card/evidence and rerun rather than hand-editing the body when the count
+changes.
+
 ## Tests
 
 ```bash

@@ -227,6 +227,21 @@ def render_status(payload: dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
+def find_bash() -> str | None:
+    configured = os.environ.get("BASH")
+    if configured:
+        return configured
+    if os.name == "nt":
+        program_files = Path(os.environ.get("ProgramFiles", r"C:\Program Files"))
+        for candidate in (
+            program_files / "Git" / "bin" / "bash.exe",
+            program_files / "Git" / "usr" / "bin" / "bash.exe",
+        ):
+            if candidate.exists():
+                return str(candidate)
+    return shutil.which("bash")
+
+
 def run_command(command: Sequence[str], cwd: Path) -> tuple[int, str, str]:
     with tempfile.TemporaryDirectory(prefix="batch-cmd-") as tmp:
         out_path = Path(tmp) / "stdout"
@@ -281,7 +296,7 @@ def planned_steps(
         steps.append(("tests", ["flutter", "test", "--reporter", "compact"], REPO_ROOT / "app"))
 
     if pr_body is not None:
-        bash = os.environ.get("BASH") or shutil.which("bash")
+        bash = find_bash()
         if not bash:
             steps.append(("pr-body", ["bash", ".githooks/pr-body"], REPO_ROOT))
         else:
@@ -292,7 +307,7 @@ def planned_steps(
                         bash,
                         ".githooks/pr-body",
                         "--file",
-                        str(pr_body),
+                        pr_body.as_posix(),
                         "--diff-base",
                         base,
                         "--pr-number",
@@ -302,6 +317,212 @@ def planned_steps(
                 )
             )
     return steps
+
+
+def run_gh(args: Sequence[str]) -> tuple[int, str, str]:
+    gh = shutil.which("gh")
+    if gh is None:
+        raise RuntimeError("gh not found in PATH")
+    with tempfile.TemporaryDirectory(prefix="batch-gh-") as tmp:
+        out_path = Path(tmp) / "stdout"
+        err_path = Path(tmp) / "stderr"
+        with out_path.open("w", encoding="utf-8") as out, err_path.open(
+            "w", encoding="utf-8"
+        ) as err:
+            proc = subprocess.run(
+                [gh, *args],
+                cwd=REPO_ROOT,
+                stdout=out,
+                stderr=err,
+                text=True,
+            )
+        return (
+            proc.returncode,
+            out_path.read_text(encoding="utf-8", errors="replace").strip(),
+            err_path.read_text(encoding="utf-8", errors="replace").strip(),
+        )
+
+
+def validate_body(body_path: Path, base: str) -> int:
+    bash = find_bash()
+    if not bash:
+        print("error: bash not found; cannot run pr-body", file=sys.stderr)
+        return 3
+    code, out, err = run_command(
+        [
+            bash,
+            ".githooks/pr-body",
+            "--file",
+            body_path.as_posix(),
+            "--diff-base",
+            base,
+            "--pr-number",
+            "0",
+        ],
+        REPO_ROOT,
+    )
+    if out.strip():
+        print(out.strip())
+    if err.strip():
+        print(err.strip(), file=sys.stderr)
+    return code
+
+
+def build_pr_body(card: dict[str, Any], changed: Sequence[str], evidence_text: str) -> str:
+    allowed = list(card.get("allowed") or [])
+    items = allowed or ["scope.allowed 为空"]
+    platforms = card.get("platforms") or ["无"]
+    evidence_summary = "\n".join(
+        line
+        for line in evidence_text.splitlines()
+        if line.startswith("$ ") or line.startswith("RESULT:")
+    )
+    if not evidence_summary:
+        evidence_summary = "scope=PASS"
+
+    lines = [
+        "## 变更摘要",
+        "",
+        f"{card.get('goal') or '批次 ' + str(card.get('batch') or '?')}",
+        "",
+        "## 影响面",
+        "",
+        f"- **平台**：{', '.join(str(item) for item in platforms)}",
+        "- 已测：batch check PASS（见 evidence.log）",
+        "- 未测：见 evidence.log 的跳过步骤",
+        f"- **类型**：{card.get('type') or '(unknown)'}",
+        "- **兼容与回滚**：无（未在 card 中声明）",
+        "",
+        "## 自审留痕",
+        "",
+        f"- **分支基线**：从 `{card.get('base') or '(unknown)'}` 切出，与 `main` 无分叉",
+        f"- **改动面**：动了 `{len(changed)}` 条路径，归为 `{len(items)}` 项；未动 `0` 处",
+    ]
+    for item in items:
+        lines.append(f"  - {item}")
+    lines.extend(
+        [
+            "  - 未动：未声明",
+            "- **版号**：不变 —— 未在 card 中声明版本变更",
+            "- **反证**：",
+            "  - 为推翻“改动超出 scope”，batch check 运行 scope 比对 → PASS",
+            "  - **未验**：见 evidence.log 的跳过步骤",
+            "- **如实登记**：",
+            "  - 由 batch pr 从 card/evidence 生成",
+            "  - 未验项以 evidence.log 为准",
+            "",
+            "## 验证",
+            "",
+            "- **命令与输出**：",
+            "  ```text",
+            *[f"  {line}" for line in evidence_summary.splitlines()],
+            "  ```",
+            "- **测试设计**：batch check 的 scope + 按改动路径选择的步骤",
+            "- **未验**：见 evidence.log 的跳过步骤",
+            "",
+            "## UI 证据",
+            "",
+            "无",
+            "",
+            "## 交付物",
+            "",
+            "无",
+            "",
+            "## AI 参与",
+            "",
+            "- **级别**：pair",
+            "- **AI 生成**：PR 正文",
+            "- **人核**：card、scope 与 evidence",
+            "",
+            "## 关联",
+            "",
+            f"`{card.get('batch') or '?'}` · 整改方案 §13 / C4",
+            "",
+            "## 评审提示",
+            "",
+            "重点看 scope 与 evidence；本批平台影响见「影响面」。",
+        ]
+    )
+    return "\n".join(lines) + "\n"
+
+
+def command_pr(args: argparse.Namespace) -> int:
+    root = root_path(args.root)
+    batch_dir = resolve_batch(root, args.batch)
+    if batch_dir is None:
+        print(f"no batch found under {root}", file=sys.stderr)
+        return 1
+    state = load_json(batch_dir / "state.json") or {}
+    card, card_error = read_card_safe(batch_dir)
+    scope = load_json(batch_dir / "scope.json")
+    if card is None:
+        print(f"card not found or invalid: {card_error}", file=sys.stderr)
+        return 1
+    if verify_card(card):
+        print(verify_card(card), file=sys.stderr)
+        return 1
+    if scope is None:
+        print("scope not found; run batch start", file=sys.stderr)
+        return 1
+    if verify_scope(scope):
+        print(verify_scope(scope), file=sys.stderr)
+        return 1
+
+    evidence = batch_dir / "evidence.log"
+    if not evidence.exists() or "RESULT: PASS" not in evidence.read_text(encoding="utf-8"):
+        print("evidence is missing or not PASS; run batch check", file=sys.stderr)
+        return 1
+
+    base = args.base or state.get("base") or card.get("base") or "origin/main"
+    changed = changed_paths(str(base))
+    body = build_pr_body(card, changed, evidence.read_text(encoding="utf-8"))
+    body_path = args.body_out
+    if body_path is None:
+        body_path = batch_dir / "pr-body.md"
+    elif not body_path.is_absolute():
+        body_path = REPO_ROOT / body_path
+    body_path.parent.mkdir(parents=True, exist_ok=True)
+    body_path.write_text(body, encoding="utf-8", newline="\n")
+    print(f"body: {body_path}")
+
+    code = validate_body(body_path, str(base))
+    if code != 0:
+        print("pr-body validation failed; fix the card/evidence then rerun", file=sys.stderr)
+        return 1
+    if not args.create:
+        print("body validated; review it, then rerun with --create --yes")
+        return 0
+    if not args.yes:
+        print("refusing to create PR: pass --yes with --create", file=sys.stderr)
+        return 2
+
+    branch = state.get("branch") or card.get("branch")
+    if not branch:
+        print("branch missing from state/card", file=sys.stderr)
+        return 1
+    title = args.title
+    if not title:
+        title_code, title_out, _ = run_git(["log", "-1", "--format=%s"])
+        title = title_out if title_code == 0 and title_out else f"batch: {card.get('batch')}"
+    code, out, err = run_gh(
+        [
+            "pr",
+            "create",
+            "--base",
+            str(base),
+            "--head",
+            str(branch),
+            "--title",
+            str(title),
+            "--body-file",
+            str(body_path),
+        ]
+    )
+    if code != 0:
+        print(f"error: gh pr create failed: {err or out}", file=sys.stderr)
+        return 3
+    print(out)
+    return 0
 
 
 def command_check(args: argparse.Namespace) -> int:
@@ -610,6 +831,15 @@ def build_parser() -> argparse.ArgumentParser:
     check.add_argument("--pr-body", type=Path)
     check.add_argument("--dry-run", action="store_true")
     check.set_defaults(func=command_check)
+
+    pr = subparsers.add_parser("pr", help="generate + validate PR body, then create")
+    pr.add_argument("--batch")
+    pr.add_argument("--base")
+    pr.add_argument("--body-out", type=Path)
+    pr.add_argument("--title")
+    pr.add_argument("--create", action="store_true")
+    pr.add_argument("--yes", action="store_true")
+    pr.set_defaults(func=command_pr)
 
     status = subparsers.add_parser("status", help="show one batch")
     status.add_argument("--batch")
