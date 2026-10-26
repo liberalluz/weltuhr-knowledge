@@ -8,6 +8,7 @@ import 'core/pack/dart_io_pack_fs.dart';
 import 'core/pack/pack_fs.dart';
 import 'core/pack/pack_probe.dart';
 import 'core/pack/pack_reader.dart';
+import 'features/tree/tree_screen.dart';
 
 void main() {
   runApp(const WeltuhrApp());
@@ -112,7 +113,7 @@ class _WeltuhrAppState extends State<WeltuhrApp> {
       home: _boot.isEmpty
           ? EmptySpaceScreen(problems: _boot.problems)
           : (_boot.packs.length == 1
-                ? SpaceScreen(content: _boot.packs.first)
+                ? SpaceScreen(content: _boot.packs.first, contents: _boot.packs)
                 : PackListScreen(packs: _boot.packs)),
     );
   }
@@ -189,7 +190,7 @@ class PackListScreen extends StatelessWidget {
             onTap: () => Navigator.of(context).push(
               MaterialPageRoute<void>(
                 builder: (BuildContext context) =>
-                    SpaceScreen(content: content),
+                    SpaceScreen(content: content, contents: packs),
               ),
             ),
           );
@@ -200,10 +201,18 @@ class PackListScreen extends StatelessWidget {
 }
 
 /// 一个包的树：行星系 → 行星。
+///
+/// 这只是**按包**的一层导航（先选包，再看它的行星系）。跨包的那棵容器树是另一
+/// 个界面（`features/tree`），入口在标题栏 —— 两者不是同一件事：这里回答「这个
+/// 包里有什么」，容器树回答「我在知识体系的哪个位置」。
 class SpaceScreen extends StatelessWidget {
-  const SpaceScreen({super.key, required this.content});
+  const SpaceScreen({super.key, required this.content, this.contents});
 
   final PackContent content;
+
+  /// 全部已装载的包。容器树是跨包的，只喂本包会得到一片没有父的森林 ——
+  /// 载荷的 `attach_to` 指在骨架里。`null` = 只有 [content]。
+  final List<PackContent>? contents;
 
   @override
   Widget build(BuildContext context) {
@@ -218,6 +227,18 @@ class SpaceScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(content.pack.name),
+        actions: <Widget>[
+          IconButton(
+            icon: const Icon(Icons.account_tree_outlined),
+            tooltip: '容器树',
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (BuildContext context) =>
+                    TreeScreen(contents: contents ?? <PackContent>[content]),
+              ),
+            ),
+          ),
+        ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(20),
           child: Padding(
