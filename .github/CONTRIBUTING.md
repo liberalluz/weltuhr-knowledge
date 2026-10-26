@@ -73,6 +73,17 @@ Why rule 5 exists: the docs and code in this repository follow fixed conventions
 
 ⚠️ **Current state**: branch protection is not enabled on `main` (private repositories on free GitHub accounts cannot use it), so the constraints above **rest on discipline** rather than on system enforcement — see [git-conventions §4.3 remote state](../docs/specs/git-conventions.md). "Technically nothing stops it" does not make it allowed.
 
+### Merge gate
+
+Every merge into `main` passes the same gate, whether or not the platform enforces it:
+
+1. `gh pr checks <number>` reports no failing or pending check.
+2. `gh pr view <number> --json mergeable,mergeStateStatus` reports `MERGEABLE` and a clean state; `CLEAN` alone is not evidence that checks passed.
+3. A human explicitly confirms the merge, and the operator records the check summary in the merge log (or the PR merge comment until the log exists).
+4. No `--admin`, no bypassing a failing check, and no merge while a review requests changes.
+
+Direct `gh pr merge` without steps 1–3 is prohibited. The `batch merge` wrapper (M1) automates this gate; until it lands, perform the steps manually. The merge strategy and approval count remain in [git-conventions §4.1](../docs/specs/git-conventions.md).
+
 ## 5. Roles
 
 | Role | Permissions | How you get it |
