@@ -251,6 +251,16 @@ def find_bash() -> str | None:
 
 
 def run_command(command: Sequence[str], cwd: Path) -> tuple[int, str, str]:
+    argv: list[str] | str = list(command)
+    shell = False
+    if os.name == "nt":
+        executable = shutil.which(argv[0])
+        if executable and executable.lower().endswith((".bat", ".cmd")):
+            # Dart/Flutter on Windows are .bat shims; CreateProcess cannot run
+            # them directly. shell=True goes through cmd.exe with one command
+            # string, avoiding the quote-escaping trap of `/c` + a list.
+            argv = subprocess.list2cmdline([executable, *argv[1:]])
+            shell = True
     with tempfile.TemporaryDirectory(prefix="batch-cmd-") as tmp:
         out_path = Path(tmp) / "stdout"
         err_path = Path(tmp) / "stderr"
@@ -258,8 +268,9 @@ def run_command(command: Sequence[str], cwd: Path) -> tuple[int, str, str]:
             "w", encoding="utf-8"
         ) as err:
             proc = subprocess.run(
-                list(command),
+                argv,
                 cwd=cwd,
+                shell=shell,
                 stdout=out,
                 stderr=err,
                 text=True,
