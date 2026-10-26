@@ -34,6 +34,8 @@ config/*.local.yaml
 *.log
 tmp/
 .workbuddy/tmp/
+# batch 流程状态与合并审计（不落库）
+.batch/
 
 # IDE / OS
 .idea/

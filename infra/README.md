@@ -7,6 +7,8 @@
 ```bash
 ./scripts/check-env.sh          # 校验工具链版本与镜像变量（骨架阶段：待实现）
 ./scripts/build-all.sh          # 三端构建（骨架阶段：待实现）
+python3 tool/batch/merge.py --pr <n> --dry-run   # 合并前检查
+python3 tool/batch/merge.py --pr <n> --yes      # 人工确认后合并
 ```
 
 ## 相关文档
