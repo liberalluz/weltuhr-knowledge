@@ -82,7 +82,7 @@ Every merge into `main` passes the same gate, whether or not the platform enforc
 3. A human explicitly confirms the merge, and the operator records the check summary in the merge log (or the PR merge comment until the log exists).
 4. No `--admin`, no bypassing a failing check, and no merge while a review requests changes.
 
-Direct `gh pr merge` without steps 1–3 is prohibited. The `batch merge` wrapper (M1) automates this gate; until it lands, perform the steps manually. The merge strategy and approval count remain in [git-conventions §4.1](../docs/specs/git-conventions.md).
+Direct `gh pr merge` without steps 1–3 is prohibited. Use the merge gate instead: `python3 infra/tool/batch/merge.py --pr <number> --dry-run` to check, then repeat with `--yes` after human confirmation. The merge strategy and approval count remain in [git-conventions §4.1](../docs/specs/git-conventions.md).
 
 ## 5. Roles
 

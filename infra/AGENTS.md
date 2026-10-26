@@ -17,6 +17,8 @@
 |---|---|
 | 环境自检 | `./scripts/check-env.sh`（待实现） |
 | 三端构建 | `./scripts/build-all.sh`（待实现） |
+| 合并闸门（只检查） | `python3 tool/batch/merge.py --pr <n> --dry-run` |
+| 合并（人工确认后） | `python3 tool/batch/merge.py --pr <n> --yes` |
 
 ## 红线
 
