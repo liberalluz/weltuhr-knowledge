@@ -53,6 +53,8 @@
 set -u
 
 fail=0
+PR_NUMBER=0
+LEGACY_BEFORE=193
 ok()   { printf 'ok    %s\n' "$1"; }
 bad()  { printf '[FAIL] %s\n' "$1"; fail=1; }
 skip() { printf 'skip  %s\n' "$1"; }
@@ -170,6 +172,21 @@ section_bounds() {
   [ "$b" -lt 0 ] && b=$n
   SA=$a; SB=$b
   return 0
+}
+
+# v2 模板从 #193 起启用；旧 PR 不追改。PR_NUMBER=0 表示本地自检，按 v2 严格执行。
+v2_required() {
+  [ "${PR_NUMBER:-0}" -eq 0 ] && return 0
+  [ "${PR_NUMBER:-0}" -ge "$LEGACY_BEFORE" ]
+}
+
+section_contains() {  # $1 = 整行标题；$2 = 必须出现的文本
+  section_bounds "$1" || return 1
+  local i
+  for ((i = SA; i < SB; i++)); do
+    case "${BL[$i]}" in *"$2"*) return 0 ;; esac
+  done
+  return 1
 }
 
 # 扫 [a, b) 内的编号前缀；$1 = 报错时用的名字；$4=1 时另判「一行压 ≥2 条圈号」
@@ -457,6 +474,27 @@ check_body() {
   done
   [ "$nr" -eq 0 ] && ok 'PR 号均为显示链接'
 
+  # 13 —— v2 字段（PR #193 起）：平台影响、验证证据、UI、评审提示、AI 结构化
+  local v2_before=$fail
+  if v2_required; then
+    for sec in "## 影响面" "## 验证" "## UI 证据" "## 评审提示"; do
+      has_section "$sec" || bad "v2 缺节：$sec"
+    done
+    for f in "平台" "类型" "兼容与回滚" "命令与输出" "测试设计" "级别" "人核"; do
+      field_line "$f" || bad "v2 缺字段：$f"
+    done
+    section_contains "## 影响面" "已测" || bad 'v2 影响面缺「已测」'
+    section_contains "## 影响面" "未测" || bad 'v2 影响面缺「未测」'
+    section_contains "## 验证" "命令" || bad 'v2 验证缺「命令」'
+    section_contains "## 验证" "输出" || bad 'v2 验证缺「输出」'
+    section_contains "## 验证" "未验" || bad 'v2 验证缺「未验」'
+    section_contains "## AI 参与" "级别" || bad 'v2 AI 参与缺「级别」'
+    section_contains "## AI 参与" "人核" || bad 'v2 AI 参与缺「人核」'
+    [ "$fail" -eq "$v2_before" ] && ok 'v2 字段齐全（影响面 / 验证 / UI / 评审提示 / AI）'
+  else
+    skip "v2 字段：PR #${PR_NUMBER} 早于 ${LEGACY_BEFORE}，按旧模板"
+  fi
+
   if [ "$fail" -ne 0 ]; then
     printf '\npr-body：有违规，改正文后重跑（不必重开 PR）\n'
     return 1
@@ -467,6 +505,7 @@ check_body() {
 
 self_test() {
   local status=0 dir b1
+  PR_NUMBER=0
   dir=$(mktemp -d)
   b1="$dir/good.md"
 
@@ -492,13 +531,40 @@ self_test() {
   - 只判形态，不判反证实质
   - 正文里**讨论**这条规则时会写 `- [ ]` 与 `②`，两者都在行内代码里，不算违规（负例六守这条）
 
+## 影响面
+
+- **平台**：Windows / macOS
+  - 已测：`python3 infra/tool/batch/check.py --self-test`
+  - 未测：无
+- **类型**：工具
+- **兼容与回滚**：无
+
+## 验证
+
+- **命令与输出**：
+  ```text
+  python3 infra/tool/batch/check.py --self-test
+  ```
+- **测试设计**：正例 + 负例
+- **未验**：无
+
+## UI 证据
+
+无
+
+## 评审提示
+
+无
+
 ## 交付物
 
 无
 
 ## AI 参与
 
-纯人工
+- **级别**：pair
+- **AI 生成**：规则与脚本
+- **人核**：测试与 diff
 
 ## 关联
 
@@ -529,7 +595,7 @@ EOF
   derive "$dir/bad5.md" '- 做了什么之一：`docs/specs/git-conventions.md` 加一句' \
     '- 1. 做了什么之一：`docs/specs/git-conventions.md` 加一句'
   # 负例六：真的 task list（不在行内代码里）
-  derive "$dir/bad6.md" "纯人工" $'纯人工\n\n- [ ] 未做完'
+  derive "$dir/bad6.md" '- **级别**：pair' $'- **级别**：pair\n\n- [ ] 未做完'
   # 负例七：反证两件尝试压在同一行（`#118` 的真实形态：三个「为推翻」连写）
   derive "$dir/bad7.md" "- **反证**：" \
     "- **反证**：为推翻「甲」试了 A；为推翻「乙」试了 B。**未验**：没测丙"
@@ -538,12 +604,21 @@ EOF
   derive "$dir/bad8.md" "- **如实登记**：" \
     "- **如实登记**：\`SPEC-PACK-018\` 的路径串未改"
   # 负例九：正文提到本仓没有的路径（`#151` 列了五条不在本仓的改动）
-  derive "$dir/bad9.md" "纯人工" \
-    $'纯人工\n\n- `docs/nonexistent/file.md` 改了四处'
+  derive "$dir/bad9.md" '- **人核**：测试与 diff' \
+    $'- **人核**：测试与 diff\n\n- `docs/nonexistent/file.md` 改了四处'
   # 负例十：PR 号写成裸号（`#164` 的真实形态：页面上被展开成「标题 + 号」）
   derive "$dir/bad10.md" "[#148](https://github.com/liberalluz/weltuhr-knowledge/pull/148)" "#148"
   # 负例十一：PR 号被反引号包住（`#126` / `#164` 踩过：渲染成 `<code>`、点不动）
   derive "$dir/bad11.md" "[#148](https://github.com/liberalluz/weltuhr-knowledge/pull/148)" '`#148`'
+  # 负例十二：v2 缺平台字段（整行去掉加粗）
+  derive "$dir/bad12.md" '- **平台**：Windows / macOS' '- 平台：Windows / macOS'
+  # 负例十三：v2 缺「已测」
+  derive "$dir/bad13.md" '  - 已测：`python3 infra/tool/batch/check.py --self-test`' \
+    '  - 检查过：`python3 infra/tool/batch/check.py --self-test`'
+  # 负例十四：v2 缺「验证」整节
+  derive "$dir/bad14.md" '## 验证' '## 验证（缺）'
+  # 负例十五：v2 缺「人核」
+  derive "$dir/bad15.md" '- **人核**：测试与 diff' '- **人工**：测试与 diff'
 
   printf -- '--- self-test 正例（应 exit 0）---\n'
   fail=0
@@ -555,7 +630,7 @@ EOF
   fi
 
   local n=0 nf
-  for nf in "$dir/bad1.md" "$dir/bad2.md" "$dir/bad3.md" "$dir/bad4.md" "$dir/bad5.md" "$dir/bad6.md" "$dir/bad7.md" "$dir/bad8.md" "$dir/bad9.md" "$dir/bad10.md" "$dir/bad11.md"; do
+  for nf in "$dir/bad1.md" "$dir/bad2.md" "$dir/bad3.md" "$dir/bad4.md" "$dir/bad5.md" "$dir/bad6.md" "$dir/bad7.md" "$dir/bad8.md" "$dir/bad9.md" "$dir/bad10.md" "$dir/bad11.md" "$dir/bad12.md" "$dir/bad13.md" "$dir/bad14.md" "$dir/bad15.md"; do
     n=$((n + 1))
     fail=0
     printf -- '--- self-test 负例 %d（应 exit 1）---\n' "$n"
@@ -573,17 +648,29 @@ EOF
 }
 
 main() {
-  local mode="" file="" diff_base=""
+  local mode="" file="" diff_base="" pr_number=0
   while [ $# -gt 0 ]; do
     case "$1" in
       --file)      mode="file"; file="${2:-}"; shift 2 ;;
       --stdin)     mode="stdin"; shift ;;
       --diff-base) diff_base="${2:-}"; shift 2 ;;
+      --pr-number) pr_number="${2:-0}"; shift 2 ;;
       --self-test) mode="self"; shift ;;
       -h|--help)   sed -n '2,25p' "$0"; return 0 ;;
       *) printf '未知参数：%s\n' "$1"; return 2 ;;
     esac
   done
+
+  if [ "$pr_number" -eq 0 ] && [ -n "${GITHUB_REF:-}" ]; then
+    case "$GITHUB_REF" in
+      refs/pull/*/merge|refs/pull/*/head)
+        pr_number="${GITHUB_REF#refs/pull/}"
+        pr_number="${pr_number%%/*}"
+        ;;
+    esac
+  fi
+
+  PR_NUMBER="$pr_number"
 
   case "$mode" in
     self) self_test; return $? ;;
@@ -599,7 +686,7 @@ main() {
       local rc=$?
       rm -f "$tmp"
       return $rc ;;
-    *) printf '用法：%s --file <正文.md> [--diff-base <ref>] | --stdin | --self-test\n' "$0"; return 2 ;;
+    *) printf '用法：%s --file <正文.md> [--diff-base <ref>] [--pr-number <n>] | --stdin | --self-test\n' "$0"; return 2 ;;
   esac
 }
 
