@@ -3,7 +3,9 @@
 /// ## 行集合 = 三条轴根 + 当前根下「当前路径逐级展开」
 ///
 /// 角色轴铺到底有 1,687 个细类，整棵前序展开既画不完、也读不出自己在哪。这里
-/// 只把**选中路径**逐级展开，链上每一级的兄弟一并列出：
+/// 只把**选中路径**逐级展开 —— 从当前根到地址的每一级，**含地址自己那一层**
+/// （不展开它自己的话，选中一行之后它的子节点永远不出现，收一层就走不动下一
+/// 步）；链上每一级的兄弟一并列出：
 ///
 /// - 于是「逐级可点」（`SPEC-TREE-004`）不需要展开 / 收起这个**第三态** ——
 ///   点哪个兄弟，地址就改到它，它的下一级自然出现。树里只剩一种点击（改地址）
@@ -152,7 +154,7 @@ void _walk(
         selectedId: selectedId,
       ),
     );
-    if (_isStrictAncestorOfSelected(tree, child.nodeId, selectedId)) {
+    if (_isAddressOrAncestorOfIt(tree, child.nodeId, selectedId)) {
       _walk(
         tree,
         parentId: child.nodeId,
@@ -164,16 +166,21 @@ void _walk(
   }
 }
 
-/// [nodeId] 是不是 [selectedId] 的**严格**祖先。
+/// [nodeId] 是当前地址**本身**或它的祖先。
 ///
-/// 用 `relativePath` 判，不看层深：它同时覆盖了「不在同一棵子树」（返回
-/// `null`）与「是同一节点」（返回空串，但那不算祖先）两种情形。
-bool _isStrictAncestorOfSelected(
+/// ⚠️ **必须含「它本身」**：只认严格祖先的话，选中一行之后它自己的子节点永远
+/// 不出现（选中的是它，不是它的后代），于是逐级可点在第二层就断了 —— 而
+/// `SPEC-TREE-004` 的验收行写的正是「点子节点 ⇒ `path` 变长，**视觉焦点下移
+/// 一层**」。收一层、走一层，`_walk` 才有下一级可走。
+///
+/// 用 `relativePath` 判而不是比层深：它同时覆盖「不在同一棵子树」（返回
+/// `null`）与「同一个节点」（返回空串）两种情形，两种都要能区分开。
+bool _isAddressOrAncestorOfIt(
   TreeIndex tree,
   String nodeId,
   String? selectedId,
 ) {
-  if (selectedId == null || selectedId == nodeId) {
+  if (selectedId == null) {
     return false;
   }
   return tree.relativePath(rootId: nodeId, nodeId: selectedId) != null;

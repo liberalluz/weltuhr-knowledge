@@ -19,6 +19,7 @@ import '../../core/constants.dart';
 import '../../core/pack/pack_reader.dart';
 import '../../core/tree/tree_index.dart';
 import '../../core/tree/tree_outline.dart';
+import 'tree_breadcrumb.dart';
 import 'tree_view.dart';
 
 class TreeScreen extends StatefulWidget {
@@ -63,10 +64,27 @@ class _TreeScreenState extends State<TreeScreen> {
     setState(() => _selectedId = nodeId);
   }
 
+  /// 点面包屑上的某一级：改地址，行集合跟着收到那一级（`SPEC-TREE-004` / `007`）。
+  ///
+  /// **这里不改根**，因为当前的两种手势保证了「地址永远在当前根子树内」：根只
+  /// 有点轴根这一条来源（必然是最外层），而下钻与面包屑只沿地址的祖先链走 ——
+  /// 那条链一定经过根本身。等到有「落点直接把地址设到任意节点」的能力（搜索，
+  /// `SPEC-TREE-010` 的前三类），这条不变量就破了，届时根要跟着上移，否则行
+  /// 集合会退化成只剩三条轴根（地址在树外，画面上像「一点就空了」）。
+  void _jumpTo(String nodeId) => setState(() => _selectedId = nodeId);
+
   @override
   Widget build(BuildContext context) {
+    final TreeIndex? tree = _tree;
+    final String? address = _selectedId ?? _rootId;
     return Scaffold(
-      appBar: AppBar(title: const Text(treeVirtualRootLabel)),
+      appBar: AppBar(
+        // 标题就是面包屑：`知识` 只出现一次。分两处写「知识」再加一条同名前缀，
+        // 屏幕上会有两个一模一样的第一段，而它们谁都点不动。
+        title: (tree == null || address == null)
+            ? const Text(treeVirtualRootLabel)
+            : TreeBreadcrumb(tree: tree, nodeId: address, onJump: _jumpTo),
+      ),
       body: _body(context),
     );
   }

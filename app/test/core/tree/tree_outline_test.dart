@@ -262,4 +262,32 @@ void main() {
     expect(rows.every((OutlineRow row) => row.isAxisRoot), isTrue);
     expect(rows.any((OutlineRow row) => row.isCurrentRoot), isFalse);
   });
+
+  test('TC-TREE-043 选中中间层 ⇒ 它自己的下一层就出现，逐级可点才走得动（SPEC-TREE-004）', () {
+    final List<OutlineRow> rows = treeOutline(
+      tree: tree,
+      rootId: 'skeleton:d',
+      selectedId: 'skeleton:d-01',
+    );
+
+    // 判据是「点子节点 ⇒ 地址变长，视觉焦点下移一层」。只展开**严格**祖先的话，
+    // 选中 `d-01` 之后它自己的子节点不会出现（选中项是它、不是它的后代），第二
+    // 层就再也下不去了 —— 而这一层是界面里唯一能点出更深地址的地方。
+    expect(
+      idsOf(rows),
+      <String>[
+        'skeleton:d',
+        'skeleton:m',
+        'skeleton:o',
+        'skeleton:d-01',
+        'skeleton:d-0101',
+        'skeleton:d-x',
+        'skeleton:d-02',
+      ],
+      reason: '`d-01` 的两个子节点在它被选中后出现，`d-02` 仍是它的兄弟',
+    );
+    expect(rowOf(rows, 'skeleton:d-0101').indent, 2);
+    expect(rowOf(rows, 'skeleton:d-0101').isSelected, isFalse);
+    expect(rowOf(rows, 'skeleton:d-01').isSelected, isTrue);
+  });
 }
