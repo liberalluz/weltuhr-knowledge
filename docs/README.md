@@ -30,11 +30,12 @@
 
 ## 二、设计规格（`specs/`）
 
-入口：[specs/00-index.md](specs/00-index.md)。十份主题文档，按**变更耦合度**拆分（不是按讨论顺序）：
+入口：[specs/00-index.md](specs/00-index.md)。十一份主题文档，按**变更耦合度**拆分（不是按讨论顺序）：
 
 | 文档 | 主体 | 明确不管 |
 |---|---|---|
-| [FND](specs/FND-foundation.md) | KST 三元组 · 六轴三层 · 六要件三态 · `⪯` · 坐标与容器之辨 | 视距与通道（VIEW）· 包格式（PACK） |
+| [FND](specs/FND-foundation.md) | KST 三元组 · **三轴七级容器树** · 六要件三态 · `⪯` · 坐标与容器之辨 | 容器树层级（[TREE](specs/TREE-container-tree.md)）· 包格式（PACK） |
+| [TREE](specs/TREE-container-tree.md) | **七槽位 · 三轴不等深** · 面包屑由路径派生 · 换根留树 · 四类落点（定位非检索） | 3D 宇宙视图（`B17b`）· 检索算法（`V2`） |
 | [VIEW](specs/VIEW-views.md) | Z0–Z4 · 六通道两叠加 · 三视图投影 · HUD 七区块 · 树四类行 · 快速定位 | 掌握度公式（QUANT） |
 | [PACK](specs/PACK-content-pack.md) | 边界三判据 · 一空间一包 · pack schema · 稳定 id · 版本迁移 | 事件字段定义（[entity-fields](specs/entity-fields.md)） |
 | [PLAN](specs/PLAN-planning.md) | 源 / 体系 / 方法三段 · 三处出处 · 逆序数 · `Plan` 实体 · 实时预览 | 方法与判据的执行（STEP） |
