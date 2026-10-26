@@ -1,8 +1,9 @@
-# batch merge gate
+# batch tools
 
 `merge.py` is the repository's conservative merge gate. It refuses to merge
 unless the pull request is open, not a draft, conflict-free, every check is
-successful/neutral/skipped, and no review is requesting changes.
+successful/neutral/skipped, and no review is requesting changes. `check.py` is
+the per-batch scope guard described below.
 
 ## Usage
 
@@ -45,3 +46,23 @@ not evidence that checks passed.
 ```bash
 python3 -m unittest discover -s infra/tool/batch/tests
 ```
+
+## Scope guard
+
+`check.py` verifies that the current diff stays inside a batch's approved
+`scope.json`. `pre-push` runs it automatically when `.batch/active` exists.
+
+```bash
+python3 infra/tool/batch/check.py --scope .batch/M2/scope.json
+python3 infra/tool/batch/check.py --scope .batch/M2/scope.json --warn-only
+
+# Widen scope only with a reason and explicit human approval
+python3 infra/tool/batch/check.py --scope .batch/M2/scope.json \
+  --add app/lib/foo.dart --reason "needed by this batch" --yes
+```
+
+A scope file records `batch`, `type`, `allowed`, `forbidden`, and an
+`approval.hash`. Editing the allowed set without re-signing is detected. Feature
+batches may not touch process files (`.githooks/**`, `.github/workflows/**`,
+`docs/specs/git-conventions.md`, `infra/tool/batch/**`); those require a
+`type: process` batch.

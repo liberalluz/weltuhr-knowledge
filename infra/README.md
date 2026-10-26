@@ -9,6 +9,7 @@
 ./scripts/build-all.sh          # 三端构建（骨架阶段：待实现）
 python3 tool/batch/merge.py --pr <n> --dry-run   # 合并前检查
 python3 tool/batch/merge.py --pr <n> --yes      # 人工确认后合并
+python3 tool/batch/check.py --scope .batch/<id>/scope.json   # 范围守门
 ```
 
 ## 相关文档

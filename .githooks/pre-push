@@ -209,6 +209,24 @@ else
   done
 fi
 
+# ── 第三条：当前 batch 的 scope guard ───────────────────────────────
+# 只在本地存在 .batch/active 时运行；没有活动批次（例如 CI 回放、旧分支）
+# 不拦，远端 CI/评审仍是最终判据。--quick 只比路径，不跑测试。
+if [ -f .batch/active ]; then
+  scope="$(cat .batch/active)"
+  if [ -n "$scope" ]; then
+    py=python3
+    command -v python3 >/dev/null 2>&1 || py=python
+    if ! "$py" infra/tool/batch/check.py --scope "$scope" --quick; then
+      echo '' >&2
+      echo 'FAIL batch scope guard：改动超出 scope.json。' >&2
+      echo '扩范围走：python3 infra/tool/batch/check.py --scope <scope> --add <path> --reason <...> --yes' >&2
+      echo '并让人类确认后提交 scope 变更；不要直接改 allowed。' >&2
+      exit 1
+    fi
+  fi
+fi
+
 if [ "$FAIL" -ne 0 ]; then
   echo '' >&2
   if [ "$FAIL_MAIN" -ne 0 ]; then

@@ -84,6 +84,10 @@ Every merge into `main` passes the same gate, whether or not the platform enforc
 
 Direct `gh pr merge` without steps 1–3 is prohibited. Use the merge gate instead: `python3 infra/tool/batch/merge.py --pr <number> --dry-run` to check, then repeat with `--yes` after human confirmation. The merge strategy and approval count remain in [git-conventions §4.1](../docs/specs/git-conventions.md).
 
+### Scope guard
+
+Each batch records its approved paths in `.batch/<batch>/scope.json`. When `.batch/active` exists, `pre-push` runs `python3 infra/tool/batch/check.py` and refuses a push that leaves the approved set. A feature batch may not edit process files (`.githooks/**`, `.github/workflows/**`, `docs/specs/git-conventions.md`, `infra/tool/batch/**`); widening scope requires `--add <path> --reason <...> --yes` and a human-approved scope change. The hash in `approval` detects edits made after approval.
+
 ## 5. Roles
 
 | Role | Permissions | How you get it |
