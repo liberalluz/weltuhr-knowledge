@@ -49,6 +49,7 @@ class TreeView extends StatelessWidget {
     required this.selectedId,
     required this.onDrill,
     required this.onChangeRoot,
+    this.scrollController,
   });
 
   final TreeIndex tree;
@@ -65,6 +66,14 @@ class TreeView extends StatelessWidget {
   /// 换根：改根、留在树（不触发视图切换）。
   final ValueChanged<String> onChangeRoot;
 
+  /// 列表的滚动控制器。
+  ///
+  /// 默认 `null`（列表自己造一个），接进来的唯一理由是**帧预算装置**要驱动一个
+  /// 固定剧本（`tool/bench/frame_bench.dart`）：读数的可比性依赖「怎么滚」这件事
+  /// 被钉住，而手势在 `flutter run` 里不可复现。页面本身不需要它 —— 换根与
+  /// 下钻都不该顺手把滚动位置重置。
+  final ScrollController? scrollController;
+
   @override
   Widget build(BuildContext context) {
     final List<OutlineRow> rows = treeOutline(
@@ -73,6 +82,7 @@ class TreeView extends StatelessWidget {
       selectedId: selectedId,
     );
     return ListView.builder(
+      controller: scrollController,
       itemCount: rows.length,
       itemBuilder: (BuildContext context, int index) {
         final OutlineRow row = rows[index];
