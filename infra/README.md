@@ -12,6 +12,7 @@ python3 tool/batch/merge.py --pr <n> --yes      # 人工确认后合并
 python3 tool/batch/check.py --scope .batch/<id>/scope.json   # 范围守门
 python3 tool/batch/batch.py status                         # 批次状态
 python3 tool/batch/batch.py plan/approve/start              # 批次卡与启动
+python3 tool/batch/batch.py check --batch <id>             # 批次检查
 ```
 
 ## 相关文档

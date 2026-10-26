@@ -22,6 +22,7 @@
 | 范围守门 | `python3 tool/batch/check.py --scope .batch/<id>/scope.json` |
 | batch 状态 | `python3 tool/batch/batch.py status` |
 | 批次卡 | `python3 tool/batch/batch.py plan/approve/start` |
+| 批次检查 | `python3 tool/batch/batch.py check --batch <id>` |
 
 ## 红线
 
