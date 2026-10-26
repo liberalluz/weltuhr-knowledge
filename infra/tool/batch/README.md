@@ -79,6 +79,32 @@ State layout (gitignored):
 `status` falls back from `--batch` to `.batch/active`, then to the most recently
 modified batch directory. Exit code `1` means no batch was found.
 
+## Batch check
+
+`batch check` is the local gate:
+
+```bash
+python3 infra/tool/batch/batch.py check --batch B15-2 --base main
+python3 infra/tool/batch/batch.py check --batch B15-2 --quick      # scope only
+python3 infra/tool/batch/batch.py check --batch B15-2 --dry-run    # plan only
+```
+
+It runs, when applicable:
+
+| Step | When |
+|---|---|
+| `dart format --output=none --set-exit-if-changed` | changed `.dart` files |
+| `flutter analyze` | any `app/` change |
+| `dart run tool/lint/check.dart` | any `app/` change |
+| `dart run tool/docs/check.dart` | any `docs/` change |
+| `flutter test --reporter compact` | any `app/` change, unless `--no-tests` |
+| `pr-body` | `--pr-body <file>` is passed |
+
+The result is written to `.batch/<id>/evidence.log`; `batch status` only advances
+to `Stage: pr` when that file contains `RESULT: PASS`. `--quick` is scope-only
+and does not write evidence. `--no-format` / `--no-tests` are explicit escape
+hatches, not defaults.
+
 ## Tests
 
 ```bash
