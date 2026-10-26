@@ -36,6 +36,7 @@ class FixtureNode {
     this.slot = LevelSlot.planet,
     this.axis = Axis.major,
     this.parentId,
+    this.officialCode,
     this.type = LearnableType.declarative,
     this.layer = Layer.persistent,
     this.sourceRefs = const <String>[],
@@ -52,6 +53,9 @@ class FixtureNode {
 
   /// 主父（`ParentEdge.main`）。`null` = 树根 —— 夹具通常只有一个。
   final String? parentId;
+
+  /// 官方码。树里兄弟排序的第一键（`TREE-011`），也为空时为 `null`。
+  final String? officialCode;
 
   /// 仅 `planet`。
   final LearnableType type;
@@ -82,7 +86,7 @@ class FixtureNode {
     'id': id,
     'axis': axis.name,
     'level_slot': slot.name,
-    'official_code': null,
+    'official_code': officialCode,
     'name': name,
     'slug': slug,
     'scope': slot == LevelSlot.planet ? 'S4' : 'S0',
@@ -139,6 +143,8 @@ PackContent fixturePack(
   List<FixtureNode> nodes, {
   String pluginId = 'python',
   String packName = 'Python 语法分层',
+  List<String> kinds = const <String>['payload'],
+  String attachTo = 'skeleton:major/080901',
   Map<String, List<String>> schemes = const <String, List<String>>{},
   List<(String, String)> prerequisites = const <(String, String)>[],
   List<(String, String)> recommended = const <(String, String)>[],
@@ -170,7 +176,7 @@ PackContent fixturePack(
     'plugin_id': pluginId,
     'name': packName,
     'version': '0.1.0',
-    'kinds': <String>['payload'],
+    'kinds': kinds,
     'namespace': pluginId,
     'schema_version': 1,
     'skeleton_requires': '>=1.0.0 <2.0.0',
@@ -183,21 +189,25 @@ PackContent fixturePack(
     'axes': <String>{
       for (final FixtureNode node in nodes) node.axis.name,
     }.toList(growable: false),
-    'payload': <String, Object?>{
-      'attach_to': 'skeleton:major/080901',
-      'subtree_root': 'system',
-      'level_range': <String>['system', 'planet'],
-      'counts': <String, Object?>{'star': star, 'system': system, 'planet': planet},
-      'official_code_coverage': false,
-      'path_reservations': <Map<String, Object?>>[],
-      'sources': sources.keys.toList(growable: false),
-      'schemes': schemes.keys.toList(growable: false),
-      'has_steps': nodes.any((FixtureNode n) => n.steps.isNotEmpty),
-      'has_criteria': nodes.any((FixtureNode n) => n.criteria.isNotEmpty),
-      'has_quiz': nodes.any((FixtureNode n) => n.quiz.isNotEmpty),
-      'quiz_types': <String>['choice'],
-      'est_minutes_coverage': 1.0,
-    },
+    // 骨架包 `kinds` 为空、无 `payload` facts（`ADR-0005` 决策 2：骨架全量内置、
+    // 不走插件标准），因此这一段只能按 `kinds` 出现 —— 无条件写会让骨架包
+    // 撞上 `Pack._verifyFacts` 的「没声明 kind 却有 facts」。
+    if (kinds.contains('payload'))
+      'payload': <String, Object?>{
+        'attach_to': attachTo,
+        'subtree_root': 'system',
+        'level_range': <String>['system', 'planet'],
+        'counts': <String, Object?>{'star': star, 'system': system, 'planet': planet},
+        'official_code_coverage': false,
+        'path_reservations': <Map<String, Object?>>[],
+        'sources': sources.keys.toList(growable: false),
+        'schemes': schemes.keys.toList(growable: false),
+        'has_steps': nodes.any((FixtureNode n) => n.steps.isNotEmpty),
+        'has_criteria': nodes.any((FixtureNode n) => n.criteria.isNotEmpty),
+        'has_quiz': nodes.any((FixtureNode n) => n.quiz.isNotEmpty),
+        'quiz_types': <String>['choice'],
+        'est_minutes_coverage': 1.0,
+      },
     'nodes': nodes.map((FixtureNode n) => n.toJson(pluginId)).toList(growable: false),
     'edges': <Map<String, Object?>>[
       for (final FixtureNode node in nodes)
