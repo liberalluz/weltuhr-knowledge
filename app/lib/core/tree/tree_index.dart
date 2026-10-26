@@ -54,12 +54,23 @@ class TreeRow {
 
 /// 面包屑的一段。
 class BreadcrumbSegment {
-  const BreadcrumbSegment({required this.label, required this.path});
+  const BreadcrumbSegment({
+    required this.label,
+    required this.path,
+    required this.nodeId,
+  });
 
   final String label;
 
   /// 虚拟根为空串 —— 它没有地址，也不可点（`SPEC-TREE-002`）。
   final String path;
+
+  /// 本段落到哪个节点。虚拟根为空串（它不是节点）。
+  ///
+  /// 与 [path] 分开带：界面点一段要交出去的是**节点 id**（点它是改地址，不是
+  /// 「按路径字符串再查一遍」），而 `path` 是地址的字符串形态 —— 两者在这一层
+  /// 同源，越往后越不该互相反解。
+  final String nodeId;
 
   bool get isVirtualRoot => path.isEmpty;
 }
@@ -280,14 +291,20 @@ class TreeIndex {
       return const <BreadcrumbSegment>[];
     }
     final List<BreadcrumbSegment> result = <BreadcrumbSegment>[
-      const BreadcrumbSegment(label: treeVirtualRootLabel, path: ''),
+      const BreadcrumbSegment(
+        label: treeVirtualRootLabel,
+        path: '',
+        nodeId: '',
+      ),
     ];
     for (final String id in ids) {
       final String? path = _pathOf[id];
       if (path == null) {
         return const <BreadcrumbSegment>[];
       }
-      result.add(BreadcrumbSegment(label: _nodeById[id]!.name, path: path));
+      result.add(
+        BreadcrumbSegment(label: _nodeById[id]!.name, path: path, nodeId: id),
+      );
     }
     return result;
   }

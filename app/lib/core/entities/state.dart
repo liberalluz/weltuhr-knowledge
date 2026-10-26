@@ -3,7 +3,6 @@ library;
 
 import '../enums.dart';
 import '../json.dart';
-import '../view/zoom.dart';
 
 /// 每项的记忆状态（**派生**，由事件折叠）。
 ///
@@ -162,7 +161,7 @@ class Submission {
 class ViewState {
   const ViewState({
     this.mode = ViewMode.universe,
-    this.zoomLevel = ZoomLevel.z0,
+    this.focusSlot = LevelSlot.supercluster,
     this.selectedItemId,
     this.focusChain = const <String>[],
     this.expandedNodes = const <String>[],
@@ -173,7 +172,16 @@ class ViewState {
   });
 
   final ViewMode mode;
-  final ZoomLevel zoomLevel;
+
+  /// 当前聚焦的 `level_slot`（`entity-fields` §18）。
+  ///
+  /// **取代旧的 `zoomLevel`（`Z0`–`Z4`）**：五档径向随 `ADR-0005` 决策 3 作废，
+  /// 同心球壳没有「第几档」这回事。槽位是**语义**不是深度序号 —— 同一个
+  /// `star` 在学科轴是层深 2、在角色轴是层深 4（`SPEC-TREE-001`）。
+  ///
+  /// 默认最外层：界面首帧没有地址，能说的只有「聚焦在槽位全集的最浅一档」。
+  final LevelSlot focusSlot;
+
   final String? selectedItemId;
   final List<String> focusChain;
   final List<String> expandedNodes;
