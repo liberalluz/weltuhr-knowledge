@@ -44,13 +44,22 @@ final class TagLanding extends Landing {
   final String tag;
 }
 
-/// 解析结果。`path` 与 `filterTag` 互斥 —— 这正是「改地址 / 只筛选」的二分。
+/// 解析结果。改地址 / 只筛选两态互斥 —— 这正是 `SPEC-TREE-010` 的二分。
 class LandingResult {
-  const LandingResult._({this.path, this.filterTag});
+  const LandingResult._({this.nodeId, this.path, this.filterTag});
 
-  const LandingResult.toPath(String path) : this._(path: path);
+  /// 改地址：落到这个节点。
+  ///
+  /// [nodeId] 与 [path] **同源同带**，理由与 `BreadcrumbSegment` 那一对相同：
+  /// 界面按节点 id 存地址（点一行交出去的就是 id），落点只给 `path` 的话界面
+  /// 得拿字符串反查回节点 —— 而反查就是第二套地址解析，两套迟早分叉。
+  const LandingResult.toNode({required String nodeId, required String path})
+    : this._(nodeId: nodeId, path: path);
 
   const LandingResult.toFilter(String tag) : this._(filterTag: tag);
+
+  /// 目标节点 id；`null` = 本落点不改地址。
+  final String? nodeId;
 
   /// 目标 `path`；`null` = 本落点不改地址。
   final String? path;
@@ -79,19 +88,21 @@ class LandingResolver {
     switch (landing) {
       case NodeLanding(:final String nodeId):
         final String? path = _tree.pathOf(nodeId);
-        return path == null ? null : LandingResult.toPath(path);
+        return path == null
+            ? null
+            : LandingResult.toNode(nodeId: nodeId, path: path);
       case PackLanding(:final String pluginId):
         for (final String rootId in _packRoots[pluginId] ?? const <String>[]) {
           final String? path = _tree.pathOf(rootId);
           if (path != null) {
-            return LandingResult.toPath(path);
+            return LandingResult.toNode(nodeId: rootId, path: path);
           }
         }
         return null;
       case AxisLanding(:final Axis axis):
         for (final TreeRow row in _tree.axisRoots()) {
           if (row.axis == axis) {
-            return LandingResult.toPath(row.path);
+            return LandingResult.toNode(nodeId: row.nodeId, path: row.path);
           }
         }
         return null;
