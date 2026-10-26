@@ -104,17 +104,17 @@ void main() {
   });
 
   test('TC-INF-049 只有基准窗口才算数（`C-33`）', () {
-    expect(framePremiseOk(width: 1920, height: 1080), isTrue);
+    expect(framePremiseOk(physicalWidth: 1920, physicalHeight: 1080), isTrue);
     // 容差之内（浮点折算出来的 1919.6 之类）仍算基准窗口。
-    expect(framePremiseOk(width: 1920.4, height: 1079.6), isTrue);
+    expect(framePremiseOk(physicalWidth: 1920.4, physicalHeight: 1079.6), isTrue);
     // 宽正好、高不对 —— `R1` 那次对照放大的那个窗口（`1920×1109`）。这一条是
     // **故意只差一个维度**：两个维度一起差时，只判宽的实现照样全绿（本节首版
     // 就栽在这里，反证删掉判高的那半，9 条全绿）。
-    expect(framePremiseOk(width: 1920, height: 1109), isFalse);
+    expect(framePremiseOk(physicalWidth: 1920, physicalHeight: 1109), isFalse);
     // `R1` 那次对照的起始窗口：面积是它的 1.55 倍时读数从「余量 57%」变成「占预算 88%」。
-    expect(framePremiseOk(width: 1584, height: 875), isFalse);
+    expect(framePremiseOk(physicalWidth: 1584, physicalHeight: 875), isFalse);
     // 只差 2 px 也要判不是 —— 容差是 1 px，不是「差不多」。
-    expect(framePremiseOk(width: 1922, height: 1080), isFalse);
+    expect(framePremiseOk(physicalWidth: 1922, physicalHeight: 1080), isFalse);
   });
 
   test('TC-INF-051 reset 之后回到无样本，热身帧不进读数（`C-32`）', () {

@@ -40,15 +40,21 @@ enum BenchGate {
 /// 现在该不该开测。
 ///
 /// [waited] 是从「进入等待」到此刻的时长，[patience] 是愿意等多久。
+/// 尺寸两项是**物理像素** —— 与 [framePremiseOk] 同口径，装置那边从视口的
+/// `physicalSize` 取，不取 `MediaQuery.sizeOf`（后者是逻辑像素，100% 缩放下两者
+/// 恰好相等，换一台缩放不是 100% 的机器就永远等不到）。
 /// **顺序即判据**：先看窗口，再看耐心 —— 窗口一旦进入基准就立刻开测，不因为
 /// 「已经等超时了」再犹豫一轮。反过来会把「刚调好窗口」的那一次也判成超时。
 BenchGate benchGate({
-  required double width,
-  required double height,
+  required double physicalWidth,
+  required double physicalHeight,
   required Duration waited,
   required Duration patience,
 }) {
-  if (framePremiseOk(width: width, height: height)) {
+  if (framePremiseOk(
+    physicalWidth: physicalWidth,
+    physicalHeight: physicalHeight,
+  )) {
     return BenchGate.start;
   }
   if (waited >= patience) {

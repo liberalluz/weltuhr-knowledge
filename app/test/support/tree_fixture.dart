@@ -76,6 +76,87 @@ PackContent payloadFixture() => fixturePack(
 TreeIndex treeFixture() =>
     TreeIndex.build(contents: <PackContent>[skeletonFixture(), payloadFixture()]);
 
+/// 两条分支一窄一宽：专为「装置该把地址钉在哪一层」造的（`R-22` 的场景选择）。
+///
+/// 学科根下 `01` 只有一个 `star`、`02` 有五个。按「沿第一条子链下钻到底」取地址
+/// 只能展开 6 行（3 轴根 + 2 门类 + 1 个 `star`），在一屏三十几行的真实视口里
+/// 撑不满 —— 装置跑完只会报「可滚动范围是 0」。按「行集合最大」取则是 `02` 那条，
+/// 10 行。两者必须给出不同结果，否则 `TC-INF-060` 在两种实现下同答案。
+PackContent wideBranchFixture() => fixturePack(
+  <FixtureNode>[
+    FixtureNode('skeleton:d', '学科', slot: LevelSlot.supercluster, axis: Axis.discipline),
+    FixtureNode(
+      'skeleton:d-01',
+      '哲学',
+      slot: LevelSlot.group,
+      axis: Axis.discipline,
+      parentId: 'skeleton:d',
+      officialCode: '01',
+    ),
+    FixtureNode(
+      'skeleton:d-0101',
+      '马克思主义哲学',
+      slot: LevelSlot.star,
+      axis: Axis.discipline,
+      parentId: 'skeleton:d-01',
+      officialCode: '0101',
+    ),
+    FixtureNode(
+      'skeleton:d-02',
+      '经济学',
+      slot: LevelSlot.group,
+      axis: Axis.discipline,
+      parentId: 'skeleton:d',
+      officialCode: '02',
+    ),
+    FixtureNode(
+      'skeleton:d-0201',
+      '政治经济学',
+      slot: LevelSlot.star,
+      axis: Axis.discipline,
+      parentId: 'skeleton:d-02',
+      officialCode: '0201',
+    ),
+    FixtureNode(
+      'skeleton:d-0202',
+      '经济思想史',
+      slot: LevelSlot.star,
+      axis: Axis.discipline,
+      parentId: 'skeleton:d-02',
+      officialCode: '0202',
+    ),
+    FixtureNode(
+      'skeleton:d-0203',
+      '经济史',
+      slot: LevelSlot.star,
+      axis: Axis.discipline,
+      parentId: 'skeleton:d-02',
+      officialCode: '0203',
+    ),
+    FixtureNode(
+      'skeleton:d-0204',
+      '西方经济学',
+      slot: LevelSlot.star,
+      axis: Axis.discipline,
+      parentId: 'skeleton:d-02',
+      officialCode: '0204',
+    ),
+    FixtureNode(
+      'skeleton:d-0205',
+      '世界经济',
+      slot: LevelSlot.star,
+      axis: Axis.discipline,
+      parentId: 'skeleton:d-02',
+      officialCode: '0205',
+    ),
+    FixtureNode('skeleton:m', '专业', slot: LevelSlot.supercluster, axis: Axis.major),
+    FixtureNode('skeleton:o', '职业', slot: LevelSlot.supercluster, axis: Axis.occupation),
+  ],
+  pluginId: 'skeleton',
+  packName: '宽窄分支夹具',
+  kinds: const <String>[],
+);
+
 /// 两轴不等深：学科三级、专业四级，两条轴各有自己的 `star`。
 ///
 /// 专为 `SPEC-TREE-008` 造的：判据是「缩进按相对当前根的**路径段数**」。学科
