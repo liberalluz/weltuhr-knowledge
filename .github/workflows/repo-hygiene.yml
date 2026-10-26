@@ -12,6 +12,10 @@ on:
   push:
     branches: [main]
   pull_request:
+    # 本 job 读的是 PR 正文；改正文只发 `edited`，不发 `synchronize`。
+    # 缺这一项时「改正文后重跑」只有 rerun 一条路，而 rerun 重放的是**开 PR 时**
+    # 的事件 payload ⇒ 判据一直指着旧正文，改了不起作用。
+    types: [opened, synchronize, reopened, edited]
 
 concurrency:
   group: repo-hygiene-${{ github.ref }}
