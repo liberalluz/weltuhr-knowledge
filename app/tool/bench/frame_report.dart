@@ -27,15 +27,22 @@ import 'package:project_knowledge/core/bench/frame_stats.dart';
 /// 读数行的前缀。`grep '^FRAME_BENCH '` 就是「本机跑过的全部读数」。
 const String frameBenchLinePrefix = 'FRAME_BENCH';
 
-/// 行格式的版本。字段增删必须升它 —— 否则旧行会被按新口径读。
-const int frameBenchSchemaVersion = 1;
+/// 行格式的版本。字段增删**或口径变更**必须升它 —— 否则旧行会被按新口径读。
+///
+/// `v2` 的变更是**口径**：`window` 下原先只有一对宽高，语义是逻辑像素，而 `C-33`
+/// 指的是物理客户区。两套尺寸现在各存各的（`physical*` 判前提、`logical*` 备查），
+/// 字段名不再靠注释解释 —— `v1` 那种「叫 `width` 但其实是逻辑」的写法，在 100%
+/// 缩放的机器上永远读不出问题，换台机器就整组数不可比。
+const int frameBenchSchemaVersion = 2;
 
 /// 一次实测的完整读数：场景 + 测量前提 + 三项读数。
 class BenchReport {
   const BenchReport({
     required this.scenario,
-    required this.windowWidth,
-    required this.windowHeight,
+    required this.physicalWidth,
+    required this.physicalHeight,
+    required this.logicalWidth,
+    required this.logicalHeight,
     required this.devicePixelRatio,
     required this.snapshot,
   });
@@ -43,32 +50,40 @@ class BenchReport {
   /// 场景标识（固定串，如 `tree-drill`）。换场景 = 换一组读数，不可混着比。
   final String scenario;
 
-  /// 客户区宽（逻辑像素）。
-  final double windowWidth;
+  /// 客户区宽（**物理像素**）—— `C-33` 的判据量的是它。
+  final double physicalWidth;
+
+  /// 客户区高（物理像素）。
+  final double physicalHeight;
+
+  /// 客户区宽（逻辑像素）—— 只作记录，不参与任何判据。
+  final double logicalWidth;
 
   /// 客户区高（逻辑像素）。
-  final double windowHeight;
+  final double logicalHeight;
 
-  /// 设备像素比 —— 只作记录：`C-33` 的面积判据指**物理**像素（`w·h·dpr²`），
-  /// 基准面积本身不乘 `dpr`。留它是因为「同尺寸不同缩放」正是最容易误比的一组。
+  /// 设备像素比。`physical / logical` 应当等于它，读行的人可以自行验算。
   final double devicePixelRatio;
 
   final FrameSnapshot snapshot;
 
   /// 这次读数是否落在 `C-33` 基准窗口下。
   ///
-  /// `false` 不等于「跑挂了」—— 它等于「这组数不能按 `C-32` 的 30 / 50 解释」。
+  /// 判的是**物理**尺寸。`false` 不等于「跑挂了」—— 它等于「这组数不能按 `C-32`
+  /// 的 30 / 50 解释」。
   bool get premiseOk => framePremiseOk(
-        width: windowWidth,
-        height: windowHeight,
+        physicalWidth: physicalWidth,
+        physicalHeight: physicalHeight,
       );
 
   Map<String, Object?> toJson() => <String, Object?>{
         'schema': frameBenchSchemaVersion,
         'scenario': scenario,
         'window': <String, Object?>{
-          'width': windowWidth,
-          'height': windowHeight,
+          'physicalWidth': physicalWidth,
+          'physicalHeight': physicalHeight,
+          'logicalWidth': logicalWidth,
+          'logicalHeight': logicalHeight,
           'dpr': devicePixelRatio,
         },
         'stats': <String, Object?>{
@@ -113,8 +128,10 @@ class BenchReport {
         scenario is! String) {
       return null;
     }
-    final double? width = _num(window['width']);
-    final double? height = _num(window['height']);
+    final double? physicalWidth = _num(window['physicalWidth']);
+    final double? physicalHeight = _num(window['physicalHeight']);
+    final double? logicalWidth = _num(window['logicalWidth']);
+    final double? logicalHeight = _num(window['logicalHeight']);
     final double? dpr = _num(window['dpr']);
     final num? intervals = _int(stats['intervals']);
     final double? medianIntervalMs = _num(stats['medianIntervalMs']);
@@ -122,8 +139,10 @@ class BenchReport {
     final double? frameP95Ms = _num(stats['frameP95Ms']);
     final double? rasterP95Ms = _num(stats['rasterP95Ms']);
     final double? rasterBudgetShare = _num(stats['rasterBudgetShare']);
-    if (width == null ||
-        height == null ||
+    if (physicalWidth == null ||
+        physicalHeight == null ||
+        logicalWidth == null ||
+        logicalHeight == null ||
         dpr == null ||
         intervals == null ||
         medianIntervalMs == null ||
@@ -135,8 +154,10 @@ class BenchReport {
     }
     return BenchReport(
       scenario: scenario,
-      windowWidth: width,
-      windowHeight: height,
+      physicalWidth: physicalWidth,
+      physicalHeight: physicalHeight,
+      logicalWidth: logicalWidth,
+      logicalHeight: logicalHeight,
       devicePixelRatio: dpr,
       snapshot: FrameSnapshot(
         intervals: intervals.toInt(),

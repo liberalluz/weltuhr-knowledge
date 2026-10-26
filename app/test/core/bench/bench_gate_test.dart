@@ -18,8 +18,8 @@ void main() {
     // 刚进等待：窗口合规 ⇒ 立刻 start。
     expect(
       benchGate(
-        width: frameBenchWidth,
-        height: frameBenchHeight,
+        physicalWidth: frameBenchWidth,
+        physicalHeight: frameBenchHeight,
         waited: Duration.zero,
         patience: patience,
       ),
@@ -31,8 +31,8 @@ void main() {
     // 时本条会红，而 `056` / `057` 照样绿。
     expect(
       benchGate(
-        width: frameBenchWidth,
-        height: frameBenchHeight,
+        physicalWidth: frameBenchWidth,
+        physicalHeight: frameBenchHeight,
         waited: patience,
         patience: patience,
       ),
@@ -42,8 +42,8 @@ void main() {
 
   test('TC-INF-055 容差边界：1 px 内算同一个窗口，超过就等（无 SPEC：口径 `C-33`）', () {
     BenchGate at(double extra) => benchGate(
-          width: frameBenchWidth + extra,
-          height: frameBenchHeight,
+          physicalWidth: frameBenchWidth + extra,
+          physicalHeight: frameBenchHeight,
           waited: Duration.zero,
           patience: patience,
         );
@@ -54,8 +54,8 @@ void main() {
     // 只差高度这一维：宽正好。两个维度一起差的输入，只判宽的实现照样全绿。
     expect(
       benchGate(
-        width: frameBenchWidth,
-        height: frameBenchHeight + frameBenchWindowTolerance + 0.5,
+        physicalWidth: frameBenchWidth,
+        physicalHeight: frameBenchHeight + frameBenchWindowTolerance + 0.5,
         waited: Duration.zero,
         patience: patience,
       ),
@@ -65,8 +65,8 @@ void main() {
 
   test('TC-INF-056 耐心边界：差一点还在等，到点才照测（无 SPEC：口径 `C-33`）', () {
     BenchGate at(Duration waited) => benchGate(
-          width: 1584,
-          height: 875,
+          physicalWidth: 1584,
+          physicalHeight: 875,
           waited: waited,
           patience: patience,
         );
@@ -87,7 +87,7 @@ void main() {
     ];
     final List<BenchGate> gates = <BenchGate>[
       for (final Duration w in waits)
-        benchGate(width: 1584, height: 875, waited: w, patience: patience),
+        benchGate(physicalWidth: 1584, physicalHeight: 875, waited: w, patience: patience),
     ];
     expect(gates, <BenchGate>[
       BenchGate.wait,

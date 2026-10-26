@@ -171,15 +171,25 @@ class FrameStats {
   }
 }
 
-/// 这个视口是不是 `C-33` 的基准窗口（逻辑像素，容差 [frameBenchWindowTolerance]）。
+/// 这个视口是不是 `C-33` 的基准窗口（**物理像素**，容差 [frameBenchWindowTolerance]）。
 ///
 /// **读数必须在基准窗口下取**：光栅成本随覆盖面积走（`R1` 的受控对照：面积
 /// 1.55 倍 ⇒ 光栅 2.02 倍），同一个数在 1584×875 上读出来是「余量 57%」，在基准
 /// 窗口上是「占预算 88%」。故装置先问这一句，答「不是」就把读数标成不可解释，
 /// 而不是照样按 30 / 50 去判。
-bool framePremiseOk({required double width, required double height}) {
-  final double dw = (width - frameBenchWidth).abs();
-  final double dh = (height - frameBenchHeight).abs();
+///
+/// ⚠️ **参数按名字写成 `physicalWidth` / `physicalHeight`，是因为单位错了不会有
+/// 任何东西变红**：`C-33` 与 `ADR-0002` 修订三都指物理面积，而 `MediaQuery` 给的
+/// 是逻辑像素。两者在 100% 缩放下恰好相等，于是「传错了单位」这个缺陷在 100%
+/// 缩放的机器上永远看不见 —— 到 125% 缩放的机器上，逻辑宽 `1536` 永远够不到基准
+/// `1920`，装置只会安静地等到超时。名字带 `physical`，误传的那一行就得自己写出
+/// `physicalWidth: 逻辑值`，读代码的人一眼能看见。
+bool framePremiseOk({
+  required double physicalWidth,
+  required double physicalHeight,
+}) {
+  final double dw = (physicalWidth - frameBenchWidth).abs();
+  final double dh = (physicalHeight - frameBenchHeight).abs();
   return dw <= frameBenchWindowTolerance &&
       dh <= frameBenchWindowTolerance;
 }
