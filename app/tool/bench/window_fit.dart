@@ -164,7 +164,13 @@ int? _ownWindow(_Win32 win32) {
     },
     // 回调不该抛错，但真抛了也不能让枚举继续 —— 用 `0`（停止）当异常返回，
     // 于是「找不到窗口」与「回调出错」都表现为返回 `null`，由调用方降级。
-    0,
+    //
+    // ⚠️ `exceptionalReturn` 是**命名**参数，写成位置参数（`isolateLocal(f, 0)`）
+    // 编译不过，而且这个错**两道门禁都拦不住**：`FFI` 校验器把第一个实参之后的
+    // 每个实参都当 `NamedArgument` 强转，撞上整数字面量就抛内部错、分析服务器整
+    // 个中止，而 `flutter analyze` 在那种情况下照样打印「No issues found」并以 0
+    // 退出；`flutter test` 不编译 `tool/`。只有真要出产物时才由前端编译器报错。
+    exceptionalReturn: 0,
   );
   try {
     win32.enumWindows(callable.nativeFunction, 0);
