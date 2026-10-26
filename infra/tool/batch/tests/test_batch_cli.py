@@ -11,6 +11,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import batch  # noqa: E402
+import card  # noqa: E402
 import check  # noqa: E402
 
 
@@ -23,6 +24,21 @@ def make_scope(**overrides):
     }
     scope.update(overrides)
     return check.sign_scope(scope, "tester")
+
+
+def write_approved_card(target: Path):
+    approved = card.approve_card(
+        {
+            "batch": "B1",
+            "type": "process",
+            "goal": "test",
+            "branch": "process/b1",
+            "base": "main",
+            "allowed": ["infra/**"],
+        },
+        "tester",
+    )
+    card.write_card(target / "card.yaml", approved)
 
 
 def write_state(root: Path, batch_id: str = "B1"):
@@ -54,7 +70,7 @@ class StatusTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             target = write_state(root)
-            (target / "card.yaml").write_text("batch: B1\n", encoding="utf-8")
+            write_approved_card(target)
             (target / "scope.json").write_text(json.dumps(make_scope()), encoding="utf-8")
             code, out = run(["--root", str(root), "status", "--batch", "B1"])
             self.assertEqual(code, 0)
@@ -66,7 +82,7 @@ class StatusTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             target = write_state(root)
-            (target / "card.yaml").write_text("batch: B1\n", encoding="utf-8")
+            write_approved_card(target)
             (target / "scope.json").write_text(json.dumps(make_scope()), encoding="utf-8")
             code, out = run(["--root", str(root), "status", "--batch", "B1", "--json"])
             self.assertEqual(code, 0)
@@ -97,8 +113,29 @@ class StatusTests(unittest.TestCase):
             (target / "card.yaml").write_text("batch: B1\n", encoding="utf-8")
             code, out = run(["--root", str(root), "status", "--batch", "B1"])
             self.assertEqual(code, 0)
-            self.assertIn("Stage: scope", out)
-            self.assertIn("Next: implement", out)
+            self.assertIn("Stage: approve", out)
+            self.assertIn("Next: batch approve", out)
+
+    def test_approved_card_without_scope_starts(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            target = write_state(root)
+            approved = card.approve_card(
+                {
+                    "batch": "B1",
+                    "type": "process",
+                    "goal": "test",
+                    "branch": "process/b1",
+                    "base": "main",
+                    "allowed": ["infra/**"],
+                },
+                "tester",
+            )
+            card.write_card(target / "card.yaml", approved)
+            code, out = run(["--root", str(root), "status", "--batch", "B1"])
+            self.assertEqual(code, 0)
+            self.assertIn("Stage: start", out)
+            self.assertIn("Next: batch start", out)
 
 
 class ListTests(unittest.TestCase):

@@ -41,24 +41,38 @@ The gate treats `mergeStateStatus: CLEAN` as necessary but not sufficient:
 `gh pr checks`/`statusCheckRollup` must also be all green. `MERGEABLE` alone is
 not evidence that checks passed.
 
-## Batch state CLI
+## Batch card and state CLI
 
-`batch.py` discovers a `.batch/<id>` directory and reports its current stage. C1
-is read-only: it does not create branches, cards or pull requests.
+C2 adds the human-owned card and the start step; `status` remains read-only.
 
 ```bash
+# Draft card.yaml; edit goal/allowed/acceptance, then approve
+python3 infra/tool/batch/batch.py plan B15-2 --type feat --goal "..." \
+  --allowed "app/lib/features/terrain/**" --acceptance "TC-FND-016..020 pass"
+
+# Human approval: hash-locks the card
+python3 infra/tool/batch/batch.py approve B15-2 --yes --by liberal
+
+# Create branch (unless --no-branch), state.json, scope.json and .batch/active
+python3 infra/tool/batch/batch.py start B15-2
+
 python3 infra/tool/batch/batch.py status
 python3 infra/tool/batch/batch.py status --batch M2 --json
 python3 infra/tool/batch/batch.py list
 ```
 
+`card.yaml` is a flat generated YAML subset (scalars + block lists + `approval`);
+values are JSON-quoted, so no PyYAML dependency is needed. Editing it after
+`approve` invalidates `approval.hash` and `start` refuses. `.batch/active` points
+to the batch **directory**; `check.py` resolves the directory to `scope.json`.
+
 State layout (gitignored):
 
 ```text
-.batch/active              # optional: path to the current batch dir
-.batch/<id>/state.json     # batch, type, branch, base
-.batch/<id>/card.yaml      # C2
-.batch/<id>/scope.json     # C2 + approval hash
+.batch/active              # path to the current batch dir
+.batch/<id>/state.json     # batch, type, branch, base, created_at
+.batch/<id>/card.yaml      # draft or approved card
+.batch/<id>/scope.json     # signed scope (from the card)
 .batch/<id>/evidence.log   # C3/C4
 ```
 

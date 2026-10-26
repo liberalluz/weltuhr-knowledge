@@ -196,12 +196,16 @@ def check_paths(paths: Iterable[str], scope: dict[str, Any]) -> list[str]:
 
 def resolve_scope(path: Path | None) -> Path:
     if path is not None:
-        return path
+        return path / "scope.json" if path.is_dir() else path
     if ACTIVE_SCOPE.exists():
         value = ACTIVE_SCOPE.read_text(encoding="utf-8").strip()
         if value:
             candidate = Path(value)
-            return candidate if candidate.is_absolute() else REPO_ROOT / candidate
+            if not candidate.is_absolute():
+                candidate = REPO_ROOT / candidate
+            if candidate.is_dir():
+                candidate = candidate / "scope.json"
+            return candidate
     raise RuntimeError("没有 scope：传 --scope，或由 batch start 写 .batch/active")
 
 

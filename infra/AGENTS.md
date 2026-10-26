@@ -21,6 +21,7 @@
 | 合并（人工确认后） | `python3 tool/batch/merge.py --pr <n> --yes` |
 | 范围守门 | `python3 tool/batch/check.py --scope .batch/<id>/scope.json` |
 | batch 状态 | `python3 tool/batch/batch.py status` |
+| 批次卡 | `python3 tool/batch/batch.py plan/approve/start` |
 
 ## 红线
 
