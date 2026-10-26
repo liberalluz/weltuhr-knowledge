@@ -239,20 +239,23 @@ class _TreeBenchState extends State<_TreeBench>
       return;
     }
     _fitTries++;
-    final BenchWindowFit? fit = fitBenchWindow(
+    final BenchWindowFit fit = fitBenchWindow(
       width: frameBenchWidth.toInt(),
       height: frameBenchHeight.toInt(),
     );
-    if (fit != null) {
+    if (fit.ok) {
       _fit = fit;
-      stdout.writeln('frame_bench: 窗口已设成 ${fit.width}x${fit.height}'
-          ' 物理客户区并提到前台'
+      stdout.writeln('frame_bench: ${fit.reason}并提到前台'
           '${fit.frameless ? '（无边框）' : '（边框没去掉，客户区会比设定值小）'}');
       return;
     }
     if (_fitTries >= benchFitTries) {
-      stdout.writeln('frame_bench: 没能自动设窗口（枚举不到本进程的可见顶层窗口？）'
-          '—— 请手动把客户区调成 ${frameBenchWidth.toInt()}x'
+      // ⚠️ 这一行以前是**猜**的（「枚举不到本进程的可见顶层窗口？」），而真实原因
+      // 是 `GetSystemMetrics` 从 kernel32 查导致绑定在构造期就抛、被吞成 null ——
+      // 猜错方向就把人引去查窗口可见性。现在由 [BenchWindowFit.reason] 说清
+      // 卡在绑定 / 找窗口 / 改尺寸哪一步，原始错误文本一并带出。
+      stdout.writeln('frame_bench: 没能自动设窗口 —— ${fit.reason}'
+          '；请手动把客户区调成 ${frameBenchWidth.toInt()}x'
           '${frameBenchHeight.toInt()} 物理像素，否则本组读数不可按 C-32 解释');
     }
   }
