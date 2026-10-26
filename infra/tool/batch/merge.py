@@ -67,6 +67,7 @@ class Check:
     status: str
     conclusion: str
     url: str = ""
+    timestamp: str = ""
 
 
 @dataclass
@@ -94,22 +95,53 @@ def normalize_check(raw: dict[str, Any]) -> Check | None:
             status="completed",
             conclusion=str(raw["state"]).lower(),
             url=str(raw.get("targetUrl") or ""),
+            timestamp=str(
+                raw.get("completedAt")
+                or raw.get("updatedAt")
+                or raw.get("createdAt")
+                or raw.get("startedAt")
+                or ""
+            ),
         )
     return Check(
         name=str(raw.get("name") or raw.get("context") or "(unnamed)"),
         status=str(raw.get("status") or "").lower(),
         conclusion=str(raw.get("conclusion") or "").lower(),
         url=str(raw.get("detailsUrl") or ""),
+        timestamp=str(
+            raw.get("completedAt")
+            or raw.get("startedAt")
+            or raw.get("createdAt")
+            or ""
+        ),
     )
+
+
+def latest_checks(checks: list[Check]) -> list[Check]:
+    """Keep only the newest run for each check name.
+
+    Reopening a PR, rerunning a workflow, or cancelling a run leaves several
+    entries with the same name in `statusCheckRollup`. GitHub's own PR view
+    shows the newest one; the gate must do the same, otherwise a stale
+    `cancelled` run blocks forever after a green rerun.
+    """
+    newest: dict[str, Check] = {}
+    for check in checks:
+        previous = newest.get(check.name)
+        if previous is None or check.timestamp >= previous.timestamp:
+            newest[check.name] = check
+    return sorted(newest.values(), key=lambda check: check.name)
 
 
 def evaluate(pr: dict[str, Any]) -> Verdict:
     """Apply the merge gate to a `gh pr view --json` payload."""
-    checks = [
-        check
-        for raw in (pr.get("statusCheckRollup") or [])
-        if (check := normalize_check(raw)) is not None
-    ]
+    checks = latest_checks(
+        [
+            check
+            for raw in (pr.get("statusCheckRollup") or [])
+            if (check := normalize_check(raw)) is not None
+        ]
+    )
     verdict = Verdict(pr=pr, checks=checks)
 
     if str(pr.get("state") or "").upper() != "OPEN":
