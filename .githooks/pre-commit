@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+# C6 pre-commit: catch local formatting/whitespace red before a commit exists.
+#
+# Enabled by the same one-time switch as the other hooks:
+#   git config core.hooksPath .githooks
+#
+# It only looks at staged files. `--no-verify` remains the explicit bypass.
+set -euo pipefail
+
+root=$(git rev-parse --show-toplevel)
+cd "$root"
+
+files=$(git diff --cached --name-only --diff-filter=ACMR)
+if [ -z "$files" ]; then
+  exit 0
+fi
+
+fail=0
+
+# 1) Whitespace / conflict markers in the staged diff.
+if ! git diff --cached --check; then
+  printf 'pre-commit: 空白错误（行尾空格/冲突标记）；修好后重新 git add\n' >&2
+  fail=1
+fi
+
+# 2) Format + analyze only the stacks that have staged Dart files.
+mapfile -t dart_files < <(printf '%s\n' "$files" | grep -E '\.dart$' || true)
+if [ "${#dart_files[@]}" -gt 0 ]; then
+  if ! command -v dart >/dev/null 2>&1; then
+    printf 'pre-commit: 暂存了 Dart 文件但 PATH 里没有 dart；先装 Flutter/Dart\n' >&2
+    fail=1
+  else
+    if ! dart format --output=none --set-exit-if-changed "${dart_files[@]}"; then
+      printf 'pre-commit: Dart 格式不合规；运行 dart format 后重新 git add\n' >&2
+      fail=1
+    fi
+
+    if printf '%s\n' "$files" | grep -q '^app/.*\.dart$'; then
+      if ! command -v flutter >/dev/null 2>&1; then
+        printf 'pre-commit: 暂存了 app/ Dart 文件但 PATH 里没有 flutter\n' >&2
+        fail=1
+      elif ! (cd app && flutter analyze); then
+        printf 'pre-commit: flutter analyze 失败\n' >&2
+        fail=1
+      fi
+    elif printf '%s\n' "$files" | grep -q '^server/.*\.dart$'; then
+      if ! (cd server && dart analyze); then
+        printf 'pre-commit: dart analyze（server）失败\n' >&2
+        fail=1
+      fi
+    fi
+  fi
+fi
+
+if [ "$fail" -ne 0 ]; then
+  printf 'pre-commit: 未通过；修好后重新 git add（明确绕过用 git commit --no-verify）\n' >&2
+  exit 1
+fi
+
+printf 'pre-commit: 通过\n'
+exit 0
