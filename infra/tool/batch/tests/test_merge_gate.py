@@ -103,6 +103,54 @@ class EvaluateTests(unittest.TestCase):
         self.assertFalse(verdict.eligible)
         self.assertEqual(verdict.failed, 1)
 
+    def test_stale_cancelled_run_is_ignored(self):
+        pr = make_pr(
+            statusCheckRollup=[
+                {
+                    "name": "app-checks",
+                    "status": "COMPLETED",
+                    "conclusion": "CANCELLED",
+                    "completedAt": "2026-10-26T12:00:00Z",
+                },
+                {
+                    "name": "app-checks",
+                    "status": "COMPLETED",
+                    "conclusion": "SUCCESS",
+                    "completedAt": "2026-10-26T12:01:00Z",
+                },
+                {"name": "content-checks", "status": "COMPLETED", "conclusion": "SUCCESS"},
+                {"name": "repo-hygiene", "status": "COMPLETED", "conclusion": "SUCCESS"},
+            ]
+        )
+        verdict = merge.evaluate(pr)
+        self.assertTrue(verdict.eligible)
+        self.assertEqual(verdict.passed, 3)
+        self.assertEqual(verdict.failed, 0)
+
+    def test_newest_failed_run_still_blocks(self):
+        pr = make_pr(
+            statusCheckRollup=[
+                {
+                    "name": "app-checks",
+                    "status": "COMPLETED",
+                    "conclusion": "SUCCESS",
+                    "completedAt": "2026-10-26T12:00:00Z",
+                },
+                {
+                    "name": "app-checks",
+                    "status": "COMPLETED",
+                    "conclusion": "FAILURE",
+                    "completedAt": "2026-10-26T12:01:00Z",
+                },
+                {"name": "content-checks", "status": "COMPLETED", "conclusion": "SUCCESS"},
+                {"name": "repo-hygiene", "status": "COMPLETED", "conclusion": "SUCCESS"},
+            ]
+        )
+        verdict = merge.evaluate(pr)
+        self.assertFalse(verdict.eligible)
+        self.assertEqual(verdict.failed, 1)
+        self.assertTrue(any("检查失败" in blocker for blocker in verdict.blockers))
+
 
 class CliTests(unittest.TestCase):
     def test_dry_run_returns_zero_when_ready(self):
