@@ -9,9 +9,9 @@
 | # | 规则 | `src:` |
 |---|---|---|
 | **P-01** | **`path` 是派生值，不是字段** —— 由父链 `slug` 串联、运行期 `pathOf(node, parentIndex)` 计算。任何实体、包、事件、索引都**不得存储 `path` 快照**；引用一律用 `id`（虫洞 / 覆盖锚点 / `attach_to` / `catalog_refs` 全同）。**身份与地址分离**：`id` 稳定不变，`path` 只是当前位置 | `ADR-0005` 决策 7 · `ADR-0007` 决策 2 · `entity-fields` §2 |
-| **P-02** | **`path` = 从轴根到本节点的 `slug` 序列**，以 `/` 连接，无前后导斜杠。首段是轴根（三轴各一个：`discipline` / `major` / `occupation`）。同子树内**段数 = 该子树层数**；官方子树与编外子树段数可不同 | `entity-fields` §2 · `skeleton-catalog` §五 |
+| **P-02** | **`path` = 从轴根到本节点的 `slug` 序列**，以 `/` 连接，无前后导斜杠。首段是轴根（三轴各一个：`discipline` / `major` / `occupation`）。同子树内**段数 = 该子树层数**；不同轴的子树段数不同（官方目录逐轴不同） | `entity-fields` §2 · `skeleton-catalog` §五 |
 | **P-03** | **URI = `path`**。不存在第二套地址编码；改名即改 URI，旧 URI 靠 `PathAlias` 重定向（见 P-10 / P-11） | `ADR-0005` 决策 7 |
-| **P-04** | **`slug` 字符集 = `^[a-z0-9-]+$`**（小写字母、数字、连字符）。下划线开头的段为**保留段**（如 `_extra`），只允许系统生成，作者不可自取。全角 / 半角括号、连接符、异体字必须在生成前归一到该字符集 —— 目录 PDF 抽取在这些字符上必然有偏差 | `entity-fields` §2 · `skeleton-catalog` §六 步骤 2 |
+| **P-04** | **`slug` 字符集 = `^[a-z0-9-]+$`**（小写字母、数字、连字符）。下划线开头的段为**保留段**，只允许系统生成，作者不可自取。全角 / 半角括号、连接符、异体字必须在生成前归一到该字符集 —— 目录 PDF 抽取在这些字符上必然有偏差 | `entity-fields` §2 · `skeleton-catalog` §六 步骤 2 |
 | **P-05** | **行星系与行星无官方码，`slug` 是它们唯一的 path 段来源**；骨架恒星段由 `official_code` 派生稳定 slug（**改名不改码**，故也不改 id） | `entity-fields` §2 · `skeleton-catalog` §四 |
 
 ## 二、唯一性（6–8）
