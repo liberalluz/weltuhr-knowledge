@@ -71,7 +71,7 @@ Why rule 5 exists: the docs and code in this repository follow fixed conventions
 | 3 | does the interface quietly draw a field the model never declared | `X-01` |
 | 4 | is the NOT list touched | [not-list](../docs/decisions/not-list.md) |
 
-⚠️ **Current state**: branch protection is not enabled on `main` (private repositories on free GitHub accounts cannot use it), so the constraints above **rest on discipline** rather than on system enforcement — see [git-conventions §4.3 remote state](../docs/specs/git-conventions.md). "Technically nothing stops it" does not make it allowed.
+✅ **Current state**: branch protection is enabled on `main` (repository is public). PRs are required, required checks are `app-checks` / `content-checks` / `repo-hygiene` / `platform-gate`, administrators are subject to the same rules, and force pushes/deletions are rejected — see [git-conventions §4.3 remote state](../docs/specs/git-conventions.md). Local hooks remain as defense in depth.
 
 ### Merge gate
 

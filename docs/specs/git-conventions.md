@@ -100,7 +100,7 @@
 - `<type>` 取提交类型（`feat` / `fix` / `docs` / `refactor` / `test` / `chore`），`<topic>` 小写连字符。示例：`feat/quick-locate` · `docs/design-spec` · `fix/hlc-clamp`。
 - **不建**长期 `develop`，**不建**常驻 release 分支。
 - **唯一例外**：**仓库初始化首提**（骨架 + `.gitignore` + `LICENSE` + 根 `README.md` + `.github/SECURITY.md` + 本文件 + 模块入口 README）可在 `main` 直接完成 —— **全局仅此一次**，其余一律走 PR。
-- ⚠️ **远端分支保护在当前账号下不可用**（GitHub 免费账号的私有仓不支持）⇒ **远端不拦**。替代装置在近端两道，判据落点见 §3.5：`.githooks/pre-push`（本地，`git push` 当场失败）· `repo-hygiene` 的「main 只接受 PR」步骤（CI，直推后红）。`pre-push` **同时管引用类型**：只放行 `refs/heads/*` 与 §五 命名的 tag。
+- ✅ **远端分支保护已启用**（仓库转 public + `main` branch protection）：`main` 必须走 PR，required checks 为 `app-checks` / `content-checks` / `repo-hygiene` / `platform-gate`，管理员同样受约束，禁强推、禁删除。近端 `.githooks/pre-push`（本地，`git push` 当场失败）与 `repo-hygiene` 的「main 只接受 PR」仍保留，作为纵深防御。`pre-push` **同时管引用类型**：只放行 `refs/heads/*` 与 §五 命名的 tag。
 - 装置只拦「忘了」，不拦「故意」——`--no-verify` 与手写伪编号都绕得过去。**不因技术上没拦住就当作允许**。开关清单见 §4.3。
 
 ### 2.1 clone 后第一件事：让钩子真正生效
@@ -350,17 +350,21 @@ git config --get core.hooksPath       # 自查：应回显 .githooks
 | Allow deletions                       | ❌ 关                                                                                                      |
 | Dismiss stale approvals               | 建议开                                                                                                      |
 
-**远端开关现状（2026-10-17）**：
+**远端开关现状（2026-10-26）**：
 
 | 项           | 状态                                            | 说明                                                                                 |
 | ----------- | --------------------------------------------- | ---------------------------------------------------------------------------------- |
 | 合并方式        | ✅ squash 允许 · merge commit 允许 · **rebase 禁用** | 仓库级设置                                                                              |
 | 合后自动删源分支    | ✅ 开                                           | 仓库级设置                                                                              |
-| `main` 分支保护 | ⚠️ **未启用**                                    | GitHub 免费账号的私有仓不支持（API 403：`Upgrade to GitHub Pro or make this repository public`） |
+| `main` 分支保护 | ✅ **已启用**                                    | public 仓库，branch protection；管理员同样受约束                                                  |
+| Required checks | ✅ `app-checks` · `content-checks` · `repo-hygiene` · `platform-gate` | 四者均为 always-on；三端 build job 仍为 advisory、不设为 required（避免 skipped「Expected」） |
+| Force push / deletion | ❌ 拒绝                                      | `allow_force_pushes=false` · `allow_deletions=false`                                  |
 
-**分支保护挂待办**，满足任一条件后补齐：升级 GitHub Pro，或仓库转为公开（转公开前须先复核提交历史无敏感信息）。
+**已验证（2026-10-26）**：`GET /repos/liberalluz/weltuhr-knowledge/branches/main/protection` 返回 `enforce_admins.enabled=true`、
+`required_status_checks.contexts` 含上述四项、`allow_force_pushes.enabled=false`、`allow_deletions.enabled=false`。
+仓库可见性为 `PUBLIC`。
 
-> ⚠️ **保护未启用 ⇒ 上表里的「`Allow force pushes` ❌ 关」只是一句期望，平台上没有任何东西在执行它**。近端唯一的兜底是 `.githooks/pre-push` 的祖先判据（非快进推送直接拒），而它自己也挂在 `core.hooksPath` 上（§2.1）。⇒ 在保护真正启用之前，**「`main` 历史没被改写」靠的是每次推送前那一步，不是平台开关**。
+> 保护已启用；`.githooks/pre-push` 与 `repo-hygiene` 仍保留，作为近端与 CI 的纵深防御。
 
 > 本节只定**语义**；开关名以平台现行界面 / API 为准，落地时逐项核对，**不凭记忆填字段名**。
 
