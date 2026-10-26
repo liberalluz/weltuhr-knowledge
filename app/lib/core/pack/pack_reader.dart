@@ -16,7 +16,8 @@
 /// ## 校验边界（沿用旧层，不是重新发明）
 ///
 /// - **守**：六段齐全 · 顶层不得出现清单字段与六段之外的键 · 段内 id 唯一 ·
-///   `⪯` 无环 · **`counts` 与实扫一致**
+///   `⪯` 无环 · **两份摘要与实扫一致**（`payload.counts` 对 `nodes[]` ·
+///   `terrain.edge_counts` 对 `edges[]`）· `terrain.axes_covered ⊆ axes[]`
 /// - **不守**：字段级语义（父链可达、`path` 构成、`criteria` 与 `quiz` 1:1）——
 ///   那些要么构建期 `content/tools/validator.py` 已拒过，要么归 `triple_validator`
 ///
@@ -252,7 +253,9 @@ PackContent readPack(
     problems.add('`⪯` 出现环：${cycle.join(" → ")}（`SPEC-FND-005` 要求 DAG）');
   }
 
-  _checkCounts(parsedPack, nodes, problems);
+  _checkPayloadCounts(parsedPack, nodes, problems);
+  _checkTerrainCounts(parsedPack, edges, problems);
+  _checkTerrainAxes(parsedPack, problems);
 
   if (problems.isNotEmpty) {
     throw PackContentException(problems);
@@ -314,10 +317,10 @@ void _checkTopLevelKeys(JsonMap raw, Pack parsed, List<String> problems) {
   }
 }
 
-/// `counts` 与实扫必须一致（见文件头「守」第五条）。
+/// `payload.counts` 与实扫必须一致（见文件头「守」第五条）。
 ///
 /// 只在清单声明了 `payload` 时查：非载荷包没有 `counts` 可对。
-void _checkCounts(Pack pack, List<Node> nodes, List<String> problems) {
+void _checkPayloadCounts(Pack pack, List<Node> nodes, List<String> problems) {
   final PayloadFacts? facts = pack.payload;
   if (facts == null) {
     return;
@@ -335,15 +338,108 @@ void _checkCounts(Pack pack, List<Node> nodes, List<String> problems) {
       star++;
     }
   }
-  _compareCount('star', facts.counts.star, star, problems);
-  _compareCount('system', facts.counts.system, system, problems);
-  _compareCount('planet', facts.counts.planet, planet, problems);
+  _compareCount('payload.counts', 'star', facts.counts.star, star, 'nodes[]', problems);
+  _compareCount('payload.counts', 'system', facts.counts.system, system, 'nodes[]', problems);
+  _compareCount('payload.counts', 'planet', facts.counts.planet, planet, 'nodes[]', problems);
 }
 
-void _compareCount(String key, int declared, int actual, List<String> problems) {
+/// `terrain.edge_counts` 与 `edges[]` 实扫必须一致。
+///
+/// 与 [`_checkPayloadCounts`] 同一形态、同一理由：摘要与正文不一致时没有任何一处
+/// 会报错。地形包尤其隐蔽 —— 它没有 `nodes[]`，「这个包给了多少条先修边」在界面上
+/// 只有 `edge_counts` 一份，而 `⪯` 走的是 `edges[]`。两个数分叉时，用户看到的建议
+/// 顺序与摘要写的条数对不上，查起来还得先怀疑是不是渲染。
+///
+/// 两类强度**分开对**：只对总数会放过「`required` 少写一条、`recommended` 多写
+/// 一条」—— 长度相同而静默通过，但这两类不可互换（一类构成 `⪯`，一类不构成）。
+void _checkTerrainCounts(
+  Pack pack,
+  List<NodeEdge> edges,
+  List<String> problems,
+) {
+  final TerrainFacts? facts = pack.terrain;
+  if (facts == null) {
+    return;
+  }
+  int required = 0;
+  int recommended = 0;
+  for (final NodeEdge edge in edges) {
+    if (edge is! PrerequisiteEdge) {
+      continue;
+    }
+    if (edge.isRequired) {
+      required++;
+    } else {
+      recommended++;
+    }
+  }
+  _compareCount(
+    'terrain.edge_counts',
+    'required',
+    facts.requiredCount,
+    required,
+    'edges[]',
+    problems,
+  );
+  _compareCount(
+    'terrain.edge_counts',
+    'recommended',
+    facts.recommendedCount,
+    recommended,
+    'edges[]',
+    problems,
+  );
+}
+
+/// `terrain.axes_covered` 的三条定义性校验。
+///
+/// 依据 `entity-fields` §1：`axes[]` 是「本包涉及哪几条轴」，`axes_covered[]` 是
+/// 「地形边跨了哪几条轴」—— 后者的元素必须在前者里。否则同一份 `pack.json` 里
+/// 清单说「不涉及这条轴」、地形摘要说「跨了它」，两句互相打脸却都读得进。
+///
+/// **不校验「实际跨了哪几条轴」**：真实的地形边指向**别的包**的节点（决策 4 把先修
+/// 边独立成包、且跨轴），边两端不在本包 `nodes[]` 里，解析层拿不到它们的轴。要在
+/// 这里算，就得先把依赖包装进来 —— 那是装载层的事，还会让「单独读一个包」变成
+/// 不可能的用法。所以只守三件不需要外部信息的事：非空 · 不重复 · 是 `axes[]` 的子集。
+void _checkTerrainAxes(Pack pack, List<String> problems) {
+  final TerrainFacts? facts = pack.terrain;
+  if (facts == null) {
+    return;
+  }
+  final List<Axis> covered = facts.axesCovered;
+  if (covered.isEmpty) {
+    problems.add(
+      '`terrain.axes_covered` 不得为空 —— 一条轴都不跨就没有地形可言，'
+      '而 `terrain` 这个 kind 已经声明了',
+    );
+  }
+  final Set<Axis> seen = <Axis>{};
+  for (final Axis axis in covered) {
+    if (!seen.add(axis)) {
+      problems.add('`terrain.axes_covered` 重复：`${axis.name}`');
+    }
+  }
+  for (final Axis axis in seen) {
+    if (!pack.axes.contains(axis)) {
+      problems.add(
+        '`terrain.axes_covered` 含 `axes[]` 里没有的轴 `${axis.name}` '
+        '—— 清单说本包不涉及这条轴，地形摘要却说跨了它',
+      );
+    }
+  }
+}
+
+void _compareCount(
+  String path,
+  String key,
+  int declared,
+  int actual,
+  String segment,
+  List<String> problems,
+) {
   if (declared != actual) {
     problems.add(
-      '`payload.counts.$key` 声明 $declared，`nodes[]` 实扫 $actual '
+      '`$path.$key` 声明 $declared，`$segment` 实扫 $actual '
       '—— 摘要与正文不一致时界面只会露出其中一份',
     );
   }

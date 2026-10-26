@@ -135,7 +135,7 @@ git config --get core.hooksPath       # 自查：应回显 .githooks
 
 - **第 3 步**：`git add -A --dry-run`（§七）只用来**检查**有无意外文件，**不是提交方式**。暂存一律列显式路径 —— `-A` 会把 `tmp/`、本地配置、半成品一起带进去，且事后从 diff 里看不出来是「顺手带上的」还是「本来就该改」。
 - **第 5 步**：`core.hooksPath` 没设，钩子一行也不跑。拦直推 `main`、引用类型判据、`(#NNN)` 校验、非快进判据**四条全挂在同一个开关上**，一起失效（§2.1）。
-  - **第 5 步一批只执行一次。** 本批全部 commit 落盘后推一次，不得「改一笔 → push → 等三 job 全绿 → 再改下一笔」。三支 workflow 都设了 `concurrency.cancel-in-progress: true`，注释写的是「同一分支连续推送时只保留最新一次」—— 它要的是**连着推**；逐笔等绿等于每笔都跑到自然结束，取消机制零触发，一批的等待从 1 轮变成 N 轮。**判据**：本批 `git push` 调用次数 = 1；`gh run list --branch <分支> --limit 10` 里不存在「上一条 `completed` 之后才出现下一条」的串行链。第 5 步之前须有一次本批全量自验证（`flutter analyze` · 触及 `dart:ffi` 时单文件 `dart analyze` · `flutter test` · `dart run tool/docs/check.dart`），按笔只跑改动面相关的，全量只在这里跑一次。
+  - **第 5 步一批只执行一次。** 本批全部 commit 落盘后推一次，不得「改一笔 → push → 等三 job 全绿 → 再改下一笔」。三支 workflow 都设了 `concurrency.cancel-in-progress: true`，注释写的是「同一分支连续推送时只保留最新一次」—— 它要的是**连着推**；逐笔等绿等于每笔都跑到自然结束，取消机制零触发，一批的等待从 1 轮变成 N 轮。**判据**：本批 `git push` 调用次数 = 1；`gh run list --branch <分支> --limit 10` 里不存在「上一条 `completed` 之后才出现下一条」的串行链。第 5 步之前须有一次本批全量自验证（`flutter analyze` · `dart run tool/lint/check.dart` · 触及 `dart:ffi` 时单文件 `dart analyze` · `flutter test` · `dart run tool/docs/check.dart`），按笔只跑改动面相关的，全量只在这里跑一次。⚠️ **这五项与 §七 是同一个集合，少跑其中任何一项即算未跑** —— `lint` 是本地唯一能拦住 `R5`（用例名未声明守哪条裁定）的门，它只在 CI 里报就意味着一轮往返。
 - **第 6 步**：`gh pr create` **不读** `.github/PULL_REQUEST_TEMPLATE.md` —— 缺省无自动读取行为（`--template <file>` 可显式指定骨架），Web UI 那一趟才由服务端渲染模板。用 CLI 开 PR 时正文必须照骨架手填；这一环的**形态**现有装置兜底（`bash .githooks/pr-body`，本地与 `repo-hygiene` 共用同一份，见 §4.1），但装置**只判形态、不判内容是否成立** —— 反证有没有被写成自证，仍只能人看。**正文一律先落 `.workbuddy/tmp/<name>.md`，再以 `--body-file` 传入** —— 多行正文走 `--body` 会被 shell 转义吃掉；临时文件用完即删，不进仓。**开 PR 是四步，第一步不能省**：① **先读** `.github/PULL_REQUEST_TEMPLATE.md` 认骨架（5 节标题与顺序 · 自审留痕五行名称）—— `gh` 不读它，人也不读就等于**根本没有骨架**，漏栏要等别人看 PR 才发现；② 照骨架逐节填值，五行全部给值、一律不用 `- [ ]`；③ 跑 `bash .githooks/pr-body --file <file> --diff-base origin/main`，红则改正文后重跑（不必重开 PR）；④ 再 `--body-file` 传入。省掉第 ① 步的典型后果是把 §4.1 的**判据项**当节名写（判据 8 项、模板 5 节，两者不是一回事）。
 
 ### 2.3 失败处置
@@ -436,15 +436,16 @@ git push origin pack/python/v1.2.0
 ```bash
 cd app
 flutter analyze                      # 零 issue
-dart run tool/lint/check.dart        # 架构规则（R1 跨层依赖 · R2 字面量常量）零违规
+dart run tool/lint/check.dart        # 架构规则（R1–R10）零违规
 flutter test                         # 全绿
+dart run tool/docs/check.dart        # 文档相对链接 + 受控文档门禁零违规
 cd ..
 git add -A --dry-run                 # 只看不暂存：确认无意外文件（不用 check-ignore 查目录，它对目录误报）
 ```
 
+- **五项与 §2.2 第 5 步同一个集合**：两处列举不得分叉 —— 分叉的结果是照其中一处跑、漏掉只写在另一处的那项，而漏的那项往往正是当笔唯一会红的那道门。
 - **`--dry-run` 是检查，不是提交方式**：实际暂存只 `git add <显式路径>`，禁 `git add -A` / `git add .`（见 §2.2 第 3 步）。两者命令长得像，容易混用 —— `-A` 在 `--dry-run` 下无害，去掉 `--dry-run` 就是把 `tmp/` 与本地配置一起推上去的那一步。
 
 - 涉及内容包时另跑 `python content/tools/build.py`，确认包能构建。
-- 涉及文档时跑相对链接校验，确认无悬空。
 - ⚠️ **`success` ≠ 跑了**：只改文档的 PR，`app-checks` 常在 **7s** 内通过 —— 那是 `affected.py` 判定后**空跑**，不是执行证据。判据 = 耗时（约 `1m50s` 才算真跑）＋「有没有碰 `app/` 下任何文件」；只改 `app/README.md` 一行，同样判全套。
 - **跑不通或沙箱跑不了的项**（如 `flutter build` / `flutter run` / 真机验收）在 PR 正文**如实标注「未验 + 原因 + 归谁验」**，不得留空或写「应该能过」。
