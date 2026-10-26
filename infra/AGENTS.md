@@ -20,6 +20,7 @@
 | 合并闸门（只检查） | `python3 tool/batch/merge.py --pr <n> --dry-run` |
 | 合并（人工确认后） | `python3 tool/batch/merge.py --pr <n> --yes` |
 | 范围守门 | `python3 tool/batch/check.py --scope .batch/<id>/scope.json` |
+| batch 状态 | `python3 tool/batch/batch.py status` |
 
 ## 红线
 

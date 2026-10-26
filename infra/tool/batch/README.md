@@ -3,7 +3,7 @@
 `merge.py` is the repository's conservative merge gate. It refuses to merge
 unless the pull request is open, not a draft, conflict-free, every check is
 successful/neutral/skipped, and no review is requesting changes. `check.py` is
-the per-batch scope guard described below.
+the per-batch scope guard described below. `batch.py` is the state CLI skeleton.
 
 ## Usage
 
@@ -40,6 +40,30 @@ Options:
 The gate treats `mergeStateStatus: CLEAN` as necessary but not sufficient:
 `gh pr checks`/`statusCheckRollup` must also be all green. `MERGEABLE` alone is
 not evidence that checks passed.
+
+## Batch state CLI
+
+`batch.py` discovers a `.batch/<id>` directory and reports its current stage. C1
+is read-only: it does not create branches, cards or pull requests.
+
+```bash
+python3 infra/tool/batch/batch.py status
+python3 infra/tool/batch/batch.py status --batch M2 --json
+python3 infra/tool/batch/batch.py list
+```
+
+State layout (gitignored):
+
+```text
+.batch/active              # optional: path to the current batch dir
+.batch/<id>/state.json     # batch, type, branch, base
+.batch/<id>/card.yaml      # C2
+.batch/<id>/scope.json     # C2 + approval hash
+.batch/<id>/evidence.log   # C3/C4
+```
+
+`status` falls back from `--batch` to `.batch/active`, then to the most recently
+modified batch directory. Exit code `1` means no batch was found.
 
 ## Tests
 
