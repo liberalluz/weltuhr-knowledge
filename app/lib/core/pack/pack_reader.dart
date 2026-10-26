@@ -241,6 +241,10 @@ PackContent readPack(
     throw PackContentException(problems);
   }
 
+  // ⚠️ **这里故意不收窄到 `required`**：`B15` 的出口判据要求环检测覆盖**两类边**，
+  // `recommended` 成环同样要拒 —— 建议边写成一个圈，用户拿到的「建议先学」就
+  // 变成了死结，而 `⪯` 那边（`kahnLevels` 只沿 required 走）一点都看不出来。
+  // 改成 `requiredEdgesOf(...)` 会让 `TC-FND-015` 当场红，别顺手「统一口径」。
   for (final List<String> cycle in findCyclesFrom(<({String from, String to})>[
     for (final PrerequisiteEdge edge in edges.whereType<PrerequisiteEdge>())
       (from: edge.fromId, to: edge.toId),

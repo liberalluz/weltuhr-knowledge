@@ -155,6 +155,33 @@ void main() {
       );
     });
 
+    test('TC-FND-015 环检测覆盖两类边：整环全是 `recommended` 也拒（SPEC-FND-005）', () {
+      // m2 原本已有 `closure ⇢ module ⇢ refactor` 两条建议边，补上 `refactor ⇢ closure`
+      // 就闭成一个**只由 `recommended` 构成**的环。
+      // ⚠️ 这条用例是「环检测不得只筛 required」的唯一装置：`kahnLevels` 只沿
+      // required 边走，所以这个环**不会**让任何层号算错 —— 把 `pack_reader` 的
+      // 过滤改成 `requiredEdgesOf(...)`，`φ` 相关的用例全绿，只有本条会红。
+      final String json = mutateM2((JsonMap pack) {
+        final List<Object?> edges = pack['edges']! as List<Object?>;
+        edges.add(<String, Object?>{
+          'type': 'prerequisite',
+          'from_id': 'm2-demo:refactor',
+          'to_id': 'm2-demo:closure',
+          'strength': 'recommended',
+        });
+      });
+      expect(
+        () => readPack(json),
+        throwsA(
+          isA<PackContentException>().having(
+            (PackContentException e) => e.problems.join('\n'),
+            'problems',
+            contains('出现环'),
+          ),
+        ),
+      );
+    });
+
     test('未知边类型不在册即报，允许值一并列出（无 SPEC：判别符口径）', () {
       final String json = mutateM2((JsonMap pack) {
         final List<Object?> edges = pack['edges']! as List<Object?>;

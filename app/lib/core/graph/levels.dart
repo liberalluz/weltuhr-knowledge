@@ -9,7 +9,7 @@
 library;
 
 import '../entities/edge.dart';
-import '../enums.dart';
+import 'precedence.dart';
 
 /// 边端点不在 `nodeIds` 里时的处置：**忽略这条边**。
 ///
@@ -23,8 +23,9 @@ import '../enums.dart';
 /// `recommended` 是「建议先学」，不构成可达性 —— 把它算进层号会让一个只被
 /// 「建议」指向的项往后挪一层，看起来像它真有前置。
 ///
-/// 过滤放在**这里**而不是调用方：`prerequisites` 返回全部先修边，五处调用点
-/// 各自记得筛「只取 required」是不现实的，漏一处就悄悄改了 `φ` 的语义。
+/// 过滤**不在这里**：由 `precedence.dart` 的 `requiredEdgesOf` 统一供给。
+/// `prerequisites` 返回的是全部先修边，各调用点自己筛「只取 required」是不现实的
+/// —— 漏一处就悄悄改了 `φ` 的语义，而它的表象与「数据本来如此」看不出区别。
 Map<String, int> kahnLevels({
   required Iterable<String> nodeIds,
   required Iterable<PrerequisiteEdge> edges,
@@ -35,10 +36,7 @@ Map<String, int> kahnLevels({
   final Map<String, int> indegree = <String, int>{for (final String id in level.keys) id: 0};
   final Map<String, List<String>> successors = <String, List<String>>{};
 
-  for (final PrerequisiteEdge edge in edges) {
-    if (edge.strength != EdgeStrength.required) {
-      continue;
-    }
+  for (final PrerequisiteEdge edge in requiredEdgesOf(edges)) {
     if (!level.containsKey(edge.fromId) || !level.containsKey(edge.toId)) {
       continue;
     }
