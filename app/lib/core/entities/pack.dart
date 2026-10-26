@@ -105,7 +105,10 @@ class PayloadFacts {
     estMinutesCoverage: requireDouble(json, 'est_minutes_coverage'),
   );
 
-  /// **节点 id**（非 path）。骨架已有该恒星时填其 id；编外节点填 `@extra/root`。
+  /// **节点 id**（非 path），必须是骨架里**真实存在**的那颗恒星的 id。
+  ///
+  /// 写一个谁也不认识的 id，`readPack` 照样收下 —— 要等所有包装在一起建树，
+  /// 才会发现这条父边悬空。格式在这里查不出对错，只能查形态。
   final String attachTo;
 
   /// 本包提供的最上层槽位。

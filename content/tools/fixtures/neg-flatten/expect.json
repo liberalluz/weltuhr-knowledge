@@ -1,0 +1,8 @@
+{
+  "base": "valid-min",
+  "exit": 1,
+  "codes": [
+    "E-FLATTEN"
+  ],
+  "note": "压平声明三处都写歪：slug 含下划线与大写、缺 name、tags 不是数组"
+}

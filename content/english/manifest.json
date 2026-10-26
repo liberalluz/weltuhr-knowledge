@@ -10,6 +10,8 @@
   "defaultPrimaryAxis": "ability",
   "accent": "#1f4e79",
   "order": 20,
+  "axis": "major",
+  "attach_to": "skeleton:major/050201",
   "domainIds": [
     "english/word-class",
     "english/noun-phrase",

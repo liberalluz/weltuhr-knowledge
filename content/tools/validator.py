@@ -23,6 +23,16 @@ from dataclasses import dataclass
 # 六轴：学科 / 岗位 / 行业 / 能力 / 主题 / 技术栈（SPEC-FND-002）
 AXES = ("subject", "role", "industry", "ability", "topic", "stack")
 
+# 骨架三轴（SPEC-TREE-003）。与上面的 `AXES` **不是一回事**：那个是六轴 —— 条目的
+# 编目维度；这个是骨架目录的三条树根。两处都叫「轴」，读的人容易并成一处，
+# 所以名字里带 SKELETON，用的时候看得出是哪一个。
+SKELETON_AXES = ("discipline", "major", "occupation")
+
+# 节点 id 形如 `{plugin_id}:{local_id}`，local 段可含 `/`（骨架 id 就是 `skeleton:major/050201`）。
+# `@` 不在合法字符里 —— 这个字符留给「不是节点的东西」，一旦挂点写成 `@...`，
+# 装配出来的父边就指向一个谁也没有的 id。
+NODE_ID_RE = re.compile(r"^[a-z][a-z0-9-]*:[a-zA-Z0-9/_-]+$")
+
 # 六要件：边界 / 证成 / 命题 / 关联 / How / Tacit（SPEC-FND-004）
 REQUIREMENTS = ("boundary", "justification", "proposition", "relation", "how", "tacit")
 
@@ -180,6 +190,86 @@ def _check_manifest(manifest: dict) -> list[Issue]:
             out.append(_issue("E-MANIFEST-FIELD", where, "`domainIds` 须为字符串数组"))
         elif len(set(domains)) != len(domains):
             out.append(_issue("E-MANIFEST-FIELD", where, "`domainIds` 有重复取值"))
+
+    return out
+
+
+# --- 树上的落点 -----------------------------------------------------------
+
+
+def _check_attach(manifest: dict) -> list[Issue]:
+    """载荷必须声明挂哪条轴、挂在哪个骨架节点下（`entity-fields` §1 `attach_to`）。
+
+    **为什么这条要写成硬校验**：这两个字段缺了或写歪了，包照样装得出来、照样
+    读得进客户端 —— 错的地方要等所有包装在一起建树才现形，而那时报的是
+    「某轴有两条无父链」，指在子节点上，与真正写错的那一行隔着一整条装配链。
+    这个函数的全部价值就是让错报在写错的那一行。
+
+    `flattenDomains` 一并在这里查：它决定包顶层是一行还是多行，写歪了会让
+    「域」这个层级凭空消失，而界面上只表现为「这个包的域不见了」。
+    """
+    out: list[Issue] = []
+    where = "manifest.json"
+
+    axis = manifest.get("axis")
+    if axis is None:
+        out.append(
+            _issue("E-ATTACH-MISSING", where, "缺 `axis` —— 载荷必须声明挂在骨架的哪条轴上")
+        )
+    elif axis not in SKELETON_AXES:
+        out.append(
+            _issue("E-ATTACH-AXIS", where, f"`axis` 不在册：{axis!r}（{' / '.join(SKELETON_AXES)}）")
+        )
+
+    attach_to = manifest.get("attach_to")
+    if attach_to is None:
+        out.append(
+            _issue("E-ATTACH-MISSING", where, "缺 `attach_to` —— 载荷必须声明挂在哪个骨架节点下")
+        )
+    elif not _is_str(attach_to):
+        out.append(_issue("E-ATTACH-NOT-ID", where, "`attach_to` 必须是非空字符串，且是一个节点 id"))
+    elif attach_to.startswith("@"):
+        out.append(
+            _issue(
+                "E-ATTACH-NOT-ID",
+                where,
+                f"`attach_to` 写成了令牌：{attach_to!r}。它以 `@` 开头，而节点 id 形如 "
+                "`{plugin_id}:{local_id}` —— 这类值不是任何包里的节点，挂上去就是悬空父边",
+            )
+        )
+    elif not NODE_ID_RE.match(attach_to):
+        out.append(
+            _issue(
+                "E-ATTACH-NOT-ID",
+                where,
+                f"`attach_to` 须为节点 id（形如 `{{plugin_id}}:{{local_id}}`），实为 {attach_to!r}",
+            )
+        )
+
+    flat = manifest.get("flattenDomains")
+    if flat is not None:
+        if not isinstance(flat, dict):
+            out.append(_issue("E-FLATTEN", where, "`flattenDomains` 必须是 object"))
+        else:
+            for key in ("slug", "name"):
+                if not _is_str(flat.get(key)):
+                    out.append(
+                        _issue("E-FLATTEN", where, f"`flattenDomains.{key}` 必须是非空字符串")
+                    )
+            slug = flat.get("slug")
+            if _is_str(slug) and not SEG_ID_RE.match(slug):
+                out.append(
+                    _issue(
+                        "E-FLATTEN",
+                        where,
+                        f"`flattenDomains.slug` 须匹配 {SEG_ID_RE.pattern}，实为 {slug!r}",
+                    )
+                )
+            tags = flat.get("tags")
+            if tags is not None and (
+                not isinstance(tags, list) or not all(_is_str(t) for t in tags)
+            ):
+                out.append(_issue("E-FLATTEN", where, "`flattenDomains.tags` 须为字符串数组"))
 
     return out
 
@@ -578,6 +668,7 @@ def validate(manifest: dict | None, segments: dict[str, list | None]) -> list[Is
         return issues
 
     issues.extend(_check_manifest(manifest))
+    issues.extend(_check_attach(manifest))
     space_id = manifest.get("id") if _is_str(manifest.get("id")) else None
 
     items = segments.get("items") or []

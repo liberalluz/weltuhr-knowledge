@@ -20,8 +20,8 @@
 | 新字段 | 来源 | 说明 |
 |---|---|---|
 | `nodes[].id` | `items[].id` | `python/dm-copy` → `python:dm-copy`（新 id 是 `{plugin_id}:{local_id}`） |
-| `nodes[].level_slot` | `domainId` | 每个 `domainId` 一个 `system` 节点，其下 150 条为 `planet` |
-| `nodes[].axis` | 常量 `AXIS` | 旧 `sixAxis` 已废（`ADR-0005`），三轴里只 `occupation` 表达「岗位技能」 |
+| `nodes[].level_slot` | `domainId` | 每个 `domainId` 一个 `system` 节点，其下各条为 `planet`；声明了 `flattenDomains` 的空间整包只一个 `system`（包根），域改记进 `tags[]` |
+| `nodes[].axis` | `manifest.axis` | 旧 `sixAxis` 已废（`ADR-0005`）。**逐空间声明**，装配器不给默认值 |
 | `edges[]` | `edges[].type` | `strong`→`required`；`weak`/`unknown`→`recommended`（旧 `unknown` 表达不了强度，取最近的一档并在下方登记） |
 | `entries[].criteria[].statement` | `questions[].answer` | `"能说出：" + answer`。**模板 + 原文**，不是新写的句子；`entries.json` 给了断言就覆盖它 |
 | `entries[].quiz[]` | `questions[]` | 原题无选项、无判定形式 ⇒ `type=freeform`、`judge=self` |
@@ -56,12 +56,10 @@ import validator  # noqa: E402
 CONTENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PACK_NAME = "pack.json"
 
-# 三轴里只 `occupation` 表达「岗位技能」：`discipline` / `major` 是骨架目录的轴，
-# 载荷挂进去要先有骨架节点（`B13b` 的 `skeleton-*` 目录），而本空间目前是编外的。
-AXIS = "occupation"
-
-# 编外根：不是任何骨架恒星下的节点（`entity-fields` §1 `attach_to`）。
-ATTACH_TO = "@extra/root"
+# 轴与挂点**逐空间声明**（manifest 的 `axis` / `attach_to`），这里不给默认值。
+# 早先这里是常量 `"occupation"` + `"@extra/root"`：三包全按它装，装出来全部
+# 挂在职业轴、父边指向一个谁也没有的 id —— 数据看着完整，建成树才发现。
+# 默认值的危害正是这个：错得不报错。合法性由 `validator` 一处判。
 
 # 旧出处等级 → 新 `AuthorityLevel`（`entity-fields` §11 已废除 `L` 编号）。
 AUTHORITY = {"L0": "official", "L1": "standard", "L2": "textbook", "L4": "community"}
@@ -107,26 +105,58 @@ def _domain_slug(domain_id: str) -> str:
     return f"dom-{_local(domain_id)}"
 
 
+def _top_systems(manifest: dict) -> list[tuple[str, str, list[str]]]:
+    """本包顶层 `system` 行的三元组清单：[(slug, name, tags)]。
+
+    两种形态，由 manifest 决定，装配器不猜：
+
+    - **按域分行**（`english` / `german`）：`domainIds` 每个一条，域就是一层容器。
+    - **压平**（`python`，声明 `flattenDomains`）：整包只有一条包根，域不占层级、
+      改记进各节点的 `tags[]`。压平的理由是层数：专业星下只剩两个槽位
+      （`system` + `planet`），而「语言 → 领域 → 知识点」要三层。
+
+    `tags` 里 `flat["tags"]` 在前、域 slug 在后 —— 前者是**跨包的分类**
+    （「程序设计语言」将来 Dart / Java 也写同一串），后者是包内的域。两者的
+    差别在于换了包还认不认：分类认，域不认。
+    """
+    flat = manifest.get("flattenDomains")
+    if flat:
+        return [(flat["slug"], flat["name"], list(flat.get("tags") or []))]
+    return [
+        (_domain_slug(domain), _local(domain).replace("-", " "), [])
+        for domain in manifest.get("domainIds") or []
+    ]
+
+
+def _parent_of(manifest: dict, item: dict) -> str:
+    """该 item 的 `main` 父 id。压平时是包根，否则是它所属域那条 `system`。"""
+    plugin_id = manifest["id"]
+    flat = manifest.get("flattenDomains")
+    slug = flat["slug"] if flat else _domain_slug(item["domainId"])
+    return f"{plugin_id}:{slug}"
+
+
 def build_nodes(manifest: dict, items: list) -> tuple[list[dict], dict[str, str]]:
     """返回 (nodes, {旧 item id: 新 node id})。"""
     plugin_id = manifest["id"]
+    axis = manifest["axis"]
+    flat = manifest.get("flattenDomains")
     nodes: list[dict] = []
     node_of: dict[str, str] = {}
 
-    domains: list[str] = manifest.get("domainIds") or []
-    for domain in domains:
+    for slug, name, tags in _top_systems(manifest):
         nodes.append(
             {
-                "id": f"{plugin_id}:{_domain_slug(domain)}",
-                "axis": AXIS,
+                "id": f"{plugin_id}:{slug}",
+                "axis": axis,
                 "level_slot": "system",
                 "official_code": None,
-                "name": _local(domain).replace("-", " "),
-                "slug": _domain_slug(domain),
+                "name": name,
+                "slug": slug,
                 "scope": "S1",
                 "pack_id": plugin_id,
                 "status": "live",
-                "tags": [],
+                "tags": tags,
                 "catalog_refs": [],
             }
         )
@@ -134,10 +164,12 @@ def build_nodes(manifest: dict, items: list) -> tuple[list[dict], dict[str, str]
     for item in items:
         node_id = _node_id(item["id"], plugin_id)
         node_of[item["id"]] = node_id
+        # 压平空间里，域只能记在节点上 —— 它是「这条属于哪个域」的唯一去处。
+        tags = [*list(flat.get("tags") or []), _domain_slug(item["domainId"])] if flat else []
         nodes.append(
             {
                 "id": node_id,
-                "axis": AXIS,
+                "axis": axis,
                 "level_slot": "planet",
                 "official_code": None,
                 "name": item["title"],
@@ -145,7 +177,7 @@ def build_nodes(manifest: dict, items: list) -> tuple[list[dict], dict[str, str]
                 "scope": "S1",
                 "pack_id": plugin_id,
                 "status": "live",
-                "tags": [],
+                "tags": tags,
                 "catalog_refs": [],
                 "type": item["type"],
                 "layer": item["layer"],
@@ -162,13 +194,14 @@ def build_edges(manifest: dict, items: list, edges: list, node_of: dict[str, str
     所属 `domainId` 的那条。先修边直接搬。
     """
     plugin_id = manifest["id"]
+    attach_to = manifest["attach_to"]
     out: list[dict] = []
-    for domain in manifest.get("domainIds") or []:
+    for slug, _name, _tags in _top_systems(manifest):
         out.append(
             {
                 "type": "parent",
-                "child_id": f"{plugin_id}:{_domain_slug(domain)}",
-                "parent_id": ATTACH_TO,
+                "child_id": f"{plugin_id}:{slug}",
+                "parent_id": attach_to,
                 "kind": "main",
             }
         )
@@ -177,7 +210,7 @@ def build_edges(manifest: dict, items: list, edges: list, node_of: dict[str, str
             {
                 "type": "parent",
                 "child_id": node_of[item["id"]],
-                "parent_id": f"{plugin_id}:{_domain_slug(item['domainId'])}",
+                "parent_id": _parent_of(manifest, item),
                 "kind": "main",
             }
         )
@@ -350,7 +383,9 @@ def build_entries(
     return out
 
 
-def build_sources(excerpts: list, items: list, node_of: dict[str, str]) -> list[dict]:
+def build_sources(
+    excerpts: list, items: list, node_of: dict[str, str], axis: str
+) -> list[dict]:
     """`node_scope` 由 `items[].sourceRefs` 反查 —— 旧摘录的 `appliesTo` 用的是
     已废的 `spaceId` / `sixAxis`，一个都映射不过来，反查比硬塞一个恒真的过滤好。"""
     users: dict[str, list[str]] = {}
@@ -376,7 +411,7 @@ def build_sources(excerpts: list, items: list, node_of: dict[str, str]) -> list[
                     for seg in source.get("segments") or []
                 ],
                 "appliesTo": {
-                    "axes": [AXIS],
+                    "axes": [axis],
                     "node_scope": sorted(users.get(source["id"], [])),
                 },
             }
@@ -428,7 +463,7 @@ def assemble(root: str) -> tuple[dict, list[str]]:
     nodes, node_of = build_nodes(manifest, items)
     new_edges, dropped = build_edges(manifest, items, edges, node_of)
     entries = build_entries(items, questions, node_of, authored)
-    sources = build_sources(excerpts, items, node_of)
+    sources = build_sources(excerpts, items, node_of, manifest["axis"])
     mapped_schemes = build_schemes(schemes, node_of)
 
     counts = {"star": 0, "system": 0, "planet": 0}
@@ -454,16 +489,16 @@ def assemble(root: str) -> tuple[dict, list[str]]:
         "origin": f"content/{plugin_id}",
         "review_state": "pending",
         "signature": None,
-        "axes": [AXIS],
+        "axes": [manifest["axis"]],
         "payload": {
-            "attach_to": ATTACH_TO,
+            "attach_to": manifest["attach_to"],
             "subtree_root": "system",
             "level_range": ["system", "planet"],
             "counts": counts,
             "official_code_coverage": False,
             "path_reservations": [
-                {"parent_id": ATTACH_TO, "slug": _domain_slug(domain)}
-                for domain in manifest.get("domainIds") or []
+                {"parent_id": manifest["attach_to"], "slug": slug}
+                for slug, _name, _tags in _top_systems(manifest)
             ],
             "sources": [s["id"] for s in sources],
             "schemes": [s["id"] for s in mapped_schemes],

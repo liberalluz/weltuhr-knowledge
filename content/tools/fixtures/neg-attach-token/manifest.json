@@ -1,0 +1,19 @@
+{
+  "id": "python",
+  "name": "Python",
+  "version": "0.1.0",
+  "sixAxis": {
+    "subject": "计算机科学",
+    "topic": "编程语言",
+    "stack": "Python"
+  },
+  "accent": "#3776ab",
+  "order": 10,
+  "domainIds": [
+    "python/basics",
+    "python/functions",
+    "python/oop"
+  ],
+  "axis": "major",
+  "attach_to": "@virtual/root"
+}

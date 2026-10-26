@@ -218,7 +218,7 @@ class SpaceScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // 只取 `system` 槽位当分组：`subtree_root = system` 是本包的声明，
-    // 再往上的父（`attach_to` 指向的编外根）不在本包数据里，界面没有它可画。
+    // 再往上的父（`attach_to` 指向的骨架恒星）不在本包数据里，界面没有它可画。
     final List<Node> systems =
         content.nodes
             .where((Node node) => node.levelSlot == LevelSlot.system)

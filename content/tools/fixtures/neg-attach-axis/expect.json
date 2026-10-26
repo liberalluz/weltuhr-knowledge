@@ -1,0 +1,8 @@
+{
+  "base": "valid-min",
+  "exit": 1,
+  "codes": [
+    "E-ATTACH-AXIS"
+  ],
+  "note": "`axis` 填了六轴里的值（`topic`）。六轴是条目的编目维度，三轴是骨架树根 —— 写错时除这个字段外一切正常"
+}

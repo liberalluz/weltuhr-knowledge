@@ -10,6 +10,15 @@
   "defaultPrimaryAxis": "ability",
   "accent": "#3776ab",
   "order": 10,
+  "axis": "major",
+  "attach_to": "skeleton:major/080901",
+  "flattenDomains": {
+    "slug": "python",
+    "name": "Python",
+    "tags": [
+      "程序设计语言"
+    ]
+  },
   "domainIds": [
     "python/lexical",
     "python/data-model",
