@@ -8,6 +8,7 @@ import 'core/pack/dart_io_pack_fs.dart';
 import 'core/pack/pack_fs.dart';
 import 'core/pack/pack_probe.dart';
 import 'core/pack/pack_reader.dart';
+import 'core/tree/landing.dart';
 import 'features/tree/tree_screen.dart';
 
 void main() {
@@ -233,8 +234,13 @@ class SpaceScreen extends StatelessWidget {
             tooltip: '容器树',
             onPressed: () => Navigator.of(context).push(
               MaterialPageRoute<void>(
-                builder: (BuildContext context) =>
-                    TreeScreen(contents: contents ?? <PackContent>[content]),
+                builder: (BuildContext context) => TreeScreen(
+                  contents: contents ?? <PackContent>[content],
+                  // 落点是**包**（`SPEC-TREE-010` 第二类）：从哪个包进来就落到
+                  // 它覆盖子树的根。不给的话永远落在轴序第一个根 —— 从载荷包
+                  // 进来却看见学科轴根，是「跳到了树里但不是我那个位置」。
+                  initialLanding: PackLanding(content.pack.pluginId),
+                ),
               ),
             ),
           ),
@@ -276,8 +282,11 @@ class SpaceScreen extends StatelessWidget {
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => Navigator.of(context).push(
                     MaterialPageRoute<void>(
-                      builder: (BuildContext context) =>
-                          PlanetScreen(content: content, node: planet),
+                      builder: (BuildContext context) => PlanetScreen(
+                        content: content,
+                        node: planet,
+                        contents: contents,
+                      ),
                     ),
                   ),
                 ),
@@ -294,10 +303,19 @@ class SpaceScreen extends StatelessWidget {
 /// **空缺照实显示**（「暂无步骤」），不倒推一个默认值：旧数据里 steps / body
 /// 一栏都没有，界面若补上"看起来有内容"的占位，读者会把缺数据当成已完成。
 class PlanetScreen extends StatelessWidget {
-  const PlanetScreen({super.key, required this.content, required this.node});
+  const PlanetScreen({
+    super.key,
+    required this.content,
+    required this.node,
+    this.contents,
+  });
 
   final PackContent content;
   final Node node;
+
+  /// 全部已装载的包 —— 容器树是跨包的，只喂本包会得到一片没有父的森林。
+  /// `null` = 只有 [content]，容器树按钮就按单包打开。
+  final List<PackContent>? contents;
 
   @override
   Widget build(BuildContext context) {
@@ -308,7 +326,25 @@ class PlanetScreen extends StatelessWidget {
     final LearnableNode? learnable = current is LearnableNode ? current : null;
 
     return Scaffold(
-      appBar: AppBar(title: Text(node.name)),
+      appBar: AppBar(
+        title: Text(node.name),
+        actions: <Widget>[
+          IconButton(
+            icon: const Icon(Icons.account_tree_outlined),
+            tooltip: '在容器树里定位',
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (BuildContext context) => TreeScreen(
+                  contents: contents ?? <PackContent>[content],
+                  // 落到**节点**（`SPEC-TREE-010` 第一类）：这一页回答「它是
+                  // 什么」，进了树才回答「它在知识体系的哪个位置」。
+                  initialLanding: NodeLanding(node.id),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: <Widget>[
