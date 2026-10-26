@@ -490,7 +490,7 @@ void main() {
       );
     });
 
-    test('TC-DOC-025 头部状态行超过 600 字就报，并说出实测字数（无 SPEC：检查器规则）', () {
+    test('TC-DOC-025 头部状态行超过阈值就报，并说出实测字数（无 SPEC：检查器规则）', () {
       final String long = '> **状态**：${'甲' * (headerStatusMaxChars + 1)}';
       final Map<String, String> docs = _patch(
         _docs(),
