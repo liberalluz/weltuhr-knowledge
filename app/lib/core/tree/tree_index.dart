@@ -312,6 +312,14 @@ class TreeIndex {
     return nodePath.substring(prefix.length);
   }
 
+  /// 按 id 取一行；`null` = 不在树上。
+  ///
+  /// 公开是为了**换根到中间节点**（`SPEC-TREE-005` 只要求「留在树」，没要求
+  /// 新根必须是轴根）：那种情形的根自己不在 [axisRoots] 里，界面得单独为它
+  /// 造一行，而行的四个值都该由索引给 —— 界面自己拼一个会让「同一节点两个
+  /// 缩进」这种偏差无从复现。
+  TreeRow? rowOf(String nodeId) => _rowOrNull(nodeId);
+
   TreeRow _rowOf(String nodeId) => _rowOrNull(nodeId)!;
 
   TreeRow? _rowOrNull(String nodeId) {
