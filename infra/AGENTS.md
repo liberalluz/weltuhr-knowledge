@@ -23,6 +23,7 @@
 | batch 状态 | `python3 tool/batch/batch.py status` |
 | 批次卡 | `python3 tool/batch/batch.py plan/approve/start` |
 | 批次检查 | `python3 tool/batch/batch.py check --batch <id>` |
+| 批次 PR | `python3 tool/batch/batch.py pr --batch <id>` |
 
 ## 红线
 
