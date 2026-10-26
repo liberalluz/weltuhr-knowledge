@@ -44,9 +44,17 @@ void main() {
   });
 
   test('TC-TREE-045 落点在当前根子树内 ⇒ 根不动，只改地址（`SPEC-TREE-013`）', () {
-    final TreeTarget? target = land(const NodeLanding('skeleton:d-0101'));
+    // ⚠️ 当前根必须是**深层节点**，不能是轴根。用轴根当当前根的话，「不动根」
+    // 与「换到目标所在轴根」两个分支给出**同一个答案** —— 这条用例在任何一种
+    // 实现下都会绿，等于没验。这是本笔的真实教训：删掉判据重跑时 13 条全过，
+    // 才发现输入落在两条实现路径的交集里。
+    final TreeTarget? target = land(
+      const NodeLanding('skeleton:d-0101'),
+      rootId: 'skeleton:d-01',
+      addressId: 'skeleton:d-01',
+    );
 
-    expect(target?.rootId, 'skeleton:d', reason: '同地不动根');
+    expect(target?.rootId, 'skeleton:d-01', reason: '同地不动根');
     expect(target?.addressId, 'skeleton:d-0101');
     expect(target?.filterTag, isNull);
   });
