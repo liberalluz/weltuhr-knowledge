@@ -1,0 +1,158 @@
+name: platform-checks
+
+# Advisory desktop/mobile matrix. This workflow always reports a
+# `platform-gate` check; the expensive builds are skipped when `app/` is
+# untouched. It is not required yet — first collect timing/failure data.
+#
+# Full matrix manually:
+#   gh workflow run platform-checks.yml --ref <branch>
+#
+# Promotion to required: make `platform-gate` the required check, not the
+# individual build jobs (a skipped job would otherwise leave "Expected").
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: platform-checks-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  scope:
+    name: platform-scope
+    runs-on: ubuntu-latest
+    outputs:
+      windows: ${{ steps.scope.outputs.windows }}
+      macos: ${{ steps.scope.outputs.macos }}
+      ios: ${{ steps.scope.outputs.ios }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Decide affected platforms
+        id: scope
+        run: |
+          set -euo pipefail
+
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            # Manual runs always exercise the full matrix.
+            files="app/"
+          else
+            base="${{ github.event.pull_request.base.sha }}"
+            if [ -z "$base" ] || [ "$base" = "0000000000000000000000000000000000000000" ]; then
+              base="origin/main"
+            fi
+            if git rev-parse --verify "$base" >/dev/null 2>&1; then
+              files="$(git diff --name-only "$base"...HEAD || true)"
+            else
+              echo "base $base not found; running all platforms"
+              files="app/"
+            fi
+          fi
+
+          echo "changed files:"
+          printf '%s\n' "$files" | sed '/^$/d'
+
+          windows=false
+          macos=false
+          ios=false
+          if printf '%s\n' "$files" | grep -Eq '^app/'; then
+            windows=true
+            macos=true
+            ios=true
+          fi
+
+          echo "windows=$windows" >> "$GITHUB_OUTPUT"
+          echo "macos=$macos" >> "$GITHUB_OUTPUT"
+          echo "ios=$ios" >> "$GITHUB_OUTPUT"
+
+  windows:
+    name: windows-build
+    needs: scope
+    if: needs.scope.outputs.windows == 'true'
+    runs-on: windows-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.47.7"
+          channel: stable
+          cache: true
+      - name: Dependencies
+        run: flutter pub get
+      - name: Build Windows
+        run: flutter build windows --debug
+
+  macos:
+    name: macos-build
+    needs: scope
+    if: needs.scope.outputs.macos == 'true'
+    runs-on: macos-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.47.7"
+          channel: stable
+          cache: true
+      - name: Dependencies
+        run: flutter pub get
+      - name: Build macOS
+        run: flutter build macos --debug
+
+  ios:
+    name: ios-build
+    needs: scope
+    if: needs.scope.outputs.ios == 'true'
+    runs-on: macos-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.47.7"
+          channel: stable
+          cache: true
+      - name: Dependencies
+        run: flutter pub get
+      - name: Build iOS (no signing)
+        run: flutter build ios --debug --no-codesign
+
+  platform-gate:
+    name: platform-gate
+    if: always()
+    needs: [scope, windows, macos, ios]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Summarize platform results
+        run: |
+          echo "scope: windows=${{ needs.scope.outputs.windows }} macos=${{ needs.scope.outputs.macos }} ios=${{ needs.scope.outputs.ios }}"
+          echo "result: windows=${{ needs.windows.result }} macos=${{ needs.macos.result }} ios=${{ needs.ios.result }}"
+
+          fail=0
+          for result in "${{ needs.scope.result }}" "${{ needs.windows.result }}" "${{ needs.macos.result }}" "${{ needs.ios.result }}"; do
+            case "$result" in
+              failure|cancelled) fail=1 ;;
+            esac
+          done
+          if [ "$fail" -ne 0 ]; then
+            echo "platform gate failed: one or more platform jobs did not succeed"
+            exit 1
+          fi
+          echo "platform gate: all affected builds succeeded or were skipped"
