@@ -121,6 +121,22 @@ Without `--create` it only writes and validates; `--create` additionally require
 edit the card/evidence and rerun rather than hand-editing the body when the count
 changes.
 
+## Batch merge
+
+`batch merge` wraps the M1 gate and refuses to merge unless the local batch has
+an approved card, a valid scope, `evidence.log` with `RESULT: PASS`, and a PR
+head that matches the card branch:
+
+```bash
+python3 infra/tool/batch/batch.py merge --pr 200 --dry-run
+python3 infra/tool/batch/batch.py merge --pr 200 --yes
+```
+
+It delegates the actual checks to `merge.py`; on success it writes
+`.batch/<id>/merge.json` (PR, title, merge commit) and clears `.batch/active`.
+`batch status` then reports `Stage: merged`. The direct `merge.py` command
+remains the low-level gate.
+
 ## Tests
 
 ```bash

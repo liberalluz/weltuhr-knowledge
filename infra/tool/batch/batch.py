@@ -137,6 +137,7 @@ def batch_payload(batch_dir: Path) -> dict[str, Any]:
     scope = load_json(batch_dir / "scope.json")
     card, card_error = read_card_safe(batch_dir)
     evidence = batch_dir / "evidence.log"
+    merge = load_json(batch_dir / "merge.json")
 
     base = state.get("base")
     changed = changed_paths(base if isinstance(base, str) else None)
@@ -145,7 +146,9 @@ def batch_payload(batch_dir: Path) -> dict[str, Any]:
         approval_error = verify_scope(scope)
     card_approval_error = verify_card(card) if card is not None else None
 
-    if card is None:
+    if merge is not None:
+        stage = "merged"
+    elif card is None:
         stage = "card"
     elif card_approval_error:
         stage = "approve"
@@ -191,6 +194,7 @@ def batch_payload(batch_dir: Path) -> dict[str, Any]:
             "path": str(evidence) if evidence.exists() else None,
             "ok": evidence_ok,
         },
+        "merge": merge,
         "stage": stage,
         "next": {
             "card": "batch plan",
@@ -198,6 +202,7 @@ def batch_payload(batch_dir: Path) -> dict[str, Any]:
             "start": "batch start",
             "check": "implement / C3 check",
             "pr": "C4 batch pr",
+            "merged": "post-merge: fetch main",
         }[stage],
     }
 
@@ -224,6 +229,9 @@ def render_status(payload: dict[str, Any]) -> str:
         f"Stage: {payload['stage']}",
         f"Next: {payload['next']}",
     ]
+    merge = payload.get("merge")
+    if isinstance(merge, dict):
+        lines.insert(-2, f"Merged: PR #{merge.get('pr')} {merge.get('sha') or ''}".rstrip())
     return "\n".join(lines)
 
 
@@ -522,6 +530,111 @@ def command_pr(args: argparse.Namespace) -> int:
         print(f"error: gh pr create failed: {err or out}", file=sys.stderr)
         return 3
     print(out)
+    return 0
+
+
+def run_merge_gate(pr: int, *, yes: bool, dry_run: bool) -> int:
+    command = [
+        sys.executable,
+        "-B",
+        str(REPO_ROOT / "infra" / "tool" / "batch" / "merge.py"),
+        "--pr",
+        str(pr),
+    ]
+    if dry_run:
+        command.append("--dry-run")
+    elif yes:
+        command.append("--yes")
+    code, out, err = run_command(command, REPO_ROOT)
+    if out.strip():
+        print(out.strip())
+    if err.strip():
+        print(err.strip(), file=sys.stderr)
+    return code
+
+
+def command_merge(args: argparse.Namespace) -> int:
+    root = root_path(args.root)
+    batch_dir = resolve_batch(root, args.batch)
+    if batch_dir is None:
+        print(f"no batch found under {root}", file=sys.stderr)
+        return 1
+    state = load_json(batch_dir / "state.json") or {}
+    card, card_error = read_card_safe(batch_dir)
+    scope = load_json(batch_dir / "scope.json")
+    if card is None:
+        print(f"card not found or invalid: {card_error}", file=sys.stderr)
+        return 1
+    if verify_card(card):
+        print(verify_card(card), file=sys.stderr)
+        return 1
+    if scope is None or verify_scope(scope):
+        print("scope missing or invalid; run batch start", file=sys.stderr)
+        return 1
+    evidence = batch_dir / "evidence.log"
+    if not evidence.exists() or "RESULT: PASS" not in evidence.read_text(encoding="utf-8"):
+        print("evidence is missing or not PASS; run batch check", file=sys.stderr)
+        return 1
+    if not args.dry_run and not args.yes:
+        print("refusing merge: pass --yes (or --dry-run)", file=sys.stderr)
+        return 2
+
+    code, out, err = run_gh(
+        ["pr", "view", str(args.pr), "--json", "headRefName,state,number"]
+    )
+    if code != 0:
+        print(f"error: gh pr view failed: {err or out}", file=sys.stderr)
+        return 3
+    try:
+        head = json.loads(out)
+    except json.JSONDecodeError:
+        print("error: gh pr view returned invalid JSON", file=sys.stderr)
+        return 3
+    expected_branch = state.get("branch") or card.get("branch")
+    if expected_branch and head.get("headRefName") != expected_branch:
+        print(
+            f"refusing merge: PR head {head.get('headRefName')} != card branch {expected_branch}",
+            file=sys.stderr,
+        )
+        return 1
+
+    gate_code = run_merge_gate(args.pr, yes=args.yes, dry_run=args.dry_run)
+    if gate_code != 0:
+        return gate_code
+    if args.dry_run:
+        print("dry-run: merge gate passed; not merged")
+        return 0
+
+    record = {
+        "batch": state.get("batch") or card.get("batch") or batch_dir.name,
+        "pr": args.pr,
+        "branch": expected_branch,
+        "merged_at": datetime.now(timezone.utc).isoformat(),
+    }
+    code, out, err = run_gh(
+        ["pr", "view", str(args.pr), "--json", "number,title,mergeCommit,state"]
+    )
+    if code == 0:
+        try:
+            merged = json.loads(out)
+            record["title"] = merged.get("title")
+            record["sha"] = (merged.get("mergeCommit") or {}).get("oid")
+        except json.JSONDecodeError:
+            pass
+    (batch_dir / "merge.json").write_text(
+        json.dumps(record, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+    )
+
+    active = root / "active"
+    if active.exists():
+        value = active.read_text(encoding="utf-8").strip()
+        candidate = Path(value)
+        if not candidate.is_absolute():
+            candidate = REPO_ROOT / candidate
+        if candidate.resolve() == batch_dir.resolve():
+            active.unlink()
+
+    print(f"merged PR #{args.pr}; next: fetch main and switch to it")
     return 0
 
 
@@ -840,6 +953,13 @@ def build_parser() -> argparse.ArgumentParser:
     pr.add_argument("--create", action="store_true")
     pr.add_argument("--yes", action="store_true")
     pr.set_defaults(func=command_pr)
+
+    merge = subparsers.add_parser("merge", help="merge a PR through the M1 gate")
+    merge.add_argument("--pr", type=int, required=True)
+    merge.add_argument("--batch")
+    merge.add_argument("--dry-run", action="store_true")
+    merge.add_argument("--yes", action="store_true")
+    merge.set_defaults(func=command_merge)
 
     status = subparsers.add_parser("status", help="show one batch")
     status.add_argument("--batch")

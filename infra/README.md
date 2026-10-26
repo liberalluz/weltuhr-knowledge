@@ -14,6 +14,7 @@ python3 tool/batch/batch.py status                         # 批次状态
 python3 tool/batch/batch.py plan/approve/start              # 批次卡与启动
 python3 tool/batch/batch.py check --batch <id>             # 批次检查
 python3 tool/batch/batch.py pr --batch <id>                # 批次 PR 正文
+python3 tool/batch/batch.py merge --pr <n>                 # 批次合并
 ```
 
 ## 相关文档
