@@ -127,7 +127,7 @@ git config --get core.hooksPath       # 自查：应回显 .githooks
 | 2  | 改文件                         | —                                                                                     | —                    |
 | 3  | 只暂存**显式路径**                 | `git add <path> …`                                                                     | ⚠️ 禁用 `git add -A` / `git add .` |
 | 4  | 提交                          | `git commit`                                                                           | §三 · `.githooks/commit-msg` |
-| 5  | 推分支                         | `git push -u origin <type>/<topic>`                                                    | 第 0 步没做 ⇒ 钩子不触发      |
+| 5  | 推分支（**本批 commit 全部落盘后一次**）                         | `git push -u origin <type>/<topic>`                                                    | 第 0 步没做 ⇒ 钩子不触发      |
 | 6  | 开 PR：**读模板 → 写正文 → 自检 → 开 PR** | `Read .github/PULL_REQUEST_TEMPLATE.md` → 正文落 `<file>` → `bash .githooks/pr-body --file <file> --diff-base origin/main` → `gh pr create --title … --body-file <file>` | §4.1 · 骨架见模板 · 形态由 `.githooks/pr-body` 判 · §2.3 |
 | 7  | squash 合入 → 合后收口            | 见 §4.2                                                                                 | §4.2（四步）            |
 
@@ -135,6 +135,7 @@ git config --get core.hooksPath       # 自查：应回显 .githooks
 
 - **第 3 步**：`git add -A --dry-run`（§七）只用来**检查**有无意外文件，**不是提交方式**。暂存一律列显式路径 —— `-A` 会把 `tmp/`、本地配置、半成品一起带进去，且事后从 diff 里看不出来是「顺手带上的」还是「本来就该改」。
 - **第 5 步**：`core.hooksPath` 没设，钩子一行也不跑。拦直推 `main`、引用类型判据、`(#NNN)` 校验、非快进判据**四条全挂在同一个开关上**，一起失效（§2.1）。
+  - **第 5 步一批只执行一次。** 本批全部 commit 落盘后推一次，不得「改一笔 → push → 等三 job 全绿 → 再改下一笔」。三支 workflow 都设了 `concurrency.cancel-in-progress: true`，注释写的是「同一分支连续推送时只保留最新一次」—— 它要的是**连着推**；逐笔等绿等于每笔都跑到自然结束，取消机制零触发，一批的等待从 1 轮变成 N 轮。**判据**：本批 `git push` 调用次数 = 1；`gh run list --branch <分支> --limit 10` 里不存在「上一条 `completed` 之后才出现下一条」的串行链。第 5 步之前须有一次本批全量自验证（`flutter analyze` · 触及 `dart:ffi` 时单文件 `dart analyze` · `flutter test` · `dart run tool/docs/check.dart`），按笔只跑改动面相关的，全量只在这里跑一次。
 - **第 6 步**：`gh pr create` **不读** `.github/PULL_REQUEST_TEMPLATE.md` —— 缺省无自动读取行为（`--template <file>` 可显式指定骨架），Web UI 那一趟才由服务端渲染模板。用 CLI 开 PR 时正文必须照骨架手填；这一环的**形态**现有装置兜底（`bash .githooks/pr-body`，本地与 `repo-hygiene` 共用同一份，见 §4.1），但装置**只判形态、不判内容是否成立** —— 反证有没有被写成自证，仍只能人看。**正文一律先落 `.workbuddy/tmp/<name>.md`，再以 `--body-file` 传入** —— 多行正文走 `--body` 会被 shell 转义吃掉；临时文件用完即删，不进仓。**开 PR 是四步，第一步不能省**：① **先读** `.github/PULL_REQUEST_TEMPLATE.md` 认骨架（5 节标题与顺序 · 自审留痕五行名称）—— `gh` 不读它，人也不读就等于**根本没有骨架**，漏栏要等别人看 PR 才发现；② 照骨架逐节填值，五行全部给值、一律不用 `- [ ]`；③ 跑 `bash .githooks/pr-body --file <file> --diff-base origin/main`，红则改正文后重跑（不必重开 PR）；④ 再 `--body-file` 传入。省掉第 ① 步的典型后果是把 §4.1 的**判据项**当节名写（判据 8 项、模板 5 节，两者不是一回事）。
 
 ### 2.3 失败处置
