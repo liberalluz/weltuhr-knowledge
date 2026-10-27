@@ -32,7 +32,11 @@ python3 infra/tool/batch/batch.py plan <id> --type <process|feat> --goal "..." -
 python3 infra/tool/batch/batch.py approve <id> --chat --confirm <hash8>
 python3 infra/tool/batch/batch.py start <id>
 python3 infra/tool/batch/batch.py check --batch <id> --base main
-python3 infra/tool/batch/batch.py pr --batch <id> --base main
+# PR body: --prepare writes the scaffold; edit the file to the final body
+python3 infra/tool/batch/batch.py pr --batch <id> --base main --prepare
+# create only from the finalized handwritten body + its hash
+python3 infra/tool/batch/batch.py pr --batch <id> --base main --create \
+  --body-file .batch/<id>/pr-body.md --confirm <body-hash8>
 ```
 
 A merge requires approval from another maintainer and an explicit "merge" from the human, then:

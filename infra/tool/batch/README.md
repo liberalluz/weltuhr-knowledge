@@ -63,6 +63,13 @@ python3 infra/tool/batch/batch.py start B15-2
 # start refuses to overwrite another active batch or an existing remote branch.
 python3 infra/tool/batch/batch.py status
 python3 infra/tool/batch/batch.py list
+
+# PR body: prepare writes a scaffold; edit it into the final body.
+python3 infra/tool/batch/batch.py pr --batch B15-2 --base main --prepare
+
+# Create only from the finalized handwritten body; no create-then-edit.
+python3 infra/tool/batch/batch.py pr --batch B15-2 --base main --create \
+  --body-file .batch/B15-2/pr-body.md --confirm <body-hash8>
 ```
 
 `card.yaml` is a flat generated YAML subset (scalars + block lists + `approval`);
