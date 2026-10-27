@@ -362,6 +362,7 @@ git config --get core.hooksPath       # 自查：应回显 .githooks
 | Required checks | ✅ `app-checks` · `content-checks` · `repo-hygiene` · `platform-gate` | 四者均为 always-on；三端 build job 仍为 advisory、不设为 required（避免 skipped「Expected」） |
 | Approvals / code owners | ✅ 1 名非作者批准 · code-owner review            | 两名维护者均在 `CODEOWNERS`；作者不能自批                                                |
 | Conversation resolution | ✅ 开                                           | 未解决讨论阻塞合并                                                                        |
+| Merge queue | ⏸ deferred | 当前低并发；触发条件与开启/回滚步骤见 [merge-queue.md](../runbooks/merge-queue.md) |
 | Force push / deletion | ❌ 拒绝                                      | ruleset 的 `non_fast_forward` / `deletion` 规则                                          |
 
 **已验证（2026-10-27）**：`main` 使用 C10 ruleset，required checks 为上述四项，`pull_request` 规则要求
