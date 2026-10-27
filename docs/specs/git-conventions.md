@@ -125,7 +125,7 @@ git config --get core.hooksPath       # 自查：应回显 .githooks
 | # | 动作 | 命令 | 判据 |
 | -- | -- | -- | -- |
 | 1 | 建卡，批次号由 CLI 分配 | `batch.py plan --auto-id --type <process\|feat> --goal … --allowed …` | 一张卡只装一个目标；`allowed` 列显式路径或 glob |
-| 2 | 人审 | `batch.py approve <id> --chat --confirm <hash8>` | 由用户确认；agent 不得自批，改卡后 hash 失效须重批 |
+| 2 | 人审 | `batch.py approve <id> --chat --confirm <hash8>` | 由用户确认；agent 不得自批，改卡后 hash 失效须重批；确认形态见下 |
 | 3 | 启动 | `batch.py start <id>` | 建分支 + `state.json` + `scope.json` + `.batch/active` |
 | 4 | 改文件 → 显式暂存 → 提交 | `git add <path> …` → `git commit -s` | §三 · `.githooks/commit-msg` |
 | 5 | 推分支（本批一次） | `git push -u origin <branch>` | `.githooks/pre-push`：`active` · scope · 引用类型 · 非快进 |
@@ -140,7 +140,9 @@ git config --get core.hooksPath       # 自查：应回显 .githooks
 - 非 `main` 分支没有 `.batch/active` 时**直接拒推**（fail-closed，不是提示）。删除分支、推 tag、`--range` 回放不在此列。
 - 推送路径必须落在该批 `scope.json` 的 `allowed` 内。扩范围只能 `check.py --scope <scope> --add <path> --reason <…> --yes`，并由人确认后落盘 —— 不直接改卡片。
 
-以下三处最容易漏，单独强调：
+以下四处最容易漏，单独强调：
+
+- **第 2 步的确认形态**：`--chat --confirm` 这条路只比对 hash，**不打印卡片、不读 stdin**（不带 `--chat` 的 TTY 路才会打印卡片全文并等输入）。所以「让人看见并点选」完全落在对话层：**先出问答卡片，拿到「批准」后才允许传 `--confirm`；未出卡片就 `approve` 一律算自批**。`approval.by` 优先记 GitHub 登录名（`gh api user --jq .login`），取不到回退 `git config user.name`、再回退 OS 用户 —— 它只是留痕，真正放行仍是平台上那道非作者 approve。
 
 - **第 4 步**：`git add -A --dry-run`（§七）只用来**检查**有无意外文件，**不是提交方式**。暂存一律列显式路径 —— `-A` 会把 `tmp/`、本地配置、半成品一起带进去，且事后从 diff 里看不出是「顺手带上的」还是「本来就该改」。
 - **第 5 步一批只执行一次。** 本批全部 commit 落盘后推一次，不得「改一笔 → push → 等 job 全绿 → 再改下一笔」。四支 workflow 都设了 `concurrency.cancel-in-progress: true`，注释写的是「同一分支连续推送时只保留最新一次」—— 它要的是**连着推**；逐笔等绿等于每笔都跑到自然结束，取消机制零触发，一批的等待从 1 轮变成 N 轮。**判据**：本批 `git push` 调用次数 = 1；`gh run list --branch <分支> --limit 10` 里不存在「上一条 `completed` 之后才出现下一条」的串行链。第 5 步之前须有一次本批全量自验证（`flutter analyze` · `dart run tool/lint/check.dart` · 触及 `dart:ffi` 时单文件 `dart analyze` · `flutter test` · `dart run tool/docs/check.dart`），按笔只跑改动面相关的，全量只在这里跑一次。⚠️ **这五项与 §七 是同一个集合，少跑其中任何一项即算未跑** —— `lint` 是本地唯一能拦住 `R5`（用例名未声明守哪条裁定）的门，它只在 CI 里报就意味着一轮往返。

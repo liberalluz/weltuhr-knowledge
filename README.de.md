@@ -1,8 +1,8 @@
+# Weltuhr
+
 [English](README.md) · [简体中文](README.zh-CN.md) · **Deutsch** · [Italiano](README.it.md) · [日本語](README.ja.md) · [Français](README.fr.md)
 
 > Maßgeblich ist die englische Fassung [README.md](README.md) @ 87e7c74; diese Übersetzung entspricht dieser Version.
-
-# Weltuhr
 
 > Ein Lerngebiet zu einem Wissensraum entfalten, der **verortbar, planbar und messbar** ist — sodass aus „ich möchte X lernen" wird: „ich weiß, was ich in welcher Reihenfolge lerne und wann es als nutzbar gilt".
 

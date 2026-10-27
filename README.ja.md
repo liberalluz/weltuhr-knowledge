@@ -1,8 +1,8 @@
+# Weltuhr
+
 [English](README.md) · [简体中文](README.zh-CN.md) · [Deutsch](README.de.md) · [Italiano](README.it.md) · **日本語** · [Français](README.fr.md)
 
 > ルートの [README.md](README.md) @ 87e7c74 が正です。本訳はその版に対応します。
-
-# Weltuhr
 
 > ある学習領域を、**位置づけでき、計画でき、計量できる**知識空間へと展開します。「X を学びたい」を「何をどの順序で学べばよいか、どこまで進めば使えると言えるかが分かっている」に変えるための仕組みです。
 

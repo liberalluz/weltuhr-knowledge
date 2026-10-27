@@ -1,8 +1,8 @@
+# Weltuhr
+
 [English](README.md) · [简体中文](README.zh-CN.md) · [Deutsch](README.de.md) · [Italiano](README.it.md) · [日本語](README.ja.md) · **Français**
 
 > La version de référence est la version anglaise [README.md](README.md) @ 87e7c74 ; cette traduction correspond à cette version.
-
-# Weltuhr
 
 > Déployer un domaine d'étude en un espace de connaissances **localisable, planifiable et mesurable**, pour que « je veux apprendre X » devienne « je sais quoi apprendre, dans quel ordre, et à quel point j'en suis quand cela compte comme utilisable ».
 

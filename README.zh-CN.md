@@ -1,8 +1,8 @@
+# Weltuhr
+
 [English](README.md) · **简体中文** · [Deutsch](README.de.md) · [Italiano](README.it.md) · [日本語](README.ja.md) · [Français](README.fr.md)
 
 > 以根 [README.md](README.md) @ 87e7c74 为准，本译文对应该版本。
-
-# Weltuhr
 
 > 把一个学习领域展开成**可定位、可规划、可量化**的知识空间，让「我要学 X」变成「我知道该按什么顺序学什么、学到什么程度算能用」。
 
