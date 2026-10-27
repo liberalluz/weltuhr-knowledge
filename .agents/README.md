@@ -15,6 +15,9 @@
 | `pre-push` | 本地钩子与scope |
 | `platform-build` | 三端构建边界 |
 | `merge` | M1 合并闸门 |
+| `verifier` | 只读验收与未验复述 |
+
+checklist：`.agents/checklists/acceptance.md`。
 
 每个技能必须有 `## Owner`、`## 示例`、`## 自检`；`skill_lint.py` 检查这三项与 frontmatter。
 

@@ -27,6 +27,7 @@
 | 批次合并 | `python3 tool/batch/batch.py merge --pr <n>` |
 | 技能 lint | `python3 -B tool/batch/skill_lint.py` |
 | PR 周报 | `python3 tool/metrics/pr_metrics.py --since <YYYY-MM-DD>` |
+| 只读验收 | `python3 tool/verify/verify.py --batch <id>` |
 
 ## 红线
 
