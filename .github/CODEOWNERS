@@ -1,30 +1,28 @@
-# CODEOWNERS — C9
+# CODEOWNERS — C9/C10
 #
 # GitHub reads the last matching pattern, so keep the broad default first and
 # the specific paths after it. Owners must have write access to the repository.
 #
-# Current state: one maintainer. This file is a declaration, not enforcement;
-# branch protection starts requiring code-owner review only when the C10
-# ruleset enables it. A second maintainer must be added to the relevant paths
-# before entering Tier 2.
+# Current state: two maintainers. C10 enables code-owner review; at least one
+# listed owner must approve every PR.
 
-* @liberalluz
+* @liberalluz @liberalmel
 
 # Product code
-/app/ @liberalluz
-/server/ @liberalluz
-/content/ @liberalluz
+/app/ @liberalluz @liberalmel
+/server/ @liberalluz @liberalmel
+/content/ @liberalluz @liberalmel
 
 # Build, CI, hooks and process tooling
-/infra/ @liberalluz
-/.github/ @liberalluz
-/.githooks/ @liberalluz
+/infra/ @liberalluz @liberalmel
+/.github/ @liberalluz @liberalmel
+/.githooks/ @liberalluz @liberalmel
 
 # Design and delivery documents
-/docs/ @liberalluz
+/docs/ @liberalluz @liberalmel
 
 # Repository-level agent and governance files
-/AGENTS.md @liberalluz
-/README.md @liberalluz
-/LICENSE @liberalluz
-/NOTICE @liberalluz
+/AGENTS.md @liberalluz @liberalmel
+/README.md @liberalluz @liberalmel
+/LICENSE @liberalluz @liberalmel
+/NOTICE @liberalluz @liberalmel

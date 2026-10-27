@@ -345,23 +345,27 @@ git config --get core.hooksPath       # 自查：应回显 .githooks
 | 开关                                    | 目标取值                                                                                                     |
 | ------------------------------------- | -------------------------------------------------------------------------------------------------------- |
 | Require a pull request before merging | ✅ 开（禁直推）                                                                                                 |
-| Required approvals                    | **按维护者人数**：单人 **0** · ≥2 人 **1**（且非作者）。取值口径见本节上文 §4.1；此处只是它在平台开关上的同一取值，不是第二处规则 |
+| Required approvals                    | **按维护者人数**：单人 **0** · ≥2 人 **1**（且非作者）。当前两名维护者，取 **1** |
+| Require code owner review             | ✅ 开（当前两名 CODEOWNERS）                                                                                   |
+| Require conversation resolution       | ✅ 开                                                                                                      |
 | Allow force pushes                    | ❌ 关                                                                                                      |
 | Allow deletions                       | ❌ 关                                                                                                      |
-| Dismiss stale approvals               | 建议开                                                                                                      |
+| Dismiss stale approvals               | ✅ 开                                                                                                      |
 
-**远端开关现状（2026-10-26）**：
+**远端开关现状（2026-10-27）**：
 
 | 项           | 状态                                            | 说明                                                                                 |
 | ----------- | --------------------------------------------- | ---------------------------------------------------------------------------------- |
 | 合并方式        | ✅ squash 允许 · merge commit 允许 · **rebase 禁用** | 仓库级设置                                                                              |
 | 合后自动删源分支    | ✅ 开                                           | 仓库级设置                                                                              |
-| `main` 分支保护 | ✅ **已启用**                                    | public 仓库，branch protection；管理员同样受约束                                                  |
+| `main` 保护 | ✅ **ruleset 已启用**                             | public 仓库；管理员同样受约束                                                              |
 | Required checks | ✅ `app-checks` · `content-checks` · `repo-hygiene` · `platform-gate` | 四者均为 always-on；三端 build job 仍为 advisory、不设为 required（避免 skipped「Expected」） |
-| Force push / deletion | ❌ 拒绝                                      | `allow_force_pushes=false` · `allow_deletions=false`                                  |
+| Approvals / code owners | ✅ 1 名非作者批准 · code-owner review            | 两名维护者均在 `CODEOWNERS`；作者不能自批                                                |
+| Conversation resolution | ✅ 开                                           | 未解决讨论阻塞合并                                                                        |
+| Force push / deletion | ❌ 拒绝                                      | ruleset 的 `non_fast_forward` / `deletion` 规则                                          |
 
-**已验证（2026-10-26）**：`GET /repos/liberalluz/weltuhr-knowledge/branches/main/protection` 返回 `enforce_admins.enabled=true`、
-`required_status_checks.contexts` 含上述四项、`allow_force_pushes.enabled=false`、`allow_deletions.enabled=false`。
+**已验证（2026-10-27）**：`main` 使用 C10 ruleset，required checks 为上述四项，`pull_request` 规则要求
+1 名非作者批准、code-owner review 与 conversation resolution；`non_fast_forward` / `deletion` 均禁止。
 仓库可见性为 `PUBLIC`。
 
 > 保护已启用；`.githooks/pre-push` 与 `repo-hygiene` 仍保留，作为近端与 CI 的纵深防御。
