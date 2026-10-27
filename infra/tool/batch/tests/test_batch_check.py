@@ -109,7 +109,7 @@ class CheckTests(unittest.TestCase):
     def test_check_passes_and_writes_evidence(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            target = write_batch(root, ["infra/**"])
+            target = write_batch(root, ["infra/**", ".agents/**"])
             code, out = run(["--root", str(root), "check", "--batch", "B1", "--base", "main"])
             self.assertEqual(code, 0)
             self.assertIn("result: PASS", out)
@@ -135,7 +135,7 @@ class CheckTests(unittest.TestCase):
     def test_quick_scope_only_does_not_write_evidence(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            target = write_batch(root, ["infra/**"])
+            target = write_batch(root, ["infra/**", ".agents/**"])
             code, _ = run(["--root", str(root), "check", "--batch", "B1", "--base", "main", "--quick"])
             self.assertEqual(code, 0)
             self.assertFalse((target / "evidence.log").exists())
@@ -143,7 +143,7 @@ class CheckTests(unittest.TestCase):
     def test_dry_run_does_not_write_evidence(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            target = write_batch(root, ["infra/**"])
+            target = write_batch(root, ["infra/**", ".agents/**"])
             code, out = run(
                 ["--root", str(root), "check", "--batch", "B1", "--base", "main", "--dry-run"]
             )

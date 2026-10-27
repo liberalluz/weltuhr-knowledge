@@ -311,6 +311,8 @@ def planned_steps(
         steps.append(("lint", ["dart", "run", "tool/lint/check.dart"], REPO_ROOT / "app"))
     if docs_changed:
         steps.append(("docs", ["dart", "run", "tool/docs/check.dart"], REPO_ROOT / "app"))
+    if any(path.startswith(".agents/skills/") for path in changed):
+        steps.append(("skills", [sys.executable, "-B", "infra/tool/batch/skill_lint.py"], REPO_ROOT))
     if app_changed and not no_tests:
         steps.append(("tests", ["flutter", "test", "--reporter", "compact"], REPO_ROOT / "app"))
 
