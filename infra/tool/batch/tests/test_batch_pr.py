@@ -147,7 +147,7 @@ class CommandPrTests(unittest.TestCase):
             root = Path(tmp)
             target = write_batch(root)
             body_path = target / "handwritten.md"
-            body_path.write_text("handwritten body\n", encoding="utf-8")
+            body_path.write_text("- 批次号：`B1`\nhandwritten body\n", encoding="utf-8")
             with mock.patch.object(batch, "validate_body", return_value=0):
                 code, out = run(
                     [
@@ -166,12 +166,41 @@ class CommandPrTests(unittest.TestCase):
             self.assertEqual(code, 2)
             self.assertIn("--confirm", out)
 
+    def test_create_rejects_missing_batch_marker(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            target = write_batch(root)
+            body_path = target / "handwritten.md"
+            body_path.write_text("handwritten body\n", encoding="utf-8")
+            with mock.patch.object(batch, "validate_body", return_value=0), mock.patch.object(
+                batch, "run_gh", return_value=(0, "https://github.com/x/y/pull/1", "")
+            ) as gh:
+                code, out = run(
+                    [
+                        "--root",
+                        str(root),
+                        "pr",
+                        "--batch",
+                        "B1",
+                        "--base",
+                        "main",
+                        "--create",
+                        "--body-file",
+                        str(body_path),
+                        "--confirm",
+                        "00000000",
+                    ]
+                )
+            self.assertEqual(code, 1)
+            self.assertIn("batch marker", out)
+            gh.assert_not_called()
+
     def test_create_calls_gh(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             target = write_batch(root)
             body_path = target / "handwritten.md"
-            body = "handwritten body\n"
+            body = "- 批次号：`B1`\nhandwritten body\n"
             body_path.write_text(body, encoding="utf-8")
             digest = hashlib.sha256(body.encode("utf-8")).hexdigest()
             with mock.patch.object(batch, "validate_body", return_value=0), mock.patch.object(
@@ -207,7 +236,7 @@ class CommandPrTests(unittest.TestCase):
             root = Path(tmp)
             target = write_batch(root)
             body_path = target / "handwritten.md"
-            body_path.write_text("handwritten body\n", encoding="utf-8")
+            body_path.write_text("- 批次号：`B1`\nhandwritten body\n", encoding="utf-8")
             with mock.patch.object(batch, "validate_body", return_value=0), mock.patch.object(
                 batch, "run_gh", return_value=(0, "https://github.com/x/y/pull/1", "")
             ) as gh:
@@ -253,7 +282,7 @@ class CommandPrTests(unittest.TestCase):
             state["base"] = sha
             (target / "state.json").write_text(json.dumps(state), encoding="utf-8")
             body_path = target / "handwritten.md"
-            body = "handwritten body\n"
+            body = "- 批次号：`B1`\nhandwritten body\n"
             body_path.write_text(body, encoding="utf-8")
             digest = hashlib.sha256(body.encode("utf-8")).hexdigest()
             with mock.patch.object(batch, "validate_body", return_value=0), mock.patch.object(

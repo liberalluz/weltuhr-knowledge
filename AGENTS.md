@@ -31,6 +31,8 @@ python3 infra/tool/batch/batch.py plan <id> --type <process|feat> --goal "..." -
 # human review: show the card plus the first 8 hash chars first; after the user confirms
 python3 infra/tool/batch/batch.py approve <id> --chat --confirm <hash8>
 python3 infra/tool/batch/batch.py start <id>
+# stale active (its PR is merged, no merge.json): clear only with proof
+python3 infra/tool/batch/batch.py start <id> --clear-stale
 python3 infra/tool/batch/batch.py check --batch <id> --base main
 # PR body: --prepare writes the scaffold; edit the file to the final body
 python3 infra/tool/batch/batch.py pr --batch <id> --base main --prepare

@@ -170,6 +170,30 @@ jobs:
           git fetch --no-tags origin "${{ github.event.pull_request.base.ref }}"
           bash .githooks/pr-body --file "$body" --diff-base "origin/${{ github.event.pull_request.base.ref }}"
 
+      - name: PR 批次号与分支
+        if: github.event_name == 'pull_request'
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+          HEAD_REF: ${{ github.head_ref }}
+        run: |
+          python3 - <<'PY'
+          import os
+          import re
+          import sys
+
+          body = os.environ.get("PR_BODY", "")
+          ref = os.environ.get("HEAD_REF", "")
+          match = re.search(r"(?m)^- 批次号：\s*`?([^`\s]+)`?\s*$", body)
+          if not match:
+              print("FAIL 正文缺少 - 批次号", file=sys.stderr)
+              sys.exit(1)
+          batch = match.group(1)
+          if not ref.endswith("/" + batch):
+              print(f"FAIL 正文批次号 {batch} 与分支 {ref} 不一致", file=sys.stderr)
+              sys.exit(1)
+          print(f"ok 批次号 {batch} 与分支 {ref} 一致")
+          PY
+
       # -- main only accepts PRs ----------------------------------------------
       # The criterion lives in `.githooks/pre-push`, the **same file** and the
       # same `--range` entry point as the local hook. Locally it makes `git push`

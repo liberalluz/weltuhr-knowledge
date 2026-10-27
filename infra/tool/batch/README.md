@@ -59,6 +59,9 @@ python3 infra/tool/batch/batch.py approve B15-2 --chat --confirm <hash8>
 # Create branch (unless --no-branch), state.json, scope.json and .batch/active
 python3 infra/tool/batch/batch.py start B15-2
 
+# Only when the active branch's PR is already merged but merge.json is absent:
+python3 infra/tool/batch/batch.py start B15-2 --clear-stale
+
 # Active batch is the only writable batch; status shows Active/Owner.
 # start refuses to overwrite another active batch or an existing remote branch.
 python3 infra/tool/batch/batch.py status
