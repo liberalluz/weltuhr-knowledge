@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import argparse
 import getpass
+import hashlib
 import json
 import os
 import secrets
@@ -743,28 +744,64 @@ def command_pr(args: argparse.Namespace) -> int:
 
     base = args.base or state.get("base") or card.get("base") or "origin/main"
     changed = changed_paths(str(base))
-    body = build_pr_body(
-        card, changed, evidence.read_text(encoding="utf-8"), diff_status(str(base))
-    )
-    body_path = args.body_out
-    if body_path is None:
-        body_path = batch_dir / "pr-body.md"
-    elif not body_path.is_absolute():
-        body_path = REPO_ROOT / body_path
-    body_path.parent.mkdir(parents=True, exist_ok=True)
-    body_path.write_text(body, encoding="utf-8", newline="\n")
+    if args.prepare and args.create:
+        print("--prepare and --create are mutually exclusive", file=sys.stderr)
+        return 2
+    if args.body_file is not None and args.body_out is not None:
+        print("--body-file cannot be combined with --body-out", file=sys.stderr)
+        return 2
+    if args.confirm and not args.create:
+        print("--confirm is only valid with --create", file=sys.stderr)
+        return 2
+    if args.create and args.body_file is None:
+        print(
+            "refusing to create PR: --create requires --body-file (handwritten body)",
+            file=sys.stderr,
+        )
+        return 2
+
+    if args.body_file is not None:
+        body_path = args.body_file
+        if not body_path.is_absolute():
+            body_path = REPO_ROOT / body_path
+        if not body_path.exists():
+            print(f"body file not found: {body_path}", file=sys.stderr)
+            return 1
+        body = body_path.read_text(encoding="utf-8")
+    else:
+        body = build_pr_body(
+            card, changed, evidence.read_text(encoding="utf-8"), diff_status(str(base))
+        )
+        body_path = args.body_out
+        if body_path is None:
+            body_path = batch_dir / "pr-body.md"
+        elif not body_path.is_absolute():
+            body_path = REPO_ROOT / body_path
+        body_path.parent.mkdir(parents=True, exist_ok=True)
+        body_path.write_text(body, encoding="utf-8", newline="\n")
     print(f"body: {body_path}")
+    digest = hashlib.sha256(body.encode("utf-8")).hexdigest()
+    print(f"body hash: {digest} (confirm: {digest[:8]})")
 
     code = validate_body(body_path, str(base))
     if code != 0:
-        print("pr-body validation failed; fix the card/evidence then rerun", file=sys.stderr)
+        print("pr-body validation failed; fix the body then rerun", file=sys.stderr)
         return 1
     if not args.create:
-        print("body validated; review it, then rerun with --create --yes")
+        print(
+            "body validated; edit it, then rerun with "
+            "--create --body-file <path> --confirm <body-hash8>"
+        )
         return 0
-    if not args.yes:
-        print("refusing to create PR: pass --yes with --create", file=sys.stderr)
+    if not args.confirm:
+        print("refusing to create PR: pass --confirm <body-hash8>", file=sys.stderr)
         return 2
+    if args.confirm != digest[:8]:
+        print(
+            f"body hash mismatch: expected {digest[:8]}, got {args.confirm}",
+            file=sys.stderr,
+        )
+        return 1
 
     branch = state.get("branch") or card.get("branch")
     if not branch:
@@ -1289,9 +1326,11 @@ def build_parser() -> argparse.ArgumentParser:
     pr.add_argument("--batch")
     pr.add_argument("--base")
     pr.add_argument("--body-out", type=Path)
+    pr.add_argument("--body-file", type=Path)
+    pr.add_argument("--confirm")
+    pr.add_argument("--prepare", action="store_true")
     pr.add_argument("--title")
     pr.add_argument("--create", action="store_true")
-    pr.add_argument("--yes", action="store_true")
     pr.set_defaults(func=command_pr)
 
     merge = subparsers.add_parser("merge", help="merge a PR through the M1 gate")

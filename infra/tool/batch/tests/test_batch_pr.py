@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import contextlib
+import hashlib
 import io
 import json
 import subprocess
@@ -130,29 +131,105 @@ class CommandPrTests(unittest.TestCase):
             self.assertIn("body validated", out)
             self.assertTrue((root / "B1" / "pr-body.md").exists())
 
-    def test_create_requires_yes(self):
+    def test_create_requires_body_file(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             write_batch(root)
             with mock.patch.object(batch, "validate_body", return_value=0):
-                code, _ = run(
+                code, out = run(
                     ["--root", str(root), "pr", "--batch", "B1", "--base", "main", "--create"]
                 )
             self.assertEqual(code, 2)
+            self.assertIn("--body-file", out)
+
+    def test_create_requires_confirm(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            target = write_batch(root)
+            body_path = target / "handwritten.md"
+            body_path.write_text("handwritten body\n", encoding="utf-8")
+            with mock.patch.object(batch, "validate_body", return_value=0):
+                code, out = run(
+                    [
+                        "--root",
+                        str(root),
+                        "pr",
+                        "--batch",
+                        "B1",
+                        "--base",
+                        "main",
+                        "--create",
+                        "--body-file",
+                        str(body_path),
+                    ]
+                )
+            self.assertEqual(code, 2)
+            self.assertIn("--confirm", out)
 
     def test_create_calls_gh(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            write_batch(root)
+            target = write_batch(root)
+            body_path = target / "handwritten.md"
+            body = "handwritten body\n"
+            body_path.write_text(body, encoding="utf-8")
+            digest = hashlib.sha256(body.encode("utf-8")).hexdigest()
             with mock.patch.object(batch, "validate_body", return_value=0), mock.patch.object(
                 batch, "run_gh", return_value=(0, "https://github.com/x/y/pull/1", "")
             ) as gh:
                 code, out = run(
-                    ["--root", str(root), "pr", "--batch", "B1", "--base", "main", "--create", "--yes"]
+                    [
+                        "--root",
+                        str(root),
+                        "pr",
+                        "--batch",
+                        "B1",
+                        "--base",
+                        "main",
+                        "--create",
+                        "--body-file",
+                        str(body_path),
+                        "--confirm",
+                        digest[:8],
+                    ]
                 )
             self.assertEqual(code, 0)
             self.assertIn("pull/1", out)
             self.assertEqual(gh.call_args.args[0][:2], ["pr", "create"])
+            self.assertEqual(
+                Path(gh.call_args.args[0][gh.call_args.args[0].index("--body-file") + 1]),
+                body_path,
+            )
+            self.assertEqual(body_path.read_text(encoding="utf-8"), body)
+
+    def test_create_rejects_wrong_hash(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            target = write_batch(root)
+            body_path = target / "handwritten.md"
+            body_path.write_text("handwritten body\n", encoding="utf-8")
+            with mock.patch.object(batch, "validate_body", return_value=0), mock.patch.object(
+                batch, "run_gh", return_value=(0, "https://github.com/x/y/pull/1", "")
+            ) as gh:
+                code, out = run(
+                    [
+                        "--root",
+                        str(root),
+                        "pr",
+                        "--batch",
+                        "B1",
+                        "--base",
+                        "main",
+                        "--create",
+                        "--body-file",
+                        str(body_path),
+                        "--confirm",
+                        "00000000",
+                    ]
+                )
+            self.assertEqual(code, 1)
+            self.assertIn("hash mismatch", out)
+            gh.assert_not_called()
 
     def test_missing_evidence_fails(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -175,12 +252,29 @@ class CommandPrTests(unittest.TestCase):
             state = json.loads((target / "state.json").read_text(encoding="utf-8"))
             state["base"] = sha
             (target / "state.json").write_text(json.dumps(state), encoding="utf-8")
+            body_path = target / "handwritten.md"
+            body = "handwritten body\n"
+            body_path.write_text(body, encoding="utf-8")
+            digest = hashlib.sha256(body.encode("utf-8")).hexdigest()
             with mock.patch.object(batch, "validate_body", return_value=0), mock.patch.object(
                 batch, "changed_paths", return_value=["infra/a.py"]
             ), mock.patch.object(
                 batch, "run_gh", return_value=(0, "https://github.com/x/y/pull/1", "")
             ) as gh:
-                code, out = run(["--root", str(root), "pr", "--batch", "B1", "--create", "--yes"])
+                code, out = run(
+                    [
+                        "--root",
+                        str(root),
+                        "pr",
+                        "--batch",
+                        "B1",
+                        "--create",
+                        "--body-file",
+                        str(body_path),
+                        "--confirm",
+                        digest[:8],
+                    ]
+                )
             self.assertEqual(code, 0)
             args = gh.call_args.args[0]
             self.assertEqual(args[args.index("--base") + 1], "main")

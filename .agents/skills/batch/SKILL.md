@@ -28,7 +28,7 @@ metadata:
 | 人审 | `batch.py approve <id> --chat --confirm <hash8>` | `approval.hash` + `via=chat` |
 | 启动 | `batch.py start <id>` | branch / `state.json` / `scope.json` / `active` |
 | 检查 | `batch.py check --batch <id>` | `evidence.log` |
-| 开 PR | `batch.py pr --batch <id>` | `pr-body.md` + `gh pr create` |
+| 开 PR | `batch.py pr --prepare` → 手写 `pr-body.md` → `batch.py pr --create --body-file ... --confirm <hash8>` | 定稿正文 + `gh pr create` |
 | 合并 | `batch.py merge --pr <n> --yes` | `merge.json` |
 
 ## 边界
@@ -37,6 +37,7 @@ metadata:
 - `approve` 必须由用户确认：agent 先用 `ask_user_question` 展示 card 与 hash 前 8 位，用户选择 Approve 后才执行 `--chat --confirm <hash8>`；不得自批。
 - `approve` 后改 `card.yaml` 会让 hash 失效，必须重新批准。
 - 没有 `RESULT: PASS` 的 evidence 不进 `pr`，没有人工“合”不执行 `merge`。
+- PR 正文先 `--prepare`，手写定稿后再 `--create --body-file ... --confirm <hash8>`；不再 create 后 edit。
 - 不直接 `gh pr merge`；合并只走 `batch merge` / `merge.py`。
 - `.batch/` 是本地状态，不进仓库。
 - 多 agent 用 `plan --auto-id` 生成 `YYYYMMDD-<6位十六进制>`；同一时刻只允许一个 `.batch/active`。
