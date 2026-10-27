@@ -11,9 +11,12 @@ python3 tool/batch/merge.py --pr <n> --dry-run   # 合并前检查
 python3 tool/batch/merge.py --pr <n> --yes      # 人工确认后合并
 python3 tool/batch/check.py --scope .batch/<id>/scope.json   # 范围守门
 python3 tool/batch/batch.py status                         # 批次状态
-python3 tool/batch/batch.py plan/approve/start              # 批次卡与启动
+python3 tool/batch/batch.py plan --auto-id                 # 自动批次 ID
+python3 tool/batch/batch.py approve <id> --chat --confirm <hash8>
+python3 tool/batch/batch.py start <id>                     # 批次卡与启动
 python3 tool/batch/batch.py check --batch <id>             # 批次检查
-python3 tool/batch/batch.py pr --batch <id>                # 批次 PR 正文
+python3 tool/batch/batch.py pr --prepare --batch <id>      # PR 正文草稿
+python3 tool/batch/batch.py pr --create --body-file ... --confirm <hash8>  # 定稿后创建
 python3 tool/batch/batch.py merge --pr <n>                 # 批次合并
 python3 tool/metrics/pr_metrics.py --since <YYYY-MM-DD>    # PR 周报
 python3 tool/verify/verify.py --batch <id>                 # 只读验收

@@ -129,7 +129,7 @@ git config --get core.hooksPath       # 自查：应回显 .githooks
 | 3 | 启动 | `batch.py start <id>` | 建分支 + `state.json` + `scope.json` + `.batch/active` |
 | 4 | 改文件 → 显式暂存 → 提交 | `git add <path> …` → `git commit -s` | §三 · `.githooks/commit-msg` |
 | 5 | 推分支（本批一次） | `git push -u origin <branch>` | `.githooks/pre-push`：`active` · scope · 引用类型 · 非快进 |
-| 6 | 检查 → 开 PR | `batch.py check --batch <id>` → `batch.py pr --batch <id> --create --yes` | 正文形态见 §4.1（九节 + 十四条判据） |
+| 6 | 检查 → 正文定稿 → 开 PR | `batch.py check --batch <id>` → `batch.py pr --batch <id> --prepare` → 手写 `.batch/<id>/pr-body.md` → `pr --create --body-file … --confirm <body-hash8>` | 正文形态见 §4.1（九节 + 十四条判据） |
 | 7 | squash 合入 → 合后收口 | `batch.py merge --pr <n> --dry-run` → `--yes` → §4.2 四步 | §4.2 |
 
 **批次 ID 由 CLI 分配，不手写**：形态 `YYYYMMDD-<6 位小写十六进制>`。`plan` 不给 `<id>` 即自动生成（与 `--auto-id` 等价，两者同时给会报错）。手写序号（`C1`、`C2` …）只存在于旧批次，不再新增。
@@ -146,7 +146,7 @@ git config --get core.hooksPath       # 自查：应回显 .githooks
 
 - **第 4 步**：`git add -A --dry-run`（§七）只用来**检查**有无意外文件，**不是提交方式**。暂存一律列显式路径 —— `-A` 会把 `tmp/`、本地配置、半成品一起带进去，且事后从 diff 里看不出是「顺手带上的」还是「本来就该改」。
 - **第 5 步一批只执行一次。** 本批全部 commit 落盘后推一次，不得「改一笔 → push → 等 job 全绿 → 再改下一笔」。四支 workflow 都设了 `concurrency.cancel-in-progress: true`，注释写的是「同一分支连续推送时只保留最新一次」—— 它要的是**连着推**；逐笔等绿等于每笔都跑到自然结束，取消机制零触发，一批的等待从 1 轮变成 N 轮。**判据**：本批 `git push` 调用次数 = 1；`gh run list --branch <分支> --limit 10` 里不存在「上一条 `completed` 之后才出现下一条」的串行链。第 5 步之前须有一次本批全量自验证（`flutter analyze` · `dart run tool/lint/check.dart` · 触及 `dart:ffi` 时单文件 `dart analyze` · `flutter test` · `dart run tool/docs/check.dart`），按笔只跑改动面相关的，全量只在这里跑一次。⚠️ **这五项与 §七 是同一个集合，少跑其中任何一项即算未跑** —— `lint` 是本地唯一能拦住 `R5`（用例名未声明守哪条裁定）的门，它只在 CI 里报就意味着一轮往返。
-- **第 6 步**：正文由 `batch.py pr` 从卡片与 `evidence.log` 生成，落 `.batch/<id>/pr-body.md`，**生成即校验**，不过就不建 PR；`gh pr create` 本身**不读** `.github/PULL_REQUEST_TEMPLATE.md`（缺省无自动读取行为，`--template <file>` 可显式指定骨架），Web UI 那一趟才由服务端渲染模板。要手写正文时，骨架以模板为准（**九节**标题与顺序 · 自审留痕五行名称），形态由 `.githooks/pr-body` 判 —— 本地与 `repo-hygiene` 共用同一份，十四条判据只此一处。装置**只判形态、不判内容是否成立**：反证有没有被写成自证，仍只能人看。
+- **第 6 步**：`--prepare` 从卡片与 `evidence.log` 生成**草稿**，落 `.batch/<id>/pr-body.md` 并先校验形态；**手写定稿**后，`--create --body-file … --confirm <body-hash8>` 再校验一次并交给 `gh pr create --body-file`。`gh pr create` 本身**不读** `.github/PULL_REQUEST_TEMPLATE.md`（缺省无自动读取行为，`--template <file>` 可显式指定骨架），Web UI 那一趟才由服务端渲染模板。要手写正文时，骨架以模板为准（**九节**标题与顺序 · 自审留痕五行名称），形态由 `.githooks/pr-body` 判 —— 本地与 `repo-hygiene` 共用同一份，十四条判据只此一处。装置**只判形态、不判内容是否成立**：反证有没有被写成自证，仍只能人看。
 
 ### 2.3 失败处置
 
@@ -155,7 +155,7 @@ git config --get core.hooksPath       # 自查：应回显 .githooks
 | 步 | 现象 | 处置 | 判据 |
 |---|---|---|---|
 | 5 | `git push` 报 `CONNECT tunnel failed, response 502` · `schannel: server closed abruptly (missing close_notify)` · `Failed to connect to github.com:443 after N ms` | 先**重试**（实测第 3 次成功）；连续全败改走 SSH 一次性 refspec，**不改 `remote`**：`GIT_SSH_COMMAND="ssh -o BatchMode=yes -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10" git push git@github.com:<owner>/<repo>.git <branch>` | 远端 ref sha == 本地 `HEAD`：`gh api repos/<owner>/<repo>/git/ref/heads/<branch>` |
-| 6 | 正文写错（项数 / 漏栏 / 措辞） | `gh pr edit <n> --body-file <file>` 改正，**不重开 PR** | `gh pr view <n> --json body` 回读 |
+| 6 | 正文写错（项数 / 漏栏 / 措辞） | **create 前**改 `.batch/<id>/pr-body.md`，重算并重传 `--confirm`；已 create 的改正属于异常，须说明为何 create 前未发现 | `batch pr --create --body-file … --confirm …` 重跑并回读 |
 | 6 | 正文「动了 N 条路径」与 diff 对不上 | 以 `gh pr diff --name-only` 的**行数**为准；**同一文件被两笔改过按文件去重**，不能把两次的条目数相加 | `gh pr diff --name-only \| wc -l` == N |
 | 7 | `gh pr merge --squash --delete-branch` 打 `CONNECT tunnel failed` / `missing close_notify` / `warning: not possible to fast-forward to main` | **不是合并失败**：它合完会自己 fetch 一次，失败的是那一步 | `gh pr view <n> --json state,mergeCommit` → `state` 为 `MERGED` |
 | 7 | 合并后 `git branch -D <branch>` 报 `not found` | 正常：`--delete-branch` 已连本地段一起删 | `git branch` 里确无该分支 |
