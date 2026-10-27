@@ -98,11 +98,15 @@ class PlanTests(unittest.TestCase):
 
 
 class ApproveStartTests(unittest.TestCase):
-    def test_approve_requires_yes(self):
+    def test_approve_requires_confirmation(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             run(["--root", str(root), "plan", "B1", "--type", "process", "--goal", "x", "--allowed", "infra/**"])
             self.assertEqual(run(["--root", str(root), "approve", "B1"])[0], 2)
+            self.assertEqual(
+                run(["--root", str(root), "approve", "B1", "--chat", "--confirm", "00000000"])[0],
+                1,
+            )
 
     def test_approve_and_start_no_branch(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -123,9 +127,13 @@ class ApproveStartTests(unittest.TestCase):
                     "main",
                 ]
             )
-            code, out = run(["--root", str(root), "approve", "B1", "--yes", "--by", "tester"])
+            digest = card.card_hash(card.read_card(root / "B1" / "card.yaml"))
+            code, out = run(
+                ["--root", str(root), "approve", "B1", "--chat", "--confirm", digest[:8]]
+            )
             self.assertEqual(code, 0)
             self.assertIn("approved B1", out)
+            self.assertIn("via chat", out)
 
             code, out = run(["--root", str(root), "start", "B1", "--no-branch"])
             self.assertEqual(code, 0)

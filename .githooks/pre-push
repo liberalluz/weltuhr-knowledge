@@ -225,7 +225,7 @@ if [ "$mode" != '--range' ] && [ "$PUSHED_BRANCH" -eq 1 ]; then
     echo 'FAIL 没有 .batch/active：不知道本分支的 approved scope，pre-push 拒绝。' >&2
     echo '先建批次：' >&2
     echo '  python3 infra/tool/batch/batch.py plan <id> --type <process|feat> ...' >&2
-    echo '  python3 infra/tool/batch/batch.py approve <id> --yes' >&2
+    echo '  python3 infra/tool/batch/batch.py approve <id> --chat --confirm <hash8>' >&2
     echo '  python3 infra/tool/batch/batch.py start <id>' >&2
     echo '明确绕过（仅在你知道风险时）：git push --no-verify' >&2
     exit 1

@@ -25,7 +25,7 @@ metadata:
 | 阶段 | 命令 | 产物 |
 |---|---|---|
 | 起草 | `batch.py plan <id> --type ...` | `card.yaml` 草稿 |
-| 人审 | `batch.py approve <id> --yes` | `approval.hash` |
+| 人审 | `batch.py approve <id> --chat --confirm <hash8>` | `approval.hash` + `via=chat` |
 | 启动 | `batch.py start <id>` | branch / `state.json` / `scope.json` / `active` |
 | 检查 | `batch.py check --batch <id>` | `evidence.log` |
 | 开 PR | `batch.py pr --batch <id>` | `pr-body.md` + `gh pr create` |
@@ -34,6 +34,7 @@ metadata:
 ## 边界
 
 - 一个批次一个 PR；不把两个目标塞进同一张卡。
+- `approve` 必须由用户确认：agent 先用 `ask_user_question` 展示 card 与 hash 前 8 位，用户选择 Approve 后才执行 `--chat --confirm <hash8>`；不得自批。
 - `approve` 后改 `card.yaml` 会让 hash 失效，必须重新批准。
 - 没有 `RESULT: PASS` 的 evidence 不进 `pr`，没有人工“合”不执行 `merge`。
 - 不直接 `gh pr merge`；合并只走 `batch merge` / `merge.py`。
@@ -44,7 +45,7 @@ metadata:
 ```bash
 python3 infra/tool/batch/batch.py status
 python3 infra/tool/batch/batch.py plan B15-2 --type feat --goal "..." --allowed "app/lib/features/terrain/**"
-python3 infra/tool/batch/batch.py approve B15-2 --yes
+python3 infra/tool/batch/batch.py approve B15-2 --chat --confirm <hash8>
 python3 infra/tool/batch/batch.py start B15-2
 python3 infra/tool/batch/batch.py check --batch B15-2 --base main
 python3 infra/tool/batch/batch.py pr --batch B15-2 --base main

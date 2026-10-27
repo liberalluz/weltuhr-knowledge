@@ -4,7 +4,7 @@
 C2 adds the human-owned batch card:
 
     batch plan <id> --type ... --goal ... --allowed ...   # draft card.yaml
-    batch approve <id> --yes                              # hash-lock the card
+    batch approve <id> --chat --confirm <hash8>           # human chat confirmation
     batch start <id> [--no-branch]                        # branch + state + scope
     batch status [--batch <id>] [--json]
     batch list [--json]
@@ -27,7 +27,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Sequence
 
-from card import approve_card, read_card, verify_card, write_card
+from card import approve_card, card_hash, read_card, verify_card, write_card
 from check import PROCESS_PATTERNS, check_paths, sign_scope, verify_scope
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -253,6 +253,12 @@ def find_bash() -> str | None:
 def run_command(command: Sequence[str], cwd: Path) -> tuple[int, str, str]:
     argv: list[str] | str = list(command)
     shell = False
+    env = os.environ.copy()
+    if any("pr-body" in str(part) for part in command):
+        # Git Bash may default to a non-UTF-8 locale when spawned from Python;
+        # the checker's full-width semicolon pattern then operates on bytes.
+        env["LANG"] = "C.UTF-8"
+        env["LC_ALL"] = "C.UTF-8"
     if os.name == "nt":
         executable = shutil.which(argv[0])
         if executable and executable.lower().endswith((".bat", ".cmd")):
@@ -274,6 +280,7 @@ def run_command(command: Sequence[str], cwd: Path) -> tuple[int, str, str]:
                 stdout=out,
                 stderr=err,
                 text=True,
+                env=env,
             )
         return (
             proc.returncode,
@@ -801,9 +808,6 @@ def command_plan(args: argparse.Namespace) -> int:
 
 
 def command_approve(args: argparse.Namespace) -> int:
-    if not args.yes:
-        print("refusing approval: pass --yes after a human reviews the card", file=sys.stderr)
-        return 2
     root = root_path(args.root)
     target = root / args.batch_id
     card_path = target / "card.yaml"
@@ -821,9 +825,45 @@ def command_approve(args: argparse.Namespace) -> int:
     if not card.get("allowed"):
         print("card.allowed is required", file=sys.stderr)
         return 1
-    approved = approve_card(card, args.by or getpass.getuser())
+
+    digest = card_hash(card)
+    via = "chat" if args.chat else "tty"
+    if args.chat:
+        if not args.confirm:
+            print("--chat requires --confirm <hash8>", file=sys.stderr)
+            return 2
+        if args.confirm != digest[:8]:
+            print(
+                f"confirmation mismatch: expected {digest[:8]}, got {args.confirm}",
+                file=sys.stderr,
+            )
+            return 1
+    else:
+        if args.confirm:
+            print("--confirm is only valid with --chat", file=sys.stderr)
+            return 2
+        if not (sys.stdin.isatty() and sys.stdout.isatty()):
+            print(
+                "approval requires an interactive terminal; "
+                "for the chat flow use --chat --confirm <hash8>",
+                file=sys.stderr,
+            )
+            return 2
+        print(f"Card: {args.batch_id} ({card.get('type')})")
+        print(f"Goal: {card.get('goal')}")
+        print("Allowed:")
+        for item in card.get("allowed") or []:
+            print(f"  - {item}")
+        print(f"Approval hash: {digest}")
+        typed = input(f"Type the first 8 characters ({digest[:8]}) to approve: ").strip()
+        if typed != digest[:8]:
+            print("hash confirmation does not match; card not approved", file=sys.stderr)
+            return 1
+
+    approved = approve_card(card, getpass.getuser())
+    approved["approval"]["via"] = via
     write_card(card_path, approved)
-    print(f"approved {args.batch_id}: {approved['approval']['hash']}")
+    print(f"approved {args.batch_id} via {via}: {approved['approval']['hash']}")
     return 0
 
 
@@ -968,8 +1008,8 @@ def build_parser() -> argparse.ArgumentParser:
 
     approve = subparsers.add_parser("approve", help="hash-lock a reviewed card")
     approve.add_argument("batch_id")
-    approve.add_argument("--yes", action="store_true")
-    approve.add_argument("--by")
+    approve.add_argument("--chat", action="store_true", help="record a chat-confirmed approval")
+    approve.add_argument("--confirm", help="first 8 chars of the card hash, required with --chat")
     approve.set_defaults(func=command_approve)
 
     start = subparsers.add_parser("start", help="create branch, state and scope")

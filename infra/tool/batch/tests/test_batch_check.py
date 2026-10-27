@@ -7,6 +7,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
@@ -110,7 +111,8 @@ class CheckTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             target = write_batch(root, ["infra/**", ".agents/**"])
-            code, out = run(["--root", str(root), "check", "--batch", "B1", "--base", "main"])
+            with mock.patch.object(batch, "changed_paths", return_value=["infra/a.py"]):
+                code, out = run(["--root", str(root), "check", "--batch", "B1", "--base", "main"])
             self.assertEqual(code, 0)
             self.assertIn("result: PASS", out)
             evidence = (target / "evidence.log").read_text(encoding="utf-8")
@@ -125,7 +127,8 @@ class CheckTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             target = write_batch(root, ["app/**"])
-            code, out = run(["--root", str(root), "check", "--batch", "B1", "--base", "main"])
+            with mock.patch.object(batch, "changed_paths", return_value=["infra/a.py"]):
+                code, out = run(["--root", str(root), "check", "--batch", "B1", "--base", "main"])
             self.assertEqual(code, 1)
             self.assertIn("scope=FAIL", (target / "evidence.log").read_text(encoding="utf-8"))
             code, out = run(["--root", str(root), "status", "--batch", "B1"])
@@ -136,7 +139,8 @@ class CheckTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             target = write_batch(root, ["infra/**", ".agents/**"])
-            code, _ = run(["--root", str(root), "check", "--batch", "B1", "--base", "main", "--quick"])
+            with mock.patch.object(batch, "changed_paths", return_value=["infra/a.py"]):
+                code, _ = run(["--root", str(root), "check", "--batch", "B1", "--base", "main", "--quick"])
             self.assertEqual(code, 0)
             self.assertFalse((target / "evidence.log").exists())
 
@@ -144,9 +148,10 @@ class CheckTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             target = write_batch(root, ["infra/**", ".agents/**"])
-            code, out = run(
-                ["--root", str(root), "check", "--batch", "B1", "--base", "main", "--dry-run"]
-            )
+            with mock.patch.object(batch, "changed_paths", return_value=["infra/a.py"]):
+                code, out = run(
+                    ["--root", str(root), "check", "--batch", "B1", "--base", "main", "--dry-run"]
+                )
             self.assertEqual(code, 0)
             self.assertIn("[ok] scope", out)
             self.assertFalse((target / "evidence.log").exists())
