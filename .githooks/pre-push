@@ -1,64 +1,77 @@
 #!/usr/bin/env bash
-# 推到 main 的提交必须带 PR 编号 —— 本地 hook 与 CI **共用同一份逻辑**。
+# Commits pushed to main must carry a PR number -- one file shared by the local
+# hook and CI.
 #
-# 判据取 docs/specs/git-conventions.md：
-#   §二 / §4.1 —— `main` 只接受 PR 合入；唯一例外 = 仓库初始化首提。
-#   §2.2       —— 非 main 分支必须有 active 批次，且推送路径落在该批 scope 内。
+# Criteria come from docs/specs/git-conventions.md:
+#   §二 / §4.1 -- main only accepts PR merges; the sole exception is the
+#                 repository's initial commit.
+#   §2.2       -- a non-main branch needs an active batch, and the pushed paths
+#                 must fall inside that batch's scope.
 #
-# ── 为什么判「带 (#NNN)」而不是「拒绝一切 push main」────────────────
-# `(#NNN)` 不是提交对象上的字段，而是 squash 合并时由平台写进标题的**纯文本** ——
-# 只有经过 PR 的提交才有。于是「本次要推上去的每个提交都带编号」与「这些提交来自
-# PR 合并」等价，而它同时放行两种合法情形：
-#   · 本地 main 与远端同步（区间为空，无提交可推）
-#   · 仓库初始化首提（新建分支，远端 sha 为全 0）
+# -- Why key on "(#NNN)" instead of rejecting every push to main -------------
+# `(#NNN)` is not a field of the commit object; it is plain text written into
+# the title by the platform during a squash merge -- only commits that went
+# through a PR have it. So "every commit about to be pushed carries a number"
+# is equivalent to "these commits came from PR merges", and it also lets two
+# legitimate cases through:
+#   - local main is in sync with the remote (empty range, nothing to push)
+#   - repository's initial commit (new branch, remote sha all zeros)
 #
-# 另一条路是「发现目标是 main 就一律拒绝」，但它会把上面两种合法情形一起挡掉，
-# 而补例外又得再判一次「是不是首提」—— 判据反而多出一层。取编号，同时也顺手
-# 锁住了 §3.4「合入后标题保留 (#PR号)」那条落痕纪律。
+# The alternative, "reject anything targeting main", blocks both legitimate
+# cases; adding exceptions for them means checking "is this the initial commit"
+# again -- one more layer of criteria. Keying on the number also pins §3.4's
+# trace rule: after a merge the title keeps (#PR).
 #
-# 用法：
-#   .githooks/pre-push                         # git hook（从 stdin 读 refs）
-#   .githooks/pre-push --range <rev-range>     # CI（逐条）
+# Usage:
+#   .githooks/pre-push                        # git hook (refs on stdin)
+#   .githooks/pre-push --range <rev-range>    # CI (per commit)
 #
-# 退出码：0 通过 · 1 有违规。
+# Exit codes: 0 pass, 1 violation.
 #
-# ── 为什么两端共用同一个文件 ────────────────────────────────────────
-# 与 commit-msg 同形：分两份的后果很具体 —— 本地放行、CI 红，人会去改 CI 而不是
-# 改流程；反过来 CI 放行、本地红，人会 `--no-verify`。判据一旦有两份，就等于没有。
+# -- Why both ends share this one file ---------------------------------------
+# Same shape as commit-msg: splitting it has a concrete cost -- local passes,
+# CI fails, people edit CI instead of the process; CI passes, local fails,
+# people reach for `--no-verify`. Two copies of a criterion mean no criterion.
 #
-# ── 第二条：非分支引用 ─────────────────────────────────────────────
-# 只允许推 `refs/heads/*` 与**规范命名**的 tag。判据取 §五：tag 有且只有两种形态 ——
-# 产品版本 `vX.Y.Z`（`app/` 与 `server/` 共用）、内容包 `pack/<space>/vX.Y.Z`。
+# -- Second gate: non-branch refs -------------------------------------------
+# Only `refs/heads/*` and canonically named tags are pushable. Criterion is §五:
+# a tag has exactly two shapes -- product version `vX.Y.Z` (shared by `app/`
+# and `server/`) and content pack `pack/<space>/vX.Y.Z`.
 #
-# 为什么不是「一律拒 tag」：§五 明文要求发布时打 tag（「打 tag 即对外承诺」），
-# 一律拒会把正事也挡掉。所以取**命名白名单**：规范内的形态放行，其余（备份 /
-# 临时标记 / `backup/*` 之类）拒。
+# Why not "reject every tag": §五 explicitly requires tagging on release
+# ("tagging is a public promise"), so a blanket rejection also blocks real work.
+# Hence a naming allowlist: canonical shapes pass, everything else (backup /
+# scratch markers / `backup/*` and friends) is rejected.
 #
-# 为什么删除放行：误推的 tag 必须能回收。拒删除等于把清理动作也锁死，人只会去
-# 加 `--no-verify`。
+# Why deletions pass: a mis-pushed tag must be recoverable. Rejecting deletion
+# locks the cleanup action too, and people just add `--no-verify`.
 #
-# 本判据在 CI 侧**没有对应步骤**：`repo-hygiene` 的 `on.push` 只挂 `branches: [main]`，
-# 推 tag 不触发任何 workflow。这条只有近端一道 —— 也正因如此，它必须便宜。
+# This gate has NO counterpart in CI: `repo-hygiene`'s `on.push` only covers
+# `branches: [main]`, so pushing a tag triggers no workflow at all. This one
+# exists only near the developer -- which is exactly why it must be cheap.
 
 set -u
 
 FAIL=0
-# 两类失败分开记：tag 被拒时若还打印「提交必须是 PR 产物」，人会去查提交信息 ——
-# 错误信息指向错的地方，比没有信息更费时间。
+# Two failure classes are tracked apart: if a rejected tag also printed "the
+# commit must be a PR artifact", people would go inspect commit messages --
+# an error message pointing at the wrong place costs more than no message.
 FAIL_MAIN=0
 FAIL_REF=0
 
 mark_main() { FAIL=1; FAIL_MAIN=1; }
 mark_ref() { FAIL=1; FAIL_REF=1; }
 
-# ⚠️ 正则放进变量再用。`[[ s =~ ... ]]` 里内联的 `[^)]` 会被 bash 当成条件表达式
-# 的右括号来解析，报 `syntax error ... unexpected token )` —— 与 commit-msg 同一个坑。
+# WARNING: put regexes in variables first. An inline `[^)]` inside
+# `[[ s =~ ... ]]` is parsed as the closing paren of the conditional and bash
+# dies with `syntax error ... unexpected token )` -- same trap as commit-msg.
 TAG_RE='\(#[0-9]+\)'
 ZERO_RE='^0+$'
 
-# §五 的两种 tag 形态。`space` 取 `KnowledgeSpace.id`，故按 id 的字符集收窄
-# （字母数字与 `._-`），并**不用** `<space>` 里的 `/` 做多段 —— `pack/*/v*` 若写成
-# 贪婪匹配，`pack/a/b/v1.0.0` 这种非法规格也会过。
+# The two tag shapes of §五. `space` is `KnowledgeSpace.id`, so the character
+# class is narrowed to an id's alphabet (alnum plus `._-`) and the `/` inside
+# `<space>` is deliberately not honoured -- a greedy `pack/*/v*` would also let
+# the illegal `pack/a/b/v1.0.0` through.
 SEMVER_RE='v[0-9]+\.[0-9]+\.[0-9]+'
 TAG_OK_RE="^refs/tags/(${SEMVER_RE}|pack/[A-Za-z0-9._-]+/${SEMVER_RE})$"
 
@@ -71,17 +84,19 @@ check_range() {
     return 0
   fi
 
-  # GitHub 在新分支首推时把 `before` 给成全 0，区间会变成 `0000…0000..<sha>`。
-  # 这种区间 rev-list 报错，而错误信息与「有没走 PR」毫无关系 —— 在这里退化成
-  # 「只看这一条」，不让判据红在一条误导性的错误上。
+  # On a branch's first push GitHub sends an all-zero `before`, so the range
+  # becomes `0000...0000..<sha>`. rev-list fails on that, and the error has
+  # nothing to do with "did this go through a PR" -- degrade to "check this one
+  # commit" here instead of going red on a misleading error.
   case "$range" in
     *0000000000000000000000000000000000000000*)
       range="-n 1 ${range##*..}"
       ;;
   esac
 
-  # 所有标题**一次取出**。逐条 `git log -1` 在 Windows 上每条约 100 ms；一个
-  # 百条提交的区间要跑十几秒，而这条判据的定位是「比 check-ignore 还便宜」。
+  # Fetch every title in ONE call. Looping `git log -1` costs ~100 ms per commit
+  # on Windows; a hundred-commit range takes tens of seconds, while this check
+  # is budgeted at "cheaper than check-ignore".
   local log
   # shellcheck disable=SC2086
   if ! log=$(git log --format='%h%x09%s' $range 2>/dev/null); then
@@ -107,19 +122,22 @@ check_range() {
   echo "pre-push: 校验 ${n} 条"
 }
 
-# ── 第三条：非快进推送 ─────────────────────────────────────────────
-# 上面那条判据只看标题，挡不住 `git commit --amend` 改完标题再强推 ——
-# 提交仍带 `(#NNN)`，而远端原有的提交被换掉了。号在、历史已不是原来那条：
-# sha 一变，PR 记录、CI 结论、别人已 clone 的分支全部对不上，且从 `main`
-# 的 `git log` 上**看不出来**。判据取祖先关系，与标题无关。
+# -- Third gate: non-fast-forward pushes ------------------------------------
+# The gate above only reads titles, so it cannot stop `git commit --amend` plus
+# a force push -- the commit still carries `(#NNN)` while the commit that was on
+# the remote got replaced. The number is there, the history is not: once the sha
+# changes, the PR record, CI verdicts and everyone's clone no longer line up,
+# and none of that is visible in `git log` on main. This gate keys on ancestry,
+# independent of titles.
 #
-# 为什么拒绝「对象不在本地」而不是放行：没 fetch 时既判不了祖先，也不该
-# 猜「大概是快进」。放行猜错的代价是可能真的改写掉已发布历史，拒掉的代价
-# 只是多跑一次 `git fetch`。两个代价不对称，就按不对称的来。
+# Why "object missing locally" is rejected rather than allowed: without a fetch
+# ancestry cannot be decided, and guessing "probably a fast-forward" is not
+# warranted. Allowing a wrong guess risks rewriting published history; rejecting
+# costs one `git fetch`. The costs are asymmetric, so follow the asymmetry.
 check_fast_forward() {
   local before=$1 after=$2
 
-  # 远端还没有这个引用（首推 / 新分支）：没有历史可改写。
+  # The remote has no such ref yet (first push / new branch): no history to rewrite
   if [[ $before =~ $ZERO_RE ]]; then
     return 0
   fi
@@ -142,7 +160,7 @@ check_fast_forward() {
   return 1
 }
 
-# tag 判据。删除放行、规范命名放行、其余拒。
+# Tag gate: deletions pass, canonical names pass, everything else is rejected.
 check_tag() {
   local ref=$1 sha=$2 name=${1#refs/tags/}
 
@@ -168,11 +186,14 @@ PUSHED_BRANCH=0
 if [ "$mode" = '--range' ]; then
   check_range "${2:-}"
 else
-  # git hook 的 stdin 每行四段：<local-ref> <local-sha> <remote-ref> <remote-sha>
-  # 删除远端分支时 local-ref 是 `(delete)`、local-sha 为全 0。
+  # The git hook feeds four fields per stdin line:
+  # <local-ref> <local-sha> <remote-ref> <remote-sha>
+  # When deleting a remote branch, local-ref is `(delete)` and local-sha is all zeros.
   while read -r local_ref local_sha remote_ref remote_sha; do
-    # 先分引用类型，再谈 main —— 两条判据互不覆盖：tag 不该掉进「不是 main 就 continue」
-    # 的静默分支（原写法正是如此，所以备份 tag 会一路推上去）。
+    # Classify the ref type before talking about main -- the two gates must not
+    # cover each other: a tag must not fall into a silent "not main, continue"
+    # branch (the earlier version did exactly that, so backup tags went
+    # straight through).
     case "$remote_ref" in
       refs/heads/*) ;;
       refs/tags/*)
@@ -189,7 +210,7 @@ else
     case "$remote_ref" in
       refs/heads/main) ;;
       *)
-        # 非 main 分支的真实更新（不是删除）需要 active batch。
+        # A real update of a non-main branch (not a deletion) needs an active batch.
         if [[ ! $local_sha =~ $ZERO_RE ]]; then
           PUSHED_BRANCH=1
         fi
@@ -204,22 +225,24 @@ else
     fi
 
     if [[ $remote_sha =~ $ZERO_RE ]]; then
-      # 远端还没有 main —— 只可能是仓库初始化首提（§二 唯一例外）。
+      # The remote has no main yet -- only possible on the initial commit (§二's sole exception)
       echo 'pre-push: 远端 main 尚不存在，按初始化首提放行'
       continue
     fi
 
-    # 先判祖先关系，再判标题：被改写的推送里标题可能照样带号，顺序反了会先
-    # 放过标题、再去解释一件与标题无关的事。
+    # Check ancestry before the title: in a rewritten push the title may still
+    # carry the number, and the reverse order would first accept the title and
+    # then explain something unrelated to it.
     check_fast_forward "$remote_sha" "$local_sha" || continue
 
     check_range "$remote_sha..$local_sha"
   done
 fi
 
-# ── 第四条：当前 batch 的 scope guard ───────────────────────────────
-# 非 main 分支的真实推送必须有 active batch；没有就 fail-closed，不再静默跳过。
-# 删除分支、tag、`--range` 回放不在此列。--quick 只比路径，不跑测试。
+# -- Fourth gate: scope guard for the active batch --------------------------
+# A real push of a non-main branch requires an active batch; without one this
+# fails closed instead of silently skipping. Branch deletions, tags and
+# `--range` replays are out of scope. --quick compares paths only, no tests.
 if [ "$mode" != '--range' ] && [ "$PUSHED_BRANCH" -eq 1 ]; then
   if [ ! -f .batch/active ]; then
     echo '' >&2
