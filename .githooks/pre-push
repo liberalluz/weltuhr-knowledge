@@ -163,6 +163,7 @@ check_tag() {
 }
 
 mode=${1:-}
+PUSHED_BRANCH=0
 if [ "$mode" = '--range' ]; then
   check_range "${2:-}"
 else
@@ -186,7 +187,13 @@ else
 
     case "$remote_ref" in
       refs/heads/main) ;;
-      *) continue ;;
+      *)
+        # 非 main 分支的真实更新（不是删除）需要 active batch。
+        if [[ ! $local_sha =~ $ZERO_RE ]]; then
+          PUSHED_BRANCH=1
+        fi
+        continue
+        ;;
     esac
 
     if [[ $local_sha =~ $ZERO_RE ]]; then
@@ -210,20 +217,34 @@ else
 fi
 
 # ── 第三条：当前 batch 的 scope guard ───────────────────────────────
-# 只在本地存在 .batch/active 时运行；没有活动批次（例如 CI 回放、旧分支）
-# 不拦，远端 CI/评审仍是最终判据。--quick 只比路径，不跑测试。
-if [ -f .batch/active ]; then
+# 非 main 分支的真实推送必须有 active batch；没有就 fail-closed，不再静默跳过。
+# 删除分支、tag、`--range` 回放不在此列。--quick 只比路径，不跑测试。
+if [ "$mode" != '--range' ] && [ "$PUSHED_BRANCH" -eq 1 ]; then
+  if [ ! -f .batch/active ]; then
+    echo '' >&2
+    echo 'FAIL 没有 .batch/active：不知道本分支的 approved scope，pre-push 拒绝。' >&2
+    echo '先建批次：' >&2
+    echo '  python3 infra/tool/batch/batch.py plan <id> --type <process|feat> ...' >&2
+    echo '  python3 infra/tool/batch/batch.py approve <id> --yes' >&2
+    echo '  python3 infra/tool/batch/batch.py start <id>' >&2
+    echo '明确绕过（仅在你知道风险时）：git push --no-verify' >&2
+    exit 1
+  fi
+
   scope="$(cat .batch/active)"
-  if [ -n "$scope" ]; then
-    py=python3
-    command -v python3 >/dev/null 2>&1 || py=python
-    if ! "$py" infra/tool/batch/check.py --scope "$scope" --quick; then
-      echo '' >&2
-      echo 'FAIL batch scope guard：改动超出 scope.json。' >&2
-      echo '扩范围走：python3 infra/tool/batch/check.py --scope <scope> --add <path> --reason <...> --yes' >&2
-      echo '并让人类确认后提交 scope 变更；不要直接改 allowed。' >&2
-      exit 1
-    fi
+  if [ -z "$scope" ]; then
+    echo 'FAIL .batch/active 为空：先 batch start <id>' >&2
+    exit 1
+  fi
+
+  py=python3
+  command -v python3 >/dev/null 2>&1 || py=python
+  if ! "$py" infra/tool/batch/check.py --scope "$scope" --quick; then
+    echo '' >&2
+    echo 'FAIL batch scope guard：改动超出 scope.json。' >&2
+    echo '扩范围走：python3 infra/tool/batch/check.py --scope <scope> --add <path> --reason <...> --yes' >&2
+    echo '并让人类确认后提交 scope 变更；不要直接改 allowed。' >&2
+    exit 1
   fi
 fi
 
