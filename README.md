@@ -1,6 +1,6 @@
-**English** · [简体中文](README.zh-CN.md) · [Deutsch](README.de.md) · [Italiano](README.it.md) · [日本語](README.ja.md) · [Français](README.fr.md)
-
 # Weltuhr
+
+**English** · [简体中文](README.zh-CN.md) · [Deutsch](README.de.md) · [Italiano](README.it.md) · [日本語](README.ja.md) · [Français](README.fr.md)
 
 > Unfold a field of study into a knowledge space that is **locatable, plannable and measurable**, so that "I want to learn X" becomes "I know what to learn, in what order, and how far along I am when it counts as usable".
 

@@ -3,6 +3,7 @@ from __future__ import annotations
 import contextlib
 import io
 import json
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -161,6 +162,69 @@ class CommandPrTests(unittest.TestCase):
             code, out = run(["--root", str(root), "pr", "--batch", "B1", "--base", "main"])
             self.assertEqual(code, 1)
             self.assertIn("evidence", out)
+
+
+    def test_create_passes_branch_name_when_base_is_sha(self):
+        code, out, _ = batch.run_git(["rev-parse", "origin/main"])
+        if code != 0:
+            self.skipTest("origin/main is not fetched")
+        sha = out.strip()
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            target = write_batch(root)
+            state = json.loads((target / "state.json").read_text(encoding="utf-8"))
+            state["base"] = sha
+            (target / "state.json").write_text(json.dumps(state), encoding="utf-8")
+            with mock.patch.object(batch, "validate_body", return_value=0), mock.patch.object(
+                batch, "changed_paths", return_value=["infra/a.py"]
+            ), mock.patch.object(
+                batch, "run_gh", return_value=(0, "https://github.com/x/y/pull/1", "")
+            ) as gh:
+                code, out = run(["--root", str(root), "pr", "--batch", "B1", "--create", "--yes"])
+            self.assertEqual(code, 0)
+            args = gh.call_args.args[0]
+            self.assertEqual(args[args.index("--base") + 1], "main")
+
+
+class BranchForBaseTests(unittest.TestCase):
+    def test_branch_names_pass_through(self):
+        self.assertEqual(batch.branch_for_base("main"), "main")
+        self.assertEqual(batch.branch_for_base("origin/main"), "main")
+        self.assertEqual(batch.branch_for_base("refs/heads/main"), "main")
+        self.assertEqual(batch.branch_for_base("refs/remotes/origin/main"), "main")
+
+    def test_real_sha_resolves_to_branch(self):
+        code, out, _ = batch.run_git(["rev-parse", "origin/main"])
+        if code != 0:
+            self.skipTest("origin/main is not fetched")
+        self.assertEqual(batch.branch_for_base(out.strip()), "main")
+
+    def test_unknown_sha_returns_none(self):
+        self.assertIsNone(batch.branch_for_base("0" * 40))
+
+
+class ActorIdentityTests(unittest.TestCase):
+    def test_prefers_github_login(self):
+        with mock.patch.object(batch, "run_gh", return_value=(0, "liberalluz", "")):
+            self.assertEqual(batch.actor_identity(), "liberalluz")
+
+    def test_falls_back_to_git_identity(self):
+        with mock.patch.object(batch, "run_gh", return_value=(1, "", "no network")), mock.patch.object(
+            batch, "run_git", return_value=(0, "liberal", "")
+        ):
+            self.assertEqual(batch.actor_identity(), "liberal")
+
+    def test_falls_back_to_os_user(self):
+        with mock.patch.object(batch, "run_gh", return_value=(1, "", "")), mock.patch.object(
+            batch, "run_git", return_value=(1, "", "")
+        ), mock.patch.object(batch.getpass, "getuser", return_value="liber"):
+            self.assertEqual(batch.actor_identity(), "liber")
+
+    def test_timeout_falls_back(self):
+        with mock.patch.object(
+            batch, "run_gh", side_effect=subprocess.TimeoutExpired("gh", 10)
+        ), mock.patch.object(batch, "run_git", return_value=(0, "liberal", "")):
+            self.assertEqual(batch.actor_identity(), "liberal")
 
 
 if __name__ == "__main__":

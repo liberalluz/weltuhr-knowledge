@@ -385,7 +385,7 @@ def planned_steps(
     return steps
 
 
-def run_gh(args: Sequence[str]) -> tuple[int, str, str]:
+def run_gh(args: Sequence[str], timeout: float | None = None) -> tuple[int, str, str]:
     gh = shutil.which("gh")
     if gh is None:
         raise RuntimeError("gh not found in PATH")
@@ -401,6 +401,7 @@ def run_gh(args: Sequence[str]) -> tuple[int, str, str]:
                 stdout=out,
                 stderr=err,
                 text=True,
+                timeout=timeout,
             )
         return (
             proc.returncode,
@@ -461,6 +462,53 @@ def short_base(base: str) -> str:
         if code == 0 and out.strip() == text:
             return text[:width]
     return text
+
+
+def actor_identity() -> str:
+    """Approver identity: GitHub login first, then git identity, then OS user."""
+    try:
+        code, out, _ = run_gh(["api", "user", "--jq", ".login"], timeout=10)
+    except (subprocess.TimeoutExpired, RuntimeError):
+        code, out = 1, ""
+    if code == 0 and out:
+        return out
+    code, out, _ = run_git(["config", "user.name"])
+    if code == 0 and out:
+        return out
+    return getpass.getuser()
+
+
+def branch_for_base(base: str) -> str | None:
+    """Map a base to a branch name; `gh pr create --base` rejects bare shas."""
+    text = str(base or "").strip()
+    if not text:
+        return None
+    for prefix in ("refs/heads/", "refs/remotes/"):
+        if text.startswith(prefix):
+            text = text[len(prefix):]
+    if text.startswith("origin/"):
+        return text[len("origin/"):]
+    if len(text) != 40 or any(ch not in "0123456789abcdef" for ch in text):
+        return text
+    code, out, _ = run_git(
+        [
+            "for-each-ref",
+            "--points-at",
+            text,
+            "--format=%(refname:short)",
+            "refs/remotes/origin",
+        ]
+    )
+    if code != 0:
+        return None
+    names = [
+        line.strip()[len("origin/"):]
+        for line in out.splitlines()
+        if line.strip().startswith("origin/") and line.strip() != "origin/HEAD"
+    ]
+    if not names:
+        return None
+    return "main" if "main" in names else names[0]
 
 
 def build_pr_body(card: dict[str, Any], changed: Sequence[str], evidence_text: str) -> str:
@@ -622,6 +670,13 @@ def command_pr(args: argparse.Namespace) -> int:
     if not branch:
         print("branch missing from state/card", file=sys.stderr)
         return 1
+    base_branch = branch_for_base(str(base))
+    if base_branch is None:
+        print(
+            f"cannot resolve base {base!r} to a branch name; pass --base <branch> explicitly",
+            file=sys.stderr,
+        )
+        return 1
     title = args.title
     if not title:
         title_code, title_out, _ = run_git(["log", "-1", "--format=%s"])
@@ -631,7 +686,7 @@ def command_pr(args: argparse.Namespace) -> int:
             "pr",
             "create",
             "--base",
-            str(base),
+            base_branch,
             "--head",
             str(branch),
             "--title",
@@ -933,7 +988,7 @@ def command_approve(args: argparse.Namespace) -> int:
             print("hash confirmation does not match; card not approved", file=sys.stderr)
             return 1
 
-    approved = approve_card(card, getpass.getuser())
+    approved = approve_card(card, actor_identity())
     approved["approval"]["via"] = via
     write_card(card_path, approved)
     print(f"approved {args.batch_id} via {via}: {approved['approval']['hash']}")
