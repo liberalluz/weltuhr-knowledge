@@ -35,8 +35,8 @@ def unverified_lines(text: str | None) -> list[str]:
     out: list[str] = []
     for line in text.splitlines():
         stripped = line.strip()
-        if "未验" in stripped and stripped not in out:
-            out.append(stripped.lstrip("- "))
+        if "未验" in stripped and stripped.startswith(("- ", "* ")) and stripped not in out:
+            out.append(stripped.lstrip("-* "))
     return out
 
 
