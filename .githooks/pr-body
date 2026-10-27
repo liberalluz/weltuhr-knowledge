@@ -1,60 +1,35 @@
 #!/usr/bin/env bash
-# PR 正文形态判据 —— 本地自检与 CI **共用同一份逻辑**。
+# PR body shape checker — one implementation shared by the local pre-PR run and CI.
 #
-# 只认 docs/specs/git-conventions.md §4.1：
-#   正文必含五节（变更摘要 / 自审留痕 / 交付物 / AI 参与 / 关联）
-#   自审留痕五行（分支基线 / 改动面 / 版号 / 反证 / 如实登记）
-#   一律不用 `- [ ]`
-#   `如实登记` 一条一行、不压段（禁 ①②③）
-#   `改动面` 首行给 N 条路径 / M 项 / 未动 K 处
-#   跨 >=2 个技术栈目录（app/ server/ content/ infra/）须列三列表
-#   `变更摘要` 与 `改动面` / `反证` / `如实登记` 的多行条目**都是缩进项目符号、
-#   一条一行、无编号前缀**（圈号 · 罗马 i. · 阿拉伯 1. 三种都不行）
-#   `反证` 须写明哪些没验
-#   PR / issue 号须写成显示链接 `[#N](…/pull/N)`（裸号 / 反引号包号都不行）
+# The rules are docs/specs/git-conventions.md §4.1 (fourteen checks). This file only
+# implements them; it does not restate them, and it does not keep a second copy.
 #
-# 用法：
-#   bash .githooks/pr-body --file <正文.md> [--diff-base origin/main]   # 本地，开 PR 前
-#   bash .githooks/pr-body --stdin [--diff-base origin/main]            # 管道
-#   bash .githooks/pr-body --self-test                                  # 判据自检（正例 + 负例）
+# Usage:
+#   bash .githooks/pr-body --file <body.md> [--diff-base origin/main]
+#   bash .githooks/pr-body --stdin [--diff-base origin/main]
+#   bash .githooks/pr-body --self-test
 #
-# 退出码：0 通过 · 1 有违规 · 2 用法错。
+# Exit codes: 0 pass · 1 violations · 2 usage error.
 #
-# ── 为什么要有这条判据 ────────────────────────────────────────────────
-# 2026-10-23 ~ 10-24 的五笔 PR（#143 ~ #147）正文全部违规，而且**同一个错重复五次**：
-# `如实登记` 用 ①②③ 压在同一个段落里（违反 §4.1「一律一条一行」）。根因不是「没读
-# 规则」，是**这一环没有任何装置**：模板里那行是单行占位（照它填必然压段）、
-# `gh pr create` 不校验正文、`commit-msg` 只管提交信息。规则只写在 §4.1 正文里，
-# 人读它才会生效 —— 这就是它连续失效五次的原因。
+# ── Implementation notes ──────────────────────────────────────────────
+# Why pure bash with mapfile: every external process on Git Bash costs ~0.2–0.5 s
+# and the CI budget for this step is ~5 s. Do not put grep/sed back inside loops.
 #
-# ⚠️ 反面记录（2026-10-24 自查）：我在审计这五笔时**把跨栈条件读错了** —— 把 `docs/`
-# 也算成一个技术栈目录，于是判定 `#144`（app 2 + docs 4）、`#146`（content 7 +
-# docs 1）、`#147`（content 6 + docs 6）三笔「漏了三列表」，并给它们各补了一张表。
-# 规则原文的技术栈目录只有 `app/` `server/` `content/` `infra/`（见
-# `docs/specs/git-conventions.md:284`），**`docs/` 不在内** ⇒ 这三笔各只动 1 个技术栈
-# 目录，**本不该有表**。本脚本第 6 条判据（`app|server|content|infra` 白名单）
-# 是照原文写的、没读错；错的是那次人工审计。⇒ 别把「补了一张表」当成「合规」的
-# 证据，也别据那次审计的结论去改别的 PR。表已于 2026-10-24 从三笔正文撤回。
+# Locator functions write globals (FLN / FA / FB / SA / SB) instead of echoing.
+# `x=$(field_line ...)` would fork a subshell per call; the self-test calls the
+# locators dozens of times.
 #
-# ⚠️ 该条的后半句「或触碰受控配置项」在全仓**没有定义**（`grep -rn 受控配置项 docs/`
-# 只命中 `git-conventions.md:284` 自身）⇒ 本脚本只实现可判定的那一半（≥2 个技术栈
-# 目录）；「算不算受控配置项」仍归人判，属已知缺口。
+# Regular expressions must be assigned to a variable before `[[ =~ ]]`: an inline
+# `[^)]` is parsed as the closing bracket of the conditional expression.
 #
-# ── 为什么是 pure bash（2026-10-24 改）──
-# 原实现逐行 `printf | grep -q`：Git Bash 每个外部进程约 0.5 s，一次 `--self-test`
-# 跑 61 s（5 个正负例 × 每例几十次 fork）—— `repo-hygiene` 整段预算 5 s，等于让最便宜
-# 的判据最贵。现改为 mapfile 读入 + bash 模式匹配，全程只在「跨栈 diff」与「取 field
-# 行号」两处 fork。**别把 grep 加回循环里**，那不是风格问题，是这条判据会超时变红。
-#
-# ── 判不了的 ──────────────────────────────────────────────────────────
-# `反证` 是否被写成了**自证**（「跑了测试全绿」不算证据）是语义判断，正则判不了。
-# 本脚本只判它的形态：该字段存在、且写明了「未验」。实质是否成立只能人看。
+# ── What this checker cannot decide ───────────────────────────────────
+# Whether `反证` was written as self-confirmation, whether "one thing vs two
+# things" is true, and whether something counts as a controlled config item.
+# Those stay human judgements and belong in `如实登记`.
 
 set -u
 
 fail=0
-PR_NUMBER=0
-LEGACY_BEFORE=193
 ok()   { printf 'ok    %s\n' "$1"; }
 bad()  { printf '[FAIL] %s\n' "$1"; fail=1; }
 skip() { printf 'skip  %s\n' "$1"; }
@@ -63,20 +38,21 @@ declare -a BL=()
 
 load_body() { mapfile -t BL < "$1"; }
 
-# ── 定位（全部纯 bash）─────────────────────────────────────────────────
+# ── Locators (pure bash) ──────────────────────────────────────────────
 
-# 行首编号前缀：圈号 / 罗马 i.ii. / 阿拉伯 1.。返回 0 = 有前缀。
-# 判据要求带分隔符与空格，免得把「3 条」「2026-10-23」判成编号。
+# Leading number prefix: circled, roman i./ii., arabic 1. Returns 0 when present.
+# The separator plus a space is required so that "3 条" or "2026-10-23" is not
+# mistaken for a numbered item.
 num_prefix() {
   local s h front sep d
-  strip_code "$1"                          # 代码跨度里的是举例，不算编号
+  strip_code "$1"                          # text inside code spans is an example
   s="$SC"
-  s="${s#"${s%%[![:space:]]*}"}"           # 去前导空白
-  s="${s#- }"; s="${s#\* }"; s="${s#+ }"   # 去一个列表符号
+  s="${s#"${s%%[![:space:]]*}"}"           # leading whitespace
+  s="${s#- }"; s="${s#\* }"; s="${s#+ }"   # one list marker
   case "$s" in
     '①'*|'②'*|'③'*|'④'*|'⑤'*|'⑥'*|'⑦'*|'⑧'*|'⑨'*|'⑩'*) return 0 ;;
   esac
-  h="${s%%[[:space:]]*}"                   # 第一段（编号与分隔符都在这段里）
+  h="${s%%[[:space:]]*}"
   sep=""
   for d in . '、' ')' '）'; do
     case "$h" in
@@ -85,7 +61,7 @@ num_prefix() {
   done
   [ -n "$sep" ] || return 1
   case "$front" in
-    ''|*[!0-9]*) ;;                        # 不是纯数字 ⇒ 按罗马数字看
+    ''|*[!0-9]*) ;;
     *) [ "${#front}" -le 2 ] && return 0; return 1 ;;
   esac
   case "$front" in
@@ -101,13 +77,11 @@ has_circled() {
   return 1
 }
 
-# 剥掉行内代码跨度（成对反引号之间的内容），输出剩余部分。
-# ⚠️ 必须有这一步：正文里**讨论**规则时会写 `- [ ]`（如「一律不用 `- [ ]`」），
-#    不剥就把它当成真的任务列表 —— 本条判据首跑就是这么红在自己身上的。
-#    同理，代码跨度里的 ①②③ 也不该算编号前缀。
-# ⚠️ 结果写全局 SC、**不 printf**：`$(strip_code …)` 是 fork 一个子 shell，Git Bash 上
-#    约 0.2 s。第 8 条判据每行要剥 10 次（十个圈号各一次），`#121` 自检因此直接跑满
-#    20 s 超时、退出码 124 —— 判据没报错、是装置自己卡死，比误报更难查。
+# Strip inline code spans (paired backticks), leaving the rest in SC.
+# Required: the body legitimately *discusses* `- [ ]` and ①②③ inside code spans,
+# and those must not be judged as real tasks or real numbering.
+# Writes a global instead of printing: `$(strip_code ...)` would fork a subshell
+# per call and has already made the self-test time out once.
 strip_code() {
   local s="$1" out=""
   while case "$s" in *'`'*) true ;; *) false ;; esac; do
@@ -118,7 +92,14 @@ strip_code() {
   SC="$out$s"
 }
 
-has_section() {  # $1 = 整行标题，如 `## 变更摘要`
+# Count full-width semicolons (`；`) in a line; result in SEMIS.
+count_semis() {
+  local s="$1"
+  s="${s//[^；]/}"
+  SEMIS=${#s}
+}
+
+has_section() {  # $1 = exact heading line, e.g. `## 变更摘要`
   local l
   for l in "${BL[@]}"; do
     [ "$l" = "$1" ] && return 0
@@ -126,14 +107,11 @@ has_section() {  # $1 = 整行标题，如 `## 变更摘要`
   return 1
 }
 
-# ⚠️ 下面三个定位函数**把结果写全局变量、不做 command substitution**：
-#    `x=$(field_line …)` 每调一次就 fork 一个子 shell，Git Bash 上约 0.3 s；
-#    自检要调几十次，实测把 `--self-test` 从 25 s 拖到 2 s 以内靠的就是这一条。
-#    别为了「看起来函数式」改回 `$( )`。
-FLN=0        # field_line 结果：行号（1 基）
-FA=0 FB=0    # field_bounds / section_bounds 结果：起始下标 / 结束下标（0 基，左闭右开）
+FLN=0        # field_line: 1-based line number
+FA=0 FB=0    # field_bounds: 0-based [start, end)
+SA=0 SB=0    # section_bounds: 0-based [start, end)
 
-field_line() {   # $1 = 字段名；成功时置 FLN
+field_line() {   # $1 = field name; sets FLN
   local i l
   for ((i = 0; i < ${#BL[@]}; i++)); do
     l="${BL[$i]}"
@@ -144,8 +122,9 @@ field_line() {   # $1 = 字段名；成功时置 FLN
   return 1
 }
 
-# 字段块扫描区间。⚠️ 同时认 `## `：`如实登记` 是最后一五行，其后紧跟 `## 交付物`，
-# 只认 `- **` 会把交付物 / AI 参与 / 关联 整段吞进块里，编号前缀判据在那几节误报。
+# Field block: from the field line to the next field line or `## ` heading.
+# `## ` must break too: `如实登记` is the last field of its section and is
+# followed by another `##`, otherwise the next sections get swallowed.
 field_bounds() {
   local s i l
   field_line "$1" || return 1
@@ -158,7 +137,7 @@ field_bounds() {
   return 0
 }
 
-# 段落扫描区间（标题行之后到下一个 `## ` 之前）
+# Section block: heading line + 1 up to the next `## ` heading.
 section_bounds() {
   local i n=${#BL[@]} a=-1 b=-1
   for ((i = 0; i < n; i++)); do
@@ -174,13 +153,7 @@ section_bounds() {
   return 0
 }
 
-# v2 模板从 #193 起启用；旧 PR 不追改。PR_NUMBER=0 表示本地自检，按 v2 严格执行。
-v2_required() {
-  [ "${PR_NUMBER:-0}" -eq 0 ] && return 0
-  [ "${PR_NUMBER:-0}" -ge "$LEGACY_BEFORE" ]
-}
-
-section_contains() {  # $1 = 整行标题；$2 = 必须出现的文本
+section_contains() {  # $1 = heading; $2 = text that must appear inside
   section_bounds "$1" || return 1
   local i
   for ((i = SA; i < SB; i++)); do
@@ -189,10 +162,19 @@ section_contains() {  # $1 = 整行标题；$2 = 必须出现的文本
   return 1
 }
 
-# 扫 [a, b) 内的编号前缀；$1 = 报错时用的名字；$4=1 时另判「一行压 ≥2 条圈号」
-# ⚠️ 为什么还要判「压段」：`- **反证**：① 甲；② 乙` 的圈号在行中间，行首判定看不见。
-#    但单个圈号不能判 —— 正文里会**引用**别处的编号（如「① 选源 · ② 选体系」那段
-#    七步原文），所以门槛取「同一行出现 ≥2 个」，单个引用放过。
+# Strips `- **name**：` from a field line and removes all whitespace; result in FR.
+field_value() {  # $1 = field name; requires field_line first
+  local l="${BL[$((FLN - 1))]}"
+  strip_code "$l"
+  l="${SC#- \*\*$1\*\*}"
+  l="${l#：}"; l="${l#:}"
+  FR="${l//[[:space:]]/}"
+  FR="${FR//　/}"
+}
+
+# Scans [a, b) for number prefixes; $1 = label; $4=1 also flags "≥2 items on one line".
+# A single circled number may be a legitimate quotation of someone else's numbering,
+# so the packed-line rule requires a separator right before the number.
 scan_num() {
   local i l n=0 c cc
   for ((i = $2; i < $3; i++)); do
@@ -204,10 +186,6 @@ scan_num() {
       continue
     fi
     if [ "${4:-0}" -eq 1 ]; then
-      # 压段的特征不是「有圈号」，而是「圈号紧跟在分隔符后」——`：① 甲；② 乙`。
-      # ⚠️ 只数圈号个数会误报**引用**：`#123` 写「（① 选源 · ② 选体系 · …）」是在引
-      #    `SPEC-STEP-001` 的条目名，7 个圈号却不是 7 条并列。判据取 `：①` / `；①`
-      #    这类「分隔符 + 圈号」的组合，≥2 处才算压段。
       strip_code "$l"
       cc=0
       for c in '①' '②' '③' '④' '⑤' '⑥' '⑦' '⑧' '⑨' '⑩'; do
@@ -229,20 +207,34 @@ check_body() {
 
   load_body "$body"
 
-  # 1 —— 五节
-  local sec
-  for sec in "## 变更摘要" "## 自审留痕" "## 交付物" "## AI 参与" "## 关联"; do
+  local sec f l i
+
+  # 1 — nine sections, exact headings. Order is not judged.
+  for sec in "## 变更摘要" "## 影响面" "## 自审留痕" "## 验证" \
+             "## UI 证据" "## 交付物" "## AI 参与" "## 关联" "## 评审提示"; do
     has_section "$sec" || bad "缺节：$sec"
   done
 
-  # 2 —— 自审留痕五行
-  local f
+  # 2 — five audit fields, plus the base sha must resolve.
   for f in "分支基线" "改动面" "版号" "反证" "如实登记"; do
     field_line "$f" || bad "自审留痕缺字段：$f"
   done
+  if field_line "分支基线"; then
+    local bline="${BL[$((FLN - 1))]}" bsha
+    if [[ $bline =~ ([0-9a-f]{7,40}) ]]; then
+      bsha="${BASH_REMATCH[1]}"
+      if git cat-file -e "${bsha}^{commit}" 2>/dev/null; then
+        ok "分支基线 sha 可解析：${bsha}"
+      else
+        skip "分支基线 sha ${bsha} 本地对象缺失（未 fetch？），不判红"
+      fi
+    else
+      bad '分支基线缺 7–40 位十六进制 sha'
+    fi
+  fi
 
-  # 3 —— 禁 task list（先剥行内代码：正文里讨论这条规则时会写 `- [ ]`）
-  local l tl=0
+  # 3 — no task list. Inline code is stripped first: the body may discuss `- [ ]`.
+  local tl=0
   for l in "${BL[@]}"; do
     strip_code "$l"
     case "$SC" in *"- [ ]"*) tl=1; break ;; esac
@@ -253,20 +245,18 @@ check_body() {
     ok '无 `- [ ]`'
   fi
 
-  # 4 —— 如实登记：不压段 / 须分条（`：<一行总述>` + 缩进条目，与 `反证` 同形）
-  local rl rtext nxt i
+  # 4 — 如实登记: 0 / 1 / N. Only the zero case may stay inline as `无`.
   if field_line "如实登记"; then
+    local rl rtext nxt
     rl=$FLN
     rtext="${BL[$((rl - 1))]}"
-    # ⚠️ 只对「圈号」那条剥代码跨度；结构判据（有没有子项）必须用原文，
-    #    否则 `- **如实登记**：`无`` 这类写法会被剥成只剩冒号，误判成「下无子项」。
+    # Strip code spans only for the circled-number check; the structural check
+    # must use the original text, or `：无` collapses to a bare colon.
     strip_code "$rtext"
-    if has_circled "$SC"; then
-      bad '如实登记 用 ①②③ 压段：须一条一行（§4.1）'
-    fi
-    rtext="${rtext%"${rtext##*[![:space:]]}"}"      # 去尾空白
-    case "$rtext" in
-      *：无) ok '如实登记：无（允许）' ;;
+    has_circled "$SC" && bad '如实登记 用 ①②③ 压段：须一条一行（§4.1）'
+    field_value "如实登记"
+    case "$FR" in
+      无|无。) ok '如实登记：无（允许）' ;;
       *)
         nxt=""
         for ((i = rl; i < ${#BL[@]}; i++)); do
@@ -274,20 +264,28 @@ check_body() {
           nxt="${BL[$i]}"
           break
         done
-        nxt="${nxt#"${nxt%%[![:space:]]*}"}"        # 去前导空白（子项通常缩进两格）
+        nxt="${nxt#"${nxt%%[![:space:]]*}"}"
         case "$nxt" in
           "- "*) : ;;
-          *) bad '如实登记 未分条：须「- **如实登记**：<一行总述>」+ 缩进 `- <一条>`' ;;
+          *) bad '如实登记 未分条：须「- **如实登记**：」+ 缩进 `- <一条>`' ;;
         esac
         ;;
     esac
+    # One semicolon may join parts of a single item; two or more means items were
+    # packed onto one line.
+    if field_bounds "如实登记"; then
+      local se
+      for ((i = FA - 1; i < FB; i++)); do
+        se="${BL[$i]}"
+        strip_code "$se"
+        count_semis "$SC"
+        [ "$SEMIS" -ge 2 ] && bad "如实登记 一句里用 ； 串了 ≥2 件（应一条一行）：$se"
+      done
+    fi
   fi
 
-  # 5 —— 改动面首行 N / M / K，且 N 须与真实 diff 的文件数对上
-  # ⚠️ 只判「有没有这几个字」等于没判：写「动了 5 条路径」而实际 30 条照样绿。
-  #    给了 --diff-base 就真数一遍 —— 这是本装置唯一一处判**真假**而不判形态的判据。
-  #    dn=0（已合分支 / 前缀为空）时对不上账，退回只判格式并说明，不假装验过。
-  local dl dtext dn=0
+  # 5 — 改动面: N/M/K header, N reconciled against the real diff, item shape.
+  local dl dtext dn=0 dk=-1
   if [ -n "$diff_base" ]; then
     dn=$(git diff --name-only "${diff_base}...HEAD" 2>/dev/null | grep -c . || true)
   fi
@@ -305,47 +303,96 @@ check_body() {
         skip "改动面 N=${BASH_REMATCH[1]}：${diff_base:-未给}...HEAD 为空或未给，无法对账"
       fi
     else
-      bad '改动面 首行缺「动了 N 条路径」（N 须等于 gh pr diff --name-only 的文件数）'
+      bad '改动面 首行缺「动了 N 条路径」（N 须等于 git diff --name-only 的行数）'
     fi
-    [[ "$dtext" =~ 归为[^0-9]{0,3}[0-9]+[^0-9]{0,3}项 ]] \
-      || bad '改动面 首行缺「归为 M 项」'
-    [[ "$dtext" =~ 未动[^0-9]{0,3}[0-9]+[^0-9]{0,3}处 ]] \
-      || bad '改动面 首行缺「未动 K 处」'
-  fi
-
-  # 6 —— 跨技术栈须列三列表（按真实 diff 判，不认正文自述）
-  if [ -z "$diff_base" ]; then
-    skip '跨栈表格：未给 --diff-base，无法判（CI 与本地都应给）'
-  else
-    local files stacks n
-    # ⚠️ 不截断：曾写 `| head -500`，超过 500 文件的 PR 会**静默漏算**技术栈 ——
-    #    把「没法判」伪装成「不需要表」，比报红更坏。
-    files=$(git diff --name-only "${diff_base}...HEAD" 2>/dev/null)
-    if [ -z "$files" ]; then
-      skip "跨栈表格：${diff_base}...HEAD 为空，无法判"
+    [[ "$dtext" =~ 归为[^0-9]{0,3}([0-9]+)[^0-9]{0,3}项 ]] || bad '改动面 首行缺「归为 M 项」'
+    if [[ "$dtext" =~ 未动[^0-9]{0,3}([0-9]+)[^0-9]{0,3}处 ]]; then
+      dk="${BASH_REMATCH[1]}"
     else
-      stacks=$(printf '%s\n' "$files" | awk -F/ 'NF>1 { print $1 }' \
-        | sort -u | grep -Ex 'app|server|content|infra' || true)
-      n=$(printf '%s\n' "$stacks" | grep -c . || true)
-      if [ "${n:-0}" -ge 2 ]; then
-        local tb=0
-        for l in "${BL[@]}"; do
-          case "$l" in "| 模块 | 是否改动 | 说明 |"*) tb=1; break ;; esac
-        done
-        if [ "$tb" -ne 0 ]; then
-          ok "跨 ${n} 个技术栈，已列三列表"
-        else
-          bad "跨 ${n} 个技术栈（$(printf '%s' "$stacks" | tr '\n' ' ')），缺「模块 / 是否改动 / 说明」三列表（§4.1）"
-        fi
-      else
-        ok "只动了 ${n:-0} 个技术栈目录，不需三列表"
-      fi
+      bad '改动面 首行缺「未动 K 处」'
+    fi
+
+    # Item shape: `- <做了什么>：<路径与依据>` — the colon must be there, and the
+    # text before it must not itself be a path.
+    if field_bounds "改动面"; then
+      local e part
+      for ((i = FA - 1; i < FB; i++)); do
+        e="${BL[$i]}"
+        e="${e#"${e%%[![:space:]]*}"}"
+        case "$e" in "- **"*) continue ;; "- "*) : ;; *) continue ;; esac
+        case "$e" in
+          *：*) ;;
+          *) bad "改动面条目须含全角冒号（做了什么：路径与依据）：$e"; continue ;;
+        esac
+        part="${e%%：*}"
+        case "$part" in
+          */*) bad "改动面条目冒号前不得是路径（做了什么要写在前）：$e" ;;
+        esac
+        case "$e" in
+          "- 未动"*)
+            [ "$dk" -eq 0 ] && bad "未动 K=0 时不得出现「未动」条目：$e"
+            ;;
+        esac
+      done
     fi
   fi
 
-  # 7 —— 反证：须写明未验
-  # ⚠️ 必须**连字段行自身一起扫**：五笔里有四笔把「未验」写在 `- **反证**：…` 那一行里，
-  #    只扫其后的子项会漏判（首版就是这么漏的，`#112` 明明写了 `**未验**` 却报红）。
+  # 6 — tech-stack table under 影响面. Structure is always checked; the "是" rows
+  # are verified against the real diff when a base is given.
+  local files stacks n st found val sv
+  if [ -n "$diff_base" ]; then
+    files=$(git diff --name-only "${diff_base}...HEAD" 2>/dev/null)
+  else
+    files=""
+  fi
+  if field_line "技术栈"; then
+    field_value "技术栈"
+    [ -z "$FR" ] || bad '技术栈 是组名行，不写值（值全在表里）'
+  fi
+  local th=0 dr=0
+  for l in "${BL[@]}"; do
+    [ "$l" = "| 模块 | 是否改动 | 说明 |" ] && th=1
+    case "$l" in "| docs |"*) dr=1 ;; esac
+  done
+  if [ "$dr" -ne 0 ]; then
+    bad '技术栈表出现 docs 行：docs 不是技术栈目录'
+  fi
+  if [ "$th" -ne 0 ]; then
+    for st in app server content infra; do
+      found=0; val=""
+      for l in "${BL[@]}"; do
+        case "$l" in
+          "| $st |"*)
+            found=$((found + 1))
+            val="${l#| $st | }"
+            val="${val%%|*}"
+            val="${val//[[:space:]]/}"
+            ;;
+        esac
+      done
+      if [ "$found" -eq 0 ]; then
+        bad "技术栈表缺 ${st} 行（四栈是封闭全集）"
+        continue
+      fi
+      [ "$found" -gt 1 ] && bad "技术栈表 ${st} 出现 ${found} 行"
+      case "$val" in
+        是|否) ;;
+        *) bad "技术栈表 ${st} 的「是否改动」只能取 是/否，实得「${val}」" ;;
+      esac
+      if [ "$val" = "是" ] && [ -n "$files" ]; then
+        printf '%s\n' "$files" | grep -q "^${st}/" \
+          || bad "技术栈表标 ${st} 为「是」，但本次 diff 里没有 ${st}/ 路径"
+      fi
+    done
+  elif [ -n "$files" ]; then
+    stacks=$(printf '%s\n' "$files" | awk -F/ 'NF>1 { print $1 }' \
+      | sort -u | grep -Ex 'app|server|content|infra' || true)
+    n=$(printf '%s\n' "$stacks" | grep -c . || true)
+    [ "${n:-0}" -ge 2 ] && bad "跨 ${n} 个技术栈（$(printf '%s' "$stacks" | tr '\n' ' ')），缺影响面下的技术栈表"
+  fi
+
+  # 7 — 反证 must state what was not verified.
+  # The field line itself is scanned too: "未验" is often written on it.
   local a b uv=0
   if field_bounds "反证"; then
     a=$((FA - 1)); b=$FB
@@ -359,8 +406,7 @@ check_body() {
     fi
   fi
 
-  # 8 —— 变更摘要与三字段的多行条目不得带编号前缀（§4.1 · 2026-10-24）
-  # 三字段同样**从字段行自身扫起**：`- **反证**：① 甲；② 乙` 这种压段正长在那一行。
+  # 8 — no numbering prefixes in the summary or the three multi-line fields.
   local before=$fail
   if section_bounds "## 变更摘要"; then
     scan_num "变更摘要" "$SA" "$SB"
@@ -371,11 +417,7 @@ check_body() {
   done
   [ "$fail" -eq "$before" ] && ok '变更摘要与三字段：多行条目无编号前缀'
 
-  # 9 —— 反证：≥2 件尝试不得压在同一行（§4.1 · 一件事一段，多件事分行）
-  # ⚠️ 「为推翻」只是**形式代理**：一次尝试写一个「为推翻 X」。它抓不到
-  #    「先试 A……再跑 B……另做 C」这类接续写法（`#119` / `#120` 就是这么漏的），
-  #    那类仍靠人判。本条的价值在于把最常出现的一种压段变成可判的 —— 别因为
-  #    「判不全」就不判，`#118` 三件压一段正是这条补上之前漏掉的。
+  # 9 — 反证: two independent attempts must not share a line.
   if field_bounds "反证"; then
     local lt nz=0
     for ((i = FA - 1; i < FB; i++)); do
@@ -391,48 +433,49 @@ check_body() {
     [ "$nz" -eq 0 ] && ok '反证 未见多件尝试压段（单件的「为推翻」不报）'
   fi
 
-  # 10 —— `反证` / `如实登记` 的字段行只写字段名，正文一律下沉到缩进条目（§4.1 · 2026-10-24）
-  # ⚠️ 为什么要单独判：`- **如实登记**：<第一件>` 再接四条 `  - `，渲染出来是
-  #    「粗体字段名 + 正文段 + 子列表」—— 第一件与其余几件**不同级**，行内评论挂不到它。
-  #    而前九条全绿：圈号没有、`- [ ]` 没有、N 对得上、条目也没编号前缀。`#151` 就是这么漏的。
-  #    `改动面` **不受本条约束**，它的首行必须带 N/M/K（第 5 条），压不进去。
-  #    「无」放行 —— 规则允许 `如实登记` 写「无」，那不是正文。
+  # 10 — field lines carry the field name only, with one documented exception:
+  # 反证 may carry a single-sentence summary (no · / ；).
   local fl fr
   for fl in "反证" "如实登记"; do
     field_line "$fl" || continue
-    fr="${BL[$((FLN - 1))]}"
-    strip_code "$fr"
-    fr="${SC#- \*\*$fl\*\*}"
-    fr="${fr#：}"; fr="${fr#:}"
-    fr="${fr//[[:space:]]/}"
-    fr="${fr//　/}"
+    strip_code "${BL[$((FLN - 1))]}"
+    field_value "$fl"
+    fr="$FR"
     case "$fr" in
       ""|无|无。) ;;
-      *) bad "$fl 的字段行夹带了正文（字段行只写字段名，正文下沉到缩进条目）：$fr" ;;
+      *)
+        if [ "$fl" = "反证" ]; then
+          case "$fr" in
+            *·*|*/*|*；*) bad '反证 字段行的总述须单句（不含 · / ；），逐条尝试下沉到缩进条目' ;;
+          esac
+        else
+          bad "$fl 的字段行夹带了正文（字段行只写字段名，正文下沉到缩进条目）：$fr"
+        fi
+        ;;
     esac
   done
 
-  # 11 —— 正文里的文件路径必须在本仓（2026-10-24 · `#151` 在 `如实登记` 列了五条不在本仓的改动）
-  # ⚠️ 判法**不认具体目录名**：认名字就等于把那个名字写进本仓装置，而本条要的恰恰是
-  #    「哪里都不出现」。改成结构性判据 —— 路径不在 `git ls-files` 里，就说不上是本仓的文件，
-  #    写进正文读者点不进、`gh pr diff` 里也没有。
-  # ⚠️ 只扫「自审留痕」与「AI 参与」两节：这两节写的是「本笔做了什么 / 没做什么」。
-  #    `变更摘要` 里要引规格条与设计文档，扫全文必然误伤。
+  # 11 — every path in the body must belong to this repository, so a reader can
+  # open it and `gh pr diff` shows it. Code spans are stripped, so an example
+  # inside backticks does not count twice.
   local oi pw rest pwe nx=0 trk
   trk=$(git ls-files 2>/dev/null)
   if [ -n "$trk" ]; then
-    for sec in "## 自审留痕" "## AI 参与"; do
+    for sec in "## 变更摘要" "## 影响面" "## 自审留痕" "## 验证" "## UI 证据" \
+               "## 交付物" "## AI 参与" "## 关联" "## 评审提示"; do
       section_bounds "$sec" || continue
       for ((oi = SA; oi < SB; oi++)); do
         rest="${BL[$oi]}"
-        while [[ "$rest" =~ ([A-Za-z0-9_.-]+(/[A-Za-z0-9_.-]+)+\.(md|dart|json|py|ya?ml|txt|pdf|sh|toml)) ]]; do
+        while [[ "$rest" =~ ([A-Za-z0-9_.-]+(/[A-Za-z0-9_.-]+)+\.(md|dart|json|py|ya?ml|txt|pdf|sh|toml|log|csv)) ]]; do
           pw="${BASH_REMATCH[1]}"
           rest="${rest#*"$pw"}"
           pwe="${pw//\\/\\\\}"
           pwe="${pwe//\*/\\*}"
           pwe="${pwe//\?/\\?}"
           case $'\n'"$trk"$'\n' in
-            *$'\n'"$pwe"$'\n'*) ;;
+            # Exact repository-root path, or a suffix match: a command shown as
+            # `cd app && dart run tool/docs/check.dart` is still a repo file.
+            *$'\n'"$pwe"$'\n'*|*"/$pwe"$'\n'*) ;;
             *)
               bad "正文提到本仓没有的路径（只写本仓 diff 里能核对的东西）：$pw"
               nx=$((nx + 1))
@@ -442,17 +485,10 @@ check_body() {
       done
     done
   fi
-  [ "$nx" -eq 0 ] && ok '自审留痕与 AI 参与提到的文件都在本仓'
+  [ "$nx" -eq 0 ] && ok '正文提到的文件都在本仓'
 
-  # 12 —— PR / issue 号须写成显示链接 `[#N](…/pull/N)`（2026-10-25 立，`#164` 踩坑）
-  # ⚠️ 为什么不是「裸写」：裸 `#NNN` 渲染成 `<a class="issue-link">` 后，页面会把它
-  #    **展开成「标题 + 号」**（`data-hovercard` 那一套）—— 一行「8 条历史笔」被撑成
-  #    八行标题；反引号包号则变 `<code>`、点不动。显示链接两头都占：文字由写的人定，
-  #    渲染后仍是 `<a href>`。
-  # ⚠️ 仓内标识（ADR 号 / 批次号 / 规格条 / §章节号）**不适用**本条 —— 它们不是 GitHub
-  #    对象、本来就不成链，仍用反引号。
-  # ⚠️ 判「反引号包号」只认**具体数字**：行内代码里写 `#NNN` 占位（讨论本条规则时的
-  #    反例）不算违规，否则这条判据会把自己的说明文字判红。
+  # 12 — PR / issue numbers must be display links; bare numbers expand into a
+  # title block, backticked ones are not links at all.
   local nr=0 rest2
   for l in "${BL[@]}"; do
     case "$l" in
@@ -474,25 +510,117 @@ check_body() {
   done
   [ "$nr" -eq 0 ] && ok 'PR 号均为显示链接'
 
-  # 13 —— v2 字段（PR #193 起）：平台影响、验证证据、UI、评审提示、AI 结构化
-  local v2_before=$fail
-  if v2_required; then
-    for sec in "## 影响面" "## 验证" "## UI 证据" "## 评审提示"; do
-      has_section "$sec" || bad "v2 缺节：$sec"
+  # 13 — field sets per section, platform group shape, AI level enum.
+  local v13=$fail
+  for f in "平台" "类型" "兼容与回滚" "技术栈" \
+           "命令与输出" "测试设计" \
+           "级别"; do
+    field_line "$f" || bad "缺字段：$f"
+  done
+  section_contains "## 验证" "未验" || bad '验证缺「未验」'
+  section_contains "## AI 参与" "人核" || bad 'AI 参与缺「人核」'
+
+  # Platform group: either `平台：无` with no children, or no value plus one line
+  # per platform in the form `<platform>：已测|未测 —— <...>`.
+  if field_line "平台"; then
+    local pline pval j item plat seen=" "
+    field_value "平台"
+    pval="$FR"
+    pline="${BL[$((FLN - 1))]}"
+    if [ "$pval" = "无" ]; then
+      for ((j = FLN; j < ${#BL[@]}; j++)); do
+        l="${BL[$j]}"
+        case "$l" in "- **"*|"## "*) break ;; esac
+        case "$l" in
+          *"- "*) bad "平台写「无」时不得挂子项：$l" ;;
+        esac
+      done
+    elif [ -n "$pval" ]; then
+      bad "平台 是组名行：有子项时不写值，无平台影响时写「无」"
+    else
+      local pn=0
+      for ((j = FLN; j < ${#BL[@]}; j++)); do
+        l="${BL[$j]}"
+        case "$l" in "- **"*|"## "*) break ;; esac
+        case "$l" in
+          "  - "*)
+            item="${l#  - }"
+            pn=$((pn + 1))
+            case "$item" in
+              Windows：已测*|Windows：未测*|macOS：已测*|macOS：未测*|iOS：已测*|iOS：未测*) ;;
+              *) bad "平台子项须为 <平台>：已测|未测 —— <证据或原因>：$item" ;;
+            esac
+            plat="${item%%：*}"
+            case "$seen" in *" $plat "*) bad "平台重复：${plat}" ;; esac
+            seen="${seen}${plat} "
+            ;;
+        esac
+      done
+      [ "$pn" -eq 0 ] && bad '平台 无值时必须按平台逐行给出已测/未测；无平台影响写「平台：无」'
+    fi
+  fi
+
+  # AI level must be one of the five values.
+  if field_line "级别"; then
+    field_value "级别"
+    case "$FR" in
+      hint|assist|pair|copilot|auto) ;;
+      *) bad "AI 参与 的级别须为 hint / assist / pair / copilot / auto，实得「${FR}」" ;;
+    esac
+  fi
+  [ "$fail" -eq "$v13" ] && ok '字段齐全（影响面四字段 / 验证 / AI / 平台组形态）'
+
+  # 14 — 关联: eight-class closed set, one anchor per line, absent classes omitted.
+  if section_bounds "## 关联"; then
+    local ne=0 only="" line body2 cat hits r c
+    for ((i = SA; i < SB; i++)); do
+      l="${BL[$i]}"
+      [ -n "$l" ] || continue
+      ne=$((ne + 1)); only="$l"
     done
-    for f in "平台" "类型" "兼容与回滚" "命令与输出" "测试设计" "级别" "人核"; do
-      field_line "$f" || bad "v2 缺字段：$f"
-    done
-    section_contains "## 影响面" "已测" || bad 'v2 影响面缺「已测」'
-    section_contains "## 影响面" "未测" || bad 'v2 影响面缺「未测」'
-    section_contains "## 验证" "命令" || bad 'v2 验证缺「命令」'
-    section_contains "## 验证" "输出" || bad 'v2 验证缺「输出」'
-    section_contains "## 验证" "未验" || bad 'v2 验证缺「未验」'
-    section_contains "## AI 参与" "级别" || bad 'v2 AI 参与缺「级别」'
-    section_contains "## AI 参与" "人核" || bad 'v2 AI 参与缺「人核」'
-    [ "$fail" -eq "$v2_before" ] && ok 'v2 字段齐全（影响面 / 验证 / UI / 评审提示 / AI）'
-  else
-    skip "v2 字段：PR #${PR_NUMBER} 早于 ${LEGACY_BEFORE}，按旧模板"
+    if [ "$ne" -eq 0 ]; then
+      bad '关联 为空：没有锚点写「无」，有锚点逐条一行'
+    elif [ "$ne" -eq 1 ]; then
+      case "$only" in
+        无|无。) ok '关联：无（整节一行，允许）' ;;
+        *)
+          case "$only" in
+            "- "*) ;;
+            *) bad "关联 非空行须以「- 」开头：$only" ;;
+          esac
+          body2="${only#- }"
+          cat="${body2%%：*}"
+          case "$cat" in
+            批次号|里程碑|issue|PR|ADR|规格条|用例|待确认事项) ;;
+            *) bad "关联 类别名不在八类内：${cat}" ;;
+          esac
+          ;;
+      esac
+    else
+      for ((i = SA; i < SB; i++)); do
+        l="${BL[$i]}"
+        [ -n "$l" ] || continue
+        case "$l" in
+          "- "*) : ;;
+          *) bad "关联 节内非空行须以「- 」开头（类别：锚点）：$l"; continue ;;
+        esac
+        body2="${l#- }"
+        cat="${body2%%：*}"
+        case "$cat" in
+          批次号|里程碑|issue|PR|ADR|规格条|用例|待确认事项) ;;
+          *) bad "关联 类别名不在八类内：${cat}"; continue ;;
+        esac
+        # Two class names on one line means two anchors were packed together.
+        hits=0; r="$body2"
+        for c in 批次号 里程碑 issue PR ADR 规格条 用例 待确认事项; do
+          while case "$r" in *"${c}："*) true ;; *) false ;; esac; do
+            hits=$((hits + 1))
+            r="${r#*"${c}："}"
+          done
+        done
+        [ "$hits" -ge 2 ] && bad "关联 一行里出现 ${hits} 个类别名（应一条一行）：$l"
+      done
+    fi
   fi
 
   if [ "$fail" -ne 0 ]; then
@@ -505,7 +633,6 @@ check_body() {
 
 self_test() {
   local status=0 dir b1
-  PR_NUMBER=0
   dir=$(mktemp -d)
   b1="$dir/good.md"
 
@@ -514,45 +641,50 @@ self_test() {
 
 一句话总述：为什么要做这件事。
 
-- 做了什么之一：`docs/specs/git-conventions.md` 加一句
-- 做了什么之二：`app/tool/docs/rules.dart` 加一条检查
-
-## 自审留痕
-
-- **分支基线**：从 `abc1234` 切出，与 `main` 无分叉
-- **改动面**：动了 `1` 条路径，归为 `1` 项；未动 `1` 处
-  - 规则：`docs/specs/git-conventions.md` 加一句
-  - 未动：`app/` 任何 Dart 代码
-- **版号**：不变 —— 活文档不设版号
-- **反证**：
-  - 假设脚本对压段漏判 → 造一个带圈号的压段正文 → 实测报红
-  - **未验**：CI 事件里的 body 是否被截断
-- **如实登记**：
-  - 只判形态，不判反证实质
-  - 正文里**讨论**这条规则时会写 `- [ ]` 与 `②`，两者都在行内代码里，不算违规（负例六守这条）
+- 给判据加一条检查：`infra/tool/batch/check.py`
+- 补一句规则：`docs/specs/git-conventions.md`
 
 ## 影响面
 
-- **平台**：Windows / macOS
-  - 已测：`python3 infra/tool/batch/check.py --self-test`
-  - 未测：无
+- **平台**：
+  - Windows：已测 —— `bash .githooks/pr-body --self-test` 全绿
+  - macOS：未测 —— 沙箱不能跑，本人终端验
 - **类型**：工具
 - **兼容与回滚**：无
+- **技术栈**：
+
+| 模块 | 是否改动 | 说明 |
+|---|---|---|
+| app | 否 | 无 |
+| server | 否 | 无 |
+| content | 否 | 无 |
+| infra | 是 | 改判据脚本 |
+
+## 自审留痕
+
+- **分支基线**：从 `5aa14b1` 切出，与 `main` 无分叉
+- **改动面**：动了 `2` 条路径，归为 `2` 项；未动 `0` 处
+  - 加一条检查：`infra/tool/batch/check.py`
+  - 补一句规则：`docs/specs/git-conventions.md`
+- **版号**：不变 —— 活文档不设版号
+- **反证**：本笔在推翻「压段只在行首判就够」。
+  - 假设圈号在行中间会漏判 → 造一条 `：① 甲；② 乙` → 实测报红
+  - **未验**：CI 事件里的 body 是否被截断
+- **如实登记**：
+  - 只判形态，不判反证实质
 
 ## 验证
 
 - **命令与输出**：
+
   ```text
-  python3 infra/tool/batch/check.py --self-test
+  bash .githooks/pr-body --self-test
   ```
-- **测试设计**：正例 + 负例
+
+- **测试设计**：正例 1 条 + 负例 20 条，覆盖压段 / 编号前缀 / 路径越界
 - **未验**：无
 
 ## UI 证据
-
-无
-
-## 评审提示
 
 无
 
@@ -563,16 +695,21 @@ self_test() {
 ## AI 参与
 
 - **级别**：pair
-- **AI 生成**：规则与脚本
-- **人核**：测试与 diff
+- **AI 生成**：判据条文与脚本改动
+- **人核**：逐行看了 diff，跑了 self-test
 
 ## 关联
 
-[#148](https://github.com/liberalluz/weltuhr-knowledge/pull/148)
+- 批次号：`C17`
+- 规格条：`docs/specs/git-conventions.md` §4.1
+
+## 评审提示
+
+无
 EOF
 
-  # 从正例派生负例：**纯 bash**，不用 sed —— Git Bash 每个外部进程约 2 s，
-  # 五条 sed 就是 10 s。`derive <目标文件> <原行> <新行>`。
+  # Derive negative cases from the positive one in pure bash: one external process
+  # per case would cost ~2 s each on Git Bash.
   local l
   derive() {
     : > "$1"
@@ -582,45 +719,57 @@ EOF
     done < "$b1"
   }
 
-  # 负例一：如实登记压段（圈号压在同一行）
+  # 1 — 如实登记 packed with circled numbers
   derive "$dir/bad1.md" "- **如实登记**：" "- **如实登记**：① 甲；② 乙"
-  # 负例二：如实登记条目用阿拉伯序号
+  # 2 — 如实登记 item numbered with arabic
   derive "$dir/bad2.md" "  - 只判形态，不判反证实质" "  1. 只判形态"
-  # 负例三：反证条目用罗马数字
+  # 3 — 反证 item numbered with roman
   derive "$dir/bad3.md" "  - **未验**：CI 事件里的 body 是否被截断" \
     "  ii. 未验：CI 事件里的 body 是否被截断"
-  # 负例四：改动面条目用圈号
-  derive "$dir/bad4.md" '  - 未动：`app/` 任何 Dart 代码' '  - ② 未动：`app/` 任何 Dart 代码'
-  # 负例五：变更摘要的多事项用阿拉伯序号
-  derive "$dir/bad5.md" '- 做了什么之一：`docs/specs/git-conventions.md` 加一句' \
-    '- 1. 做了什么之一：`docs/specs/git-conventions.md` 加一句'
-  # 负例六：真的 task list（不在行内代码里）
+  # 4 — 改动面 item numbered with circled
+  derive "$dir/bad4.md" '  - 补一句规则：`docs/specs/git-conventions.md`' \
+    '  - ② 补一句规则：`docs/specs/git-conventions.md`'
+  # 5 — 变更摘要 item numbered with arabic
+  derive "$dir/bad5.md" '- 给判据加一条检查：`infra/tool/batch/check.py`' \
+    '- 1. 给判据加一条检查：`infra/tool/batch/check.py`'
+  # 6 — real task list outside code spans
   derive "$dir/bad6.md" '- **级别**：pair' $'- **级别**：pair\n\n- [ ] 未做完'
-  # 负例七：反证两件尝试压在同一行（`#118` 的真实形态：三个「为推翻」连写）
-  derive "$dir/bad7.md" "- **反证**：" \
+  # 7 — 反证 two attempts packed on one line
+  derive "$dir/bad7.md" "- **反证**：本笔在推翻「压段只在行首判就够」。" \
     "- **反证**：为推翻「甲」试了 A；为推翻「乙」试了 B。**未验**：没测丙"
-
-  # 负例八：字段行夹带正文（`#151` 的真实形态：`如实登记` 首行写了第一件，下面四件才是条目）
-  derive "$dir/bad8.md" "- **如实登记**：" \
-    "- **如实登记**：\`SPEC-PACK-018\` 的路径串未改"
-  # 负例九：正文提到本仓没有的路径（`#151` 列了五条不在本仓的改动）
-  derive "$dir/bad9.md" '- **人核**：测试与 diff' \
-    $'- **人核**：测试与 diff\n\n- `docs/nonexistent/file.md` 改了四处'
-  # 负例十：PR 号写成裸号（`#164` 的真实形态：页面上被展开成「标题 + 号」）
-  derive "$dir/bad10.md" "[#148](https://github.com/liberalluz/weltuhr-knowledge/pull/148)" "#148"
-  # 负例十一：PR 号被反引号包住（`#126` / `#164` 踩过：渲染成 `<code>`、点不动）
-  derive "$dir/bad11.md" "[#148](https://github.com/liberalluz/weltuhr-knowledge/pull/148)" '`#148`'
-  # 负例十二：v2 缺平台字段（整行去掉加粗）
-  derive "$dir/bad12.md" '- **平台**：Windows / macOS' '- 平台：Windows / macOS'
-  # 负例十三：v2 缺「已测」
-  derive "$dir/bad13.md" '  - 已测：`python3 infra/tool/batch/check.py --self-test`' \
-    '  - 检查过：`python3 infra/tool/batch/check.py --self-test`'
-  # 负例十四：v2 缺「验证」整节
+  # 8 — 如实登记 field line carries body text
+  derive "$dir/bad8.md" "- **如实登记**：" "- **如实登记**：\`SPEC-PACK-018\` 的路径串未改"
+  # 9 — path that is not in this repository
+  derive "$dir/bad9.md" '- **人核**：逐行看了 diff，跑了 self-test' \
+    $'- **人核**：逐行看了 diff，跑了 self-test\n\n- `docs/nonexistent/file.md` 改了四处'
+  # 10 — bare PR number
+  derive "$dir/bad10.md" "- 批次号：\`C17\`" "- 批次号：\`C17\` · #164"
+  # 11 — backticked PR number
+  derive "$dir/bad11.md" "- 批次号：\`C17\`" "- 批次号：\`C17\` · \`#164\`"
+  # 12 — 平台 field not bold
+  derive "$dir/bad12.md" "- **平台**：" "- 平台："
+  # 13 — platform child without 已测/未测
+  derive "$dir/bad13.md" "  - macOS：未测 —— 沙箱不能跑，本人终端验" \
+    "  - macOS：没跑 —— 沙箱不能跑，本人终端验"
+  # 14 — missing 验证 section entirely
   derive "$dir/bad14.md" '## 验证' '## 验证（缺）'
-  # 负例十五：v2 缺「人核」
-  derive "$dir/bad15.md" '- **人核**：测试与 diff' '- **人工**：测试与 diff'
+  # 15 — AI level outside the enum
+  derive "$dir/bad15.md" "- **级别**：pair" "- **级别**：特级"
+  # 16 — 改动面 item is a bare path (no colon, path first)
+  derive "$dir/bad16.md" '  - 补一句规则：`docs/specs/git-conventions.md`' \
+    '  - `docs/specs/git-conventions.md`'
+  # 17 — K=0 but a 未动 item is present
+  derive "$dir/bad17.md" '  - 补一句规则：`docs/specs/git-conventions.md`' \
+    $'  - 补一句规则：`docs/specs/git-conventions.md`\n  - 未动：`app/` 任何 Dart 代码'
+  # 18 — 关联 packs two classes on one line
+  derive "$dir/bad18.md" "- 批次号：\`C17\`" "- 批次号：\`C17\` · ADR：\`ADR-0005\`"
+  # 19 — 关联 line without the `- ` marker
+  derive "$dir/bad19.md" "- 批次号：\`C17\`" "批次号：\`C17\`"
+  # 20 — base sha is not 7–40 hex chars
+  derive "$dir/bad20.md" "- **分支基线**：从 \`5aa14b1\` 切出，与 \`main\` 无分叉" \
+    "- **分支基线**：从 \`abc12\` 切出，与 \`main\` 无分叉"
 
-  printf -- '--- self-test 正例（应 exit 0）---\n'
+  printf -- '--- self-test positive (expect exit 0) ---\n'
   fail=0
   if check_body "$b1" "" >/dev/null 2>&1; then
     printf 'ok    [self-test] 正例通过\n'
@@ -630,10 +779,14 @@ EOF
   fi
 
   local n=0 nf
-  for nf in "$dir/bad1.md" "$dir/bad2.md" "$dir/bad3.md" "$dir/bad4.md" "$dir/bad5.md" "$dir/bad6.md" "$dir/bad7.md" "$dir/bad8.md" "$dir/bad9.md" "$dir/bad10.md" "$dir/bad11.md" "$dir/bad12.md" "$dir/bad13.md" "$dir/bad14.md" "$dir/bad15.md"; do
+  for nf in "$dir"/bad1.md "$dir"/bad2.md "$dir"/bad3.md "$dir"/bad4.md \
+            "$dir"/bad5.md "$dir"/bad6.md "$dir"/bad7.md "$dir"/bad8.md \
+            "$dir"/bad9.md "$dir"/bad10.md "$dir"/bad11.md "$dir"/bad12.md \
+            "$dir"/bad13.md "$dir"/bad14.md "$dir"/bad15.md "$dir"/bad16.md \
+            "$dir"/bad17.md "$dir"/bad18.md "$dir"/bad19.md "$dir"/bad20.md; do
     n=$((n + 1))
     fail=0
-    printf -- '--- self-test 负例 %d（应 exit 1）---\n' "$n"
+    printf -- '--- self-test negative %d (expect exit 1) ---\n' "$n"
     if check_body "$nf" "" >/dev/null 2>&1; then
       printf '[FAIL] [self-test] 负例 %d 未被判出（装置失效）\n' "$n"
       status=1
@@ -648,29 +801,17 @@ EOF
 }
 
 main() {
-  local mode="" file="" diff_base="" pr_number=0
+  local mode="" file="" diff_base=""
   while [ $# -gt 0 ]; do
     case "$1" in
       --file)      mode="file"; file="${2:-}"; shift 2 ;;
       --stdin)     mode="stdin"; shift ;;
       --diff-base) diff_base="${2:-}"; shift 2 ;;
-      --pr-number) pr_number="${2:-0}"; shift 2 ;;
       --self-test) mode="self"; shift ;;
-      -h|--help)   sed -n '2,25p' "$0"; return 0 ;;
+      -h|--help)   sed -n '2,28p' "$0"; return 0 ;;
       *) printf '未知参数：%s\n' "$1"; return 2 ;;
     esac
   done
-
-  if [ "$pr_number" -eq 0 ] && [ -n "${GITHUB_REF:-}" ]; then
-    case "$GITHUB_REF" in
-      refs/pull/*/merge|refs/pull/*/head)
-        pr_number="${GITHUB_REF#refs/pull/}"
-        pr_number="${pr_number%%/*}"
-        ;;
-    esac
-  fi
-
-  PR_NUMBER="$pr_number"
 
   case "$mode" in
     self) self_test; return $? ;;
@@ -686,7 +827,7 @@ main() {
       local rc=$?
       rm -f "$tmp"
       return $rc ;;
-    *) printf '用法：%s --file <正文.md> [--diff-base <ref>] [--pr-number <n>] | --stdin | --self-test\n' "$0"; return 2 ;;
+    *) printf '用法：%s --file <正文.md> [--diff-base <ref>] | --stdin | --self-test\n' "$0"; return 2 ;;
   esac
 }
 

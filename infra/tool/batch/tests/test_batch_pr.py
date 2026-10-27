@@ -75,11 +75,33 @@ class BuildBodyTests(unittest.TestCase):
             "platforms": ["windows", "macos"],
         }
         body = batch.build_pr_body(card_data, ["infra/a.py", "docs/b.md"], "scope=PASS\nRESULT: PASS\n")
-        for section in ("## 影响面", "## 验证", "## UI 证据", "## 评审提示", "## AI 参与"):
+        for section in (
+            "## 变更摘要",
+            "## 影响面",
+            "## 自审留痕",
+            "## 验证",
+            "## UI 证据",
+            "## 交付物",
+            "## AI 参与",
+            "## 关联",
+            "## 评审提示",
+        ):
             self.assertIn(section, body)
         self.assertIn("动了 `2` 条路径，归为 `2` 项；未动 `0` 处", body)
-        self.assertIn("windows, macos", body)
+        self.assertNotIn("windows, macos", body)
+        self.assertIn("  - Windows：未测 —— ", body)
+        self.assertIn("  - macOS：未测 —— ", body)
         self.assertIn("RESULT: PASS", body)
+        self.assertIn("| 模块 | 是否改动 | 说明 |", body)
+
+    def test_platform_none_writes_group_line_without_children(self):
+        body = batch.build_pr_body(
+            {"batch": "B1", "type": "process", "goal": "g", "base": "main", "platforms": ["none"]},
+            ["infra/a.py"],
+            "RESULT: PASS\n",
+        )
+        self.assertIn("- **平台**：无", body)
+        self.assertNotIn("未测 —— card 声明", body)
 
 
 class CommandPrTests(unittest.TestCase):
