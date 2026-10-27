@@ -248,5 +248,21 @@ class OccupancyTests(unittest.TestCase):
             self.assertLess(out.index("* B2"), out.index("B1"))
 
 
+class PrivacyTests(unittest.TestCase):
+    def test_planned_steps_use_short_python_name(self):
+        steps = batch.planned_steps(
+            [".agents/skills/batch/SKILL.md"],
+            "main",
+            quick=False,
+            no_tests=False,
+            no_format=False,
+            pr_body=None,
+        )
+        command = next(cmd for name, cmd, _ in steps if name == "skills")
+        self.assertIn(command[0], {"python", "python3"})
+        self.assertNotIn("Users", command[0])
+        self.assertNotIn("AppData", command[0])
+
+
 if __name__ == "__main__":
     unittest.main()
