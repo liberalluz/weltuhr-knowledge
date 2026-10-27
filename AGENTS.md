@@ -1,4 +1,4 @@
-# weltuhr-knowledge — agent entry point
+# Weltuhr — agent entry point
 
 This file is the **entry point and map**; detailed rules live in `.github/` and `docs/`, and are not copied here.
 
