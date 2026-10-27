@@ -77,6 +77,24 @@ const PackLocation _m3 = PackLocation(
   packRoot: 'content/m3',
 );
 
+/// 地形包落点。**边指向 M2 的节点** —— 端点分属两个包，单包视角看不见环。
+const PackLocation _m4 = PackLocation(
+  kind: PackKind.terrain,
+  packRoot: 'content/m4',
+);
+
+/// M2 已装 + 一个地形变体待装的那个 store。
+///
+/// 变体的原文由 [`m4VariantJson`] 现算（`edge_counts` 跟着边集走），所以用例
+/// 只表达「地形边怎么摆」，不会因为手写摘要而与实扫不符。
+_MemoryStore _storeWithTerrainVariant({
+  required List<({String from, String to, EdgeStrength strength})> edges,
+}) => _storeWithM2()
+  ..files['content/m4/pack.json'] = m4VariantJson(
+    pluginId: 'm4-terrain',
+    edges: edges,
+  );
+
 StoreLayout _layout() => StoreLayout(
   readOnlyRoot: _readOnlyRoot,
   writableRoot: _writableRoot,
@@ -91,9 +109,8 @@ PackLoader _loader(_MemoryStore store, {Map<String, String>? skeletonPaths}) =>
       skeletonPaths: skeletonPaths ?? _skeletonPaths,
     );
 
-_MemoryStore _storeWithM2() => _MemoryStore(
-  files: <String, String>{'content/m2/pack.json': m2PackJson()},
-);
+_MemoryStore _storeWithM2() =>
+    _MemoryStore(files: <String, String>{'content/m2/pack.json': m2PackJson()});
 
 ClaimLedger _ledgerIn(_MemoryStore store) =>
     ClaimLedger.fromJson(store.files[_claimsFile]!);
@@ -110,8 +127,14 @@ void main() {
 
       final ClaimLedger ledger = _ledgerIn(store);
       expect(ledger.length, 9, reason: 'M2 有 9 个节点，一个不落');
-      expect(ledger.claims.every((PathClaim c) => c.state == ClaimState.live), isTrue);
-      expect(ledger.claimOf('major/080901/lang-core')!.nodeId, 'm2-demo:lang-core');
+      expect(
+        ledger.claims.every((PathClaim c) => c.state == ClaimState.live),
+        isTrue,
+      );
+      expect(
+        ledger.claimOf('major/080901/lang-core')!.nodeId,
+        'm2-demo:lang-core',
+      );
     });
 
     test('骨架 path 注入后跨包 pathOf 可达，不注入则以 E-PATH-PARENT 拒装（无 SPEC：`minimal-pack` §4.2）', () {
@@ -128,7 +151,11 @@ void main() {
 
       expect(rejected.ok, isFalse);
       expect(rejected.problems.join('\n'), contains('E-PATH-PARENT'));
-      expect(blind.files.containsKey(_claimsFile), isFalse, reason: '拒装就不该留下台账');
+      expect(
+        blind.files.containsKey(_claimsFile),
+        isFalse,
+        reason: '拒装就不该留下台账',
+      );
     });
 
     test('同一 path 已被别的节点占用即拒装，台账原样不动（无 SPEC：`path-rules` P-16）', () {
@@ -142,11 +169,7 @@ void main() {
 
       expect(result.ok, isFalse);
       expect(result.problems.join('\n'), contains('已被 `other:lang-core` 占用'));
-      expect(
-        store.files[_claimsFile],
-        taken,
-        reason: '冲突时一字不写 —— 半装比不装更糟',
-      );
+      expect(store.files[_claimsFile], taken, reason: '冲突时一字不写 —— 半装比不装更糟');
     });
 
     test('同一 path 只有墓碑也拒装 —— 墓碑永不复用（无 SPEC：`path-rules` P-14）', () {
@@ -178,22 +201,25 @@ void main() {
       expect(store.files.containsKey(_claimsFile), isFalse);
     });
 
-    test('非载荷包照装，但一个 claim 也不写 —— 它没有 attach_to，没有 path 可占（无 SPEC：四类包里只有载荷带定位）', () {
-      final _MemoryStore store = _MemoryStore(
-        files: <String, String>{'content/m3/pack.json': m3PackJson()},
-      );
+    test(
+      '非载荷包照装，但一个 claim 也不写 —— 它没有 attach_to，没有 path 可占（无 SPEC：四类包里只有载荷带定位）',
+      () {
+        final _MemoryStore store = _MemoryStore(
+          files: <String, String>{'content/m3/pack.json': m3PackJson()},
+        );
 
-      final InstallResult result = _loader(store).install(_m3);
+        final InstallResult result = _loader(store).install(_m3);
 
-      expect(result.problems, isEmpty);
-      expect(result.installed!.paths, isEmpty);
-      expect(result.installed!.attachTo, isNull);
-      expect(
-        store.files.containsKey(_claimsFile),
-        isFalse,
-        reason: '没有 claim 可写就不碰盘，否则文件时间戳会说谎',
-      );
-    });
+        expect(result.problems, isEmpty);
+        expect(result.installed!.paths, isEmpty);
+        expect(result.installed!.attachTo, isNull);
+        expect(
+          store.files.containsKey(_claimsFile),
+          isFalse,
+          reason: '没有 claim 可写就不碰盘，否则文件时间戳会说谎',
+        );
+      },
+    );
   });
 
   group('PackLoader（卸）', () {
@@ -210,7 +236,10 @@ void main() {
       final ClaimLedger ledger = _ledgerIn(store);
       expect(ledger.length, 9, reason: '删了条目，「A 卸 → B 装 → A 装回」就没人挡得住');
       expect(ledger.claims.every((PathClaim c) => c.isTombstone), isTrue);
-      expect(ledger.claimOf('major/080901/lang-core')!.nodeId, 'm2-demo:lang-core');
+      expect(
+        ledger.claimOf('major/080901/lang-core')!.nodeId,
+        'm2-demo:lang-core',
+      );
       expect(loader.installedOf('m2-demo'), isNull);
     });
 
@@ -225,7 +254,10 @@ void main() {
       expect(again.problems, isEmpty);
       final ClaimLedger ledger = _ledgerIn(store);
       expect(ledger.length, 9, reason: '重装是复活，不是新增');
-      expect(ledger.claims.every((PathClaim c) => c.state == ClaimState.live), isTrue);
+      expect(
+        ledger.claims.every((PathClaim c) => c.state == ClaimState.live),
+        isTrue,
+      );
     });
 
     test('未安装就卸载即报，且不凭空造一份台账（无 SPEC：空台账写盘会让「没装过」与「装空了」看不出区别）', () {
@@ -249,10 +281,124 @@ void main() {
 
       expect(result.ok, isFalse);
       expect(result.problems.join('\n'), contains('不是合法台账'));
+      expect(store.files[_claimsFile], broken, reason: '原来那份坏数据原样留着，才查得出是怎么坏的');
+    });
+  });
+
+  group('PackLoader（跨包环）', () {
+    test('TC-FND-023 地形边与已装载荷包的必学链成环即拒装，台账一个字节都不动（SPEC-FND-005）', () {
+      // M2 自带 `var → func → closure`（两条都是必学）；地形包补 `closure → var`。
+      // 从 M2 看只有前两条、从地形包看只有第三条 —— 单包都判不出，合图才成环。
+      //
+      // 反证（2026-10-27 实跑）：删掉 `install` 里那段跨包环判定 ⇒ 本条与 `024`
+      // 一起变红（`Expected: false` / `Actual: <true>`），`025` / `026` 仍绿。
+      final _MemoryStore store = _storeWithTerrainVariant(
+        edges: <({String from, String to, EdgeStrength strength})>[
+          (
+            from: 'm2-demo:closure',
+            to: 'm2-demo:var',
+            strength: EdgeStrength.required,
+          ),
+        ],
+      );
+      final PackLoader loader = _loader(store);
+      expect(loader.install(_m2).ok, isTrue, reason: '先装 M2 才有「已装」一侧');
+      final String ledgerBefore = store.files[_claimsFile]!;
+
+      final InstallResult result = loader.install(_m4);
+
+      expect(result.ok, isFalse);
+      final String problems = result.problems.join('\n');
+      expect(problems, contains('跨包 `⪯` 成环'));
+      expect(problems, contains('m2-demo:var'), reason: '环上节点要写全，读的人才不用自己拼');
+      expect(loader.installedOf('m4-terrain'), isNull);
+      expect(store.files[_claimsFile], ledgerBefore, reason: '拒装即一个字节都不写');
+    });
+
+    test('TC-FND-024 强弱混合成环同样拒装 —— 环检测不收窄到 `required`（SPEC-FND-005）', () {
+      // `var → func → closure` 是必学链，地形包补的 `module ⇢ var` 是建议边。
+      // 若环检测只拿 `requiredEdgesOf` 去判，这条建议边不进图 ⇒ 不成环 ⇒ 本条变绿。
+      //
+      // 反证（2026-10-27 实跑）：把 `TerrainGraph.cycles` 的输入换成 `requiredEdges`
+      // ⇒ **只有本条红**，`023`（全必学环）仍绿 —— 两条各盖一个分支。
+      final _MemoryStore store = _storeWithTerrainVariant(
+        edges: <({String from, String to, EdgeStrength strength})>[
+          (
+            from: 'm2-demo:module',
+            to: 'm2-demo:var',
+            strength: EdgeStrength.recommended,
+          ),
+        ],
+      );
+      final PackLoader loader = _loader(store);
+      expect(loader.install(_m2).ok, isTrue);
+
+      final InstallResult result = loader.install(_m4);
+
+      expect(result.ok, isFalse);
+      final String problems = result.problems.join('\n');
+      expect(problems, contains('跨包 `⪯` 成环'));
       expect(
-        store.files[_claimsFile],
-        broken,
-        reason: '原来那份坏数据原样留着，才查得出是怎么坏的',
+        problems,
+        contains('m2-demo:module'),
+        reason: '环上那个 `module` 只因建议边才在环里 —— 它在报文里即证明两类边都进了图',
+      );
+    });
+
+    test(
+      'TC-FND-025 不构成环的地形边照装，且仍然一条 claim 也不写（无 SPEC：ADR-0005 决策 4 的包形态）',
+      () {
+        final _MemoryStore store = _storeWithTerrainVariant(
+          edges: <({String from, String to, EdgeStrength strength})>[
+            (
+              from: 'm2-demo:refactor',
+              to: 'm2-demo:typing',
+              strength: EdgeStrength.required,
+            ),
+          ],
+        );
+        final PackLoader loader = _loader(store);
+        expect(loader.install(_m2).ok, isTrue);
+        final String ledgerBefore = store.files[_claimsFile]!;
+
+        final InstallResult result = loader.install(_m4);
+
+        expect(result.problems, isEmpty);
+        expect(result.installed, isNotNull);
+        expect(loader.installedOf('m4-terrain'), isNotNull);
+        expect(
+          store.files[_claimsFile],
+          ledgerBefore,
+          reason: '地形包没有 `attach_to`，没有 `path` 可占 —— 不该借「装成功」顺手重写台账',
+        );
+      },
+    );
+
+    test('TC-FND-026 包内环仍由解析层报「出现环」，装载层不再重复报跨包（SPEC-FND-005）', () {
+      final _MemoryStore store = _storeWithTerrainVariant(
+        edges: <({String from, String to, EdgeStrength strength})>[
+          (
+            from: 'm2-demo:closure',
+            to: 'm2-demo:refactor',
+            strength: EdgeStrength.required,
+          ),
+          (
+            from: 'm2-demo:refactor',
+            to: 'm2-demo:closure',
+            strength: EdgeStrength.required,
+          ),
+        ],
+      );
+
+      final InstallResult result = _loader(store).install(_m4);
+
+      expect(result.ok, isFalse);
+      final String problems = result.problems.join('\n');
+      expect(problems, contains('出现环'), reason: '一条边两端都在本包，解析层就该拒');
+      expect(
+        problems,
+        isNot(contains('跨包 `⪯` 成环')),
+        reason: '两条判据各报各的形态，同一件事不报两遍',
       );
     });
   });
