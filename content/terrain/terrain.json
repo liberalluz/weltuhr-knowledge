@@ -1,0 +1,21 @@
+{
+  "id": "terrain",
+  "name": "地形：跨轴先修边",
+  "version": "0.1.0",
+  "skeleton_requires": ">=1.0.0",
+  "axes": ["major", "occupation"],
+  "deps": [
+    {
+      "plugin_id": "python",
+      "range": ">=0.1.0"
+    }
+  ],
+  "edges": [
+    {
+      "from_id": "python:cc-choose-model",
+      "to_id": "skeleton:occupation/2-02-10-03",
+      "strength": "recommended",
+      "rationale": "并发模型选型（线程 / 进程 / 协程）是软件工程岗的日常判断，但不是入门门槛 —— 大量岗位在既有框架内做事，用不着选型，故标 recommended 而非 required。"
+    }
+  ]
+}
