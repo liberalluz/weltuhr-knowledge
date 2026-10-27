@@ -118,13 +118,18 @@ jobs:
       # it here. Without this step `real_content_pack_test.dart` fails
       # (**not skip**: skipping would make "forgot to assemble" look green).
       #
-      # All three run, for different reasons:
+      # All four run, for different reasons:
       #   - `assemble_pack.py` produces the target form `pack.json`, the input to
       #     the client tests;
       #   - `assemble_skeleton.py` produces the skeleton pack
       #     `content/skeleton/pack.json`, also a test input
       #     (`real_content_pack_test.dart` verifies it separately from the
       #     payload pack);
+      #   - `assemble_terrain.py` produces `content/terrain/pack.json`. It must
+      #     run **after** the two above: terrain edges point at nodes in other
+      #     packs, so the assembler reads `python/pack.json` and
+      #     `skeleton/pack.json` to derive `axes_covered`. Missing those inputs
+      #     it fails instead of guessing an axis.
       #   - `build.py` produces the obsolete form `dist/pack.json`; running it
       #     verifies "old source data is still accepted by the old validator" --
       #     problems in the source data are reported there, the assembler only
@@ -143,6 +148,7 @@ jobs:
           python3 content/tools/build.py
           python3 content/tools/assemble_pack.py
           python3 content/tools/assemble_skeleton.py
+          python3 content/tools/assemble_terrain.py
 
       - name: 单元测试
         if: steps.scope.outputs.run == 'true'
