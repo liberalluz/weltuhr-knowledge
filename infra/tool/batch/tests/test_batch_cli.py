@@ -8,6 +8,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
@@ -205,6 +206,66 @@ class OccupancyTests(unittest.TestCase):
             code, out = run(["--root", str(root), "start", "B2", "--no-branch"])
             self.assertEqual(code, 1)
             self.assertIn("active batch is B1", out)
+            self.assertIn("B1", (root / "active").read_text(encoding="utf-8"))
+
+    def test_start_clear_stale_when_pr_merged(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            target1 = root / "B1"
+            target1.mkdir()
+            write_approved_card(target1)
+            self.assertEqual(run(["--root", str(root), "start", "B1", "--no-branch"])[0], 0)
+
+            target2 = root / "B2"
+            target2.mkdir()
+            approved = card.approve_card(
+                {
+                    "batch": "B2",
+                    "type": "process",
+                    "goal": "test",
+                    "branch": "process/b2",
+                    "base": "main",
+                    "allowed": ["infra/**"],
+                },
+                "tester",
+            )
+            card.write_card(target2 / "card.yaml", approved)
+            with mock.patch.object(batch, "merged_pr_for_branch", return_value=(222, "")):
+                code, out = run(
+                    ["--root", str(root), "start", "B2", "--no-branch", "--clear-stale"]
+                )
+            self.assertEqual(code, 0)
+            self.assertIn("clearing stale active B1", out)
+            self.assertIn("B2", (root / "active").read_text(encoding="utf-8"))
+
+    def test_start_clear_stale_requires_merged_pr(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            target1 = root / "B1"
+            target1.mkdir()
+            write_approved_card(target1)
+            self.assertEqual(run(["--root", str(root), "start", "B1", "--no-branch"])[0], 0)
+
+            target2 = root / "B2"
+            target2.mkdir()
+            approved = card.approve_card(
+                {
+                    "batch": "B2",
+                    "type": "process",
+                    "goal": "test",
+                    "branch": "process/b2",
+                    "base": "main",
+                    "allowed": ["infra/**"],
+                },
+                "tester",
+            )
+            card.write_card(target2 / "card.yaml", approved)
+            with mock.patch.object(batch, "merged_pr_for_branch", return_value=(0, "OPEN")):
+                code, out = run(
+                    ["--root", str(root), "start", "B2", "--no-branch", "--clear-stale"]
+                )
+            self.assertEqual(code, 1)
+            self.assertIn("no merged PR", out)
             self.assertIn("B1", (root / "active").read_text(encoding="utf-8"))
 
     def test_status_reports_active(self):

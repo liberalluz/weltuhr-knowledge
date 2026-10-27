@@ -20,6 +20,7 @@ import getpass
 import hashlib
 import json
 import os
+import re
 import secrets
 import shutil
 import subprocess
@@ -783,6 +784,16 @@ def command_pr(args: argparse.Namespace) -> int:
     digest = hashlib.sha256(body.encode("utf-8")).hexdigest()
     print(f"body hash: {digest} (confirm: {digest[:8]})")
 
+    batch_id = str(card.get("batch") or "")
+    if batch_id and not re.search(
+        rf"(?m)^- 批次号：\s*`?{re.escape(batch_id)}`?\s*$", body
+    ):
+        print(
+            f"body is missing the matching batch marker: - 批次号：`{batch_id}`",
+            file=sys.stderr,
+        )
+        return 1
+
     code = validate_body(body_path, str(base))
     if code != 0:
         print("pr-body validation failed; fix the body then rerun", file=sys.stderr)
@@ -1132,6 +1143,21 @@ def command_approve(args: argparse.Namespace) -> int:
     return 0
 
 
+def merged_pr_for_branch(branch: str) -> tuple[int, str]:
+    code, out, err = run_gh(
+        ["pr", "list", "--head", branch, "--state", "merged", "--json", "number,state", "--limit", "1"]
+    )
+    if code != 0:
+        return 0, err or out
+    try:
+        rows = json.loads(out or "[]")
+    except ValueError:
+        return 0, "gh returned invalid JSON"
+    if not rows:
+        return 0, ""
+    return int(rows[0].get("number") or 0), ""
+
+
 def command_start(args: argparse.Namespace) -> int:
     root = root_path(args.root)
     target = root / args.batch_id
@@ -1157,12 +1183,35 @@ def command_start(args: argparse.Namespace) -> int:
 
     occupied = active_batch(root)
     if occupied is not None and occupied.resolve() != target.resolve():
-        print(
-            f"active batch is {occupied.name}; finish it before starting {args.batch_id}",
-            file=sys.stderr,
-        )
-        print("one .batch/active at a time; do not overwrite another agent's batch", file=sys.stderr)
-        return 1
+        if not args.clear_stale:
+            print(
+                f"active batch is {occupied.name}; finish it before starting {args.batch_id}",
+                file=sys.stderr,
+            )
+            print("one .batch/active at a time; do not overwrite another agent's batch", file=sys.stderr)
+            return 1
+        if (occupied / "merge.json").exists():
+            print(
+                f"active batch {occupied.name} has merge.json; it is not stale",
+                file=sys.stderr,
+            )
+            return 1
+        active_state = load_json(occupied / "state.json") or {}
+        active_branch = str(active_state.get("branch") or "")
+        if not active_branch:
+            print(f"active batch {occupied.name} has no branch; refusing to clear", file=sys.stderr)
+            return 1
+        pr, err = merged_pr_for_branch(active_branch)
+        if not pr:
+            print(
+                f"active branch {active_branch} has no merged PR"
+                + (f": {err}" if err else "")
+                + "; refusing to clear",
+                file=sys.stderr,
+            )
+            return 1
+        print(f"clearing stale active {occupied.name} (PR #{pr} merged)")
+        (root / "active").unlink()
 
     if not args.no_branch:
         if run_git(["remote", "get-url", "origin"])[0] == 0:
@@ -1310,6 +1359,11 @@ def build_parser() -> argparse.ArgumentParser:
     start = subparsers.add_parser("start", help="create branch, state and scope")
     start.add_argument("batch_id")
     start.add_argument("--no-branch", action="store_true", help="state only; branch already exists")
+    start.add_argument(
+        "--clear-stale",
+        action="store_true",
+        help="clear another active batch only when its PR is merged and merge.json is absent",
+    )
     start.set_defaults(func=command_start)
 
     check = subparsers.add_parser("check", help="scope + format/lint/test/docs + evidence")

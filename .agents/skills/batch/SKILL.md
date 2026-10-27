@@ -42,6 +42,8 @@ metadata:
 - `.batch/` 是本地状态，不进仓库。
 - 多 agent 用 `plan --auto-id` 生成 `YYYYMMDD-<6位十六进制>`；同一时刻只允许一个 `.batch/active`。
 - `start` 发现 active 属于别的批次会拒绝；不要手工覆盖，先结束当前批次。
+- active 的 PR 已合并但无 `merge.json` 时，才可用 `start --clear-stale`；未合并仍拒绝。
+- PR 正文的 `- 批次号：` 必须与分支后缀一致；本地 create 与 CI 都会校验。
 - `start` 还会拒绝已存在的远端同名分支；跨 clone 用分支首推作为占用锁。
 - `status` 看 `Active` / `Owner`；`list` 的 `*` 是当前 active，按 `createdAt` 最新优先。
 
