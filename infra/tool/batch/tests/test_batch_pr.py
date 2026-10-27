@@ -92,7 +92,21 @@ class BuildBodyTests(unittest.TestCase):
         self.assertIn("  - Windows：未测 —— ", body)
         self.assertIn("  - macOS：未测 —— ", body)
         self.assertIn("RESULT: PASS", body)
+        # One stack (infra) plus docs: the tech-stack group stays out entirely.
+        self.assertNotIn("技术栈", body)
+        self.assertNotIn("| 模块 | 是否改动 | 说明 |", body)
+
+    def test_stack_group_appears_when_diff_spans_two_stacks(self):
+        card_data = {"batch": "B1", "type": "process", "goal": "g", "base": "main"}
+        body = batch.build_pr_body(
+            card_data, ["app/lib/a.dart", "infra/b.py"], "RESULT: PASS\n"
+        )
+        self.assertIn("- **技术栈**：", body)
         self.assertIn("| 模块 | 是否改动 | 说明 |", body)
+        self.assertIn("| app | 是 |", body)
+        self.assertIn("| infra | 是 |", body)
+        self.assertIn("| server | 否 |", body)
+        self.assertIn("| content | 否 |", body)
 
     def test_platform_none_writes_group_line_without_children(self):
         body = batch.build_pr_body(
