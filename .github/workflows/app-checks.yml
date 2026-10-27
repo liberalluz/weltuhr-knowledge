@@ -1,33 +1,40 @@
 name: app-checks
 
-# 客户端架构门禁。四件事在这里强制，而不是靠「记得手动跑」：
-#   ① analyze  —— 严格模式（strict-casts / strict-inference / strict-raw-types）
-#   ② tool/lint —— core 的架构不变量：R1 核心层不得反向依赖、R2 核心层禁止数字字面量。
-#      它是独立脚本而非 custom_lint 插件，**analyze 抓不到**，漏掉这一行
-#      等于「core 无 Flutter import」这条只写在文档里。
-#   ③ tool/docs —— 四份交付物之间的口径对账（`D1`–`D4`）。`analyze` 与 `tool/lint`
-#      都只看 Dart 源码，看不见「`STD` 说多少条、`STP` 汇总多少条」这类错 ——
-#      而那四份是 Markdown。
-#   ④ test     —— core、实体、事件与 lint 规则自身的回归
+# Client-side architecture gate. Four things are enforced here instead of
+# relying on "remember to run it by hand":
+#   1. analyze    -- strict mode (strict-casts / strict-inference / strict-raw-types)
+#   2. tool/lint  -- architectural invariants of core: R1 the core layer must not
+#                    depend upwards, R2 no numeric literals in core. It is a
+#                    standalone script, not a custom_lint plugin, so **analyze
+#                    does not catch it**; dropping this line leaves "core imports
+#                    no Flutter" as a statement that exists only in docs.
+#   3. tool/docs  -- reconciles figures across the four deliverables (`D1`-`D4`).
+#                    Both analyze and tool/lint read Dart source only and cannot
+#                    see errors such as "STD says N rules, STP summarises M" --
+#                    and those four are Markdown.
+#   4. test       -- regression for core, entities, events and the lint rules themselves
 #
-# 不跑 `dart format --set-exit-if-changed`：仓库当前不是 format-clean
-# （实跑 17 份里 12 份会被改，疑与 Dart 3.7+ tall style 有关）。
-# 接入前必须先单独一笔把格式化做完，否则这个 job 从第一天就是红的，
-# 而一个常态为红的门禁等于没有门禁。
+# `dart format --set-exit-if-changed` is deliberately absent: the repo is not
+# format-clean today (a real run would rewrite 12 of 17 files, likely tied to
+# the Dart 3.7+ tall style). Formatting must land in its own commit first,
+# otherwise this job is red from day one -- and a permanently red gate is no
+# gate at all.
 #
-# ── 为什么**没有** `paths:` ────────────────────────────────────────────
-# 触发面交给 `tool/ci/affected.py` 在 job 内判断，而不是写在 workflow 上。
-# 不是风格问题：`paths` 未命中时整个 workflow **不运行**，check 也就**不产生结论**；
-# 分支保护一旦把它设成 required，只改 `docs/` 的 PR 会永远停在
-# "Expected — Waiting for status to be reported"，合不了。
-# 现在 job 恒运行、恒回报 success，跳过只发生在内部步骤 —— 设不设 required 都对。
+# -- Why there is NO `paths:` filter ------------------------------------------
+# The trigger surface is decided inside the job by `tool/ci/affected.py`, not on
+# the workflow. Not a style preference: when `paths` does not match, the whole
+# workflow does NOT run, so the check produces NO conclusion; once branch
+# protection marks it required, a docs-only PR sits at
+# "Expected -- Waiting for status to be reported" forever and cannot merge.
+# As written the job always runs and always reports success, skipping happens
+# inside steps -- required or not, it works either way.
 
 on:
   push:
     branches: [main]
   pull_request:
 
-# 同一分支连续推送时只保留最新一次，避免排队等旧提交。
+# Keep only the newest run per branch so nobody queues behind old commits.
 concurrency:
   group: app-checks-${{ github.ref }}
   cancel-in-progress: true
@@ -42,31 +49,36 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          # 判改动面要算 `base...HEAD` 的 merge-base，默认 `depth: 1` 拿不到。
-          # 拿不到时脚本会降级成「全跑」—— 不至于漏检，但判据形同虚设，
-          # 所以这里必须是 0，不能省。
+          # Computing the change surface needs the merge-base of `base...HEAD`,
+          # which the default `depth: 1` cannot provide. Without it the script
+          # degrades to "run everything" -- no missed check, but the criterion
+          # becomes vacuous, so this must be 0.
           fetch-depth: 0
 
-      # 判据先自证再判别人：`scopes.json` 被改窄（比如漏了 `content/`）时，
-      # 判断照样"跑得通"，只是永远判成「不相关」—— 这正是最坏的失效形态。
-      # 自检是普通断言，不依赖 git，约 0.2 秒。
+      # The criterion proves itself before judging others: when `scopes.json` is
+      # narrowed (say `content/` dropped), the run still "works", it just always
+      # answers "not affected" -- the worst failure mode. This self-test is a
+      # plain assertion, no git, about 0.2 s.
       - name: 判据自检
         run: python3 tool/ci/affected.py --self-test
 
-      # 判断刻意放在装 Flutter **之前**：被跳过的 PR 只花 checkout 与约 1 秒。
-      # 判据用 python 而非 dart，正因为此刻还没有 SDK —— `ubuntu-latest` 自带 python3。
+      # Deliberately before installing Flutter: a skipped PR only pays checkout
+      # plus about a second. It uses python rather than dart precisely because
+      # there is no SDK yet -- `ubuntu-latest` ships python3.
       - name: 判改动面
         id: scope
         run: python3 tool/ci/affected.py --scope app --base "$BASE" >> "$GITHUB_OUTPUT"
         env:
-          # PR 用 base.sha、push 用 before；都**不写死** `origin/main` ——
-          # push 到 main 时 `origin/main` 已经是新 HEAD，差值恒为空。
+          # PR uses base.sha, push uses before; never hardcode `origin/main` --
+          # on a push to main `origin/main` is already the new HEAD and the diff
+          # is always empty.
           BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
 
-      # 版本与本地环境钉死同一组：Flutter 3.47.7 = Dart 3.13.5，
-      # 与 app/pubspec.yaml 的 `environment.sdk: 3.13.5` 精确对应。
-      # 改这里必须同时改 pubspec 与 docs/runbooks/environment.md，三处任一不同步
-      # 都会让「本地绿、CI 红」或反过来。
+      # Version pinned to the same pair as the local environment:
+      # Flutter 3.47.7 = Dart 3.13.5, matching `environment.sdk: 3.13.5` in
+      # app/pubspec.yaml exactly. Changing this means also changing pubspec and
+      # docs/runbooks/environment.md; any desync turns into "green locally, red
+      # in CI" or the reverse.
       - uses: subosito/flutter-action@v2
         if: steps.scope.outputs.run == 'true'
         with:
@@ -86,33 +98,44 @@ jobs:
         if: steps.scope.outputs.run == 'true'
         run: dart run tool/lint/check.dart
 
-      # 交付物之间的口径对账：`STD` 说多少条、`STP` 汇总多少条、`SCMP` §5.1 登记
-      # 什么版号 —— 必须是同一个数。`analyze` 与 `tool/lint` 都**看不见**这类错，
-      # 它们只看 Dart 源码，而这四份是 Markdown。
-      # 为什么非有这一步：同一读数散在四份文件 4–13 处、措辞各异（「`Dart` 用例 561
-      # 条」/「584 → **597** 条」/「`v0.47.0` | 1 |」），批量替换不可能，漏改只能靠
-      # 人眼。实测漏过两次：`SCMP` 修订历史漏了 `v0.45.0` 整行、`STD` §4.1 按域表
-      # 连续两版没跟。本步首次接入时当场抓出 4 处（分段 592 vs 合计 597 等）。
+      # Reconciles figures across deliverables: how many rules `STD` claims, how
+      # many `STP` summarises, which version `SCMP` §5.1 records -- one single
+      # number. Both analyze and tool/lint are blind to this class of error;
+      # they read Dart source while these four are Markdown.
+      # Why the step exists: the same reading appears in 4-13 places across four
+      # files in different wording ("561 Dart cases" / "584 -> **597**" /
+      # "`v0.47.0` | 1 |"), so bulk replacement is impossible and misses need
+      # human eyes. It has missed twice for real: `SCMP` revision history lost
+      # the whole `v0.45.0` row, and `STD` §4.1 per-domain table lagged two
+      # versions in a row. On first wiring it caught 4 discrepancies at once
+      # (sections 592 vs total 597, etc.).
       - name: 交付物一致性（口径对账）
         if: steps.scope.outputs.run == 'true'
         run: dart run tool/docs/check.dart
 
-      # 用例读的是**真实产物** `content/<空间>/pack.json`（单文件形态，`B14` 起），
-      # 而它不入库（`SPEC-PACK-018`）⇒ 这里现场装配一遍。缺了它
-      # `real_content_pack_test.dart` 会 fail（**不 skip**：skip 会让「忘了跑装配」
-      # 表现成绿灯）。
+      # The tests read the REAL artifact `content/<space>/pack.json` (single-file
+      # form since `B14`), which is not committed (`SPEC-PACK-018`), so assemble
+      # it here. Without this step `real_content_pack_test.dart` fails
+      # (**not skip**: skipping would make "forgot to assemble" look green).
       #
-      # 两条都跑，理由不同：
-      #   - `assemble_pack.py` 产目标形态 `pack.json`，是客户端测试的输入；
-      #   - `assemble_skeleton.py` 产骨架包 `content/skeleton/pack.json`，同样是
-      #     测试输入（`real_content_pack_test.dart` 会把它与载荷包分开验）；
-      #   - `build.py` 产作废形态 `dist/pack.json`，跑它是在验「旧源数据仍能被旧
-      #     校验器接受」—— 源数据本身的问题归它报，装配器只负责搬运。
-      #     `build.py` 与其 fixtures 随管线迁移那一笔一并删除。
+      # All three run, for different reasons:
+      #   - `assemble_pack.py` produces the target form `pack.json`, the input to
+      #     the client tests;
+      #   - `assemble_skeleton.py` produces the skeleton pack
+      #     `content/skeleton/pack.json`, also a test input
+      #     (`real_content_pack_test.dart` verifies it separately from the
+      #     payload pack);
+      #   - `build.py` produces the obsolete form `dist/pack.json`; running it
+      #     verifies "old source data is still accepted by the old validator" --
+      #     problems in the source data are reported there, the assembler only
+      #     moves bytes. `build.py` and its fixtures are deleted with the
+      #     pipeline migration.
       #
-      # **不指定空间**：哪个空间有源数据就构建哪个，与本地一致。只构建 python 的
-      # 后果是 CI 上「多根」退化成单根，而「CI 只验了一个包」这件事本身也不会有人发现。
-      # 正因为它们读 `content/`，`scopes.json` 里 `app` 的输入闭包才含 `content/`。
+      # **No space argument**: build whichever space has source data, same as
+      # locally. Building python only would silently degrade "multiple roots"
+      # to a single root in CI, and nobody would notice that "CI verified only
+      # one pack". Because these read `content/`, the input closure of `app` in
+      # `scopes.json` includes `content/`.
       - name: 构建内容包（测试输入）
         if: steps.scope.outputs.run == 'true'
         working-directory: ${{ github.workspace }}

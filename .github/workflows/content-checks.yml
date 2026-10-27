@@ -1,23 +1,27 @@
 name: content-checks
 
-# 内容管线的门禁。fixtures 是整个 job 的主体：负例红，说明某条判据被改宽了。
-# 真实空间落地后，最后一步会自动接管构建（dist/ 不入库，产物只在 CI 里验）。
+# Content pipeline gate. fixtures are the bulk of this job: a red negative case
+# means some criterion was widened.
+# Once a real space lands, the last step picks up the build automatically
+# (dist/ is not committed, artifacts are only verified in CI).
 #
-# 同样不写 workflow 级 `paths`，理由见 `app-checks.yml` 头部 —— 一句话：`paths`
-# 未命中时 check 不产生结论，设成 required 就永远 pending。触发面由
-# `tool/ci/affected.py` 在 job 内判断。
+# Same reason for no workflow-level `paths` as in the head of
+# `app-checks.yml` -- in one line: when `paths` does not match the check
+# produces no conclusion, and a required check then stays pending forever. The
+# trigger surface is decided inside the job by `tool/ci/affected.py`.
 #
-# 「产物不入库」原本在本 job 末尾，**已拆到 `repo-hygiene.yml`**：
-# 那一条的输入是全仓 `git` 状态而非 `content/`，挂在这里就得跟着本 job 的改动面
-# 走 —— 只改 `app/` 的 PR 会漏掉它。而它只需要 `git`，整段约 5 秒，本身也不值得
-# 为它设任何过滤。
+# "Artifacts are not committed" used to live at the end of this job and has
+# **moved to `repo-hygiene.yml`**: its input is repo-wide `git` state rather
+# than `content/`, so keeping it here would tie it to this job's change surface
+# -- a PR touching only `app/` would miss it. It needs nothing but `git`, takes
+# about 5 s, and does not deserve any filter of its own.
 
 on:
   push:
     branches: [main]
   pull_request:
 
-# 同一分支连续推送时只保留最新一次，避免排队等旧提交。
+# Keep only the newest run per branch so nobody queues behind old commits.
 concurrency:
   group: content-checks-${{ github.ref }}
   cancel-in-progress: true
@@ -26,20 +30,23 @@ jobs:
   content-checks:
     name: content-checks
     runs-on: ubuntu-latest
-    # 从根上不产字节码：content/tools/*.py 互相 import 会写 __pycache__/，
-    # 那是工具缓存而非交付物，不该由「产物不入库」这条判据去管。
+    # No bytecode at all: content/tools/*.py importing each other writes
+    # __pycache__/, which is a tool cache rather than a deliverable and should
+    # not fall under the "artifacts are not committed" criterion.
     env:
       PYTHONDONTWRITEBYTECODE: "1"
     steps:
       - uses: actions/checkout@v4
         with:
-          # 同 `app-checks`：算 `base...HEAD` 要 merge-base，默认 depth 1 拿不到。
+          # Same as `app-checks`: the `base...HEAD` merge-base needs more than
+          # the default depth 1.
           fetch-depth: 0
 
-      # 判断在装 python 之前：`ubuntu-latest` 自带的 python3 足够跑判据（纯标准库），
-      # 被跳过的 PR 就只花 checkout 与约 1 秒。
-      # `--root .`：本 job 没有 `defaults.working-directory`，cwd 是仓库根，
-      # 不传就会按默认的 `..` 去找上一级目录。
+      # Detection runs before installing python: the python3 that ships with
+      # `ubuntu-latest` is enough for the criterion (stdlib only), so a skipped
+      # PR costs checkout plus about a second.
+      # `--root .`: this job has no `defaults.working-directory`, so cwd is the
+      # repo root; without it the script looks for the default `..` parent.
       - name: 判改动面
         id: scope
         run: python3 app/tool/ci/affected.py --scope content --root . --base "$BASE" >> "$GITHUB_OUTPUT"
@@ -51,7 +58,7 @@ jobs:
         with:
           python-version: "3.13"
 
-      # 无第三方依赖，不装任何包
+      # No third-party dependencies, nothing to install
       - name: fixtures 回归
         if: steps.scope.outputs.run == 'true'
         run: python content/tools/verify.py --suite
