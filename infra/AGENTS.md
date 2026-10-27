@@ -18,16 +18,23 @@
 | 环境自检 | `./scripts/check-env.sh`（待实现） |
 | 三端构建 | `./scripts/build-all.sh`（待实现） |
 | 合并闸门（只检查） | `python3 tool/batch/merge.py --pr <n> --dry-run` |
-| 合并（人工确认后） | `python3 tool/batch/merge.py --pr <n> --yes` |
+| 合并（人工确认后） | `python3 tool/batch/batch.py merge --pr <n> --yes` |
 | 范围守门 | `python3 tool/batch/check.py --scope .batch/<id>/scope.json` |
 | batch 状态 | `python3 tool/batch/batch.py status` |
-| 批次卡 | `python3 tool/batch/batch.py plan/approve/start` |
+| 批次卡 | `plan --auto-id`（多 agent）或 `plan <id>`，然后 `approve <id> --chat --confirm <hash8>` |
+| 启动 | `start <id>`；仅 active PR 已合并且无 `merge.json` 时用 `start <id> --clear-stale` |
 | 批次检查 | `python3 tool/batch/batch.py check --batch <id>` |
-| 批次 PR | `python3 tool/batch/batch.py pr --batch <id>` |
-| 批次合并 | `python3 tool/batch/batch.py merge --pr <n>` |
+| 批次 PR | `pr --prepare` → 手写 `.batch/<id>/pr-body.md` → `pr --create --body-file ... --confirm <body-hash8>` |
+| 批次合并 | `python3 tool/batch/batch.py merge --pr <n> --yes` |
 | 技能 lint | `python3 -B tool/batch/skill_lint.py` |
 | PR 周报 | `python3 tool/metrics/pr_metrics.py --since <YYYY-MM-DD>` |
 | 只读验收 | `python3 tool/verify/verify.py --batch <id>` |
+
+## batch 边界
+
+- 同一时刻只有一个 `.batch/active`；不要手工覆盖别的 agent 的 active。
+- PR 正文的 `- 批次号：` 必须与 card、分支后缀一致；本地 create 与 CI 都会校验。
+- 正常合并只走 `batch merge`；直接 `gh pr merge` 不会写 `merge.json`，会留下 stale active。
 
 ## 红线
 
