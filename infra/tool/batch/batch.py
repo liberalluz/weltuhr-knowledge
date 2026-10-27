@@ -331,8 +331,6 @@ def planned_steps(
                         pr_body.as_posix(),
                         "--diff-base",
                         base,
-                        "--pr-number",
-                        "0",
                     ],
                     REPO_ROOT,
                 )
@@ -377,8 +375,6 @@ def validate_body(body_path: Path, base: str) -> int:
             body_path.as_posix(),
             "--diff-base",
             base,
-            "--pr-number",
-            "0",
         ],
         REPO_ROOT,
     )
@@ -389,10 +385,26 @@ def validate_body(body_path: Path, base: str) -> int:
     return code
 
 
+PLATFORM_ALIASES = {"windows": "Windows", "macos": "macOS", "ios": "iOS"}
+PLATFORM_NONE = {"", "none", "null", "无"}
+
+
+def normalize_platforms(raw: Sequence[Any]) -> list[str]:
+    """Map card platform names to the canonical spellings pr-body accepts."""
+    platforms = []
+    for item in raw:
+        name = str(item or "").strip()
+        if name.lower() in PLATFORM_NONE:
+            continue
+        canonical = PLATFORM_ALIASES.get(name.lower(), name)
+        if canonical not in platforms:
+            platforms.append(canonical)
+    return platforms
+
+
 def build_pr_body(card: dict[str, Any], changed: Sequence[str], evidence_text: str) -> str:
-    allowed = list(card.get("allowed") or [])
-    items = allowed or ["scope.allowed 为空"]
-    platforms = card.get("platforms") or ["无"]
+    goals = str(card.get("goal") or f"批次 {card.get('batch') or '?'}")
+    platforms = normalize_platforms(card.get("platforms") or [])
     evidence_summary = "\n".join(
         line
         for line in evidence_text.splitlines()
@@ -401,66 +413,61 @@ def build_pr_body(card: dict[str, Any], changed: Sequence[str], evidence_text: s
     if not evidence_summary:
         evidence_summary = "scope=PASS"
 
-    lines = [
-        "## 变更摘要",
-        "",
-        f"{card.get('goal') or '批次 ' + str(card.get('batch') or '?')}",
-        "",
-        "## 影响面",
-        "",
-        f"- **平台**：{', '.join(str(item) for item in platforms)}",
-        "- 已测：batch check PASS（见 evidence.log）",
-        "- 未测：见 evidence.log 的跳过步骤",
-        f"- **类型**：{card.get('type') or '(unknown)'}",
-        "- **兼容与回滚**：无（未在 card 中声明）",
-        "",
-        "## 自审留痕",
-        "",
-        f"- **分支基线**：从 `{card.get('base') or '(unknown)'}` 切出，与 `main` 无分叉",
-        f"- **改动面**：动了 `{len(changed)}` 条路径，归为 `{len(items)}` 项；未动 `0` 处",
-    ]
-    for item in items:
-        lines.append(f"  - {item}")
-    lines.append("  - 未动：未声明")
+    paths = [path for path in changed if path]
+    stacks = {
+        path.split("/", 1)[0]
+        for path in paths
+        if "/" in path and path.split("/", 1)[0] in {"app", "server", "content", "infra"}
+    }
 
-    stacks = sorted(
-        {
-            path.split("/", 1)[0]
-            for path in changed
-            if "/" in path and path.split("/", 1)[0] in {"app", "server", "content", "infra"}
-        }
+    lines = ["## 变更摘要", "", goals, "", "## 影响面", ""]
+    if platforms:
+        lines.append("- **平台**：")
+        for platform in platforms:
+            lines.append(f"  - {platform}：未测 —— card 声明，见「验证」的未验项")
+    else:
+        lines.append("- **平台**：无")
+    lines.extend(
+        [
+            f"- **类型**：{card.get('type') or '(unknown)'}",
+            "- **兼容与回滚**：无",
+            "- **技术栈**：",
+            "",
+            "| 模块 | 是否改动 | 说明 |",
+            "|---|---|---|",
+            *[
+                f"| {stack} | {'是' if stack in stacks else '否'} | "
+                f"{'本批有改动' if stack in stacks else '未改动'} |"
+                for stack in ("app", "server", "content", "infra")
+            ],
+            "",
+            "## 自审留痕",
+            "",
+            f"- **分支基线**：从 `{card.get('base') or '(unknown)'}` 切出，与 `main` 无分叉",
+            f"- **改动面**：动了 `{len(paths)}` 条路径，归为 `{len(paths)}` 项；未动 `0` 处",
+        ]
     )
-    if len(stacks) >= 2:
-        lines.extend(
-            [
-                "",
-                "| 模块 | 是否改动 | 说明 |",
-                "|---|---|---|",
-                *[
-                    f"| {stack} | {'是' if stack in stacks else '否'} | "
-                    f"{'本批有改动' if stack in stacks else '未改动'} |"
-                    for stack in ("app", "server", "content", "infra")
-                ],
-            ]
-        )
+    for path in paths:
+        lines.append(f"  - 改动：`{path}`")
 
     lines.extend(
         [
             "- **版号**：不变 —— 未在 card 中声明版本变更",
-            "- **反证**：",
-            "  - 为推翻“改动超出 scope”，batch check 运行 scope 比对 → PASS",
+            "- **反证**：本笔在推翻「改动超出 scope 也能推上去」。",
+            "  - 假设 scope 比对能拦住越界 → 跑 batch check → PASS",
             "  - **未验**：见 evidence.log 的跳过步骤",
             "- **如实登记**：",
-            "  - 由 batch pr 从 card/evidence 生成",
-            "  - 未验项以 evidence.log 为准",
+            "  - 由 batch pr 从 card 与 evidence 生成",
             "",
             "## 验证",
             "",
             "- **命令与输出**：",
+            "",
             "  ```text",
             *[f"  {line}" for line in evidence_summary.splitlines()],
             "  ```",
-            "- **测试设计**：batch check 的 scope + 按改动路径选择的步骤",
+            "",
+            "- **测试设计**：batch check 的 scope 比对 + 按改动路径选择的步骤",
             "- **未验**：见 evidence.log 的跳过步骤",
             "",
             "## UI 证据",
@@ -479,7 +486,7 @@ def build_pr_body(card: dict[str, Any], changed: Sequence[str], evidence_text: s
             "",
             "## 关联",
             "",
-            f"`{card.get('batch') or '?'}` · 整改方案 §13 / C4",
+            f"- 批次号：`{card.get('batch') or '?'}`",
             "",
             "## 评审提示",
             "",
