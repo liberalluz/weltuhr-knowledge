@@ -118,25 +118,33 @@ git config --get core.hooksPath       # 自查：应回显 .githooks
 
 ### 2.2 一批的固定动作
 
-每批（1 批 = 1 PR）固定走这八步，**顺序不可换**。本节只记**序列与命令**，每步的判据在各自章节，不在此复述。
+每批（1 批 = 1 PR）固定走这七步，**顺序不可换**。第 1–3 步与第 6–7 步由 `batch.py` 完成，第 4–5 步是人的活。本节只记**序列与命令**，每步的判据在各自章节，不在此复述。
 
-| #  | 动作                          | 命令                                                                                    | 判据                   |
-| -- | --------------------------- | ------------------------------------------------------------------------------------- | -------------------- |
-| 0  | 确认钩子已生效                     | `git config --get core.hooksPath` → 应回显 `.githooks`                                     | §2.1                 |
-| 1  | 从 `main` 最新点切分支，**记下起始 sha** | `git switch main` → `git fetch origin` → `git merge --ff-only origin/main` → `git switch -c <type>/<topic>` | §二；起始 sha 填 PR「分支基线」 |
-| 2  | 改文件                         | —                                                                                     | —                    |
-| 3  | 只暂存**显式路径**                 | `git add <path> …`                                                                     | ⚠️ 禁用 `git add -A` / `git add .` |
-| 4  | 提交                          | `git commit`                                                                           | §三 · `.githooks/commit-msg` |
-| 5  | 推分支（**本批 commit 全部落盘后一次**）                         | `git push -u origin <type>/<topic>`                                                    | 第 0 步没做 ⇒ 钩子不触发      |
-| 6  | 开 PR：**读模板 → 写正文 → 自检 → 开 PR** | `Read .github/PULL_REQUEST_TEMPLATE.md` → 正文落 `<file>` → `bash .githooks/pr-body --file <file> --diff-base origin/main` → `gh pr create --title … --body-file <file>` | §4.1 · 骨架见模板 · 形态由 `.githooks/pr-body` 判 · §2.3 |
-| 7  | squash 合入 → 合后收口            | 见 §4.2                                                                                 | §4.2（四步）            |
+前置：`core.hooksPath` 指向 `.githooks`（§2.1）。没设，下面每一步的钩子判定一行都不跑。
+
+| # | 动作 | 命令 | 判据 |
+| -- | -- | -- | -- |
+| 1 | 建卡，批次号由 CLI 分配 | `batch.py plan --auto-id --type <process\|feat> --goal … --allowed …` | 一张卡只装一个目标；`allowed` 列显式路径或 glob |
+| 2 | 人审 | `batch.py approve <id> --chat --confirm <hash8>` | 由用户确认；agent 不得自批，改卡后 hash 失效须重批 |
+| 3 | 启动 | `batch.py start <id>` | 建分支 + `state.json` + `scope.json` + `.batch/active` |
+| 4 | 改文件 → 显式暂存 → 提交 | `git add <path> …` → `git commit -s` | §三 · `.githooks/commit-msg` |
+| 5 | 推分支（本批一次） | `git push -u origin <branch>` | `.githooks/pre-push`：`active` · scope · 引用类型 · 非快进 |
+| 6 | 检查 → 开 PR | `batch.py check --batch <id>` → `batch.py pr --batch <id> --create --yes` | 正文形态见 §4.1（九节 + 十四条判据） |
+| 7 | squash 合入 → 合后收口 | `batch.py merge --pr <n> --dry-run` → `--yes` → §4.2 四步 | §4.2 |
+
+**批次 ID 由 CLI 分配，不手写**：形态 `YYYYMMDD-<6 位小写十六进制>`。`plan` 不给 `<id>` 即自动生成（与 `--auto-id` 等价，两者同时给会报错）。手写序号（`C1`、`C2` …）只存在于旧批次，不再新增。
+
+**批次独占与 scope guard**（`batch.py start` 的 active 校验 + `pre-push` 第四条）：
+
+- 同一时刻只允许一个 `.batch/active`；`start` 发现它属于别的批次会拒绝，**不要手工覆盖**，先结束当前批次。
+- 非 `main` 分支没有 `.batch/active` 时**直接拒推**（fail-closed，不是提示）。删除分支、推 tag、`--range` 回放不在此列。
+- 推送路径必须落在该批 `scope.json` 的 `allowed` 内。扩范围只能 `check.py --scope <scope> --add <path> --reason <…> --yes`，并由人确认后落盘 —— 不直接改卡片。
 
 以下三处最容易漏，单独强调：
 
-- **第 3 步**：`git add -A --dry-run`（§七）只用来**检查**有无意外文件，**不是提交方式**。暂存一律列显式路径 —— `-A` 会把 `tmp/`、本地配置、半成品一起带进去，且事后从 diff 里看不出来是「顺手带上的」还是「本来就该改」。
-- **第 5 步**：`core.hooksPath` 没设，钩子一行也不跑。拦直推 `main`、引用类型判据、`(#NNN)` 校验、非快进判据**四条全挂在同一个开关上**，一起失效（§2.1）。
-  - **第 5 步一批只执行一次。** 本批全部 commit 落盘后推一次，不得「改一笔 → push → 等三 job 全绿 → 再改下一笔」。三支 workflow 都设了 `concurrency.cancel-in-progress: true`，注释写的是「同一分支连续推送时只保留最新一次」—— 它要的是**连着推**；逐笔等绿等于每笔都跑到自然结束，取消机制零触发，一批的等待从 1 轮变成 N 轮。**判据**：本批 `git push` 调用次数 = 1；`gh run list --branch <分支> --limit 10` 里不存在「上一条 `completed` 之后才出现下一条」的串行链。第 5 步之前须有一次本批全量自验证（`flutter analyze` · `dart run tool/lint/check.dart` · 触及 `dart:ffi` 时单文件 `dart analyze` · `flutter test` · `dart run tool/docs/check.dart`），按笔只跑改动面相关的，全量只在这里跑一次。⚠️ **这五项与 §七 是同一个集合，少跑其中任何一项即算未跑** —— `lint` 是本地唯一能拦住 `R5`（用例名未声明守哪条裁定）的门，它只在 CI 里报就意味着一轮往返。
-- **第 6 步**：`gh pr create` **不读** `.github/PULL_REQUEST_TEMPLATE.md` —— 缺省无自动读取行为（`--template <file>` 可显式指定骨架），Web UI 那一趟才由服务端渲染模板。用 CLI 开 PR 时正文必须照骨架手填；这一环的**形态**现有装置兜底（`bash .githooks/pr-body`，本地与 `repo-hygiene` 共用同一份，见 §4.1），但装置**只判形态、不判内容是否成立** —— 反证有没有被写成自证，仍只能人看。**正文一律先落 `.workbuddy/tmp/<name>.md`，再以 `--body-file` 传入** —— 多行正文走 `--body` 会被 shell 转义吃掉；临时文件用完即删，不进仓。**开 PR 是四步，第一步不能省**：① **先读** `.github/PULL_REQUEST_TEMPLATE.md` 认骨架（5 节标题与顺序 · 自审留痕五行名称）—— `gh` 不读它，人也不读就等于**根本没有骨架**，漏栏要等别人看 PR 才发现；② 照骨架逐节填值，五行全部给值、一律不用 `- [ ]`；③ 跑 `bash .githooks/pr-body --file <file> --diff-base origin/main`，红则改正文后重跑（不必重开 PR）；④ 再 `--body-file` 传入。省掉第 ① 步的典型后果是把 §4.1 的**判据项**当节名写（判据 8 项、模板 5 节，两者不是一回事）。
+- **第 4 步**：`git add -A --dry-run`（§七）只用来**检查**有无意外文件，**不是提交方式**。暂存一律列显式路径 —— `-A` 会把 `tmp/`、本地配置、半成品一起带进去，且事后从 diff 里看不出是「顺手带上的」还是「本来就该改」。
+- **第 5 步一批只执行一次。** 本批全部 commit 落盘后推一次，不得「改一笔 → push → 等 job 全绿 → 再改下一笔」。四支 workflow 都设了 `concurrency.cancel-in-progress: true`，注释写的是「同一分支连续推送时只保留最新一次」—— 它要的是**连着推**；逐笔等绿等于每笔都跑到自然结束，取消机制零触发，一批的等待从 1 轮变成 N 轮。**判据**：本批 `git push` 调用次数 = 1；`gh run list --branch <分支> --limit 10` 里不存在「上一条 `completed` 之后才出现下一条」的串行链。第 5 步之前须有一次本批全量自验证（`flutter analyze` · `dart run tool/lint/check.dart` · 触及 `dart:ffi` 时单文件 `dart analyze` · `flutter test` · `dart run tool/docs/check.dart`），按笔只跑改动面相关的，全量只在这里跑一次。⚠️ **这五项与 §七 是同一个集合，少跑其中任何一项即算未跑** —— `lint` 是本地唯一能拦住 `R5`（用例名未声明守哪条裁定）的门，它只在 CI 里报就意味着一轮往返。
+- **第 6 步**：正文由 `batch.py pr` 从卡片与 `evidence.log` 生成，落 `.batch/<id>/pr-body.md`，**生成即校验**，不过就不建 PR；`gh pr create` 本身**不读** `.github/PULL_REQUEST_TEMPLATE.md`（缺省无自动读取行为，`--template <file>` 可显式指定骨架），Web UI 那一趟才由服务端渲染模板。要手写正文时，骨架以模板为准（**九节**标题与顺序 · 自审留痕五行名称），形态由 `.githooks/pr-body` 判 —— 本地与 `repo-hygiene` 共用同一份，十四条判据只此一处。装置**只判形态、不判内容是否成立**：反证有没有被写成自证，仍只能人看。
 
 ### 2.3 失败处置
 

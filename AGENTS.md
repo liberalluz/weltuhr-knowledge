@@ -1,59 +1,59 @@
-# weltuhr-knowledge — agent 入口
+# Weltuhr — agent entry point
 
-本文件是**入口与地图**；规则细则在 `.github/` 与 `docs/`，这里不复制正文。
+This file is the **entry point and map**; detailed rules live in `.github/` and `docs/`, and are not copied here.
 
-## 开始前，按顺序读
+## Read these first, in order
 
-1. [`.github/CONTRIBUTING.md`](.github/CONTRIBUTING.md)：治理、评审、合并入口
-2. [`docs/specs/git-conventions.md`](docs/specs/git-conventions.md) §3–§4：提交、PR、合并判据
-3. 当前模块的 `AGENTS.md`（`app/` · `server/` · `content/` · `infra/` · `docs/`）
-4. 批次流程加载 [`.agents/skills/batch/SKILL.md`](.agents/skills/batch/SKILL.md)
+1. [`.github/CONTRIBUTING.md`](.github/CONTRIBUTING.md): governance, review, merge entry points
+2. [`docs/specs/git-conventions.md`](docs/specs/git-conventions.md) §3–§4: criteria for commits, PRs, merges
+3. The `AGENTS.md` of the module you touch (`app/` · `server/` · `content/` · `infra/` · `docs/`)
+4. For the batch workflow load [`.agents/skills/batch/SKILL.md`](.agents/skills/batch/SKILL.md)
 
-## 不可协商
+## Non-negotiable
 
-- **一个批次一个 PR**；不把两个目标塞进同一张卡。
-- **同一时刻只有一个 active 批次**；多 agent 用 `plan --auto-id`，不要手写 C 序号撞号。
-- **非平凡改动先走批次**：`plan → approve → start`，再实现。
-- **没有 `.batch/active` 不得推非 main 分支**；`pre-push` 会拒绝，不是提示。
-- **不直推 `main`**，不直接 `gh pr merge`；合并只走 `batch merge`。
-- **作者不能自批**；C10 ruleset 要求 1 名非作者批准 + code-owner review。
-- **evidence 必须来自真实命令**；没跑的写“未验”，不能写“应该通过”。
-- 不确定就停下问；不要为了过门禁改 card/scope/evidence。
+- **One batch, one PR**; never cram two goals into one card.
+- **Only one active batch at a time**; with multiple agents use `plan --auto-id` instead of hand-writing C-numbers and colliding.
+- **Non-trivial changes go through a batch first**: `plan → approve → start`, then implement.
+- **No push to a non-main branch without `.batch/active`**; `pre-push` rejects it, it is not a hint.
+- **No direct push to `main`**, no direct `gh pr merge`; merges go through `batch merge` only.
+- **Authors cannot self-approve**; the C10 ruleset requires one non-author approval plus code-owner review.
+- **Evidence must come from real commands**; what was not run is written as "未验", never as "should pass".
+- Stop and ask when unsure; never edit card/scope/evidence just to get past a gate.
 
-## 开始一个批次
+## Starting a batch
 
 ```bash
 python3 infra/tool/batch/batch.py status
-# 多 agent：让 CLI 生成 YYYYMMDD-<6位十六进制>，避免撞号
+# multiple agents: let the CLI generate YYYYMMDD-<6 hex chars> to avoid collisions
 python3 infra/tool/batch/batch.py plan --auto-id --type <process|feat> --goal "..." --allowed "<glob>"
-# 单 agent/已知 ID：显式给出 <id>
+# single agent / known id: pass <id> explicitly
 python3 infra/tool/batch/batch.py plan <id> --type <process|feat> --goal "..." --allowed "<glob>"
-# 人审：先向用户展示 card + hash 前 8 位；用户确认后
+# human review: show the card plus the first 8 hash chars first; after the user confirms
 python3 infra/tool/batch/batch.py approve <id> --chat --confirm <hash8>
 python3 infra/tool/batch/batch.py start <id>
 python3 infra/tool/batch/batch.py check --batch <id> --base main
 python3 infra/tool/batch/batch.py pr --batch <id> --base main
 ```
 
-合并必须由另一名维护者批准，再由人类明确说“合”，执行：
+A merge requires approval from another maintainer and an explicit "merge" from the human, then:
 
 ```bash
 python3 infra/tool/batch/batch.py merge --pr <n> --yes
 ```
 
-## 目录地图
+## Directory map
 
-- `app/`：Flutter 客户端
-- `server/`：Serverpod 服务端
-- `content/`：内容包与内容管线
-- `infra/`：CI、构建、batch / metrics / verify 工具
-- `docs/`：规格、决策、运行手册
-- `.agents/rules/`：always-on 编辑与平台约束
-- `.agents/skills/`：按需加载的流程技能
+- `app/`: Flutter client
+- `server/`: Serverpod backend
+- `content/`: content packs and the content pipeline
+- `infra/`: CI, build, batch / metrics / verify tooling
+- `docs/`: specs, decisions, runbooks
+- `.agents/rules/`: always-on editing and platform constraints
+- `.agents/skills/`: process skills loaded on demand
 
-## 冲突时
+## When sources conflict
 
-- 领域事实以 `docs/specs/` 为准；
-- 流程以 `CONTRIBUTING` + batch 工具为准；
-- 模块 `AGENTS.md` 比根文件更具体，但不能违反上面的“不可协商”；
-- 机器门禁（pre-push / ruleset / CI）优先于任何提示文本。
+- Domain facts follow `docs/specs/`;
+- Process follows `CONTRIBUTING` plus the batch tooling;
+- A module `AGENTS.md` is more specific than this file but must not violate the non-negotiables above;
+- Machine gates (pre-push / ruleset / CI) outrank any prose.

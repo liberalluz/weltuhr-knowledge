@@ -449,6 +449,20 @@ def normalize_platforms(raw: Sequence[Any]) -> list[str]:
     return platforms
 
 
+def short_base(base: str) -> str:
+    """Render a base commit as 7 chars, widening to 12 / 40 while ambiguous."""
+    text = str(base or "").strip()
+    if len(text) != 40 or any(ch not in "0123456789abcdef" for ch in text):
+        return text or "(unknown)"
+    for width in (7, 12):
+        code, out, _ = run_git(
+            ["rev-parse", "--verify", "--quiet", f"{text[:width]}^{{commit}}"]
+        )
+        if code == 0 and out.strip() == text:
+            return text[:width]
+    return text
+
+
 def build_pr_body(card: dict[str, Any], changed: Sequence[str], evidence_text: str) -> str:
     goals = str(card.get("goal") or f"批次 {card.get('batch') or '?'}")
     platforms = normalize_platforms(card.get("platforms") or [])
@@ -490,7 +504,7 @@ def build_pr_body(card: dict[str, Any], changed: Sequence[str], evidence_text: s
             "",
             "## 自审留痕",
             "",
-            f"- **分支基线**：从 `{card.get('base') or '(unknown)'}` 切出，与 `main` 无分叉",
+            f"- **分支基线**：从 `{short_base(str(card.get('base') or ''))}` 切出，与 `main` 无分叉",
             f"- **改动面**：动了 `{len(paths)}` 条路径，归为 `{len(paths)}` 项；未动 `0` 处",
         ]
     )

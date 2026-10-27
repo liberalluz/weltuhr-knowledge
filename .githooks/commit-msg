@@ -1,50 +1,56 @@
 #!/usr/bin/env bash
-# 提交信息格式判据 —— 本地 hook 与 CI **共用同一份逻辑**。
+# Commit message checker -- one file shared by the local hook and CI.
 #
-# 只认 docs/specs/git-conventions.md §3：
-#   §3.1 type 11 值（必填）
-#   §3.2 scope 6 值（**必填**；必须是这六个之一，且**子维度不进 scope**）
-#   §3.3 subject ≤72 字符、句尾不加句号；有 body 时 header 与 body 之间空一行
-#        footer 必带 DCO 签署：行首 `Signed-off-by: 姓名 <邮箱>`（`git commit -s`）
+# Only docs/specs/git-conventions.md §3 applies:
+#   §3.1 type, 11 values (required)
+#   §3.2 scope, 6 values (required; one of the six, sub-dimensions never in scope)
+#   §3.3 subject <= 72 chars, no trailing period; one blank line between header and body
+#        footer must carry a DCO sign-off: a line starting with
+#        `Signed-off-by: Name <email>` (`git commit -s`)
 #
-# 用法：
-#   .githooks/commit-msg <消息文件>            # git hook（单条）
-#   .githooks/commit-msg --range <rev-range>   # CI（逐条；merge 提交自动放行）
+# Usage:
+#   .githooks/commit-msg <msg-file>           # git hook, single message
+#   .githooks/commit-msg --range <rev-range>  # CI, per commit (merges pass)
 #
-# 退出码：0 通过 · 1 有违规。
+# Exit codes: 0 pass, 1 violation.
 #
-# ── 为什么是 shell 而不是并进 app/tool/lint（Dart）─────────────────────
-# `repo-hygiene` 这个 job 不装 Flutter/Dart，它只有 5 秒的预算。为一条正则
-# 去装 SDK，等于让最便宜的判据变成最贵的那条。本地与 CI 两端都有 bash。
+# -- Why shell instead of folding this into app/tool/lint (Dart) --------------
+# The `repo-hygiene` job installs no Flutter/Dart and has a 5 s budget. Pulling
+# in an SDK for one regex would turn the cheapest check into the most expensive
+# one. bash exists on both ends.
 #
-# ── 为什么两端必须共用同一份文件 ──────────────────────────────────────
-# 分成两份的后果很具体：本地放行、CI 红，人会去改 CI 而不是改提交；反过来
-# CI 放行、本地红，人会 `--no-verify`。判据一旦有两份，就等于没有判据。
+# -- Why both ends must share this one file ----------------------------------
+# Splitting it has a concrete cost: local passes, CI fails, people edit CI
+# instead of the commit; CI passes, local fails, people reach for
+# `--no-verify`. Two copies of a criterion mean no criterion.
 
 set -u
 
-# ⚠️ 这里是 ERE（`grep -E`），分隔符必须是裸 `|`。写成 `\|` 是 BRE 的「或」，
-# 在 ERE 里它只是字面竖线 —— 结果是一条**永远不匹配**的正则，全仓提交全被判红。
+# WARNING: this is ERE (`grep -E`); the separator must be a bare `|`. Writing
+# `\|` is the BRE "or", which in ERE is just a literal pipe -- the regex then
+# never matches and every commit in the repo is rejected.
 TYPES='build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test'
 SCOPES='app|server|pack|docs|infra|repo'
 MAX=72
 
-# ⚠️ 四个正则必须放进变量再用。直接写进 `[[ s =~ ... ]]` 时，bash 会把正则里的
-# `[^)]` 当成条件表达式的右括号来解析，报 `syntax error ... unexpected token )`
-# —— 这个坑只在对 `[[ ]]` 里内联的正则成立，走变量就绕开了。
-# scope 段**没有** `?`：§3.2 自 2026-10-25 起必填。可省略的写法放行了
-# `docs: …` 这类标题，而它与 `docs(docs): …` 在 `git log` 里看不出区别，
-# 只能靠 review 发现 —— 判据不拦的东西，就是没有判据。
+# WARNING: all four regexes must go through variables first. Inlined into
+# `[[ s =~ ... ]]`, bash parses the `[^)]` inside the regex as the closing
+# paren of the conditional and dies with
+# `syntax error ... unexpected token )`. The trap only applies to inline regex
+# in `[[ ]]`; a variable sidesteps it.
+# The scope group has no `?`: scope is required and must be one of SCOPES.
 HEADER_RE="^(${TYPES})\([a-z/]+\)!?:\ .+\$"
-# 只为「缺 scope」这一种失败给准确的错误信息：形态匹配不上时再用它分一次流。
+# Only used to report "missing scope" precisely: when the shape fails, this
+# regex splits that one case off from a general shape error.
 NO_SCOPE_RE="^(${TYPES})!?:\ .+\$"
 SCOPE_RE='^[a-z]+\(([^)]+)\)'
 SCOPE_OK_RE="^(${SCOPES})\$"
 
-# ⚠️ 字符数 vs 字节数。`${#s}` 在 UTF-8 locale 下按**字符**，在 C/POSIX 下按
-# **字节**（一个汉字 3 字节）。同一句 60 字的中文提交，前者算 60、后者算 180 ——
-# 判据会在两台机器上给出相反结论，而且看不出原因。这里先探一次，按字节就直接
-# 报「环境不合格」，不拿错误的度量去判。
+# WARNING: characters vs bytes. `${#s}` counts characters under a UTF-8 locale
+# and bytes under C/POSIX (one CJK char = 3 bytes). The same 60-char Chinese
+# subject scores 60 in one case and 180 in the other -- the check would give
+# opposite verdicts on two machines with no visible reason. Probe once here and
+# refuse to run under a byte-counting locale instead of measuring wrongly.
 PROBE='中'
 if [ "${#PROBE}" -ne 1 ]; then
   echo "commit-msg: 当前 locale 不是 UTF-8（\`\${#s}\` 按字节计数，本应是 1 得到 ${#PROBE}），无法正确度量 subject 长度。" >&2
@@ -54,9 +60,9 @@ fi
 
 FAIL=0
 
-# 跳过不归本判据管的消息形态：
-#   Merge / Revert  —— git 与平台生成的固定句式，改不动也不必改
-#   fixup! / squash! / amend! —— rebase 中间态，最终会被合掉
+# Message shapes this check does not own:
+#   Merge / Revert           -- fixed phrasing produced by git and the platform
+#   fixup! / squash! / amend! -- rebase intermediates, folded away later
 skip_msg() {
   case "$1" in
     'Merge '* | 'Revert "'* | 'fixup! '* | 'squash! '* | 'amend! '*) return 0 ;;
@@ -64,17 +70,19 @@ skip_msg() {
   esac
 }
 
-# 入参是**消息全文**，不是文件名 —— 全流程纯 bash 内建，不 fork。
-# 逐条 `sed` / `grep` 的写法在 Windows 上一次 fork 约 100 ms，一条消息要 4 条
-# 外部命令，百条提交的 PR 就是几十秒；而这条判据的定位是「比 check-ignore 还便宜」。
+# The argument is the full message, not a file name -- the whole path stays in
+# bash builtins, no forks. Per-message `sed` / `grep` costs ~100 ms per fork on
+# Windows and four external calls per message; a hundred-commit PR spends tens
+# of seconds. This check is meant to be cheaper than check-ignore.
 check_msg() {
   local msg=$1 label=$2
   local first second rest scope subject len
 
-  # 去 CRLF：Windows 上 `core.autocrlf` 可能把消息写成 CRLF，行尾会带 \r，
-  # 「subject 末尾是句号」与「第二行是否为空」两条判据都会误伤。
+  # Strip CRLF: `core.autocrlf` on Windows may store the message with CRLF and
+  # a stray \r, which breaks both the "no trailing period" and the "second line
+  # is blank" checks.
   msg=${msg//$'\r'/}
-  # 去尾部换行，免得最后一行被当成空行或反之
+  # Strip trailing newlines so the last line is not mistaken for a blank line
   while [ "${msg%$'\n'}" != "$msg" ]; do msg=${msg%$'\n'}; done
 
   first=${msg%%$'\n'*}
@@ -95,10 +103,12 @@ check_msg() {
     return
   fi
 
-  # ① header 形态：<type>(<scope>): <subject>（scope 必填）
-  #    scope 先用 `[a-z/]+` 做形态匹配，再单独判取值 —— 两步分开，错误信息才准：
-  #    「形态不对」和「取值不在六值内」是两种改法。「缺 scope」再单独一条：
-  #    它与「形态不对」只差一对括号，混在一句报错里改不对。
+  # (1) header shape: <type>(<scope>): <subject>, scope required.
+  #     Shape is matched first with `[a-z/]+`, the value is checked separately:
+  #     two steps keep the message accurate, because "wrong shape" and "value
+  #     not in the six" need different fixes. "Missing scope" is its own branch:
+  #     it differs from a shape error by one pair of parens, and a combined
+  #     message does not lead to the right fix.
   if [[ ! $first =~ $HEADER_RE ]]; then
     if [[ $first =~ $NO_SCOPE_RE ]]; then
       echo "FAIL $label: 缺 scope —— 形态是 \`<type>(<scope>): <subject>\`，§3.2 中 scope 必填" >&2
@@ -129,7 +139,7 @@ check_msg() {
     fi
   fi
 
-  # ② subject：非空、≤72 字符、句尾不加句号
+  # (2) subject: non-empty, <= 72 chars, no trailing period
   subject=${first#*: }
   if [ "$subject" = "$first" ]; then
     echo "FAIL $label: 缺 \`: \` 与 subject" >&2
@@ -149,18 +159,21 @@ check_msg() {
       ;;
   esac
 
-  # ③ header 与 body 之间空一行。只看第二行是否为空白行：没有 body 时第二行
-  #    取不到东西，也是空 —— 两种情况都合规。
+  # (3) one blank line between header and body. Only the second line is read:
+  #     with no body there is nothing there, which is also blank -- both cases
+  #     pass.
   if [ -n "$second" ]; then
     echo "FAIL $label: header 与 body 之间必须空一行" >&2
     echo "      第二行：$second" >&2
     FAIL=1
   fi
 
-  # ④ DCO 签署（§3.3）：消息里必须有一行**以** `Signed-off-by: ` 开头，且值非空。
-  #    逐行 `read` 是为了「行首」这个语义 —— 用 `case` 直接匹配 `$'\n'Signed-off-by:`
-  #    也能中，但配 `[! ]` 这类取反字符类时 bash 的 parser 会报 `syntax error near
-  #    unexpected token ']*'`（已踩）。逐行读是内建，不 fork。
+  # (4) DCO sign-off (§3.3): the message must contain a line that STARTS with
+  #     `Signed-off-by: ` and carries a non-empty value. Reading line by line
+  #     encodes "line start" -- matching `$'\n'Signed-off-by:` with `case` also
+  #     works, but combining it with a negated class like `[! ]` makes bash's
+  #     parser report `syntax error near unexpected token ']*'` (already hit).
+  #     Reading is builtin, no fork.
   local line dco=0
   while IFS= read -r line; do
     case "$line" in
@@ -188,18 +201,19 @@ if [ "$mode" = '--range' ]; then
     echo "usage: $0 --range <rev-range>" >&2
     exit 1
   fi
-  # GitHub 在新分支首推时把 `before` 给成全 0，区间会变成 `0000…0000..<sha>`。
-  # 这种区间 rev-list 报错，而错误信息与「提交信息不合规」毫无关系 —— 在这里
-  # 明确退化成「只看这一条」，不让判据红在一条误导性的错误上。
+  # On a branch's first push GitHub sends an all-zero `before`, so the range
+  # becomes `0000...0000..<sha>`. rev-list fails on that, and the error has
+  # nothing to do with message compliance -- degrade to "check this one commit"
+  # here instead of going red on a misleading error.
   case "$range" in
     *0000000000000000000000000000000000000000*)
       range="-n 1 ${range##*..}"
       ;;
   esac
 
-  # 所有消息**一次取出**，用 NUL 分隔分段。逐条 `git log -1` 的写法在 Windows 上
-  # 每条约 100 ms，一个百条提交的 PR 要跑十几秒；而这条判据的时限是「比 check-ignore
-  # 还便宜」。
+  # Fetch every message in ONE call, NUL-separated. Looping `git log -1` costs
+  # ~100 ms per commit on Windows; a hundred-commit PR takes tens of seconds,
+  # while this check is budgeted at "cheaper than check-ignore".
   tmp=$(mktemp)
   # shellcheck disable=SC2086
   if ! git log --format='%H%n%B%x00' $range >"$tmp" 2>/dev/null; then
@@ -215,9 +229,11 @@ if [ "$mode" = '--range' ]; then
 
   n=0
   while IFS= read -r -d '' block; do
-    # ⚠️ git 在每条记录**之后**除了 `%x00` 还会补一个换行，所以第二块起会以
-    # 换行开头。不剥掉它，`%%$'\n'*` 取到的「首行」是空串，而真正被当成首行的
-    # 是下一行的 SHA —— 表现为「校验 99 条、每条都报 header 不符合、label 为空」。
+    # WARNING: after each record git appends a newline besides `%x00`, so every
+    # block after the first starts with a newline. Not stripping it makes
+    # `%%$'\n'*` return an empty "first line" and the SHA below it becomes the
+    # header -- seen as "checked 99 commits, every one failed the header shape
+    # with an empty label".
     block=${block#$'\n'}
     [ -z "$block" ] && continue
     sha=${block%%$'\n'*}
@@ -240,7 +256,7 @@ fi
 
 if [ "$FAIL" -ne 0 ]; then
   echo '' >&2
-  echo '提交信息不符合 docs/specs/git-conventions.md §3。改正后无需重跑测试。' >&2
+  echo '提交信息不符合 docs/specs/git-conventions.md §三（3.1–3.3）。改正后无需重跑测试。' >&2
   exit 1
 fi
 exit 0

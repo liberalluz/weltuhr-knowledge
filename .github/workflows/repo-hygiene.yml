@@ -1,20 +1,27 @@
 name: repo-hygiene
 
-# 全仓级的仓级判据：**不判「该不该跑」**（刻意不设 `paths`，每次都有结论）。
-# 目前四条：构建产物不得入库 · 提交信息格式 · PR 正文形态 · main 只接受 PR。
+# Repo-wide hygiene criteria: **it never decides whether to run** (no `paths` on
+# purpose, so every run produces a conclusion).
+# Four today: build artifacts stay out of the repo; commit message format; PR
+# body shape; main only accepts PRs.
 #
-# 为什么不并进 `content-checks`：那支的改动面是 `content/`，只改 `app/` 的 PR
-# 不触发它，而「有没有把 `dist/` 提交进去」跟改哪个目录无关 —— 挂着走就会漏。
-# 也不设 `paths`：它只要 `git`，整段约 5 秒，是这里最便宜的判据。
-# 便宜的判据不该被贵的 job 拖着，也不该为它引入跳过逻辑。
+# Why not fold this into `content-checks`: that job's change surface is
+# `content/`, so a PR touching only `app/` does not trigger it, while "did
+# anyone commit `dist/`" has nothing to do with which directory changed --
+# riding along with it means missing it.
+# No `paths` either: it needs only `git`, takes about 5 s, and is the cheapest
+# criterion here. A cheap criterion should not be dragged behind an expensive
+# job, nor grow skip logic of its own.
 
 on:
   push:
     branches: [main]
   pull_request:
-    # 本 job 读的是 PR 正文；改正文只发 `edited`，不发 `synchronize`。
-    # 缺这一项时「改正文后重跑」只有 rerun 一条路，而 rerun 重放的是**开 PR 时**
-    # 的事件 payload ⇒ 判据一直指着旧正文，改了不起作用。
+    # This job reads the PR body; editing the body fires only `edited`, never
+    # `synchronize`. Without that type, "rerun after editing" has only the
+    # rerun button, and a rerun replays the event payload from **when the PR
+    # was opened** -- the criterion keeps pointing at the old body and edits
+    # have no effect.
     types: [opened, synchronize, reopened, edited]
 
 concurrency:
@@ -26,26 +33,36 @@ jobs:
     name: repo-hygiene
     runs-on: ubuntu-latest
     steps:
-      # `fetch-depth: 0` 是「提交信息」那一步需要的：它要按 `base..head` 算区间，
-      # 默认浅克隆（depth=1）里 `base` 根本不在对象库里，`git log` 会直接报错。
-      # 这个仓库总量不大，拉全历史的代价远小于「判据报一条与提交信息无关的错」。
+      # `fetch-depth: 0` is required by the commit-message step: it computes a
+      # `base..head` range, and in a shallow clone (depth=1) `base` is simply
+      # not in the object database, so `git log` errors out. The repo is small;
+      # fetching full history costs far less than reporting an error unrelated
+      # to commit messages.
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      # 判据只针对产物路径。原写法「全仓不得有未跟踪文件」有两处失真：
-      #   过宽 —— 任何与产物无关的临时文件都会让它红，错误信息还指向 dist/；
-      #   过窄 —— ^?? 只匹配未跟踪文件，dist/ 若已被提交进库，status 显示的是 M
-      #           （甚至无变化时不显示），它反而漏掉自己最该抓的情况。
-      # 判据工具按 .gitignore 纪律 ③：以 `git add -A --dry-run` 为准（新增与修改都会
-      # 列出，被忽略的不列），再用 ls-files 补「已提交进库但未改动」这一路。
-      # ⚠️ 不用 pathspec 通配：实测 `git status -- 'content/*/dist'` 拿不到未跟踪目录
-      #    （全量 status 有 `?? .../dist/`，加通配后返回空，`:(glob)` 同样无效），
-      #    会静默放行。故取全量输出再文本过滤。
+      # The criterion targets artifact paths only. The earlier form, "no
+      # untracked files anywhere", was wrong in two directions:
+      #   too wide  -- any temp file unrelated to artifacts turned it red, with
+      #               an error message pointing at dist/;
+      #   too narrow -- `^??` matches untracked files only, so if dist/ was
+      #               already committed, status shows M (or nothing when
+      #               unchanged) and it misses exactly its own worst case.
+      # The tool follows .gitignore discipline 3: trust `git add -A --dry-run`
+      # (new and modified files are listed, ignored ones are not), then use
+      # ls-files to cover "committed to the index but unchanged".
+      # WARNING: no pathspec globbing -- measured that
+      # `git status -- 'content/*/dist'` cannot see untracked directories (the
+      # full status shows `?? .../dist/` while the globbed call returns empty,
+      # and `:(glob)` does not help), so it would silently pass. Hence: take the
+      # full output and filter as text.
       #
-      # 本 job **不构建**，所以原来在 `content-checks` 里「构建完再看 dry-run」
-      # 那一半在这里恒为空 —— 用 `check-ignore` 换成等价的静态判据（路径不必存在）。
-      # 不做这一步，拆出来就是功能退化。
+      # This job does **not build**, so the half that used to live in
+      # `content-checks` ("build first, then inspect dry-run") is always empty
+      # here -- `check-ignore` replaces it with an equivalent static criterion
+      # (the path need not exist). Skipping this step would make the split a
+      # functional regression.
       - name: 产物不入库
         run: |
           fail=0
@@ -53,10 +70,12 @@ jobs:
           for m in content/*/manifest.json; do
             [ -e "$m" ] || continue
             d="$(dirname "$m")/dist"
-            # ⚠️ 查询必须**带尾斜杠**。`content/*/dist/` 是目录规则，而 CI 是干净
-            # checkout、`dist/` 根本不存在；路径不存在时 git 无法 stat 出「这是目录」，
-            # 不带斜杠的查询会返回**未命中**。本地因为目录真实存在反而测不出来 ——
-            # 本文件第一次推送就是三处全 FAIL，红的正是这个。
+            # WARNING: the query must carry a trailing slash. `content/*/dist/`
+            # is a directory rule, and CI is a clean checkout where `dist/`
+            # does not exist; without the directory present git cannot stat
+            # "this is a directory" and a slashless query returns **no match**.
+            # Locally the directory exists, so the bug is invisible -- the first
+            # push of this file failed all three checks for exactly this reason.
             if git check-ignore -q -- "$d/"; then
               echo "ok   $d/ 已被 .gitignore 覆盖"
             else
@@ -82,18 +101,22 @@ jobs:
           if [ "$fail" -ne 0 ]; then exit 1; fi
           echo "产物未入库：dist/ 均被 .gitignore 覆盖"
 
-      # ── 提交信息格式 ────────────────────────────────────────────────
-      # 判据在 `.githooks/commit-msg`，与本地 `commit-msg` hook **同一个文件**。
-      # 分两份的后果很具体：本地放行、CI 红，人去改 CI 而不是改提交；反过来
-      # CI 放行、本地红，人会 `--no-verify`。判据一旦有两份，就等于没有判据。
+      # -- Commit message format ----------------------------------------------
+      # The criterion lives in `.githooks/commit-msg`, the **same file** the
+      # local `commit-msg` hook runs. Splitting it has a concrete cost: local
+      # passes, CI fails, people edit CI instead of the commit; CI passes, local
+      # fails, people reach for `--no-verify`. Two copies of a criterion mean no
+      # criterion.
       #
-      # 为什么在这里而不在 `app-checks`：这条判据与改哪个目录无关，且只要 git
-      # 与 bash，约 1 秒。挂在需要装 Flutter 的 job 上，会让它随 SDK 安装排队。
+      # Why here and not in `app-checks`: this criterion is independent of which
+      # directory changed and needs only git and bash, about 1 s. Hanging it on
+      # a job that installs Flutter would queue it behind an SDK download.
       #
-      # ⚠️ 区间按事件类型分别取。`pull_request` 用 base..head（PR 独有提交）；
-      #    `push` 用 before..after。新分支首推时 `before` 是全 0，脚本内部会
-      #    退化成「只看 after 这一条」—— 这个判断放在脚本里，不放在 YAML 里，
-      #    免得本地与 CI 各有一份区间逻辑。
+      # WARNING: the range is chosen per event type. `pull_request` uses
+      # base..head (the PR's own commits); `push` uses before..after. On a new
+      # branch's first push `before` is all zeros and the script degrades to
+      # "check the one after commit" -- that decision lives in the script rather
+      # than the YAML so local and CI never hold two copies of the range logic.
       - name: 提交信息
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
@@ -104,27 +127,39 @@ jobs:
           echo "区间：$range"
           bash .githooks/commit-msg --range "$range"
 
-      # ── PR 正文形态 ────────────────────────────────────────────────
-      # 判据在 `.githooks/pr-body`，与本地自检**同一个文件**（沿用上段那条：
-      # 「判据一旦有两份，就等于没有判据」）。
+      # -- PR body shape ------------------------------------------------------
+      # The criterion lives in `.githooks/pr-body`, the **same file** the local
+      # self-check runs (same rule as above: two copies of a criterion mean no
+      # criterion).
       #
-      # 为什么需要这一步：`#143` ~ `#147` 五笔正文全部违规，且**同一个错重复五次**
-      # —— `如实登记` 用 ①②③ 压在同一个段落里。当时这一环**没有任何装置**：模板
-      # 那行是单行占位（照它填必然压段）、`gh pr create` 不校验正文、`commit-msg`
-      # 只管提交信息。规则只活在 `git-conventions` §4.1 正文里，读它才生效 ⇒ 连续
-      # 失效五次。
+      # Why the step is needed: five consecutive PR bodies (`#143`-`#147`) all
+      # violated it and **repeated the same mistake five times** -- `如实登记`
+      # packed into one paragraph with circled numbers. At the time this link had
+      # **no mechanism at all**: the template row was a single-line placeholder
+      # (filling it as written forces packing), `gh pr create` does not validate
+      # the body, and `commit-msg` only owns commit messages. The rule lived in
+      # prose inside `git-conventions` §4.1 and only worked if read => it failed
+      # five times in a row.
       #
-      # ⚠️ 这段原写作「…**且** `改动面` 跨两个技术栈目录却没列三列表」，**是错的**：
-      #    技术栈目录只含 `app/` `server/` `content/` `infra/`（§4.1 原文），五笔里
-      #    `#143`/`#145` 只动 `docs/`、`#144`/`#146`/`#147` 各只动 1 个技术栈目录 ⇒
-      #    没有一笔达到表格条件。曾据这个错判给三笔各补了一张表 —— **表是多加的**，
-      #    与「逐项一行」两档口径不符，见 §4.1 末条。
+      # WARNING: this paragraph used to say "...**and** `改动面` crossed two tech
+      #      stack directories without a three-column table", **which was wrong**:
+      #      tech stack directories are only `app/` `server/` `content/` `infra/`
+      #      (§4.1), and of those five `#143`/`#145` touched only `docs/` while
+      #      `#144`/`#146`/`#147` each touched one stack directory => none met the
+      #      table condition. Acting on that wrong reading added a table to three
+      #      PRs -- **the tables were spurious**, contradicting the "one line per
+      #      item" form; see the last entry of §4.1.
       #
-      # ⚠️ 只在 `pull_request` 事件跑：`pull_request.body` 只有那里有。
-      # ⚠️ 正文经 env 传入、不拼进 `run:` —— 正文里的引号 / 反引号 / `$` 会把 shell 拆坏。
-      # ⚠️ `--diff-base` 不可省：跨栈三列表与 `改动面` 的 **N 对账**都靠**真实 diff**，
-      #    不认正文自述 —— 后者是全装置唯一一处判「真假」的判据（其余只判形态）。
-      #    checkout 已是 `fetch-depth: 0`，再取一次 base 分支就能算三点 diff。
+      # WARNING: runs only on `pull_request` -- `pull_request.body` exists only
+      #          there.
+      # WARNING: the body is passed via env, never interpolated into `run:` --
+      #          quotes / backticks / `$` in the body would break the shell.
+      # WARNING: `--diff-base` is not optional: the cross-stack table and the
+      #          **N reconciliation** of `改动面` rely on the **real diff**, not on
+      #          what the body claims -- the only place in the whole mechanism
+      #          that judges true/false (everything else judges shape).
+      #          checkout already has `fetch-depth: 0`, so one more fetch of the
+      #          base branch is enough for a three-dot diff.
       - name: PR 正文形态
         if: github.event_name == 'pull_request'
         env:
@@ -135,15 +170,20 @@ jobs:
           git fetch --no-tags origin "${{ github.event.pull_request.base.ref }}"
           bash .githooks/pr-body --file "$body" --diff-base "origin/${{ github.event.pull_request.base.ref }}"
 
-      # ── main 只接受 PR ──────────────────────────────────────────────
-      # 判据在 `.githooks/pre-push`，与本地 hook **同一个文件**、同一个 `--range` 入口。
-      # 本地那端让 `git push` 当场失败；这端让「已经推上去的直推」留下红灯 ——
-      # 远端分支保护在本账号的私有仓不可用（§4.3），近端两道是唯一替代装置。
+      # -- main only accepts PRs ----------------------------------------------
+      # The criterion lives in `.githooks/pre-push`, the **same file** and the
+      # same `--range` entry point as the local hook. Locally it makes `git push`
+      # fail on the spot; here it leaves a red mark on any direct push that
+      # already happened. Branch protection is enforced by the ruleset (§4.3);
+      # these two near-end gates are defence in depth.
       #
-      # ⚠️ 只在 `push` 事件跑：PR 事件的 head 是特性分支，那上面的提交本就没有
-      #    `(#NNN)`（编号是合入时才写上去的），拿这条判据去卡 PR 必然全红。
-      # ⚠️ 本步骤校验不到 tag：`on.push` 只挂 `branches: [main]`，推 tag 不触发
-      #    workflow。tag 判据只有近端一道，见 `.githooks/pre-push` 的注释。
+      # WARNING: runs only on `push` -- on a PR event the head is a feature
+      #          branch whose commits carry no `(#NNN)` yet (the number is written
+      #          at merge time), so applying this criterion to a PR is always red.
+      # WARNING: this step cannot check tags: `on.push` covers only
+      #          `branches: [main]`, and pushing a tag triggers no workflow. The
+      #          tag criterion exists near-end only; see the notes in
+      #          `.githooks/pre-push`.
       - name: main 只接受 PR
         if: github.event_name == 'push'
         run: |
