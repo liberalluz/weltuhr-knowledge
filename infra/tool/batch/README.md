@@ -50,8 +50,8 @@ C2 adds the human-owned card and the start step; `status` remains read-only.
 python3 infra/tool/batch/batch.py plan B15-2 --type feat --goal "..." \
   --allowed "app/lib/features/terrain/**" --acceptance "TC-FND-016..020 pass"
 
-# Human approval: hash-locks the card
-python3 infra/tool/batch/batch.py approve B15-2 --yes --by liberal
+# Human approval: chat-confirmed, hash-locked
+python3 infra/tool/batch/batch.py approve B15-2 --chat --confirm <hash8>
 
 # Create branch (unless --no-branch), state.json, scope.json and .batch/active
 python3 infra/tool/batch/batch.py start B15-2

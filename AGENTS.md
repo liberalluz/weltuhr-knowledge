@@ -24,7 +24,8 @@
 ```bash
 python3 infra/tool/batch/batch.py status
 python3 infra/tool/batch/batch.py plan <id> --type <process|feat> --goal "..." --allowed "<glob>"
-python3 infra/tool/batch/batch.py approve <id> --yes
+# 人审：先向用户展示 card + hash 前 8 位；用户确认后
+python3 infra/tool/batch/batch.py approve <id> --chat --confirm <hash8>
 python3 infra/tool/batch/batch.py start <id>
 python3 infra/tool/batch/batch.py check --batch <id> --base main
 python3 infra/tool/batch/batch.py pr --batch <id> --base main
