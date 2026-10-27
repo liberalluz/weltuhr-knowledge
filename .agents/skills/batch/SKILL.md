@@ -39,6 +39,10 @@ metadata:
 - 没有 `RESULT: PASS` 的 evidence 不进 `pr`，没有人工“合”不执行 `merge`。
 - 不直接 `gh pr merge`；合并只走 `batch merge` / `merge.py`。
 - `.batch/` 是本地状态，不进仓库。
+- 多 agent 用 `plan --auto-id` 生成 `YYYYMMDD-<6位十六进制>`；同一时刻只允许一个 `.batch/active`。
+- `start` 发现 active 属于别的批次会拒绝；不要手工覆盖，先结束当前批次。
+- `start` 还会拒绝已存在的远端同名分支；跨 clone 用分支首推作为占用锁。
+- `status` 看 `Active` / `Owner`；`list` 的 `*` 是当前 active，按 `createdAt` 最新优先。
 
 ## 示例
 

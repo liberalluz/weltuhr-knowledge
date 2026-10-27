@@ -12,6 +12,7 @@
 ## 不可协商
 
 - **一个批次一个 PR**；不把两个目标塞进同一张卡。
+- **同一时刻只有一个 active 批次**；多 agent 用 `plan --auto-id`，不要手写 C 序号撞号。
 - **非平凡改动先走批次**：`plan → approve → start`，再实现。
 - **没有 `.batch/active` 不得推非 main 分支**；`pre-push` 会拒绝，不是提示。
 - **不直推 `main`**，不直接 `gh pr merge`；合并只走 `batch merge`。
@@ -23,6 +24,9 @@
 
 ```bash
 python3 infra/tool/batch/batch.py status
+# 多 agent：让 CLI 生成 YYYYMMDD-<6位十六进制>，避免撞号
+python3 infra/tool/batch/batch.py plan --auto-id --type <process|feat> --goal "..." --allowed "<glob>"
+# 单 agent/已知 ID：显式给出 <id>
 python3 infra/tool/batch/batch.py plan <id> --type <process|feat> --goal "..." --allowed "<glob>"
 # 人审：先向用户展示 card + hash 前 8 位；用户确认后
 python3 infra/tool/batch/batch.py approve <id> --chat --confirm <hash8>
