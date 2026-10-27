@@ -89,4 +89,4 @@ Report vulnerabilities through the private channel described in [.github/SECURIT
 
 ## License
 
-Apache-2.0 — see [LICENSE](LICENSE) and [NOTICE](NOTICE).
+Licensed under [Apache-2.0](LICENSE); see [NOTICE](NOTICE) for attribution.
