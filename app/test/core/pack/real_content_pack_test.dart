@@ -2,9 +2,11 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:project_knowledge/core/entities/edge.dart';
 import 'package:project_knowledge/core/entities/entry.dart';
 import 'package:project_knowledge/core/entities/node.dart';
 import 'package:project_knowledge/core/enums.dart';
+import 'package:project_knowledge/core/graph/terrain_graph.dart';
 import 'package:project_knowledge/core/pack/pack_reader.dart';
 import 'package:project_knowledge/core/pack/skeleton_pack.dart';
 import 'package:project_knowledge/main.dart';
@@ -66,10 +68,73 @@ void main() {
         expect(skeleton.paths.length, skeleton.nodeCount);
         continue;
       }
+      if (content.pack.hasKind(PackKind.terrain)) {
+        // 地形包**没有节点**（`ADR-0005` 决策 4：它只装边，边指向别的包的
+        // 节点）⇒ 拿「有没有可学节点」判它，等于逼装配器造假数据。
+        // 该判的反过来是「它到底有没有边」：一个没有边的地形包装上也什么都不做。
+        expect(content.nodes, isEmpty, reason: '${file.path} 是地形包，不该有节点');
+        expect(
+          content.edges.whereType<PrerequisiteEdge>(),
+          isNotEmpty,
+          reason: '${file.path} 是地形包，却一条先修边都没有',
+        );
+        continue;
+      }
       expect(
         content.learnableNodes,
         isNotEmpty,
         reason: '${file.path} 里没有可学节点 —— 装上也学不到东西',
+      );
+    }
+  });
+
+  test('真实地形包与载荷包合成后无跨包环，且强度与必学集合一致（SPEC-FND-005）', () {
+    // 这一条盯「跨包合成」在**真实数据**上成立。`TC-FND-021`–`026` 用的是合成
+    // 夹具，证明的是「按规格工作」；这里证明的是「管线真能产出一个跨包的地形包、
+    // 装载层合得起来」—— 两者的证据力不同。
+    //
+    // **缺地形包就 fail，不 skip**：`pack.json` 不入库，skip 会让「忘了跑
+    // assemble_terrain.py」表现成绿灯，而它正是这条用例的唯一输入。
+    final File terrainFile = File('../content/terrain/pack.json');
+    if (!terrainFile.existsSync()) {
+      fail(
+        '缺少真实地形包 ../content/terrain/pack.json —— '
+        '先跑 `python content/tools/assemble_terrain.py`。',
+      );
+    }
+
+    final List<PackContent> packs = Directory('../content')
+        .listSync()
+        .whereType<Directory>()
+        .map((Directory dir) => File('${dir.path}/pack.json'))
+        .where((File file) => file.existsSync())
+        .map((File file) => readPack(file.readAsStringSync()))
+        .toList();
+
+    final TerrainGraph graph = TerrainGraph.of(packs);
+
+    // 跨包环只在合图之后看得见：单看任何一边都只是一条普通边（`B15` 笔 3）。
+    expect(graph.cycles, isEmpty, reason: '真实包合成后出现跨包环');
+
+    String prefixOf(String id) => id.split(':').first;
+    final List<PrerequisiteEdge> crossing = graph.edges
+        .whereType<PrerequisiteEdge>()
+        .where((PrerequisiteEdge e) => prefixOf(e.fromId) != prefixOf(e.toId))
+        .toList();
+    expect(crossing, isNotEmpty, reason: '地形包里没有跨包边 —— 那它就不是地形包');
+
+    // 断的是**不变量**而不是本批那条边的取值：进不进必学集合必须与强度一致。
+    // 写死「首条边是 recommended」会随数据改动就红，而它管的是另一件事。
+    for (final PrerequisiteEdge edge in crossing) {
+      final bool inRequired = graph.requiredEdges.any(
+        (PrerequisiteEdge e) => e.fromId == edge.fromId && e.toId == edge.toId,
+      );
+      expect(
+        inRequired,
+        edge.isRequired,
+        reason:
+            '${edge.fromId} → ${edge.toId}：强度是 ${edge.strength.name}，'
+            '但${inRequired ? '在' : '不在'}必学集合里',
       );
     }
   });
@@ -98,13 +163,21 @@ void main() {
     for (final LearnableNode node in content.learnableNodes) {
       final String? parent = content.parents.mainParentOf(node.id);
       expect(parent, isNotNull, reason: '${node.id} 没有主父 —— 树上挂不住');
-      expect(ids.contains(parent), isTrue, reason: '${node.id} 的主父 $parent 不在 nodes 里');
+      expect(
+        ids.contains(parent),
+        isTrue,
+        reason: '${node.id} 的主父 $parent 不在 nodes 里',
+      );
     }
   });
 
-  testWidgets('界面从真实产物渲染出行星系，而不是空态（SPEC-PACK-018）', (WidgetTester tester) async {
+  testWidgets('界面从真实产物渲染出行星系，而不是空态（SPEC-PACK-018）', (
+    WidgetTester tester,
+  ) async {
     final PackContent content = _load();
-    await tester.pumpWidget(WeltuhrApp(boot: () => PackBoot(packs: <PackContent>[content])));
+    await tester.pumpWidget(
+      WeltuhrApp(boot: () => PackBoot(packs: <PackContent>[content])),
+    );
 
     expect(find.text('尚未载入任何知识空间'), findsNothing);
     expect(find.text(content.pack.name), findsOneWidget);
@@ -114,8 +187,9 @@ void main() {
     // 这一条盯的是 `entries.json` → `pack.json` 这一跳。跳丢了不会有人发现：
     // 界面对空内容一律显示「暂无」，看起来跟「还没写」一模一样。
     final PackContent content = _load();
-    final List<NodeEntry> filled =
-        content.entries.where((NodeEntry e) => e.steps.isNotEmpty).toList();
+    final List<NodeEntry> filled = content.entries
+        .where((NodeEntry e) => e.steps.isNotEmpty)
+        .toList();
 
     expect(filled, isNotEmpty, reason: '一个带步骤的条目都没有 —— entries.json 没进产物');
     for (final NodeEntry entry in filled) {
@@ -123,7 +197,9 @@ void main() {
       expect(entry.body, isNotNull, reason: '${entry.nodeId} 有步骤却没有正文');
       expect(entry.estMinutes, isNotNull, reason: '${entry.nodeId} 有步骤却没有预计时长');
       expect(
-        entry.steps.every((EntryStep step) => step.instruction.trim().isNotEmpty),
+        entry.steps.every(
+          (EntryStep step) => step.instruction.trim().isNotEmpty,
+        ),
         isTrue,
         reason: '${entry.nodeId} 有空指令的步骤',
       );
@@ -135,8 +211,9 @@ void main() {
     // 全是「读 / 例」的配方跑得通、进度也涨，只是「学过就忘」不会被任何东西发现
     // ⇒ 只能在装载这一侧拦（同 `SPEC-STEP-027` 对自建方法的处置）。
     final PackContent content = _load();
-    final List<NodeEntry> withSteps =
-        content.entries.where((NodeEntry e) => e.steps.isNotEmpty).toList();
+    final List<NodeEntry> withSteps = content.entries
+        .where((NodeEntry e) => e.steps.isNotEmpty)
+        .toList();
 
     expect(withSteps, isNotEmpty);
     for (final NodeEntry entry in withSteps) {
@@ -174,8 +251,9 @@ void main() {
         entry.quiz.length,
         reason: '${entry.nodeId} 的断言数与题目数不等 —— 1:1 被破坏',
       );
-      final Set<String> criteriaIds =
-          entry.criteria.map((Criterion c) => c.id).toSet();
+      final Set<String> criteriaIds = entry.criteria
+          .map((Criterion c) => c.id)
+          .toSet();
       for (final QuizItem item in entry.quiz) {
         expect(
           criteriaIds.contains(item.criterionId),
@@ -188,7 +266,8 @@ void main() {
     // 「能说出：」是装配器在源数据没写断言时的兜底前缀。它还能出现，但不该
     // 一个人都不剩 —— 全剩说明没有一句断言是写出来的。
     final bool hasAuthored = paired.any(
-      (NodeEntry e) => e.criteria.any((Criterion c) => !c.statement.startsWith('能说出：')),
+      (NodeEntry e) =>
+          e.criteria.any((Criterion c) => !c.statement.startsWith('能说出：')),
     );
     expect(hasAuthored, isTrue, reason: '所有断言都是「能说出：+答案」的模板兜底，没人写真的断言');
   });
@@ -201,7 +280,11 @@ void main() {
     );
     final Node node = content.nodeById[entry.nodeId]!;
 
-    await tester.pumpWidget(MaterialApp(home: PlanetScreen(content: content, node: node)));
+    await tester.pumpWidget(
+      MaterialApp(
+        home: PlanetScreen(content: content, node: node),
+      ),
+    );
 
     expect(find.text('暂无（本包不含步骤）'), findsNothing);
     expect(find.textContaining(entry.steps.first.instruction), findsOneWidget);
