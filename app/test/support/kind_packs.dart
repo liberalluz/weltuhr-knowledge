@@ -14,6 +14,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:project_knowledge/core/enums.dart';
 import 'package:project_knowledge/core/json.dart';
 import 'package:project_knowledge/core/pack/pack_reader.dart';
 
@@ -54,3 +55,42 @@ String _mutate(String root, void Function(JsonMap pack) change) {
 
 String mutateM3(void Function(JsonMap pack) change) => _mutate(m3Root, change);
 String mutateM4(void Function(JsonMap pack) change) => _mutate(m4Root, change);
+
+/// 在 M4 上派生一个地形包原文：边由入参给，`terrain.edge_counts` 由边集**现算**。
+///
+/// 只换 `plugin_id` / `namespace` / `name` / `deps` / `edges` / `terrain` 六处，
+/// 其余字段与 M4 逐字相同 —— 夹具「反例只差一处」是本项目的硬要求。
+///
+/// `edge_counts` 不手写：手写就会与边集漂移，而 `TC-FND-016`–`017` 抓的正是
+/// 「摘要与实扫不符」。这里让摘要跟着边集走，用例只表达「边怎么摆」。
+String m4VariantJson({
+  required String pluginId,
+  required List<({String from, String to, EdgeStrength strength})> edges,
+}) => mutateM4((JsonMap pack) {
+  final int required = edges
+      .where(
+        (({String from, String to, EdgeStrength strength}) edge) =>
+            edge.strength == EdgeStrength.required,
+      )
+      .length;
+  pack['plugin_id'] = pluginId;
+  pack['namespace'] = pluginId;
+  pack['name'] = 'M4 地形变体（$pluginId）';
+  pack['deps'] = <Object?>[];
+  pack['edges'] = <Object?>[
+    for (final ({String from, String to, EdgeStrength strength}) edge in edges)
+      <String, Object?>{
+        'type': 'prerequisite',
+        'from_id': edge.from,
+        'to_id': edge.to,
+        'strength': edge.strength.name,
+      },
+  ];
+  pack['terrain'] = <String, Object?>{
+    'edge_counts': <String, Object?>{
+      'required': required,
+      'recommended': edges.length - required,
+    },
+    'axes_covered': <String>['major'],
+  };
+});

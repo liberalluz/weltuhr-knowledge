@@ -4,9 +4,15 @@
 /// 于是「四类包可装可卸」这条出口判据没有一行承载代码。本类把它接起来，
 /// 并且只接「装 / 卸」两件事 —— 不建「已安装包注册表文件」，也不做依赖求解。
 ///
-/// ## 五个阶段，任一阶段有问题就一个字节都不写
+/// ## 六个阶段，任一阶段有问题就一个字节都不写
 ///
-/// 探测 → 解析 → 三元校验（`validatePack`）→ 台账冲突（`P-16` / `P-14`）→ 落盘。
+/// 探测 → 解析 → 三元校验（`validatePack`）→ **跨包环** → 台账冲突（`P-16` /
+/// `P-14`）→ 落盘。
+///
+/// **跨包环是第四阶段、只对 `terrain` 包做**（`B15` 笔 3）：先修边由决策 4 独立
+/// 成包、且跨轴，`pack_reader` 的单包视角看不见 `A 的 i → B 的 j` 与
+/// `B 的 j → A 的 i` 同时成立。合图与判环在 [`TerrainGraph`]，本类只在装
+/// `kind` 含 `terrain` 的包时调用它一次。
 ///
 /// **半装比不装更糟**：装了半个包，界面显示一半内容，而卸载时按「全装」清账 ——
 /// 于是下一次装同一个包，遇到的是自己上次留下的半份账。
@@ -30,6 +36,7 @@ import '../entities/pack.dart';
 import '../entities/path_claims.dart';
 import '../enums.dart';
 import '../graph/parent_index.dart';
+import '../graph/terrain_graph.dart';
 import '../json.dart';
 import '../storage/claim_ledger.dart';
 import '../storage/store_fs.dart';
@@ -173,10 +180,8 @@ class PackLoader {
     final List<String> problems = <String>[];
 
     // ① 探测。位置可能是上一次扫描的产物，装之前再看一眼 —— 磁盘会变。
-    final ProbeResult probe = PackProbe(packFs).probePack(
-      location.packRoot,
-      location.kind,
-    );
+    final ProbeResult probe = PackProbe(packFs)
+        .probePack(location.packRoot, location.kind);
     for (final PackProblem problem in probe.problems) {
       problems.add(_probeProblemText(problem));
     }
@@ -186,9 +191,7 @@ class PackLoader {
 
     final String? text = packFs.readString(location.packPath);
     if (text == null) {
-      problems.add(
-        '`${location.packPath}` 刚才还读得出、现在读不出来了 —— 装包中止',
-      );
+      problems.add('`${location.packPath}` 刚才还读得出、现在读不出来了 —— 装包中止');
       return InstallResult.failed(problems);
     }
 
@@ -220,7 +223,30 @@ class PackLoader {
       paths = validation.paths;
     }
 
-    // ④ 台账冲突。**按算出来的 `path` 全表查**，而不是只查 `path_reservations[]`：
+    // ④ 跨包环。**只对 `terrain` 包做** —— 地形边跨包（决策 4），而 `pack_reader`
+    //    的环检测只看单个包：`A 的 i → B 的 j` 与 `B 的 j → A 的 i` 从任何一边看
+    //    都只是普通边。合的是「已装包 + 本包」，所以在装第二个包时才有机会成环。
+    //    解析阶段已经拒过包内环，因此这里报出来的都是跨包环。
+    if (pack.hasKind(PackKind.terrain)) {
+      final List<PackContent> graphPacks = <PackContent>[
+        for (final InstalledPack installed in _installed.values)
+          installed.content,
+        content,
+      ];
+      final List<List<String>> cycles = TerrainGraph.of(graphPacks).cycles;
+      if (cycles.isNotEmpty) {
+        for (final List<String> cycle in cycles) {
+          problems.add(
+            '跨包 `⪯` 成环：${cycle.join(" → ")}'
+            '（判于装 `${pack.pluginId}` 之前：本包与已装 '
+            '${graphPacks.length - 1} 个包的先修边合图；`SPEC-FND-005` 要求 DAG）',
+          );
+        }
+        return InstallResult.failed(problems);
+      }
+    }
+
+    // ⑤ 台账冲突。**按算出来的 `path` 全表查**，而不是只查 `path_reservations[]`：
     //    后者声明的是本包将要占用的 `(父, slug)`，与这张表重合；对着一张更全的
     //    表查，比对着声明的子集查更严，且同样是 O(n) —— 而漏查的后果是
     //    「两个包共用一个 path」，正是 `P-14` 存在要挡的那件事。
@@ -256,7 +282,7 @@ class PackLoader {
       return InstallResult.failed(problems);
     }
 
-    // ⑤ 落盘。台账不可变 ⇒ 写失败时盘上与内存里都还是旧的那份。
+    // ⑥ 落盘。台账不可变 ⇒ 写失败时盘上与内存里都还是旧的那份。
     //    非载荷包没有 claim 可写（`paths` 为空）—— 那就一个字节都不碰盘：
     //    「什么都没改也重写一遍」会让文件时间戳说谎。
     final ClaimLedger next = ledger.withClaims(wanted.values);
@@ -357,7 +383,6 @@ class PackLoader {
     PackProblemKind.missingPack =>
       '`${problem.path}` 不存在 —— 一个包 = 一个目录 + 一个 `pack.json`'
           '（`SPEC-PACK-018`）',
-    PackProblemKind.unreadable =>
-      '`${problem.path}` 在但读不出来（权限 / 非 UTF-8）',
+    PackProblemKind.unreadable => '`${problem.path}` 在但读不出来（权限 / 非 UTF-8）',
   };
 }
