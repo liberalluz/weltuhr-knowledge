@@ -86,7 +86,7 @@ Direct `gh pr merge` without steps 1–3 is prohibited. Use the merge gate inste
 
 ### Scope guard
 
-Each batch records its approved paths in `.batch/<batch>/scope.json`. When `.batch/active` exists, `pre-push` runs `python3 infra/tool/batch/check.py` and refuses a push that leaves the approved set. A feature batch may not edit process files (`.githooks/**`, `.github/workflows/**`, `docs/specs/git-conventions.md`, `infra/tool/batch/**`); widening scope requires `--add <path> --reason <...> --yes` and a human-approved scope change. The hash in `approval` detects edits made after approval.
+Each batch records its approved paths in `.batch/<batch>/scope.json`. `pre-push` is **fail-closed** for non-main branch updates: without `.batch/active` it refuses the push, because there is no approved scope to compare. With an active batch it runs `python3 infra/tool/batch/check.py` and refuses a push that leaves the approved set. Deletions, tags, and `--range` replay are excluded. A feature batch may not edit process files (`.githooks/**`, `.github/workflows/**`, `docs/specs/git-conventions.md`, `infra/tool/batch/**`); widening scope requires `--add <path> --reason <...> --yes` and a human-approved scope change. The hash in `approval` detects edits made after approval. `git push --no-verify` remains the explicit bypass, not the normal path.
 
 ## 5. Roles
 

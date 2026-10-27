@@ -233,6 +233,7 @@ git config --get core.hooksPath       # 自查：应回显 .githooks
 | 同上 | CI | 同上 `repo-hygiene` 步骤 | 同一次 `--range` 调用，逐条校验 PR 新增提交 |
 | 提交前格式/空白（C6） | 本地 | [`.githooks/pre-commit`](../../.githooks/pre-commit) | 每次 `git commit`；暂存 Dart `dart format` / app `flutter analyze` / `git diff --cached --check`；同一句 `core.hooksPath` |
 | 推 `main` 必走 PR（§二 / §4.1） | 本地 | [`.githooks/pre-push`](../../.githooks/pre-push) | 每次 `git push`；同一句 `core.hooksPath` |
+| 非 main 分支必须有 active batch（C16） | 本地 | 同 `.githooks/pre-push` | 每次 `git push`；无 `.batch/active` 直接拒；删除 / tag / `--range` 除外 |
 | 同上 | CI | `repo-hygiene` 的「main 只接受 PR」步骤 | 只在 push 到 `main` 时；PR 事件不跑 |
 | tag 命名（§五） | 本地 | 同 `.githooks/pre-push` | 每次 `git push`；只放行 `vX.Y.Z` · `pack/<space>/vX.Y.Z`，其余拒；删除放行 |
 | 同上 | CI | — | **无**：`on.push` 只挂 `branches: [main]`，推 tag 不触发 workflow |
