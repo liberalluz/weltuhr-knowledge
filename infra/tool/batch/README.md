@@ -50,14 +50,18 @@ C2 adds the human-owned card and the start step; `status` remains read-only.
 python3 infra/tool/batch/batch.py plan B15-2 --type feat --goal "..." \
   --allowed "app/lib/features/terrain/**" --acceptance "TC-FND-016..020 pass"
 
+# Multi-agent: let the CLI allocate YYYYMMDD-<6 hex>
+python3 infra/tool/batch/batch.py plan --auto-id --type feat --goal "..."
+
 # Human approval: chat-confirmed, hash-locked
 python3 infra/tool/batch/batch.py approve B15-2 --chat --confirm <hash8>
 
 # Create branch (unless --no-branch), state.json, scope.json and .batch/active
 python3 infra/tool/batch/batch.py start B15-2
 
+# Active batch is the only writable batch; status shows Active/Owner.
+# start refuses to overwrite another active batch or an existing remote branch.
 python3 infra/tool/batch/batch.py status
-python3 infra/tool/batch/batch.py status --batch M2 --json
 python3 infra/tool/batch/batch.py list
 ```
 

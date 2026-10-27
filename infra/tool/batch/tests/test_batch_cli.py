@@ -3,6 +3,7 @@ from __future__ import annotations
 import contextlib
 import io
 import json
+import re
 import sys
 import tempfile
 import unittest
@@ -154,6 +155,97 @@ class ListTests(unittest.TestCase):
             code, out = run(["--root", tmp, "list"])
             self.assertEqual(code, 0)
             self.assertIn("no batches", out)
+
+
+class OccupancyTests(unittest.TestCase):
+    def test_plan_auto_id(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            code, out = run(
+                [
+                    "--root",
+                    str(root),
+                    "plan",
+                    "--auto-id",
+                    "--type",
+                    "process",
+                    "--goal",
+                    "x",
+                    "--allowed",
+                    "infra/**",
+                ]
+            )
+            self.assertEqual(code, 0)
+            match = re.search(r"\d{8}-[0-9a-f]{6}", out)
+            self.assertIsNotNone(match)
+            self.assertTrue((root / match.group(0) / "card.yaml").exists())
+
+    def test_start_refuses_other_active(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            target1 = root / "B1"
+            target1.mkdir()
+            write_approved_card(target1)
+            self.assertEqual(run(["--root", str(root), "start", "B1", "--no-branch"])[0], 0)
+
+            target2 = root / "B2"
+            target2.mkdir()
+            approved = card.approve_card(
+                {
+                    "batch": "B2",
+                    "type": "process",
+                    "goal": "test",
+                    "branch": "process/b2",
+                    "base": "main",
+                    "allowed": ["infra/**"],
+                },
+                "tester",
+            )
+            card.write_card(target2 / "card.yaml", approved)
+            code, out = run(["--root", str(root), "start", "B2", "--no-branch"])
+            self.assertEqual(code, 1)
+            self.assertIn("active batch is B1", out)
+            self.assertIn("B1", (root / "active").read_text(encoding="utf-8"))
+
+    def test_status_reports_active(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            target = write_state(root)
+            (root / "active").write_text(str(target), encoding="utf-8")
+            code, out = run(["--root", str(root), "status", "--batch", "B1"])
+            self.assertEqual(code, 0)
+            self.assertIn("Active: yes", out)
+
+    def test_list_marks_active_and_orders_latest(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            first = write_state(root, "B1")
+            second = write_state(root, "B2")
+            (first / "state.json").write_text(
+                json.dumps(
+                    {
+                        "batch": "B1",
+                        "type": "process",
+                        "created_at": "2026-10-01T00:00:00+00:00",
+                    }
+                ),
+                encoding="utf-8",
+            )
+            (second / "state.json").write_text(
+                json.dumps(
+                    {
+                        "batch": "B2",
+                        "type": "process",
+                        "created_at": "2026-10-02T00:00:00+00:00",
+                    }
+                ),
+                encoding="utf-8",
+            )
+            (root / "active").write_text(str(second), encoding="utf-8")
+            code, out = run(["--root", str(root), "list"])
+            self.assertEqual(code, 0)
+            self.assertIn("* B2", out)
+            self.assertLess(out.index("* B2"), out.index("B1"))
 
 
 if __name__ == "__main__":

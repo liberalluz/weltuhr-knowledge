@@ -19,6 +19,7 @@ import argparse
 import getpass
 import json
 import os
+import secrets
 import shutil
 import subprocess
 import sys
@@ -74,6 +75,31 @@ def load_json(path: Path) -> dict[str, Any] | None:
 
 def root_path(root: Path) -> Path:
     return root if root.is_absolute() else REPO_ROOT / root
+
+
+def active_batch(root: Path) -> Path | None:
+    active = root / "active"
+    if not active.exists():
+        return None
+    try:
+        value = active.read_text(encoding="utf-8").strip()
+    except OSError:
+        return None
+    if not value:
+        return None
+    candidate = Path(value)
+    if not candidate.is_absolute():
+        candidate = REPO_ROOT / candidate
+    return candidate if candidate.is_dir() else None
+
+
+def generate_batch_id(root: Path) -> str:
+    prefix = datetime.now().strftime("%Y%m%d")
+    for _ in range(50):
+        candidate = f"{prefix}-{secrets.token_hex(3)}"
+        if not (root / candidate).exists():
+            return candidate
+    raise RuntimeError("could not allocate a free batch id")
 
 
 def resolve_batch(root: Path, batch_id: str | None) -> Path | None:
@@ -168,12 +194,17 @@ def batch_payload(batch_dir: Path) -> dict[str, Any]:
     if stage == "pr" and not evidence_ok:
         stage = "check"
 
+    active_dir = active_batch(batch_dir.parent)
+    is_active = active_dir is not None and active_dir.resolve() == batch_dir.resolve()
+
     return {
         "batch": state.get("batch") or (card or {}).get("batch") or batch_dir.name,
         "type": state.get("type")
         or (card or {}).get("type")
         or (scope or {}).get("type")
         or "(unknown)",
+        "active": is_active,
+        "owner": state.get("owner") or "(unknown)",
         "stateDir": str(batch_dir),
         "branch": state.get("branch") or (card or {}).get("branch") or current_branch(),
         "base": base or (card or {}).get("base") or "(unknown)",
@@ -219,6 +250,8 @@ def render_status(payload: dict[str, Any]) -> str:
     lines = [
         f"Batch: {payload['batch']} ({payload['type']})",
         f"State: {payload['stateDir']}",
+        f"Active: {'yes' if payload.get('active') else 'no'}",
+        f"Owner: {payload.get('owner')}",
         f"Branch: {payload['branch']}",
         f"Base: {payload['base']}",
         f"Changed: {len(payload['changed'])} paths",
@@ -775,11 +808,19 @@ def command_check(args: argparse.Namespace) -> int:
 
 def command_plan(args: argparse.Namespace) -> int:
     root = root_path(args.root)
-    target = root / args.batch_id
+    if args.auto_id and args.batch_id:
+        print("--auto-id cannot be combined with an explicit batch id", file=sys.stderr)
+        return 2
+    generated = args.batch_id is None
+    batch_id = args.batch_id or generate_batch_id(root)
+    args.batch_id = batch_id
+    target = root / batch_id
     card_path = target / "card.yaml"
     if card_path.exists() and not args.force:
         print(f"card already exists: {card_path} (use --force to replace draft)", file=sys.stderr)
         return 1
+    if generated:
+        print(f"batch id: {batch_id}")
 
     branch = args.branch or (
         f"process/{args.batch_id}" if args.type == "process" else f"{args.type}/{args.batch_id}"
@@ -890,6 +931,27 @@ def command_start(args: argparse.Namespace) -> int:
         print("card.branch is required", file=sys.stderr)
         return 1
 
+    occupied = active_batch(root)
+    if occupied is not None and occupied.resolve() != target.resolve():
+        print(
+            f"active batch is {occupied.name}; finish it before starting {args.batch_id}",
+            file=sys.stderr,
+        )
+        print("one .batch/active at a time; do not overwrite another agent's batch", file=sys.stderr)
+        return 1
+
+    if not args.no_branch:
+        if run_git(["remote", "get-url", "origin"])[0] == 0:
+            code, out, _ = run_git(
+                ["ls-remote", "--heads", "origin", f"refs/heads/{branch}"]
+            )
+            if code == 0 and out.strip():
+                print(
+                    f"remote branch already exists: {branch}; another clone may hold this batch",
+                    file=sys.stderr,
+                )
+                return 1
+
     if not args.no_branch:
         exists = run_git(["rev-parse", "--verify", "--quiet", f"refs/heads/{branch}"])[0] == 0
         if exists:
@@ -910,6 +972,7 @@ def command_start(args: argparse.Namespace) -> int:
         "type": card.get("type"),
         "branch": branch,
         "base": base,
+        "owner": getpass.getuser(),
         "created_at": datetime.now(timezone.utc).isoformat(),
     }
     target.mkdir(parents=True, exist_ok=True)
@@ -961,9 +1024,10 @@ def command_status(args: argparse.Namespace) -> int:
 
 def command_list(args: argparse.Namespace) -> int:
     root = root_path(args.root)
+    current_active = active_batch(root)
     rows: list[dict[str, Any]] = []
     if root.is_dir():
-        for child in sorted(root.iterdir(), key=lambda path: path.name):
+        for child in root.iterdir():
             if child.is_dir() and any(
                 (child / name).exists() for name in ("state.json", "scope.json", "card.yaml")
             ):
@@ -974,15 +1038,21 @@ def command_list(args: argparse.Namespace) -> int:
                         "batch": state.get("batch") or child.name,
                         "type": state.get("type") or scope.get("type") or "(unknown)",
                         "dir": str(child),
+                        "createdAt": state.get("created_at") or "",
+                        "active": current_active is not None
+                        and current_active.resolve() == child.resolve(),
                     }
                 )
+    rows.sort(key=lambda row: (row["createdAt"], row["batch"]), reverse=True)
     if args.json:
         print(json.dumps(rows, ensure_ascii=False, indent=2))
     elif rows:
         for row in rows:
-            print(f"{row['batch']}\t{row['type']}\t{row['dir']}")
+            marker = "*" if row["active"] else " "
+            print(f"{marker} {row['batch']}\t{row['type']}\t{row['dir']}")
     else:
         print(f"no batches under {root}")
+    return 0
     return 0
 
 
@@ -992,7 +1062,8 @@ def build_parser() -> argparse.ArgumentParser:
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     plan = subparsers.add_parser("plan", help="write a draft card.yaml")
-    plan.add_argument("batch_id")
+    plan.add_argument("batch_id", nargs="?")
+    plan.add_argument("--auto-id", action="store_true", help="generate YYYYMMDD-<6 hex>")
     plan.add_argument("--type", required=True)
     plan.add_argument("--goal", default="")
     plan.add_argument("--allowed", action="append", default=[])
