@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 # 推到 main 的提交必须带 PR 编号 —— 本地 hook 与 CI **共用同一份逻辑**。
 #
-# 判据取 docs/specs/git-conventions.md §二 / §4.1：
-#   `main` 只接受 PR 合入；唯一例外 = 仓库初始化首提。
+# 判据取 docs/specs/git-conventions.md：
+#   §二 / §4.1 —— `main` 只接受 PR 合入；唯一例外 = 仓库初始化首提。
+#   §2.2       —— 非 main 分支必须有 active 批次，且推送路径落在该批 scope 内。
 #
 # ── 为什么判「带 (#NNN)」而不是「拒绝一切 push main」────────────────
 # `(#NNN)` 不是提交对象上的字段，而是 squash 合并时由平台写进标题的**纯文本** ——
@@ -216,7 +217,7 @@ else
   done
 fi
 
-# ── 第三条：当前 batch 的 scope guard ───────────────────────────────
+# ── 第四条：当前 batch 的 scope guard ───────────────────────────────
 # 非 main 分支的真实推送必须有 active batch；没有就 fail-closed，不再静默跳过。
 # 删除分支、tag、`--range` 回放不在此列。--quick 只比路径，不跑测试。
 if [ "$mode" != '--range' ] && [ "$PUSHED_BRANCH" -eq 1 ]; then
@@ -224,7 +225,7 @@ if [ "$mode" != '--range' ] && [ "$PUSHED_BRANCH" -eq 1 ]; then
     echo '' >&2
     echo 'FAIL 没有 .batch/active：不知道本分支的 approved scope，pre-push 拒绝。' >&2
     echo '先建批次：' >&2
-    echo '  python3 infra/tool/batch/batch.py plan <id> --type <process|feat> ...' >&2
+    echo '  python3 infra/tool/batch/batch.py plan --auto-id --type <process|feat> ...' >&2
     echo '  python3 infra/tool/batch/batch.py approve <id> --chat --confirm <hash8>' >&2
     echo '  python3 infra/tool/batch/batch.py start <id>' >&2
     echo '明确绕过（仅在你知道风险时）：git push --no-verify' >&2
@@ -252,9 +253,8 @@ if [ "$FAIL" -ne 0 ]; then
   echo '' >&2
   if [ "$FAIL_MAIN" -ne 0 ]; then
     echo '推 main 的提交必须是 PR squash 合并的产物（标题带 `(#PR号)`）。' >&2
-    echo '走法：git switch -c <type>/<topic> → commit → git push origin <branch> →' >&2
-    echo '      gh pr create → gh pr merge --squash --delete-branch' >&2
-    echo '判据出处：docs/specs/git-conventions.md §二 / §3.4 / §4.1。' >&2
+    echo '走法：batch.py plan → approve → start → 改 → commit → push → batch.py pr → batch.py merge' >&2
+    echo '判据出处：docs/specs/git-conventions.md §2.2 / §二 / §3.4 / §4.1。' >&2
   fi
   if [ "$FAIL_REF" -ne 0 ]; then
     echo '远端只收分支与 §五 命名的 tag；其余引用类型一律不推。' >&2

@@ -32,9 +32,7 @@ MAX=72
 # ⚠️ 四个正则必须放进变量再用。直接写进 `[[ s =~ ... ]]` 时，bash 会把正则里的
 # `[^)]` 当成条件表达式的右括号来解析，报 `syntax error ... unexpected token )`
 # —— 这个坑只在对 `[[ ]]` 里内联的正则成立，走变量就绕开了。
-# scope 段**没有** `?`：§3.2 自 2026-10-25 起必填。可省略的写法放行了
-# `docs: …` 这类标题，而它与 `docs(docs): …` 在 `git log` 里看不出区别，
-# 只能靠 review 发现 —— 判据不拦的东西，就是没有判据。
+# scope 段**没有** `?`：scope 必填，取 SCOPES 六值之一。
 HEADER_RE="^(${TYPES})\([a-z/]+\)!?:\ .+\$"
 # 只为「缺 scope」这一种失败给准确的错误信息：形态匹配不上时再用它分一次流。
 NO_SCOPE_RE="^(${TYPES})!?:\ .+\$"
@@ -240,7 +238,7 @@ fi
 
 if [ "$FAIL" -ne 0 ]; then
   echo '' >&2
-  echo '提交信息不符合 docs/specs/git-conventions.md §3。改正后无需重跑测试。' >&2
+  echo '提交信息不符合 docs/specs/git-conventions.md §三（3.1–3.3）。改正后无需重跑测试。' >&2
   exit 1
 fi
 exit 0
