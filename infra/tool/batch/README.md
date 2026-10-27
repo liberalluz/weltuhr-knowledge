@@ -137,6 +137,16 @@ It delegates the actual checks to `merge.py`; on success it writes
 `batch status` then reports `Stage: merged`. The direct `merge.py` command
 remains the low-level gate.
 
+## Skill lint
+
+`.agents/skills/` 的六个技能由 `skill_lint.py` 校验 frontmatter 与 `## Owner` / `## 示例` / `## 自检`：
+
+```bash
+python3 -B infra/tool/batch/skill_lint.py
+```
+
+`batch check` 在 `.agents/skills/` 有改动时会自动跑这一步。
+
 ## Tests
 
 ```bash
