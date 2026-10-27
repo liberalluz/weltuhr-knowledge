@@ -83,8 +83,6 @@ Design decisions and the rejected alternatives behind them: [docs/decisions/](do
 
 Branch naming, commit format, pull requests and the review threshold are in [.github/CONTRIBUTING.md](.github/CONTRIBUTING.md).
 
-Maintainer: liberal
-
 ## Security
 
 Report vulnerabilities through the private channel described in [.github/SECURITY.md](.github/SECURITY.md). Please do not open a public issue for a security problem.
