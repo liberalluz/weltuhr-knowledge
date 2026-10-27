@@ -357,6 +357,25 @@ def python_command() -> str:
     return "python"
 
 
+def display_path(value: str | Path) -> str:
+    """Render a path the way a reader should see it, never as a host absolute path.
+
+    Commands are executed with whatever absolute path the platform needs; only
+    the text written to evidence.log and printed by --dry-run goes through here.
+    """
+    text = str(value)
+    if not os.path.isabs(text):
+        return text
+    try:
+        return Path(text).resolve().relative_to(REPO_ROOT).as_posix() or "."
+    except ValueError:
+        return Path(text).name
+
+
+def display_command(command: Sequence[str]) -> str:
+    return " ".join(display_path(part) for part in command)
+
+
 def planned_steps(
     changed: Sequence[str],
     base: str,
@@ -935,7 +954,7 @@ def command_check(args: argparse.Namespace) -> int:
 
     if args.dry_run:
         for name, command, cwd in steps:
-            print(f"[plan] {name}: {' '.join(command)} (cwd={cwd})")
+            print(f"[plan] {name}: {display_command(command)} (cwd={display_path(cwd)})")
         return 0 if scope_ok else 1
 
     lines = [
@@ -957,7 +976,7 @@ def command_check(args: argparse.Namespace) -> int:
             ok = code == 0
             overall = overall and ok
             print(f"[{'ok' if ok else 'FAIL'}] {name} (exit {code})")
-            lines.append(f"$ {' '.join(command)}")
+            lines.append(f"$ {display_command(command)}")
             lines.append(f"exit={code}")
             if out.strip():
                 lines.append(out[-4000:])
