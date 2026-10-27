@@ -1,6 +1,6 @@
 [English](README.md) · [简体中文](README.zh-CN.md) · [Deutsch](README.de.md) · [Italiano](README.it.md) · **日本語** · [Français](README.fr.md)
 
-> ルートの [README.md](README.md) @ d888a44 が正です。本訳はその版に対応します。
+> ルートの [README.md](README.md) @ 87e7c74 が正です。本訳はその版に対応します。
 
 # Weltuhr
 
@@ -85,12 +85,10 @@ cd ../app && flutter run -d windows
 
 ブランチ名、コミットの形式、プルリクエスト、レビューのしきい値は [.github/CONTRIBUTING.md](.github/CONTRIBUTING.md) にあります。
 
-メンテナー：liberal
-
 ## セキュリティ
 
 脆弱性は [.github/SECURITY.md](.github/SECURITY.md) に記載の非公開の窓口から報告してください。セキュリティの問題で公開 issue を立てないでください。
 
 ## ライセンス
 
-Apache-2.0 — [LICENSE](LICENSE) と [NOTICE](NOTICE) をご覧ください。
+[Apache-2.0](LICENSE) に基づいて提供されます。著作者表示は [NOTICE](NOTICE) をご覧ください。

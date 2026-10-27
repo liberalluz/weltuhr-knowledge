@@ -1,6 +1,6 @@
 [English](README.md) · [简体中文](README.zh-CN.md) · [Deutsch](README.de.md) · **Italiano** · [日本語](README.ja.md) · [Français](README.fr.md)
 
-> Fa fede la versione inglese [README.md](README.md) @ d888a44; questa traduzione corrisponde a quella versione.
+> Fa fede la versione inglese [README.md](README.md) @ 87e7c74; questa traduzione corrisponde a quella versione.
 
 # Weltuhr
 
@@ -85,12 +85,10 @@ Le decisioni di progetto e le alternative scartate: [docs/decisions/](docs/decis
 
 Nomi dei branch, formato dei commit, pull request e soglia di revisione sono in [.github/CONTRIBUTING.md](.github/CONTRIBUTING.md).
 
-Manutentore: liberal
-
 ## Sicurezza
 
 Segnala le vulnerabilità tramite il canale riservato descritto in [.github/SECURITY.md](.github/SECURITY.md). Non aprire una issue pubblica per un problema di sicurezza.
 
 ## Licenza
 
-Apache-2.0 — vedi [LICENSE](LICENSE) e [NOTICE](NOTICE).
+Rilasciato sotto [Apache-2.0](LICENSE); vedi [NOTICE](NOTICE) per l'attribuzione.

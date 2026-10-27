@@ -1,6 +1,6 @@
 [English](README.md) · **简体中文** · [Deutsch](README.de.md) · [Italiano](README.it.md) · [日本語](README.ja.md) · [Français](README.fr.md)
 
-> 以根 [README.md](README.md) @ d888a44 为准，本译文对应该版本。
+> 以根 [README.md](README.md) @ 87e7c74 为准，本译文对应该版本。
 
 # Weltuhr
 
@@ -84,12 +84,10 @@ cd ../app && flutter run -d windows
 
 分支命名、提交格式、Pull Request 与评审门槛见 [.github/CONTRIBUTING.md](.github/CONTRIBUTING.md)。
 
-维护者：liberal
-
 ## 安全
 
 安全漏洞请按 [.github/SECURITY.md](.github/SECURITY.md) 描述的私密渠道报告，请勿为安全问题开公开 issue。
 
 ## 许可
 
-Apache-2.0 —— 见 [LICENSE](LICENSE) 与 [NOTICE](NOTICE)。
+依 [Apache-2.0](LICENSE) 授权；署名要求见 [NOTICE](NOTICE)。
