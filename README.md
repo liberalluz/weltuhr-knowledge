@@ -83,12 +83,10 @@ Design decisions and the rejected alternatives behind them: [docs/decisions/](do
 
 Branch naming, commit format, pull requests and the review threshold are in [.github/CONTRIBUTING.md](.github/CONTRIBUTING.md).
 
-Maintainer: liberal
-
 ## Security
 
 Report vulnerabilities through the private channel described in [.github/SECURITY.md](.github/SECURITY.md). Please do not open a public issue for a security problem.
 
 ## License
 
-Apache-2.0 — see [LICENSE](LICENSE) and [NOTICE](NOTICE).
+Licensed under [Apache-2.0](LICENSE); see [NOTICE](NOTICE) for attribution.

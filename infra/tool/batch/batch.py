@@ -492,15 +492,26 @@ def build_pr_body(card: dict[str, Any], changed: Sequence[str], evidence_text: s
         [
             f"- **类型**：{card.get('type') or '(unknown)'}",
             "- **兼容与回滚**：无",
-            "- **技术栈**：",
-            "",
-            "| 模块 | 是否改动 | 说明 |",
-            "|---|---|---|",
-            *[
-                f"| {stack} | {'是' if stack in stacks else '否'} | "
-                f"{'本批有改动' if stack in stacks else '未改动'} |"
-                for stack in ("app", "server", "content", "infra")
-            ],
+        ]
+    )
+    # The tech-stack group only appears when the diff spans >= 2 stacks; a 0- or
+    # 1-stack batch leaves it out entirely (the hook judges both directions).
+    if len(stacks) >= 2:
+        lines.extend(
+            [
+                "- **技术栈**：",
+                "",
+                "| 模块 | 是否改动 | 说明 |",
+                "|---|---|---|",
+                *[
+                    f"| {stack} | {'是' if stack in stacks else '否'} | "
+                    f"{'本批有改动' if stack in stacks else '未改动'} |"
+                    for stack in ("app", "server", "content", "infra")
+                ],
+            ]
+        )
+    lines.extend(
+        [
             "",
             "## 自审留痕",
             "",

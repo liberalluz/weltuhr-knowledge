@@ -337,15 +337,18 @@ check_body() {
     fi
   fi
 
-  # 6 — tech-stack table under 影响面. Structure is always checked; the "是" rows
-  # are verified against the real diff when a base is given.
-  local files stacks n st found val sv
+  # 6 — Tech-stack field and table appear only when the diff spans >= 2 stacks.
+  # Shape is checked whenever they appear; the stack count and the "是" rows are
+  # verified against the real diff when a base is given. Without a base the stack
+  # count is unknown, so only shape is judged.
+  local files stacks n st found val sv has_field=0
   if [ -n "$diff_base" ]; then
     files=$(git diff --name-only "${diff_base}...HEAD" 2>/dev/null)
   else
     files=""
   fi
   if field_line "技术栈"; then
+    has_field=1
     field_value "技术栈"
     [ -z "$FR" ] || bad '技术栈 是组名行，不写值（值全在表里）'
   fi
@@ -356,6 +359,12 @@ check_body() {
   done
   if [ "$dr" -ne 0 ]; then
     bad '技术栈表出现 docs 行：docs 不是技术栈目录'
+  fi
+  if [ "$th" -ne 0 ] && [ "$has_field" -eq 0 ]; then
+    bad '技术栈表出现但缺字段行：技术栈'
+  fi
+  if [ "$has_field" -eq 1 ] && [ "$th" -eq 0 ]; then
+    bad '技术栈 字段出现但缺表（跨 <2 栈时字段与表整组不写）'
   fi
   if [ "$th" -ne 0 ]; then
     for st in app server content infra; do
@@ -384,11 +393,18 @@ check_body() {
           || bad "技术栈表标 ${st} 为「是」，但本次 diff 里没有 ${st}/ 路径"
       fi
     done
-  elif [ -n "$files" ]; then
+  fi
+  if [ -n "$files" ]; then
     stacks=$(printf '%s\n' "$files" | awk -F/ 'NF>1 { print $1 }' \
       | sort -u | grep -Ex 'app|server|content|infra' || true)
     n=$(printf '%s\n' "$stacks" | grep -c . || true)
-    [ "${n:-0}" -ge 2 ] && bad "跨 ${n} 个技术栈（$(printf '%s' "$stacks" | tr '\n' ' ')），缺影响面下的技术栈表"
+    if [ "${n:-0}" -ge 2 ]; then
+      if [ "$has_field" -eq 0 ] || [ "$th" -eq 0 ]; then
+        bad "跨 ${n} 个技术栈（$(printf '%s' "$stacks" | tr '\n' ' ')），影响面缺技术栈字段或四栈表"
+      fi
+    elif [ "$has_field" -eq 1 ] || [ "$th" -ne 0 ]; then
+      bad "本次 diff 落在 ${n:-0} 个技术栈（<2），技术栈字段与表应整组不写"
+    fi
   fi
 
   # 7 — 反证 must state what was not verified.
@@ -511,8 +527,10 @@ check_body() {
   [ "$nr" -eq 0 ] && ok 'PR 号均为显示链接'
 
   # 13 — field sets per section, platform group shape, AI level enum.
+  # 技术栈 is not listed here: check 6 owns it, because it only appears when the
+  # diff spans >= 2 stacks.
   local v13=$fail
-  for f in "平台" "类型" "兼容与回滚" "技术栈" \
+  for f in "平台" "类型" "兼容与回滚" \
            "命令与输出" "测试设计" \
            "级别"; do
     field_line "$f" || bad "缺字段：$f"
@@ -568,7 +586,7 @@ check_body() {
       *) bad "AI 参与 的级别须为 hint / assist / pair / copilot / auto，实得「${FR}」" ;;
     esac
   fi
-  [ "$fail" -eq "$v13" ] && ok '字段齐全（影响面四字段 / 验证 / AI / 平台组形态）'
+  [ "$fail" -eq "$v13" ] && ok '字段齐全（影响面三字段 / 验证 / AI / 平台组形态）'
 
   # 14 — 关联: eight-class closed set, one anchor per line, absent classes omitted.
   if section_bounds "## 关联"; then
@@ -636,6 +654,9 @@ self_test() {
   dir=$(mktemp -d)
   b1="$dir/good.md"
 
+  # The positive case keeps a 技术栈 group so that negatives 21 / 22 can be
+  # derived from it. No diff base is passed here, so the stack count is unknown
+  # and only the shape of that group is judged.
   cat > "$b1" <<'EOF'
 ## 变更摘要
 
@@ -681,7 +702,7 @@ self_test() {
   bash .githooks/pr-body --self-test
   ```
 
-- **测试设计**：正例 1 条 + 负例 20 条，覆盖压段 / 编号前缀 / 路径越界
+- **测试设计**：正例 1 条 + 负例 22 条，覆盖压段 / 编号前缀 / 路径越界 / 技术栈组只写半套
 - **未验**：无
 
 ## UI 证据
@@ -768,6 +789,10 @@ EOF
   # 20 — base sha is not 7–40 hex chars
   derive "$dir/bad20.md" "- **分支基线**：从 \`5aa14b1\` 切出，与 \`main\` 无分叉" \
     "- **分支基线**：从 \`abc12\` 切出，与 \`main\` 无分叉"
+  # 21 — tech-stack field present but table missing
+  derive "$dir/bad21.md" "| 模块 | 是否改动 | 说明 |" ""
+  # 22 — tech-stack table present but field line missing
+  derive "$dir/bad22.md" "- **技术栈**：" "- **补充**：无"
 
   printf -- '--- self-test positive (expect exit 0) ---\n'
   fail=0
@@ -783,7 +808,8 @@ EOF
             "$dir"/bad5.md "$dir"/bad6.md "$dir"/bad7.md "$dir"/bad8.md \
             "$dir"/bad9.md "$dir"/bad10.md "$dir"/bad11.md "$dir"/bad12.md \
             "$dir"/bad13.md "$dir"/bad14.md "$dir"/bad15.md "$dir"/bad16.md \
-            "$dir"/bad17.md "$dir"/bad18.md "$dir"/bad19.md "$dir"/bad20.md; do
+            "$dir"/bad17.md "$dir"/bad18.md "$dir"/bad19.md "$dir"/bad20.md \
+            "$dir"/bad21.md "$dir"/bad22.md; do
     n=$((n + 1))
     fail=0
     printf -- '--- self-test negative %d (expect exit 1) ---\n' "$n"

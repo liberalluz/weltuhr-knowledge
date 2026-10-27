@@ -28,21 +28,14 @@
     "owner": "liberalluz",
     "mergeStrategy": "squash",
     "protection": {
-      "mode": "declared",
-      "approvals": 0,
-      "enforcedBy": [
-        ".githooks/pre-push",
-        ".github/workflows/repo-hygiene.yml"
-      ],
-      "platformLimit": {
-        "reason": "branch-protection-unavailable",
-        "workaround": "declared",
-        "liftedBy": "pro-plan-or-public-repo",
-        "ref": "docs/specs/git-conventions.md#43-main-%E4%BF%9D%E6%8A%A4%E5%BC%80%E5%85%B3%E4%B8%8E%E8%BF%9C%E7%AB%AF%E7%8E%B0%E7%8A%B6"
-      }
+      "mode": "enforced",
+      "approvals": 1,
+      "requirePr": true,
+      "allowForcePush": false,
+      "allowDeletions": false
     },
     "decidedAt": "2026-10-23T14:14:25+08:00"
   },
   "createdAt": "2026-10-22T07:51:41+08:00",
-  "updatedAt": "2026-10-23T15:39:27+08:00"
+  "updatedAt": "2026-10-27T15:26:00+08:00"
 }

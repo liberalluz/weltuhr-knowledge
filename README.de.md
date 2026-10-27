@@ -1,6 +1,6 @@
 [English](README.md) · [简体中文](README.zh-CN.md) · **Deutsch** · [Italiano](README.it.md) · [日本語](README.ja.md) · [Français](README.fr.md)
 
-> Maßgeblich ist die englische Fassung [README.md](README.md) @ d888a44; diese Übersetzung entspricht dieser Version.
+> Maßgeblich ist die englische Fassung [README.md](README.md) @ 87e7c74; diese Übersetzung entspricht dieser Version.
 
 # Weltuhr
 
@@ -85,12 +85,10 @@ Entwurfsentscheidungen und die jeweils verworfenen Alternativen: [docs/decisions
 
 Branch-Namen, Commit-Format, Pull Requests und die Prüfschwelle stehen in [.github/CONTRIBUTING.md](.github/CONTRIBUTING.md).
 
-Maintainer: liberal
-
 ## Sicherheit
 
 Sicherheitslücken bitte über den in [.github/SECURITY.md](.github/SECURITY.md) beschriebenen vertraulichen Weg melden. Für ein Sicherheitsproblem bitte kein öffentliches Issue eröffnen.
 
 ## Lizenz
 
-Apache-2.0 — siehe [LICENSE](LICENSE) und [NOTICE](NOTICE).
+Lizenziert unter [Apache-2.0](LICENSE); siehe [NOTICE](NOTICE) für die Namensnennung.
