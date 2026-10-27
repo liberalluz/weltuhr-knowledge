@@ -98,6 +98,23 @@ Each batch records its approved paths in `.batch/<batch>/scope.json`. When `.bat
 
 Current maintainer: [@liberalluz](https://github.com/liberalluz)
 
+### Code ownership
+
+[`CODEOWNERS`](CODEOWNERS) declares who owns each path. It currently maps every
+path to the single maintainer; it is a **declaration**, not enforcement: the
+current branch protection does not require code-owner review. When the C10
+ruleset enables `require_code_owner_reviews`, the matching owner must approve.
+
+| Path | Owner | Why |
+|---|---|---|
+| `app/` · `server/` · `content/` | `@liberalluz` | product code |
+| `infra/` · `.github/` · `.githooks/` | `@liberalluz` | build, CI, process |
+| `docs/` | `@liberalluz` | design/delivery documents |
+| `AGENTS.md` · `README.md` · `LICENSE` · `NOTICE` | `@liberalluz` | repository governance |
+
+A second maintainer is added to the relevant rows **before** entering Tier 2;
+otherwise their approval will not satisfy the code-owner requirement.
+
 ### Collaboration tiers
 
 The rules above are written for every size at once, but **what actually has to change is triggered by who is collaborating**, not by a date. These are trigger conditions only; the approval count and merge mechanics stay in [git-conventions §4](../docs/specs/git-conventions.md).
@@ -105,7 +122,7 @@ The rules above are written for every size at once, but **what actually has to c
 | Tier | Trigger | What changes on entering it |
 |---|---|---|
 | **1 · Solo + AI** | one maintainer, changes drafted with AI assistants (current) | the `AI participation` line is the only record of what a human checked; the self-review conclusion stands in for approval |
-| **2 · Two or more maintainers** | a second maintainer is added (§5) | the self-review conclusion stops counting as approval; A- and B-level changes need a maintainer who did not write them |
+| **2 · Two or more maintainers** | a second maintainer is added (§5) | add their handle to the relevant `CODEOWNERS` paths; the self-review conclusion stops counting as approval; A- and B-level changes need a maintainer who did not write them; enable 1 approval and code-owner review (C10) |
 | **3 · External contributors** | the first pull request from outside the maintainer list | contributors must state their AI participation scope in the PR body; provenance of AI-assisted content is checked before merge |
 
 Entering a tier is a governance change, not a setting: the trigger is a fact (a second maintainer exists, an outside PR arrived), and the obligations of that tier take effect from the next pull request. The AI-specific obligations, which apply in every tier, are in [`CONTRIBUTING.ai.md`](CONTRIBUTING.ai.md).
