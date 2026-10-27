@@ -586,7 +586,7 @@ check_body() {
       *) bad "AI 参与 的级别须为 hint / assist / pair / copilot / auto，实得「${FR}」" ;;
     esac
   fi
-  [ "$fail" -eq "$v13" ] && ok '字段齐全（影响面四字段 / 验证 / AI / 平台组形态）'
+  [ "$fail" -eq "$v13" ] && ok '字段齐全（影响面三字段 / 验证 / AI / 平台组形态）'
 
   # 14 — 关联: eight-class closed set, one anchor per line, absent classes omitted.
   if section_bounds "## 关联"; then
