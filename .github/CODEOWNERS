@@ -6,23 +6,23 @@
 # Current state: two maintainers. C10 enables code-owner review; at least one
 # listed owner must approve every PR.
 
-* @liberalluz @liberalmel
+* @liberalluz @wilkommel
 
 # Product code
-/app/ @liberalluz @liberalmel
-/server/ @liberalluz @liberalmel
-/content/ @liberalluz @liberalmel
+/app/ @liberalluz @wilkommel
+/server/ @liberalluz @wilkommel
+/content/ @liberalluz @wilkommel
 
 # Build, CI, hooks and process tooling
-/infra/ @liberalluz @liberalmel
-/.github/ @liberalluz @liberalmel
-/.githooks/ @liberalluz @liberalmel
+/infra/ @liberalluz @wilkommel
+/.github/ @liberalluz @wilkommel
+/.githooks/ @liberalluz @wilkommel
 
 # Design and delivery documents
-/docs/ @liberalluz @liberalmel
+/docs/ @liberalluz @wilkommel
 
 # Repository-level agent and governance files
-/AGENTS.md @liberalluz @liberalmel
-/README.md @liberalluz @liberalmel
-/LICENSE @liberalluz @liberalmel
-/NOTICE @liberalluz @liberalmel
+/AGENTS.md @liberalluz @wilkommel
+/README.md @liberalluz @wilkommel
+/LICENSE @liberalluz @wilkommel
+/NOTICE @liberalluz @wilkommel

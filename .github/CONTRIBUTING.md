@@ -96,7 +96,7 @@ Each batch records its approved paths in `.batch/<batch>/scope.json`. When `.bat
 | **Reviewer** | approve / request changes | invited by a maintainer (threshold: see the pending item below) |
 | **Maintainer** | merge, adjudicate A/B level, cut releases, change repository settings | unanimous agreement of the existing maintainers |
 
-Current maintainers: [@liberalluz](https://github.com/liberalluz) · [@liberalmel](https://github.com/liberalmel)
+Current maintainers: [@liberalluz](https://github.com/liberalluz) · [@wilkommel](https://github.com/wilkommel)
 
 ### Code ownership
 
@@ -106,10 +106,10 @@ listed owner must approve a PR before it can merge.
 
 | Path | Owner | Why |
 |---|---|---|
-| `app/` · `server/` · `content/` | `@liberalluz` · `@liberalmel` | product code |
-| `infra/` · `.github/` · `.githooks/` | `@liberalluz` · `@liberalmel` | build, CI, process |
-| `docs/` | `@liberalluz` · `@liberalmel` | design/delivery documents |
-| `AGENTS.md` · `README.md` · `LICENSE` · `NOTICE` | `@liberalluz` · `@liberalmel` | repository governance |
+| `app/` · `server/` · `content/` | `@liberalluz` · `@wilkommel` | product code |
+| `infra/` · `.github/` · `.githooks/` | `@liberalluz` · `@wilkommel` | build, CI, process |
+| `docs/` | `@liberalluz` · `@wilkommel` | design/delivery documents |
+| `AGENTS.md` · `README.md` · `LICENSE` · `NOTICE` | `@liberalluz` · `@wilkommel` | repository governance |
 
 Both maintainers are listed so either can satisfy the code-owner requirement;
 the author still cannot approve their own PR.
