@@ -34,6 +34,19 @@ from check import PROCESS_PATTERNS, check_paths, sign_scope, verify_scope
 REPO_ROOT = Path(__file__).resolve().parents[3]
 DEFAULT_ROOT = REPO_ROOT / ".batch"
 
+# Changing the batch tooling or the hooks cannot be tested by any other step,
+# so these run whenever a batch touches infra/tool/batch or .githooks.
+BATCH_TEST_FILES = (
+    "infra/tool/batch/tests/test_batch_card.py",
+    "infra/tool/batch/tests/test_batch_check.py",
+    "infra/tool/batch/tests/test_batch_cli.py",
+    "infra/tool/batch/tests/test_batch_merge.py",
+    "infra/tool/batch/tests/test_batch_pr.py",
+    "infra/tool/batch/tests/test_merge_gate.py",
+    "infra/tool/batch/tests/test_scope_guard.py",
+    "infra/tool/batch/tests/test_skill_lint.py",
+)
+
 
 def _configure_stdio() -> None:
     for stream in (sys.stdout, sys.stderr):
@@ -146,6 +159,21 @@ def changed_paths(base: str | None) -> list[str]:
         if code == 0:
             paths.update(line.strip() for line in out.splitlines() if line.strip())
     return sorted(paths)
+
+
+def diff_status(base: str) -> dict[str, str]:
+    """Map each changed path to A (added) / M (modified) / D (deleted)."""
+    code, out, _ = run_git(["diff", "--name-status", f"{base}...HEAD"])
+    if code != 0:
+        return {}
+    statuses: dict[str, str] = {}
+    for line in out.splitlines():
+        parts = line.split("\t")
+        if len(parts) < 2:
+            continue
+        flag = parts[0][:1]
+        statuses[parts[-1]] = "A" if flag == "A" else "D" if flag == "D" else "M"
+    return statuses
 
 
 def read_card_safe(batch_dir: Path) -> tuple[dict[str, Any] | None, str | None]:
@@ -358,10 +386,33 @@ def planned_steps(
         steps.append(("lint", ["dart", "run", "tool/lint/check.dart"], REPO_ROOT / "app"))
     if docs_changed:
         steps.append(("docs", ["dart", "run", "tool/docs/check.dart"], REPO_ROOT / "app"))
+    if any(path.startswith("content/") for path in changed):
+        # --check rebuilds twice and compares sha256; it writes nothing.
+        steps.append(("content", [python_command(), "content/tools/build.py", "--check"], REPO_ROOT))
+    if any(path.startswith("server/") for path in changed) and (
+        REPO_ROOT / "server" / "pubspec.yaml"
+    ).exists():
+        # The server package does not exist yet; the guard keeps check green
+        # until it is created, then these steps switch on by themselves.
+        steps.append(("server-analyze", ["dart", "analyze"], REPO_ROOT / "server"))
+        if not no_tests:
+            steps.append(("server-tests", ["dart", "test", "--reporter", "compact"], REPO_ROOT / "server"))
     if any(path.startswith(".agents/skills/") for path in changed):
         steps.append(("skills", [python_command(), "-B", "infra/tool/batch/skill_lint.py"], REPO_ROOT))
     if app_changed and not no_tests:
         steps.append(("tests", ["flutter", "test", "--reporter", "compact"], REPO_ROOT / "app"))
+    if any(path.startswith(("infra/tool/batch/", ".githooks/")) for path in changed):
+        for test_file in BATCH_TEST_FILES:
+            steps.append(
+                (f"batch-tests/{Path(test_file).name}", [python_command(), test_file], REPO_ROOT)
+            )
+        steps.append(
+            (
+                "pr-body-self-test",
+                [find_bash() or "bash", ".githooks/pr-body", "--self-test"],
+                REPO_ROOT,
+            )
+        )
 
     if pr_body is not None:
         bash = find_bash()
@@ -511,7 +562,25 @@ def branch_for_base(base: str) -> str | None:
     return "main" if "main" in names else names[0]
 
 
-def build_pr_body(card: dict[str, Any], changed: Sequence[str], evidence_text: str) -> str:
+def untouched_paths(card: dict[str, Any], changed: Sequence[str]) -> list[str]:
+    """Paths named literally in card.allowed that this batch never touched.
+
+    Glob entries cannot be enumerated, so they are skipped; a batch whose whole
+    scope is globs therefore reports zero untouched paths.
+    """
+    touched = set(changed)
+    names = [str(item) for item in (card.get("allowed") or [])]
+    return sorted(
+        name for name in names if not any(ch in name for ch in "*?[") and name not in touched
+    )
+
+
+def build_pr_body(
+    card: dict[str, Any],
+    changed: Sequence[str],
+    evidence_text: str,
+    statuses: dict[str, str] | None = None,
+) -> str:
     goals = str(card.get("goal") or f"批次 {card.get('batch') or '?'}")
     platforms = normalize_platforms(card.get("platforms") or [])
     evidence_summary = "\n".join(
@@ -558,17 +627,27 @@ def build_pr_body(card: dict[str, Any], changed: Sequence[str], evidence_text: s
                 ],
             ]
         )
+    status_map = statuses or {}
+    added = sum(1 for path in paths if status_map.get(path) == "A")
+    deleted = sum(1 for path in paths if status_map.get(path) == "D")
+    modified = len(paths) - added - deleted
+    untouched = untouched_paths(card, paths)
+
     lines.extend(
         [
             "",
             "## 自审留痕",
             "",
             f"- **分支基线**：从 `{short_base(str(card.get('base') or ''))}` 切出，与 `main` 无分叉",
-            f"- **改动面**：动了 `{len(paths)}` 条路径，归为 `{len(paths)}` 项；未动 `0` 处",
+            f"- **改动面**：动了 `{len(paths)}` 条路径，归为 `{len(paths)}` 项；未动 `{len(untouched)}` 处",
         ]
     )
+    if status_map:
+        lines.append(f"  - 分类：新增 `{added}` · 修改 `{modified}` · 删除 `{deleted}`")
     for path in paths:
         lines.append(f"  - 改动：`{path}`")
+    for path in untouched:
+        lines.append(f"  - 未动：`{path}`")
 
     lines.extend(
         [
@@ -645,7 +724,9 @@ def command_pr(args: argparse.Namespace) -> int:
 
     base = args.base or state.get("base") or card.get("base") or "origin/main"
     changed = changed_paths(str(base))
-    body = build_pr_body(card, changed, evidence.read_text(encoding="utf-8"))
+    body = build_pr_body(
+        card, changed, evidence.read_text(encoding="utf-8"), diff_status(str(base))
+    )
     body_path = args.body_out
     if body_path is None:
         body_path = batch_dir / "pr-body.md"

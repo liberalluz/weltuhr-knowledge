@@ -105,6 +105,63 @@ class PlanTests(unittest.TestCase):
         )
         self.assertNotIn("tests", [name for name, _, _ in steps])
 
+    def test_skills_paths_add_skills_step(self):
+        steps = batch.planned_steps(
+            [".agents/skills/x/SKILL.md"],
+            "main",
+            quick=False,
+            no_tests=False,
+            no_format=False,
+            pr_body=None,
+        )
+        self.assertEqual([name for name, _, _ in steps], ["skills"])
+
+    def test_pr_body_adds_pr_body_step(self):
+        steps = batch.planned_steps(
+            ["infra/a.py"],
+            "main",
+            quick=False,
+            no_tests=False,
+            no_format=False,
+            pr_body=Path("/tmp/pr-body.md"),
+        )
+        self.assertEqual([name for name, _, _ in steps], ["pr-body"])
+
+    def test_no_format_skips_format(self):
+        steps = batch.planned_steps(
+            ["app/lib/a.dart"],
+            "main",
+            quick=False,
+            no_tests=False,
+            no_format=True,
+            pr_body=None,
+        )
+        self.assertNotIn("format", [name for name, _, _ in steps])
+
+    def test_process_paths_select_no_steps(self):
+        steps = batch.planned_steps(
+            [".github/CONTRIBUTING.md"],
+            "main",
+            quick=False,
+            no_tests=False,
+            no_format=False,
+            pr_body=None,
+        )
+        self.assertEqual(steps, [])
+
+    def test_batch_tooling_paths_add_self_tests(self):
+        steps = batch.planned_steps(
+            ["infra/tool/batch/batch.py"],
+            "main",
+            quick=False,
+            no_tests=False,
+            no_format=False,
+            pr_body=None,
+        )
+        names = [name for name, _, _ in steps]
+        self.assertEqual(sum(1 for name in names if name.startswith("batch-tests/")), 8)
+        self.assertIn("pr-body-self-test", names)
+
 
 class CheckTests(unittest.TestCase):
     def test_check_passes_and_writes_evidence(self):
@@ -155,6 +212,38 @@ class CheckTests(unittest.TestCase):
             self.assertEqual(code, 0)
             self.assertIn("[ok] scope", out)
             self.assertFalse((target / "evidence.log").exists())
+
+    def test_steps_run_and_failure_turns_red(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            target = write_batch(root, ["app/**"])
+            calls = []
+
+            def passing(command, cwd):
+                calls.append(list(command))
+                return 0, "ok", ""
+
+            with (
+                mock.patch.object(batch, "changed_paths", return_value=["app/lib/a.dart"]),
+                mock.patch.object(batch, "run_command", side_effect=passing),
+            ):
+                code, out = run(["--root", str(root), "check", "--batch", "B1", "--base", "main"])
+            self.assertEqual(code, 0)
+            self.assertIn("result: PASS", out)
+            self.assertTrue(calls, "selected steps were not executed")
+            self.assertIn("flutter", [command[0] for command in calls])
+
+            def failing(command, cwd):
+                return 1, "", "boom"
+
+            with (
+                mock.patch.object(batch, "changed_paths", return_value=["app/lib/a.dart"]),
+                mock.patch.object(batch, "run_command", side_effect=failing),
+            ):
+                code, out = run(["--root", str(root), "check", "--batch", "B1", "--base", "main"])
+            self.assertEqual(code, 1)
+            self.assertIn("result: FAIL", out)
+            self.assertIn("RESULT: FAIL", (target / "evidence.log").read_text(encoding="utf-8"))
 
 
 if __name__ == "__main__":
