@@ -1,6 +1,6 @@
 # 软件测试说明（STD）
 
-> **状态**：装置自设基准窗口，尺寸一律读物理像素；设窗失败按「绑定 / 找窗口 / 改尺寸」分环节回显，不再由调用方猜。§三 用例表 **947 条**。
+> **状态**：装置自设基准窗口，尺寸一律读物理像素；设窗失败按「绑定 / 找窗口 / 改尺寸」分环节回显，不再由调用方猜。§三 用例表 **951 条**。
 > 本文件是**用例正文**。测什么与通过判据见 [`STP`](stp.md)；**§六 是当前读数**。
 > **追溯补录**：2026-10-17 · §三 依据 `app/test/` 与 `content/tools/fixtures/` 的既有测试逐条反推，非当时所写。
 
@@ -154,7 +154,7 @@
 | `TC-NOTE-001` | — | — | `Note` 三层同时有值：`generated` / `autoFilled` / `authored` | 读 `displayText` / `noteVersion` | `手写层`（`authored` 优先）、`noteVersion == 3` | 单元 | 同上 · `authored > autoFilled > generated` |
 | `TC-VIEW-001` | — | — | 常量表 | 读 `deepChainPhi` / `trailCap` / `viewTransitionMinMs` / `viewTransitionMaxMs` / `lodBrightnessFar` / `lodBrightnessNear` | `5` / `5` / `180` / `220` / `3` / `7`（`C-20`–`C-23`） | 单元 | `app/test/core/constants_test.dart` · `C-20…C-23 界面阈值` |
 
-### 3.6 `INF` 域（40 条 · 架构约束与外壳）
+### 3.6 `INF` 域（46 条 · 架构约束与外壳）
 
 | 编号 | 对应 `SPEC` | 依据 | 前置 | 步骤 | 预期 | 类型 | 自动化位置 |
 |---|---|---|---|---|---|---|---|
@@ -200,6 +200,10 @@
 | `TC-INF-040` | — | — | 现有形态：`AppendOnlyStoreFs` 只有 `appendLine` | 跑 `R10` | **不报**（防误报基线） | 架构 | 同上 · `现有接口原样放行` |
 | `TC-INF-041` | — | — | `DartIoPackFs` 同时 `implements` 三个接口、带 `writeStringAtomic` | 跑 `R10` | **不报** —— 只查接口声明体，实现类的写方法合法 | 架构 | 同上 · `同时实现三个接口的实现类带写方法不报` |
 | `TC-INF-042` | — | — | 接口体里有一个私有方法 `_compact()` | 跑 `R10` | **不报** —— 不在调用面上 | 架构 | 同上 · `接口体里的私有方法放行` |
+| `TC-INF-064` | — | 语义 | 非入口文件里写 `edge.strength == EdgeStrength.required` | 跑 `R11` | 报违规，行号指向该表达式 | 架构 | `app/test/lint/rules_test.dart` · `别处写 strength == EdgeStrength.required 被拦，并报出行号` |
+| `TC-INF-065` | — | 语义 | 非入口文件里写 `edges.where((PrerequisiteEdge e) => e.isRequired)` | 跑 `R11` | 报违规 —— 该形态在 AST 里是 `PrefixedIdentifier`，只重写 `visitPropertyAccess` 会漏 | 架构 | 同上 · `别处写 edge.isRequired 被拦` |
+| `TC-INF-066` | — | 语义 | `edge.strength != EdgeStrength.required` 与 `hit.strength == strongest` | 跑 `R11` | **不报** —— 前者是渲染样式判断，后者不是 `required` 字面量 | 架构 | 同上 · `!= 与 strength == strongest 不报` |
+| `TC-INF-067` | — | 语义 | 三个文件：`graph/precedence.dart` 的 `edge.isRequired`、`entities/edge.dart` 的 getter 定义、`pack_reader` 调 `requiredEdgesOf` | 跑 `R11` | 全放行 —— 两个豁免点与唯一入口的正确调用形态 | 架构 | 同上 · `两个豁免点与唯一入口的调用形态放行` |
 
 ### 3.7 `LOAD` 域（46 条 · 包加载与定位，`B2` 第 2 笔）
 
@@ -2339,6 +2343,7 @@
 
 | 版号 | 日期 | 修订摘要 |
 |---|---|---|
+| `v0.86.0` | 2026-10-28 | **`B15` 出口笔：`⪯` 的唯一入口落成可执行判据（lint `R11`）**。§3.6 新增 4 条（`TC-INF-064`–`067`）：两种违规形态各一条、`!=` 与 `strongest` 比较放行一条、两个豁免点与调用形态放行一条；用例表 947 → **951**。同笔把 `pack_reader` 的边计数改为走 `requiredEdgesOf`，规则零豁免。 |
 | `v0.85.0` | 2026-10-28 | **`B15` 笔 4 台账补登：真实产物跨包合图进用例表，§3.1 新增 1 条（`TC-FND-027`）**。代码已由 `#227` 合入，本笔只补受控文档。上一笔的跨包环检测（`TC-FND-021`–`026`）全在合成夹具上，真实数据零样品；笔 4 让 `content/terrain/` 有了真边之后，「真实包合成不出现跨包环」才验得出来。同笔把 `TC-BOOT-002` 的预期由「每个包都有可学节点」改为按 `kind` 分流 —— 地形包按决策 4 只装边、没有节点，拿可学节点判它等于逼装配器造假数据，改判「节点为空且先修边非空」。用例表 946 → **947**、`flutter test` 568 → **569**。⚠️ **本笔是补登**：`#227` 合入时该加的行当时没加。缘由两条 —— ① 那批卡片的 `forbidden` 列了 `docs/specs/controlled/**`（本意只是「不升版号」），而同一张卡 `allowed` 里有测试文件，两条互斥；② 装置侧 `docs` 步骤的触发条件是改动含 `docs/` 前缀，那批没改 `docs/` ⇒ 该步骤一次未执行，而 `D1`–`D7` 的方向全是「台账 → 代码」（落点能否落到测试），没有一条查「`test/` 里多出来的用例是否已登记」。 |
 | `v0.84.0` | 2026-10-27 | **`B15` 笔 3：跨包地形图与跨包环进装载层，§3.1 新增 6 条（`TC-FND-021`–`026`）**。`pack_reader` 的环检测只看单个包，而先修边由决策 4 独立成包、跨轴 ⇒ `A 的 i → B 的 j` 与 `B 的 j → A 的 i` 从任何一边看都只是普通边，跨包环一处也报不出来。`TerrainGraph.of` 把若干包的先修边合成一张图：`required` 仍委托 `requiredEdgesOf`（不重写过滤），环检测走 `findCyclesFrom` 且**看两类边**；`PackLoader.install` 在装 `terrain` 包前合「已装 + 本包」判一次，成环即拒、一个字节都不写。反证两次：删掉装载层那一段 ⇒ `023` / `024` 红而 `025` / `026` 绿；把 `cycles` 的输入换成 `requiredEdges` ⇒ **只有 `024` 红**、`023` 仍绿 —— 两条各盖一个分支。⚠️ **同轮量到上一读数滞后**：本笔之前 `main` 上实跑 **562**，而 §六 记的是 559。 |
 | `v0.83.1` | 2026-10-26 | **`B15` 笔 2：`terrain` 的两份摘要进解析层，§3.1 新增 5 条（`TC-FND-016`–`020`）**。`payload.counts` 早有对账，`terrain.edge_counts` 一直没有 —— 地形包不带 `nodes[]`，「这个包给了多少条先修边」在界面上只有摘要一份，而 `⪯` 走的是 `edges[]`，两数分叉时没有任何一处报错。两类强度**分开对**：只对总数会放过「`required` 少一条、`recommended` 多一条」。`axes_covered` 增三条定义性校验（非空 · 不重复 · 是 `axes[]` 的子集），**不校验实际跨了哪几条轴** —— 真实地形边指向别的包的节点，解析层拿不到轴，硬算就得先装依赖包。反证两次：只对总数 ⇒ 仅 `017` 红；去掉轴校验 ⇒ `018`–`020` 三条红。 |

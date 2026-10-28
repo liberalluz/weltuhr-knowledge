@@ -38,6 +38,7 @@ import '../entities/scheme.dart';
 import '../entities/source.dart';
 import '../enums.dart';
 import '../graph/parent_index.dart';
+import '../graph/precedence.dart';
 import '../json.dart';
 import 'cycle_check.dart';
 
@@ -150,7 +151,8 @@ class PackContent {
   NodeEntry? entryOf(String id) => entryByNodeId[id];
 
   /// 只取可学节点 —— 七步、排程、掌握度只对它们有意义。
-  Iterable<LearnableNode> get learnableNodes => nodes.whereType<LearnableNode>();
+  Iterable<LearnableNode> get learnableNodes =>
+      nodes.whereType<LearnableNode>();
 
   /// 本包里实际出现过的可学类型（方法覆盖率与候选排序的原料）。
   ///
@@ -285,7 +287,9 @@ JsonMap? _decodeObject(String source, String where, List<String> problems) {
     problems.add('$where 顶层必须是对象，实际是 ${decoded.runtimeType}');
     return null;
   }
-  return decoded.map((Object? key, Object? value) => MapEntry<String, Object?>('$key', value));
+  return decoded.map(
+    (Object? key, Object? value) => MapEntry<String, Object?>('$key', value),
+  );
 }
 
 Pack? _parsePack(JsonMap raw, List<String> problems) {
@@ -338,9 +342,30 @@ void _checkPayloadCounts(Pack pack, List<Node> nodes, List<String> problems) {
       star++;
     }
   }
-  _compareCount('payload.counts', 'star', facts.counts.star, star, 'nodes[]', problems);
-  _compareCount('payload.counts', 'system', facts.counts.system, system, 'nodes[]', problems);
-  _compareCount('payload.counts', 'planet', facts.counts.planet, planet, 'nodes[]', problems);
+  _compareCount(
+    'payload.counts',
+    'star',
+    facts.counts.star,
+    star,
+    'nodes[]',
+    problems,
+  );
+  _compareCount(
+    'payload.counts',
+    'system',
+    facts.counts.system,
+    system,
+    'nodes[]',
+    problems,
+  );
+  _compareCount(
+    'payload.counts',
+    'planet',
+    facts.counts.planet,
+    planet,
+    'nodes[]',
+    problems,
+  );
 }
 
 /// `terrain.edge_counts` 与 `edges[]` 实扫必须一致。
@@ -361,18 +386,11 @@ void _checkTerrainCounts(
   if (facts == null) {
     return;
   }
-  int required = 0;
-  int recommended = 0;
-  for (final NodeEdge edge in edges) {
-    if (edge is! PrerequisiteEdge) {
-      continue;
-    }
-    if (edge.isRequired) {
-      required++;
-    } else {
-      recommended++;
-    }
-  }
+  final List<PrerequisiteEdge> prerequisites = edges
+      .whereType<PrerequisiteEdge>()
+      .toList();
+  final int required = requiredEdgesOf(prerequisites).length;
+  final int recommended = prerequisites.length - required;
   _compareCount(
     'terrain.edge_counts',
     'required',
@@ -470,7 +488,13 @@ List<T> _parseSegment<T>(
       continue;
     }
     try {
-      parsed.add(parse(entry.map((Object? k, Object? v) => MapEntry<String, Object?>('$k', v))));
+      parsed.add(
+        parse(
+          entry.map(
+            (Object? k, Object? v) => MapEntry<String, Object?>('$k', v),
+          ),
+        ),
+      );
     } on FormatException catch (error) {
       problems.add('`$name`[$i] ${error.message}');
     } on ArgumentError catch (error) {

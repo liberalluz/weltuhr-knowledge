@@ -464,4 +464,81 @@ void main() {
       expect(issues, isEmpty);
     });
   });
+
+  group('R11 `⪯` 的边过滤只有一个定义点', () {
+    test('别处写 strength == EdgeStrength.required 被拦，并报出行号（R11）', () {
+      final issues = checkSource(
+        path: 'lib/core/plan/ordering.dart',
+        source:
+            'bool _isRequired(PrerequisiteEdge edge) =>\n'
+            '    edge.strength == EdgeStrength.required;\n',
+      );
+      expect(
+        issues.map((LintIssue i) => i.ruleId),
+        contains(ruleSinglePrecedenceSource),
+      );
+      expect(issues.single.line, 2);
+    });
+
+    test('别处写 edge.isRequired 被拦（R11）', () {
+      final issues = checkSource(
+        path: 'lib/core/plan/ordering.dart',
+        source:
+            'List<PrerequisiteEdge> _onlyRequired(List<PrerequisiteEdge> edges) =>\n'
+            '    edges.where((PrerequisiteEdge edge) => edge.isRequired).toList();\n',
+      );
+      expect(
+        issues.map((LintIssue i) => i.ruleId),
+        contains(ruleSinglePrecedenceSource),
+      );
+    });
+
+    test('!= 与 strength == strongest 不报（R11：只认 required 等值）', () {
+      final issues = checkSource(
+        path: 'lib/core/view/detail.dart',
+        source:
+            'bool _dashed(PrerequisiteEdge edge) =>\n'
+            '    edge.strength != EdgeStrength.required;\n'
+            '\n'
+            'bool _top(LocateHit hit, Strength strongest) =>\n'
+            '    hit.strength == strongest;\n',
+      );
+      expect(issues, isEmpty);
+    });
+
+    test('两个豁免点与唯一入口的调用形态放行（R11）', () {
+      // 入口实现本身：`isRequired` 在这里是它该出现的地方。
+      expect(
+        checkSource(
+          path: 'lib/core/graph/precedence.dart',
+          source:
+              'Iterable<PrerequisiteEdge> requiredEdgesOf(Iterable<PrerequisiteEdge> edges) =>\n'
+              '    edges.where((PrerequisiteEdge edge) => edge.isRequired);\n',
+        ),
+        isEmpty,
+      );
+      // getter 的定义本身。
+      expect(
+        checkSource(
+          path: 'lib/core/entities/edge.dart',
+          source:
+              'class PrerequisiteEdge {\n'
+              '  final EdgeStrength strength;\n'
+              '  bool get isRequired => strength == EdgeStrength.required;\n'
+              '}\n',
+        ),
+        isEmpty,
+      );
+      // 消费点的正确写法：调入口，不自己过滤。
+      expect(
+        checkSource(
+          path: 'lib/core/pack/pack_reader.dart',
+          source:
+              'int _requiredCount(List<PrerequisiteEdge> edges) =>\n'
+              '    requiredEdgesOf(edges).length;\n',
+        ),
+        isEmpty,
+      );
+    });
+  });
 }
