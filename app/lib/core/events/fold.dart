@@ -36,6 +36,7 @@ class FoldedState {
     required Set<String> passed,
     required Set<String> graduated,
     required Map<String, Grade> lastGrade,
+    required Map<String, int> consecutiveFails,
     required Set<String> retired,
     required Map<String, FoldedNote> notes,
     required List<CarryLink> carries,
@@ -45,6 +46,7 @@ class FoldedState {
        passed = Set<String>.unmodifiable(passed),
        graduated = Set<String>.unmodifiable(graduated),
        lastGrade = Map<String, Grade>.unmodifiable(lastGrade),
+       consecutiveFails = Map<String, int>.unmodifiable(consecutiveFails),
        retired = Set<String>.unmodifiable(retired),
        notes = Map<String, FoldedNote>.unmodifiable(notes),
        carries = List<CarryLink>.unmodifiable(carries),
@@ -57,6 +59,7 @@ class FoldedState {
       passed = const <String>{},
       graduated = const <String>{},
       lastGrade = const <String, Grade>{},
+      consecutiveFails = const <String, int>{},
       retired = const <String>{},
       notes = const <String, FoldedNote>{},
       carries = const <CarryLink>[],
@@ -78,6 +81,17 @@ class FoldedState {
 
   /// 项 → 最近一次验收成绩。`item_skipped` **不写这里**（`C-11`）。
   final Map<String, Grade> lastGrade;
+
+  /// 项 → 最近一段**连续「未过」**的次数（`SPEC-STEP-021` / `C-09`）。
+  ///
+  /// 「连续」定义在事件序列上：从最近一次判定往前数，遇到 `pass` / `proficient`
+  /// 立刻归零，不引入时间窗 —— 所以跨会话天然成立。序列的定序与去重**沿用本
+  /// 函数开头那套**（HLC + `id` 兜底、`seenIds` 去重），不另算一遍。
+  ///
+  /// 缺口本身**不写事件**：`STEP-021` 原文写「生成缺口事件」，但事件表里没有
+  /// 这个类型，而「连续两次未过」已经能从 `item_graded` 数出来 —— 再记一条会让
+  /// 同一件事有两份真相。（2026-10-28 裁定，`std.md` 修订历史同日记）
+  final Map<String, int> consecutiveFails;
 
   /// 已在包升级中下线。**这些项的进度仍然保留** —— 孤儿项的事件全部保留，
   /// 只标「已下线」（`SPEC-FND-012`）。
@@ -169,6 +183,7 @@ FoldedState fold(
   final Set<String> passed = <String>{};
   final Set<String> graduated = <String>{};
   final Map<String, Grade> lastGrade = <String, Grade>{};
+  final Map<String, int> consecutiveFails = <String, int>{};
   final Set<String> retired = <String>{};
   final Map<String, List<String>> noteTexts = <String, List<String>>{};
   final List<CarryLink> carries = <CarryLink>[];
@@ -196,7 +211,16 @@ FoldedState fold(
         }
 
       case EventType.itemGraded:
-        lastGrade[_requireItem(event)] = Grade.fromWire(requireString(event.payload, 'score'));
+        final String gradedItem = _requireItem(event);
+        final Grade grade = Grade.fromWire(
+          requireString(event.payload, 'score'),
+        );
+        lastGrade[gradedItem] = grade;
+        // 连续数：未过 +1，**任何非未过**（合格 / 熟练）清零。写成 else 而不是
+        // 只判 `pass` —— 熟练同样意味着「这一次会了」。
+        consecutiveFails[gradedItem] = grade == Grade.fail
+            ? (consecutiveFails[gradedItem] ?? 0) + 1
+            : 0;
 
       case EventType.itemPassed:
         passed.add(_requireItem(event));
@@ -235,15 +259,21 @@ FoldedState fold(
         );
 
       case EventType.stateCarried:
-        carries.add(CarryLink.fromPayload(eventId: event.id, payload: event.payload));
+        carries.add(
+          CarryLink.fromPayload(eventId: event.id, payload: event.payload),
+        );
 
       case EventType.stateMerged:
-        merges.add(MergeLink.fromPayload(eventId: event.id, payload: event.payload));
+        merges.add(
+          MergeLink.fromPayload(eventId: event.id, payload: event.payload),
+        );
 
       case EventType.itemRetired:
         // 信封 `itemId` 可为空（迁移类），故先看 payload。
         final Object? fromPayload = event.payload['itemId'];
-        final String itemId = fromPayload is String ? fromPayload : _requireItem(event);
+        final String itemId = fromPayload is String
+            ? fromPayload
+            : _requireItem(event);
         retired.add(itemId);
 
       case EventType.noteRevised:
@@ -264,6 +294,7 @@ FoldedState fold(
     passed: passed,
     graduated: graduated,
     lastGrade: lastGrade,
+    consecutiveFails: consecutiveFails,
     retired: retired,
     notes: notes,
     carries: carries,
@@ -276,20 +307,23 @@ FoldedState fold(
 ///
 /// [id] 与 [version] 都由 `fold` 给 —— 前者是创建事件的 id，后者是重放条数。
 /// **payload 里没有这两个字段**，它们不是事件携带的事实，是重放的副产物。
-Plan _planFromEvent(Event event, {required String id, required int version}) => Plan(
-  id: id,
-  // ⚠️ **不取信封的 `spaceId`**：`Plan` 已经没有这个字段了。计划的范围由
-  // `subtreeRoot` 表达，而「属于哪个空间」是信封的事 —— `fold(spaceId:)` 已经
-  // 按它过滤过，实体再存一份就是第二份真相（`event-types.md` §二 B：`spaceId`
-  // 不进 payload）。
-  subtreeRoot: requireString(event.payload, 'subtreeRoot'),
-  primaryAxis: Axis.fromWire(requireString(event.payload, 'primaryAxis')),
-  packVersions: PackVersions.fromJson(requireMap(event.payload, 'packVersions')),
-  sourcePolicy: requireMap(event.payload, 'sourcePolicy'),
-  schemeId: requireString(event.payload, 'schemeId'),
-  methodProfileId: requireString(event.payload, 'methodProfileId'),
-  version: version,
-);
+Plan _planFromEvent(Event event, {required String id, required int version}) =>
+    Plan(
+      id: id,
+      // ⚠️ **不取信封的 `spaceId`**：`Plan` 已经没有这个字段了。计划的范围由
+      // `subtreeRoot` 表达，而「属于哪个空间」是信封的事 —— `fold(spaceId:)` 已经
+      // 按它过滤过，实体再存一份就是第二份真相（`event-types.md` §二 B：`spaceId`
+      // 不进 payload）。
+      subtreeRoot: requireString(event.payload, 'subtreeRoot'),
+      primaryAxis: Axis.fromWire(requireString(event.payload, 'primaryAxis')),
+      packVersions: PackVersions.fromJson(
+        requireMap(event.payload, 'packVersions'),
+      ),
+      sourcePolicy: requireMap(event.payload, 'sourcePolicy'),
+      schemeId: requireString(event.payload, 'schemeId'),
+      methodProfileId: requireString(event.payload, 'methodProfileId'),
+      version: version,
+    );
 
 int _bumpVersion(Map<String, int> counts, String planId) {
   final int next = (counts[planId] ?? 0) + 1;
@@ -302,7 +336,10 @@ int _bumpVersion(Map<String, int> counts, String planId) {
 /// 「版本 = 该节事件计数」由这里保证；回滚（带 `targetVersion`）**追加**一条
 /// 事件并把目标版本的正文重新记到新版本上，历史一条不删。
 void _applyNoteRevision(Event event, Map<String, List<String>> noteTexts) {
-  final String key = noteKey(itemId: event.itemId, sectionKey: requireString(event.payload, 'sectionKey'));
+  final String key = noteKey(
+    itemId: event.itemId,
+    sectionKey: requireString(event.payload, 'sectionKey'),
+  );
   final List<String> texts = noteTexts.putIfAbsent(key, () => <String>[]);
 
   final Object? rawTarget = event.payload['targetVersion'];
@@ -311,7 +348,9 @@ void _applyNoteRevision(Event event, Map<String, List<String>> noteTexts) {
     return;
   }
 
-  final int target = rawTarget is int ? rawTarget : _badTargetVersion(event, rawTarget);
+  final int target = rawTarget is int
+      ? rawTarget
+      : _badTargetVersion(event, rawTarget);
   if (target < 1 || target > texts.length) {
     throw FormatException(
       '事件 `${event.id}` 的 `targetVersion` 为 $target，该节当前只有 ${texts.length} 个版本',
@@ -327,7 +366,9 @@ Never _badTargetVersion(Event event, Object? raw) =>
 String _requireItem(Event event) {
   final String? itemId = event.itemId;
   if (itemId == null) {
-    throw FormatException('事件 `${event.id}`（${eventTypeWireName(event.type)}）缺 `itemId`');
+    throw FormatException(
+      '事件 `${event.id}`（${eventTypeWireName(event.type)}）缺 `itemId`',
+    );
   }
   return itemId;
 }

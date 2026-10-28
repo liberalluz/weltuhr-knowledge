@@ -1,7 +1,7 @@
-/// 队列构建（`SPEC-STEP-003` / `004`）：前沿、排除、排序。
+/// 队列构建（`SPEC-STEP-003` / `004` / `021`）：前沿、排除、排序、缺口回补。
 ///
-/// 本笔只有「体系序」一条源，所以这里不验「三条源合成」—— 那条要等 SRS 到期
-/// 与缺口回补接上（`B6` / 笔 2），现在写它只能写成恒真式。
+/// 已接两条源：体系序与缺口回补。SRS 到期还没接（归 `B6`），所以这里不验「三条
+/// 源合成」—— 那条要等 `due` 折得出来，现在写它只能写成恒真式。
 library;
 
 import 'package:flutter_test/flutter_test.dart';
@@ -144,6 +144,91 @@ void main() {
       );
       expect(queue.knownMinutes, 0);
       expect(queue.timedItems, 0);
+    });
+  });
+
+  group('缺口回补入队（SPEC-STEP-021）', () {
+    test('TC-STEP-048 缺口项排在新学项之前（SPEC-STEP-021）', () {
+      // 无前置时 a / b / c 同为 0 层 ⇒ 本来按 id 排成 a、b、c；c 是缺口，要挪到最前。
+      final SessionQueue queue = buildSessionQueue(
+        pack: _pack(),
+        subtreeRoot: _root,
+        passed: const <String>{},
+        gaps: const <String>{'py:c'},
+      );
+      expect(queue.items.map((QueueItem item) => item.nodeId), <String>[
+        'py:c',
+        'py:a',
+        'py:b',
+      ]);
+      expect(queue.items.first.kind, QueueItemKind.gapFill);
+      expect(queue.items[1].kind, QueueItemKind.newItem);
+    });
+
+    test('TC-STEP-049 已 item_passed 的缺口项仍进队列（SPEC-STEP-021）', () {
+      // 已学过的项复习时连续未过 ⇒ 回补。`item_passed` 不可撤销，但可以回补。
+      final SessionQueue queue = buildSessionQueue(
+        pack: _pack(),
+        subtreeRoot: _root,
+        passed: const <String>{'py:c'},
+        gaps: const <String>{'py:c'},
+      );
+      expect(
+        queue.items.map((QueueItem item) => item.nodeId),
+        contains('py:c'),
+      );
+    });
+
+    test('TC-STEP-050 缺口项的前置没过也照样入队（SPEC-STEP-021）', () {
+      // 缺口项自己往往就是别人的前置：挡住它等于永远修不好那个缺口。
+      final SessionQueue queue = buildSessionQueue(
+        pack: _pack(prerequisites: <(String, String)>[('py:a', 'py:c')]),
+        subtreeRoot: _root,
+        passed: const <String>{},
+        gaps: const <String>{'py:c'},
+      );
+      expect(
+        queue.items.map((QueueItem item) => item.nodeId),
+        contains('py:c'),
+      );
+    });
+
+    test('TC-STEP-051 缺口项没有步骤 ⇒ 不入队、不计入缺口数（SPEC-STEP-021）', () {
+      // 包升级删了正文、事件里还留着 id：这类缺口不清掉，「缺口 N 项」永远归不了零。
+      final SessionQueue queue = buildSessionQueue(
+        pack: _pack(withoutSteps: <String>{'py:c'}),
+        subtreeRoot: _root,
+        passed: const <String>{},
+        gaps: const <String>{'py:c'},
+      );
+      expect(queue.gapItems, 0);
+      expect(
+        queue.items.map((QueueItem item) => item.nodeId),
+        isNot(contains('py:c')),
+      );
+    });
+
+    test('TC-STEP-052 缺口集合里有包内不存在的 id ⇒ 不抛错、不入队（SPEC-STEP-021）', () {
+      final SessionQueue queue = buildSessionQueue(
+        pack: _pack(),
+        subtreeRoot: _root,
+        passed: const <String>{},
+        gaps: const <String>{'py:not-in-pack'},
+      );
+      expect(queue.length, 3);
+      expect(queue.gapItems, 0);
+    });
+
+    test('TC-STEP-053 新学计数不含缺口项，不重复计（SPEC-STEP-021）', () {
+      final SessionQueue queue = buildSessionQueue(
+        pack: _pack(),
+        subtreeRoot: _root,
+        passed: const <String>{},
+        gaps: const <String>{'py:c'},
+      );
+      expect(queue.length, 3);
+      expect(queue.gapItems, 1);
+      expect(queue.newItems, 2);
     });
   });
 }

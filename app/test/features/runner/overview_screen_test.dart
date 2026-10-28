@@ -92,6 +92,19 @@ Event _passed(String itemId) => buildItemPassed(
   userId: 'local',
 );
 
+/// 判一次。`minute` 用来把两条判定的 HLC 拉开，免得同 `(physical, counter)`
+/// 让定序落到 id 兜底上 —— 那样测的就不是时间序了。
+Event _graded(String itemId, Grade score, {required int minute}) =>
+    buildItemGraded(
+      spaceId: 'python',
+      itemId: itemId,
+      score: score,
+      progressKind: ProgressKind.checked,
+      clock: HlcClock(deviceId: 'test-device'),
+      now: DateTime.utc(2026, 10, 28, 3, minute),
+      userId: 'local',
+    );
+
 Future<void> _pump(WidgetTester tester, EventStore? store) async {
   await tester.pumpWidget(
     MaterialApp(
@@ -146,5 +159,37 @@ void main() {
     await tester.tap(find.byKey(const Key('overview-start')));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('runner-position')), findsOneWidget);
+  });
+
+  testWidgets('TC-STEP-054 连续两次未过 ⇒ 出「缺口」行，且不计入新学（SPEC-STEP-021）', (
+    WidgetTester tester,
+  ) async {
+    await _pump(
+      tester,
+      _MemoryStore(<Event>[
+        _graded('py:a', Grade.fail, minute: 1),
+        _graded('py:a', Grade.fail, minute: 2),
+      ]),
+    );
+    expect(find.byKey(const Key('overview-gaps')), findsOneWidget);
+    expect(find.text('缺口 1 项（回补）'), findsOneWidget);
+    // 甲 是缺口、不算新学；剩下只有 乙。
+    expect(find.text('新学 1 项'), findsOneWidget);
+    expect(find.textContaining('复习'), findsNothing);
+  });
+
+  testWidgets('TC-STEP-055 中间有过合格 ⇒ 不出「缺口」行（清零，不按历史累计）（SPEC-STEP-021）', (
+    WidgetTester tester,
+  ) async {
+    await _pump(
+      tester,
+      _MemoryStore(<Event>[
+        _graded('py:a', Grade.fail, minute: 1),
+        _graded('py:a', Grade.pass, minute: 2),
+        _graded('py:a', Grade.fail, minute: 3),
+      ]),
+    );
+    expect(find.byKey(const Key('overview-gaps')), findsNothing);
+    expect(find.text('新学 2 项'), findsOneWidget);
   });
 }

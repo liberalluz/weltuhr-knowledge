@@ -8,9 +8,10 @@
 ///
 /// ## 只显示有来源的行
 ///
-/// 本笔只接了**体系序**一条入队源（见 `session_queue.dart` 文件头）。所以这一页
-/// 不出现「复习」「缺口」两行 —— 一个恒为 0 的「复习 0 项」与「今天确实没有要复习
-/// 的」在屏幕上长得一模一样，而后者是假话。等 `B6` 把 `due` 折出来再补那一行。
+/// 当前接了两条入队源：**体系序**与**缺口回补**（见 `session_queue.dart` 文件头）。
+/// 所以这一页出「新学 M 项」与（有缺口时）「缺口 K 项」两行；「复习」那一行仍不
+/// 出现 —— 一个恒为 0 的「复习 0 项」与「今天确实没有要复习的」在屏幕上长得一模
+/// 一样，而后者是假话。等 `B6` 把 `due` 折出来再补那一行。
 ///
 /// ## 范围根
 ///
@@ -27,6 +28,7 @@ import '../../core/events/event.dart';
 import '../../core/events/event_store.dart';
 import '../../core/events/fold.dart';
 import '../../core/pack/pack_reader.dart';
+import '../../core/session/gaps.dart';
 import '../../core/session/session.dart';
 import '../../core/session/session_queue.dart';
 import 'runner_screen.dart';
@@ -102,6 +104,7 @@ class _OverviewScreenState extends State<OverviewScreen> {
           pack: widget.content,
           subtreeRoot: root,
           passed: folded.passed,
+          gaps: gapItemIds(folded),
         );
       });
     } on FormatException catch (error) {
@@ -162,7 +165,17 @@ class _OverviewScreenState extends State<OverviewScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Text('新学 ${queue.length} 项', style: text.headlineMedium),
+          // 缺口排在「新学」之前，与队列顺序一致 —— 界面上先说哪一类，用户
+          // 进去就先做哪一类。
+          if (queue.gapItems > 0) ...<Widget>[
+            Text(
+              '缺口 ${queue.gapItems} 项（回补）',
+              key: const Key('overview-gaps'),
+              style: text.headlineMedium,
+            ),
+            const SizedBox(height: 8),
+          ],
+          Text('新学 ${queue.newItems} 项', style: text.headlineMedium),
           const SizedBox(height: 8),
           Text(
             // 一项时长都没写时不留「预计 0 分钟」这种读数 —— 那是把「不知道」
