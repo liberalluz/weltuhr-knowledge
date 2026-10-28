@@ -671,7 +671,9 @@ def build_pr_body(
     if status_map:
         lines.append(f"  - 分类：新增 `{added}` · 修改 `{modified}` · 删除 `{deleted}`")
     for path in paths:
-        lines.append(f"  - 改动：`{path}`")
+        # The action is not derivable from the diff, so the slot is marked rather
+        # than filled with a label that reads as if something had been said.
+        lines.append(f"  - （待填：做了什么）：`{path}`")
     for path in untouched:
         lines.append(f"  - 未动：`{path}`")
 

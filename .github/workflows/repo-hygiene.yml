@@ -195,16 +195,13 @@ jobs:
           PY
 
       # -- 关联节八项 --------------------------------------------------------
-      # `.githooks/pr-body` judges the *shape* of this section and nothing else:
-      # it accepts any value, including `无`. That is how `- issue：无` passed a
-      # local check, a create-time check and CI in a row -- three runs of the
-      # same blind spot. This step judges the two things shape cannot see:
-      #
-      #   1. an entry whose value is `无` -- the rule is "classes without an
-      #      anchor do not appear at all", so writing one is the violation;
-      #   2. a required class that never appeared. The requirement comes from
-      #      facts outside the body (the diff, the platform), never from the
-      #      body itself, so "I forgot to list it" is decidable:
+      # `.githooks/pr-body` owns the shape of this section: the eight-class closed
+      # set, one class per line, the fixed order, and the rule that a class
+      # without an anchor does not appear at all (a class written as `无` is the
+      # violation). This step judges what shape cannot see -- a required class
+      # that never appeared. The requirement comes from facts outside the body
+      # (the diff, the platform), never from the body itself, so "I forgot to
+      # list it" is decidable:
       #        diff touches app/test or the controlled ledger -> 用例
       #        diff touches a spec volume (docs/specs/<UP>-*.md) -> 规格条
       #        diff touches docs/decisions                      -> ADR
@@ -266,14 +263,6 @@ jobs:
                   entries.setdefault(key, []).append(val)
 
           errors = []
-
-          # 1. a class written as `无` -- absent classes must not appear at all
-          for key, vals in entries.items():
-              for val in vals:
-                  if val.strip("`　 ").rstrip("。").strip() == "无":
-                      errors.append(
-                          f"`- {key}：无` —— 没有锚点的类整行不出现，不能写「无」"
-                      )
 
           def need(key, why):
               if key not in entries:
@@ -348,7 +337,7 @@ jobs:
               for item in errors:
                   print(f"FAIL {item}")
               sys.exit(1)
-          print("ok  关联节八项：无值为「无」、无漏列")
+          print("ok  关联节八项：无漏列（形态由 .githooks/pr-body 判）")
           PY
 
       # -- main only accepts PRs ----------------------------------------------
