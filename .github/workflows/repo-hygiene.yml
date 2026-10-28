@@ -206,7 +206,7 @@ jobs:
       #      facts outside the body (the diff, the platform), never from the
       #      body itself, so "I forgot to list it" is decidable:
       #        diff touches app/test or the controlled ledger -> 用例
-      #        diff touches docs/specs                          -> 规格条
+      #        diff touches a spec volume (docs/specs/<UP>-*.md) -> 规格条
       #        diff touches docs/decisions                      -> ADR
       #        diff adds a `[#N](.../pull/N)` link              -> PR
       #        diff adds `TODO(confirm):`                       -> 待确认事项
@@ -285,14 +285,19 @@ jobs:
 
           if any(p.startswith(("app/test/", "docs/specs/controlled/")) for p in names):
               need("用例", "本次改动含测试文件或受控用例台账")
-          if any(p.startswith("docs/specs/") for p in names):
-              need("规格条", "本次改动含 docs/specs/ 下的规格文件")
+          if any(re.match(r"docs/specs/[A-Z]+-", p) for p in names):
+              # SPEC 条住在 `docs/specs/<大写前缀>-*.md` 的规格卷里；
+              # `git-conventions.md` 这类工程规范没有 SPEC 条编号，改它不要求
+              # 关联节出现 `- 规格条：`。
+              need("规格条", "本次改动含规格卷（docs/specs/<大写前缀>-*.md）")
           if any(p.startswith("docs/decisions/") for p in names):
               need("ADR", "本次改动含 docs/decisions/ 下的决策文件")
           if any(re.search(r"\[#\d+\]\(https://github\.com/[\w.-]+/[\w.-]+/pull/\d+\)", a) for a in added):
               need("PR", "本次新增行引用了其它 PR 的显示链接")
-          if any("TODO(confirm):" in a for a in added):
-              need("待确认事项", "本次新增行含 `TODO(confirm):` 标记")
+          # 标记必须落在注释语境里（`# TODO(confirm):` 或 `// TODO(confirm):`）：
+          # 裸词会被规则文本自己命中 —— 本文件与 `git-conventions` 都在描述它。
+          if any(re.search(r"(?:^|\s)(?:#|//)\s*TODO\(confirm\):", a) for a in added):
+              need("待确认事项", "本次新增行含 `# TODO(confirm):` 注释")
 
           trailers = sorted(
               {
