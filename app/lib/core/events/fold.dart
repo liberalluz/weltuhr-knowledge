@@ -4,19 +4,28 @@
 /// 都在这里算出来，不存在第二份可写状态表。凡是「既能从表读、又能从事件算」
 /// 的东西，都是两份可能不一致的真相。
 ///
-/// 本文件只折叠**事件直接决定**的东西。两处刻意不做：
-/// - `S` / `D` / 掌握度 —— 归 `B6` 的 FSRS；这里只把迁移账本备好
-///   （[FoldedState.carries] / [FoldedState.merges]），折算规则在
-///   `migration.dart` 一处。
-/// - `Plan` 的 `progress` / `sessions` —— 派生自判定与学过的项，归 `QUANT`；
-///   这里只折出**意图**（子树根 / 主序轴 / 包版本 / 源 / 体系 / 方法）。
+/// 本文件只折叠**事件直接决定**的东西。两处边界：
+/// - `S` / `D` / `due` —— `B6` 笔 1 起**在这里折**：算法在 `core/srs/fsrs.dart`
+///   一处，本文件只负责「按事件序把上一次的状态喂进去」。
+/// - 掌握度与 `Plan` 的 `progress` / `sessions` —— 派生自判定与学过的项，归
+///   `QUANT`（`B6` 笔 2 / 笔 3）；这里只折出**意图**（子树根 / 主序轴 / 包版本 /
+///   源 / 体系 / 方法）。
 library;
 
-import '../enums.dart';
 import '../entities/plan.dart';
+import '../entities/state.dart';
+import '../enums.dart';
 import '../json.dart';
+import '../srs/fsrs.dart';
 import 'event.dart';
 import 'migration.dart';
+
+/// `item_graded.payload` 里判「打卡式」的两个字面量（`event-types.md` §二 A）。
+///
+/// **只在这一处写字符串**：`ProgressKind` 枚举定义在 `core/session/session_events.dart`，
+/// 事件层引它会把依赖倒成「事件 → 会话」，而会话本就依赖事件。
+const String _progressKindKey = 'progressKind';
+const String _checkedWire = 'checked';
 
 /// 一节笔记折叠后的样子。
 class FoldedNote {
@@ -35,6 +44,8 @@ class FoldedState {
     required Map<String, int> cursors,
     required Set<String> passed,
     required Set<String> graduated,
+    required Map<String, SrsState> srs,
+    required Map<String, int> skipStreaks,
     required Map<String, Grade> lastGrade,
     required Map<String, int> consecutiveFails,
     required Set<String> retired,
@@ -45,6 +56,8 @@ class FoldedState {
   }) : cursors = Map<String, int>.unmodifiable(cursors),
        passed = Set<String>.unmodifiable(passed),
        graduated = Set<String>.unmodifiable(graduated),
+       srs = Map<String, SrsState>.unmodifiable(srs),
+       skipStreaks = Map<String, int>.unmodifiable(skipStreaks),
        lastGrade = Map<String, Grade>.unmodifiable(lastGrade),
        consecutiveFails = Map<String, int>.unmodifiable(consecutiveFails),
        retired = Set<String>.unmodifiable(retired),
@@ -58,6 +71,8 @@ class FoldedState {
     : cursors = const <String, int>{},
       passed = const <String>{},
       graduated = const <String>{},
+      srs = const <String, SrsState>{},
+      skipStreaks = const <String, int>{},
       lastGrade = const <String, Grade>{},
       consecutiveFails = const <String, int>{},
       retired = const <String>{},
@@ -78,6 +93,21 @@ class FoldedState {
 
   /// 已毕业（`S ≥ 180`）。状态转换**不可逆**。
   final Set<String> graduated;
+
+  /// 项 → 记忆状态（`D` / `S` / `due` / `reps`）。
+  ///
+  /// **只有评过分的项才在这张表里**：`D` / `S` 首次评分才初始化
+  /// （`entity-fields` §14）。没评过分的项没有 `D` 可写 —— 硬造一条会让
+  /// 「没学过」与「学过但忘了」在读数上分不开。
+  final Map<String, SrsState> srs;
+
+  /// 项 → 连续跳过次数（`C-10`）。**全量，含没评过分的项**。
+  ///
+  /// 单独一张表而不是只塞进 [srs]：新学项被跳过时 `D` / `S` 还不存在，
+  /// 而「连续跳过 3 次」的提示恰恰从第一次跳过就要开始数。
+  /// ⚠️ 它与 `consecutiveFails` **不可互相折算** —— 「没敢做」与「做了没过」
+  /// 是两件事（`entity-fields` §14），任何一边清零都不带动另一边。
+  final Map<String, int> skipStreaks;
 
   /// 项 → 最近一次验收成绩。`item_skipped` **不写这里**（`C-11`）。
   final Map<String, Grade> lastGrade;
@@ -124,6 +154,12 @@ class FoldedState {
   bool isGraduated(String itemId) => graduated.contains(itemId);
 
   bool isRetired(String itemId) => retired.contains(itemId);
+
+  /// 某项的记忆状态；**没评过分返回 `null`** —— 不造一条 `D = 0` 的假状态，
+  /// 那会让「没学过」在排序里混进「学得很差」。
+  SrsState? srsOf(String itemId) => srs[itemId];
+
+  int skipStreakOf(String itemId) => skipStreaks[itemId] ?? 0;
 
   /// 某节笔记；没写过返回 `null`（**不返回空对象**，否则「没笔记」与「空笔记」
   /// 分不开，`SPEC-FND-014` 要求缺失表现为空位）。
@@ -195,6 +231,13 @@ FoldedState fold(
   /// 不读 payload 的 `version`：那是第二份计数，重传或乱序时必然与重放条数打架。
   final Map<String, int> planRevisions = <String, int>{};
 
+  /// 评分累计器：`D` / `S` / 上次评分时刻 / 评分次数。
+  /// 只有评过分的项才有条目（见 [FoldedState.srs] 的说明）。
+  final Map<String, _SrsAcc> srsAcc = <String, _SrsAcc>{};
+
+  /// 连续跳过次数。**含没评过分的项** —— 与 [FoldedState.skipStreaks] 同一本账。
+  final Map<String, int> skipStreaks = <String, int>{};
+
   for (final Event event in ordered) {
     if (!seenIds.add(event.id)) {
       continue;
@@ -221,15 +264,52 @@ FoldedState fold(
         consecutiveFails[gradedItem] = grade == Grade.fail
             ? (consecutiveFails[gradedItem] ?? 0) + 1
             : 0;
+        // `D` / `S`：首次评分给初值，之后由 `fsrsNext` 递推。**打卡项冻结** ——
+        // 无检验输入 ⇒ `S` 不更新、永不毕业（`QUANT-007` / `STEP-034`）。
+        final bool checkedOnly =
+            event.payload[_progressKindKey] == _checkedWire;
+        final _SrsAcc? previous = srsAcc[gradedItem];
+        if (previous == null) {
+          final ({double difficulty, double stability}) initial = fsrsInitial(
+            grade,
+          );
+          srsAcc[gradedItem] = _SrsAcc(
+            difficulty: initial.difficulty,
+            stability: initial.stability,
+            lastReviewAt: event.at,
+            reps: 1,
+          );
+        } else {
+          final double elapsedDays =
+              event.at.difference(previous.lastReviewAt).inSeconds /
+              Duration.secondsPerDay;
+          final ({double difficulty, double stability}) next = fsrsNext(
+            grade: grade,
+            difficulty: previous.difficulty,
+            stability: previous.stability,
+            elapsedDays: elapsedDays,
+            freeze: checkedOnly,
+          );
+          srsAcc[gradedItem] = _SrsAcc(
+            difficulty: next.difficulty,
+            stability: next.stability,
+            lastReviewAt: event.at,
+            reps: previous.reps + 1,
+          );
+        }
+        // 评分就是「这次做了」—— 连续跳过到此为止。反向不成立：
+        // 跳过不清零 `failCount`（两件事，见 [FoldedState.skipStreaks]）。
+        skipStreaks[gradedItem] = 0;
 
       case EventType.itemPassed:
         passed.add(_requireItem(event));
 
       case EventType.itemSkipped:
         // 跳过：不写判定、不计 fail、不计已学（`C-11`）。
-        // 这里**故意什么都不做** —— 「移出本次会话」是 Runner 的队列状态，
-        // 不是派生事实。写成空分支是为了让「跳过为什么没有状态」有落点。
-        break;
+        // **但连续跳过要数** —— `C-10` 的「连续 3 次」提示从第一次跳过就要开始数，
+        // 而新学项此时还没有 `D` / `S`，所以这笔账独立于 [FoldedState.srs]。
+        final String skippedItem = _requireItem(event);
+        skipStreaks[skippedItem] = (skipStreaks[skippedItem] ?? 0) + 1;
 
       case EventType.graduated:
         graduated.add(_requireItem(event));
@@ -289,10 +369,29 @@ FoldedState fold(
     );
   }
 
+  // `due` 在收尾处一次算：它是 `lastReviewAt + 反解(S)`，与事件序无关；
+  // 每来一条事件就重算一遍会在回放中途留下半截时刻，而那个值没有任何消费者。
+  final Map<String, SrsState> srs = <String, SrsState>{};
+  for (final MapEntry<String, _SrsAcc> entry in srsAcc.entries) {
+    final _SrsAcc acc = entry.value;
+    srs[entry.key] = SrsState(
+      itemId: entry.key,
+      difficulty: acc.difficulty,
+      stability: acc.stability,
+      lastReviewAt: acc.lastReviewAt,
+      due: fsrsDueAt(lastReviewAt: acc.lastReviewAt, stability: acc.stability),
+      failCount: consecutiveFails[entry.key] ?? 0,
+      reps: acc.reps,
+      skipStreak: skipStreaks[entry.key] ?? 0,
+    );
+  }
+
   return FoldedState(
     cursors: cursors,
     passed: passed,
     graduated: graduated,
+    srs: srs,
+    skipStreaks: skipStreaks,
     lastGrade: lastGrade,
     consecutiveFails: consecutiveFails,
     retired: retired,
@@ -301,6 +400,22 @@ FoldedState fold(
     merges: merges,
     plans: plans,
   );
+}
+
+/// 评分累计器。`D` / `S` 一旦存在就只由 [fsrsNext] 更新 —— 这里不存派生值
+/// （`R(t)` / `due`），存了就是第二份真相。
+class _SrsAcc {
+  const _SrsAcc({
+    required this.difficulty,
+    required this.stability,
+    required this.lastReviewAt,
+    required this.reps,
+  });
+
+  final double difficulty;
+  final double stability;
+  final DateTime lastReviewAt;
+  final int reps;
 }
 
 /// 从一条计划类事件折出一份 `Plan`。
