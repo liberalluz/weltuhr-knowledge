@@ -132,11 +132,12 @@ Future<void> _pump(WidgetTester tester, EventStore? store) async {
 Future<void> _pumpWith(
   WidgetTester tester,
   PackContent pack,
-  EventStore? store,
-) async {
+  EventStore? store, {
+  DateTime? now,
+}) async {
   await tester.pumpWidget(
     MaterialApp(
-      home: OverviewScreen(content: pack, eventStore: store),
+      home: OverviewScreen(content: pack, eventStore: store, now: now),
     ),
   );
   await tester.pumpAndSettle();
@@ -149,7 +150,7 @@ void main() {
     await _pump(tester, _MemoryStore());
     expect(find.text('新学 2 项'), findsOneWidget);
     expect(find.byKey(const Key('overview-start')), findsOneWidget);
-    // 本笔只有体系序一源 —— 另外两行不该拿 0 凑数。
+    // 零事件 ⇒ 既无缺口也无到期项 —— 另外两行不该拿 0 凑数。
     expect(find.textContaining('复习'), findsNothing);
     expect(find.textContaining('缺口'), findsNothing);
   });
@@ -263,5 +264,43 @@ void main() {
   ) async {
     await _pump(tester, _MemoryStore());
     expect(find.byKey(const Key('overview-gap-detail')), findsNothing);
+  });
+
+  testWidgets('TC-STEP-069 打卡项也会到期 ⇒ 出「复习 1 项」，且不重复计入新学（SPEC-STEP-003）', (
+    WidgetTester tester,
+  ) async {
+    // 打卡项的 `S` 冻结在初值（`QUANT-007`），`due` 仍按 `C-03` 反解得到 ——
+    // 判定在 10-28，初值 `S` 约 3.2 天 ⇒ 到期日在 10-31 之后。看 11-05。
+    await _pumpWith(
+      tester,
+      _pack(),
+      _MemoryStore(<Event>[
+        _passed('py:a'),
+        _graded('py:a', Grade.pass, minute: 1),
+      ]),
+      now: DateTime.utc(2026, 11, 5, 12),
+    );
+
+    expect(find.text('复习 1 项'), findsOneWidget);
+    expect(find.text('新学 1 项'), findsOneWidget);
+    expect(find.text('复习 2 项'), findsNothing);
+  });
+
+  testWidgets('TC-STEP-070 还没到 due ⇒ 不出复习行，学过的项也不退回新学（SPEC-STEP-003）', (
+    WidgetTester tester,
+  ) async {
+    await _pumpWith(
+      tester,
+      _pack(),
+      _MemoryStore(<Event>[
+        _passed('py:a'),
+        _graded('py:a', Grade.pass, minute: 1),
+      ]),
+      now: DateTime.utc(2026, 10, 29, 12),
+    );
+
+    expect(find.byKey(const Key('overview-reviews')), findsNothing);
+    expect(find.textContaining('复习'), findsNothing);
+    expect(find.text('新学 1 项'), findsOneWidget);
   });
 }
