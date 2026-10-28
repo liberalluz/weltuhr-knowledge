@@ -22,13 +22,24 @@ library;
 import 'package:flutter/material.dart';
 
 import '../../core/constants.dart';
+import '../../core/events/event_store.dart';
+import '../../core/events/hlc_clock.dart';
+import '../../core/events/journal_event_store.dart';
+import '../../core/locate/locator.dart';
 import '../../core/pack/pack_reader.dart';
+import '../../core/plan/plan_entry.dart';
+import '../../core/plan/plan_events.dart';
 import '../../core/tree/landing.dart';
 import '../../core/tree/landing_target.dart';
 import '../../core/tree/tree_index.dart';
 import '../../core/tree/tree_outline.dart';
+import '../locate/locate_overlay.dart';
+import '../planner/planner_screen.dart';
 import 'tree_breadcrumb.dart';
 import 'tree_view.dart';
+
+/// 标题栏上的「定位」（`SPEC-PLAN-016` 第三入口的进处）。
+const Key treeLocateKey = ValueKey<String>('tree-locate');
 
 /// 筛选条（第四类落点生效时出现，`SPEC-TREE-014`）。
 const Key treeFilterBarKey = ValueKey<String>('tree-filter-bar');
@@ -37,11 +48,23 @@ const Key treeFilterBarKey = ValueKey<String>('tree-filter-bar');
 const Key treeFilterClearKey = ValueKey<String>('tree-filter-clear');
 
 class TreeScreen extends StatefulWidget {
-  const TreeScreen({super.key, required this.contents, this.initialLanding});
+  const TreeScreen({
+    super.key,
+    required this.contents,
+    this.initialLanding,
+    this.eventStore,
+  });
 
   /// 全部已装载的包。骨架一条 + 载荷若干条 —— 树是**跨包**的，只喂一个包
   /// 会得到一片没有父的森林（载荷的 `attach_to` 指在骨架里）。
   final List<PackContent> contents;
+
+  /// 建计划后写 `plan_created` 的去处。
+  ///
+  /// `null` = 这一层没接存储（旧的界面测试、纯展示预览）。此时**不假装写成功**：
+  /// 计划照样进 Planner，但交出草稿后会说「没有落盘」—— 静默吞掉一条
+  /// `plan_created` 等于丢事实（`SPEC-FND-010`）。
+  final EventStore? eventStore;
 
   /// 打开时落到哪一处（`SPEC-TREE-010` 的四类落点）。
   ///
@@ -69,6 +92,13 @@ class _TreeScreenState extends State<TreeScreen> {
   /// 再等下一次改名。筛选是页面状态，跟着页面生死。
   String? _filterTag;
 
+  /// 定位浮层是否打开。放页面状态：浮层的遮罩要盖住整棵树，而不是只盖某一行。
+  bool _locating = false;
+
+  /// 发事件的时钟。**一个页面一个**：同一页面内连发两条时 `counter` 才会递增，
+  /// 每次新建会把「同一毫秒」的发两条排成并列（`Hlc.compareTo` 只能靠 deviceId 分）。
+  final HlcClock _clock = HlcClock(deviceId: localDeviceId);
+
   @override
   void initState() {
     super.initState();
@@ -93,7 +123,10 @@ class _TreeScreenState extends State<TreeScreen> {
     }
     final TreeTarget? target = landInTree(
       tree: tree,
-      resolver: LandingResolver(tree, packRootsOf(tree: tree, contents: widget.contents)),
+      resolver: LandingResolver(
+        tree,
+        packRootsOf(tree: tree, contents: widget.contents),
+      ),
       landing: landing,
       currentRootId: rootId,
       currentAddressId: rootId,
@@ -144,9 +177,151 @@ class _TreeScreenState extends State<TreeScreen> {
         title: (tree == null || address == null)
             ? const Text(treeVirtualRootLabel)
             : TreeBreadcrumb(tree: tree, nodeId: address, onJump: _jumpTo),
+        actions: <Widget>[
+          IconButton(
+            key: treeLocateKey,
+            icon: const Icon(Icons.search),
+            tooltip: '定位',
+            onPressed: () => setState(() => _locating = true),
+          ),
+        ],
       ),
-      body: _body(context),
+      // 浮层自带遮罩（`LocateOverlay` 根是 `Stack` + `Positioned.fill`），所以它
+      // 必须叠在整棵树之上，而不是塞进某一栏。
+      body: Stack(
+        children: <Widget>[
+          Positioned.fill(child: _body(context)),
+          if (_locating) Positioned.fill(child: _locateOverlay()),
+        ],
+      ),
     );
+  }
+
+  /// 浮层本体。**作用域就是当前根**：`subtreeRoot` 给的是 `_rootId`，于是「圈内」
+  /// 只有本包当前子树，跨包命中会落在分诊里（`VIEW-030` ①）。
+  Widget _locateOverlay() {
+    final PackContent? pack = _packContaining(_rootId);
+    return LocateOverlay(
+      pack: pack,
+      subtreeRoot: _rootId ?? '',
+      // 树是跨包的，本包之外的包照样能搜到 —— 但只在用户主动点「在全部空间中
+      // 搜索」之后（`SPEC-VIEW-031`），所以这里给全量与 `scopePluginId`。
+      otherPacks: <PackContent>[
+        for (final PackContent content in widget.contents)
+          if (!identical(content, pack)) content,
+      ],
+      scopePluginId: pack?.pack.pluginId,
+      onPick: (LocateResult result, LocateHit hit) => _landOn(hit.target),
+      onPickNear: _landOn,
+      onDismiss: () => setState(() => _locating = false),
+      onPlanHere: _planFrom,
+      canPlanHere: (LocateResult result) =>
+          planEntryFor(result: result, contents: widget.contents) != null,
+    );
+  }
+
+  /// 把地址落到某个节点上（`SPEC-TREE-010` 第一类）。走 `landInTree` 而不是直接
+  /// `_drill`：跨轴命中要把根一起推过去，逐字段赋值会让「根没跟上」露一帧。
+  void _landOn(String nodeId) {
+    final TreeIndex? tree = _tree;
+    if (tree == null) {
+      setState(() => _locating = false);
+      return;
+    }
+    final TreeTarget? target = landInTree(
+      tree: tree,
+      resolver: LandingResolver(
+        tree,
+        packRootsOf(tree: tree, contents: widget.contents),
+      ),
+      landing: NodeLanding(nodeId),
+      currentRootId: _rootId ?? nodeId,
+      currentAddressId: _selectedId ?? nodeId,
+    );
+    setState(() {
+      _locating = false;
+      if (target != null) {
+        _rootId = target.rootId;
+        _selectedId = target.addressId;
+        _filterTag = target.filterTag;
+      }
+    });
+  }
+
+  /// 「按此范围建计划」（`SPEC-PLAN-016` 第三入口）。
+  ///
+  /// 浮层已经在 `canPlanHere` 里判过一遍，这里再算一次是**故意的**：两次之间
+  /// 内容包不会变，而重算比把 `PlanEntry` 缓存进 `State` 更省事 —— 缓存的代价是
+  /// 要回答「包换了之后它什么时候失效」，那是个真问题，这里不需要它。
+  Future<void> _planFrom(LocateResult result) async {
+    final PlanEntry? entry = planEntryFor(
+      result: result,
+      contents: widget.contents,
+    );
+    if (entry == null) {
+      return;
+    }
+    final PackContent? pack = _packContaining(entry.subtreeRoot);
+    if (pack == null) {
+      return;
+    }
+    setState(() => _locating = false);
+    final PlanDraft? draft = await PlannerScreen.open(
+      context,
+      pack: pack,
+      spaceId: entry.spaceId,
+      subtreeRoot: entry.subtreeRoot,
+      primaryAxis: entry.primaryAxis,
+      packVersions: entry.packVersions,
+    );
+    if (draft == null || !mounted) {
+      return;
+    }
+    await _recordPlan(draft);
+  }
+
+  /// 落一条 `plan_created`。**只在用户真的交了草稿之后**写 —— 打开 Planner 又
+  /// 返回不等于建了计划（`planner_screen.dart` 文件头：面板只交草稿）。
+  Future<void> _recordPlan(PlanDraft draft) async {
+    final EventStore? store = widget.eventStore;
+    if (store == null) {
+      // 没接存储时不假装写成功，也不回滚界面 —— 计划已经交出来了，只是没落盘。
+      _say('事件存储未接入，这份计划没有落盘');
+      return;
+    }
+    try {
+      await store.append(
+        buildPlanCreated(
+          draft: draft,
+          clock: _clock,
+          now: DateTime.now(),
+          userId: localDefaultUserId,
+        ),
+      );
+    } on StateError catch (error) {
+      _say(error.message);
+    }
+  }
+
+  void _say(String message) {
+    if (!mounted) {
+      return;
+    }
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  /// 某个节点所在的包。`null` = 没装载那个节点（骨架缺失时 `_rootId` 也是 null）。
+  PackContent? _packContaining(String? nodeId) {
+    if (nodeId == null) {
+      return null;
+    }
+    for (final PackContent content in widget.contents) {
+      if (content.nodeById.containsKey(nodeId)) {
+        return content;
+      }
+    }
+    return null;
   }
 
   Widget _body(BuildContext context) {
@@ -257,7 +432,11 @@ class _Notice extends StatelessWidget {
             for (final String line in lines)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 2),
-                child: Text(line, style: text.bodySmall, textAlign: TextAlign.center),
+                child: Text(
+                  line,
+                  style: text.bodySmall,
+                  textAlign: TextAlign.center,
+                ),
               ),
           ],
         ),

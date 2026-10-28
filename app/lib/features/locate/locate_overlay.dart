@@ -135,6 +135,7 @@ class LocateOverlay extends StatefulWidget {
     required this.onPickNear,
     required this.onDismiss,
     this.onPlanHere,
+    this.canPlanHere,
     this.otherPacks = const <PackContent>[],
     this.scopePluginId,
     this.domainId,
@@ -188,6 +189,16 @@ class LocateOverlay extends StatefulWidget {
   /// `null` = 没有上层接收，按钮不渲染 —— 与 `PlannerPanel.onCreate` 同口径：
   /// 一个按下没反应的按钮比没有按钮更糟。
   final void Function(LocateResult result)? onPlanHere;
+
+  /// 这一轮命中**圈不圈得出单一子树**。`null` = 只看 [onPlanHere] 在不在。
+  ///
+  /// 为什么不在浮层里自己判：判据是「命中集的公共根 + 同轴」，它要一棵跨包合并
+  /// 的父链树，而浮层手里只有 `pack` 与 `otherPacks` 两份内容 —— 在界面层再算
+  /// 一遍等于把 `core/plan/plan_entry.dart` 的判据抄第二份，两份迟早分叉。
+  ///
+  /// 交给上层判的后果是：跨子树时按钮**不出现**，而不是「出现但点了没反应」
+  /// （`SPEC-PLAN-016` 第三入口的验收口径）。
+  final bool Function(LocateResult result)? canPlanHere;
 
   /// 当前视图的域上下文（选中项所在的域）。只影响分诊的 ③ / ④ 分野
   /// （`VIEW-030`）：知道往哪放才谈得上新增。
@@ -507,6 +518,7 @@ class _LocateOverlayState extends State<LocateOverlay> {
     // 就是「按此范围建一份 0 项的计划」。
     final bool canPlan =
         widget.onPlanHere != null &&
+        (widget.canPlanHere?.call(result) ?? true) &&
         hits.any((LocateHit hit) => hit.kind != LocateKind.axis);
     return ListView.builder(
       key: locateResultsKey,
