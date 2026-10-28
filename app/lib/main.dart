@@ -1,18 +1,56 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
 import 'core/constants.dart';
 import 'core/entities/entry.dart';
 import 'core/entities/node.dart';
 import 'core/enums.dart';
+import 'core/errors.dart';
+import 'core/events/event_store.dart';
+import 'core/events/journal_event_store.dart';
 import 'core/pack/dart_io_pack_fs.dart';
 import 'core/pack/pack_fs.dart';
 import 'core/pack/pack_probe.dart';
 import 'core/pack/pack_reader.dart';
+import 'core/storage/store_layout.dart';
 import 'core/tree/landing.dart';
 import 'features/tree/tree_screen.dart';
 
 void main() {
-  runApp(const WeltuhrApp());
+  runApp(WeltuhrApp(eventStore: localEventStore()));
+}
+
+/// 开发期的事件日志去处。
+///
+/// 三区仍由 [StoreLayout] 定：只读区就是包根，可写区与事件区落在用户数据目录下
+/// （`%APPDATA%\Weltuhr`，非 Windows 退 `$HOME`）。`null` = 这台机器上取不到根，
+/// 或者三区撞在一起 —— 此时代码不猜一个路径出来，界面会在建计划后如实说没落盘。
+///
+/// **制品形态不在这里定**：exe 同级 / bundle 内的目录归 `B8`，与 [devPackRoots]
+/// 同口径 —— 开发期只给一个「可改的位置」。
+EventStore? localEventStore() {
+  final Map<String, String> env = Platform.environment;
+  final String? base = env['APPDATA'] ?? env['HOME'];
+  if (base == null || base.isEmpty) {
+    return null;
+  }
+  const DartIoPackFs fs = DartIoPackFs();
+  final StoreLayout layout;
+  try {
+    layout = StoreLayout(
+      readOnlyRoot: devPackRoots().values.first.first,
+      writableRoot: '$base/Weltuhr/writable',
+      eventRoot: '$base/Weltuhr/events',
+    );
+  } on InvalidStoreLayoutError {
+    return null;
+  }
+  final String? path = layout.pathIn(StoreZone.event, journalEventFileName);
+  if (path == null || !fs.ensureDir(layout.eventRoot)) {
+    return null;
+  }
+  return JournalEventStore(fs: fs, path: path);
 }
 
 /// 启动期装载的结果。**三态，不是一个 `bool`**：
@@ -90,9 +128,14 @@ String _parentOf(String filePath) {
 /// [boot] 可注入：`test` 里不碰真实磁盘（`flutter test` 的 CWD 下没有内容包，
 /// 真去读只会得到一条「探不到」—— 那样测的就不是界面，而是本机目录结构）。
 class WeltuhrApp extends StatefulWidget {
-  const WeltuhrApp({super.key, this.boot});
+  const WeltuhrApp({super.key, this.boot, this.eventStore});
 
   final PackBoot Function()? boot;
+
+  /// 事件存储。一路传到 `TreeScreen` —— 建计划要写 `plan_created`，而写事件
+  /// 归最上面这一层决定（`planner_screen.dart` 文件头：面板只交草稿）。
+  /// `null` = 没接（测试 / 取不到数据目录），界面会如实说没落盘。
+  final EventStore? eventStore;
 
   @override
   State<WeltuhrApp> createState() => _WeltuhrAppState();
@@ -114,8 +157,15 @@ class _WeltuhrAppState extends State<WeltuhrApp> {
       home: _boot.isEmpty
           ? EmptySpaceScreen(problems: _boot.problems)
           : (_boot.packs.length == 1
-                ? SpaceScreen(content: _boot.packs.first, contents: _boot.packs)
-                : PackListScreen(packs: _boot.packs)),
+                ? SpaceScreen(
+                    content: _boot.packs.first,
+                    contents: _boot.packs,
+                    eventStore: widget.eventStore,
+                  )
+                : PackListScreen(
+                    packs: _boot.packs,
+                    eventStore: widget.eventStore,
+                  )),
     );
   }
 }
@@ -172,9 +222,10 @@ class EmptySpaceScreen extends StatelessWidget {
 
 /// 装了多个包时才出现的一层：先选包，再进它的树。
 class PackListScreen extends StatelessWidget {
-  const PackListScreen({super.key, required this.packs});
+  const PackListScreen({super.key, required this.packs, this.eventStore});
 
   final List<PackContent> packs;
+  final EventStore? eventStore;
 
   @override
   Widget build(BuildContext context) {
@@ -190,8 +241,11 @@ class PackListScreen extends StatelessWidget {
             trailing: const Icon(Icons.chevron_right),
             onTap: () => Navigator.of(context).push(
               MaterialPageRoute<void>(
-                builder: (BuildContext context) =>
-                    SpaceScreen(content: content, contents: packs),
+                builder: (BuildContext context) => SpaceScreen(
+                  content: content,
+                  contents: packs,
+                  eventStore: eventStore,
+                ),
               ),
             ),
           );
@@ -207,13 +261,21 @@ class PackListScreen extends StatelessWidget {
 /// 个界面（`features/tree`），入口在标题栏 —— 两者不是同一件事：这里回答「这个
 /// 包里有什么」，容器树回答「我在知识体系的哪个位置」。
 class SpaceScreen extends StatelessWidget {
-  const SpaceScreen({super.key, required this.content, this.contents});
+  const SpaceScreen({
+    super.key,
+    required this.content,
+    this.contents,
+    this.eventStore,
+  });
 
   final PackContent content;
 
   /// 全部已装载的包。容器树是跨包的，只喂本包会得到一片没有父的森林 ——
   /// 载荷的 `attach_to` 指在骨架里。`null` = 只有 [content]。
   final List<PackContent>? contents;
+
+  /// 建计划要写的那条事件归谁存。见 [WeltuhrApp.eventStore]。
+  final EventStore? eventStore;
 
   @override
   Widget build(BuildContext context) {
@@ -240,6 +302,7 @@ class SpaceScreen extends StatelessWidget {
                   // 它覆盖子树的根。不给的话永远落在轴序第一个根 —— 从载荷包
                   // 进来却看见学科轴根，是「跳到了树里但不是我那个位置」。
                   initialLanding: PackLanding(content.pack.pluginId),
+                  eventStore: eventStore,
                 ),
               ),
             ),
@@ -286,6 +349,7 @@ class SpaceScreen extends StatelessWidget {
                         content: content,
                         node: planet,
                         contents: contents,
+                        eventStore: eventStore,
                       ),
                     ),
                   ),
@@ -308,6 +372,7 @@ class PlanetScreen extends StatelessWidget {
     required this.content,
     required this.node,
     this.contents,
+    this.eventStore,
   });
 
   final PackContent content;
@@ -316,6 +381,9 @@ class PlanetScreen extends StatelessWidget {
   /// 全部已装载的包 —— 容器树是跨包的，只喂本包会得到一片没有父的森林。
   /// `null` = 只有 [content]，容器树按钮就按单包打开。
   final List<PackContent>? contents;
+
+  /// 建计划要写的那条事件归谁存。见 [WeltuhrApp.eventStore]。
+  final EventStore? eventStore;
 
   @override
   Widget build(BuildContext context) {
@@ -339,6 +407,7 @@ class PlanetScreen extends StatelessWidget {
                   // 落到**节点**（`SPEC-TREE-010` 第一类）：这一页回答「它是
                   // 什么」，进了树才回答「它在知识体系的哪个位置」。
                   initialLanding: NodeLanding(node.id),
+                  eventStore: eventStore,
                 ),
               ),
             ),
