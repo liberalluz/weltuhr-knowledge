@@ -233,6 +233,28 @@ check_body() {
     fi
   fi
 
+  # 2b — 版号: enum value plus a non-empty reason after `——`. Whether the reason
+  # holds is a review item; this only judges the shape it must have.
+  if field_line "版号"; then
+    local vline vval="" vrest=""
+    vline="${BL[$((FLN - 1))]}"
+    vline="${vline#*- **版号**：}"
+    case "$vline" in
+      *——*) vval="${vline%%——*}"; vrest="${vline#*——}" ;;
+      *) vval="$vline" ;;
+    esac
+    vval="${vval//[[:space:]]/}"
+    case "$vval" in
+      不变|PATCH|MINOR|MAJOR) ok "版号 值在词表内：${vval}" ;;
+      *) bad "版号 值须为 不变 / PATCH / MINOR / MAJOR：${vval:-（空）}" ;;
+    esac
+    vrest="${vrest#"${vrest%%[![:space:]]*}"}"
+    vrest="${vrest%"${vrest##*[![:space:]]}"}"
+    if [ -z "$vrest" ]; then
+      bad '版号 须写「<值> —— <理由>」，理由不得为空'
+    fi
+  fi
+
   # 3 — no task list. Inline code is stripped first: the body may discuss `- [ ]`.
   local tl=0
   for l in "${BL[@]}"; do
@@ -285,9 +307,18 @@ check_body() {
   fi
 
   # 5 — 改动面: N/M/K header, N reconciled against the real diff, item shape.
-  local dl dtext dn=0 dk=-1
+  local dl dtext dn=0 dk=-1 da=0 dm=0 dd=0
   if [ -n "$diff_base" ]; then
     dn=$(git diff --name-only "${diff_base}...HEAD" 2>/dev/null | grep -c . || true)
+    local stl stp
+    while IFS=$'\t' read -r stl stp; do
+      [ -n "$stl" ] || continue
+      case "$stl" in
+        A*) da=$((da + 1)) ;;
+        D*) dd=$((dd + 1)) ;;
+        *) dm=$((dm + 1)) ;;
+      esac
+    done < <(git diff --name-status "${diff_base}...HEAD" 2>/dev/null)
   fi
   if field_line "改动面"; then
     dl=$FLN
@@ -312,10 +343,87 @@ check_body() {
       bad '改动面 首行缺「未动 K 处」'
     fi
 
+    # 5b — 分类 row. `build_pr_body` computes it from `git diff --name-status`;
+    # hand-written bodies must keep the row and keep the three numbers true.
+    local cline="" k2
+    for ((k2 = dl; k2 < ${#BL[@]}; k2++)); do
+      case "${BL[$k2]}" in
+        "## "*) break ;;
+        "- **"*) break ;;
+        *"- 分类："*) cline="${BL[$k2]}"; break ;;
+      esac
+    done
+    if [ -n "$cline" ]; then
+      local cre='新增[^0-9]*([0-9]+)[^0-9]*修改[^0-9]*([0-9]+)[^0-9]*删除[^0-9]*([0-9]+)'
+      if [[ "$cline" =~ $cre ]]; then
+        if [ "$dn" -gt 0 ]; then
+          if [ "${BASH_REMATCH[1]}" -ne "$da" ] || [ "${BASH_REMATCH[2]}" -ne "$dm" ] \
+             || [ "${BASH_REMATCH[3]}" -ne "$dd" ]; then
+            bad "分类行 新增/修改/删除=${BASH_REMATCH[1]}/${BASH_REMATCH[2]}/${BASH_REMATCH[3]} 与真实 diff 的 ${da}/${dm}/${dd} 对不上"
+          else
+            ok "分类行 ${da}/${dm}/${dd} 与真实 diff 一致"
+          fi
+        else
+          skip "分类行：未给 diff base，只判形态"
+        fi
+      else
+        bad "分类行形态须为「- 分类：新增 X · 修改 Y · 删除 Z」：$cline"
+      fi
+    elif [ "$dn" -gt 0 ]; then
+      bad '改动面缺「- 分类：新增 X · 修改 Y · 删除 Z」（装置算好的行不得删）'
+    fi
+
+    # 5c — 未动 K against the card. `.batch/` is not committed, so CI has no card
+    # and degrades to skip; locally the card is the only authority for what was
+    # approved but never touched.
+    local bid kfile
+    bid=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || true)
+    bid="${bid##*/}"
+    kfile=".batch/${bid}/card.yaml"
+    if [ -n "$diff_base" ] && [ -n "$bid" ] && [ -f "$kfile" ]; then
+      local -a kcon=()
+      local kln kinc=0 kitem
+      while IFS= read -r kln; do
+        kln="${kln%$'\r'}"
+        case "$kln" in
+          "allowed:") kinc=1; continue ;;
+        esac
+        [ "$kinc" -eq 1 ] || continue
+        case "$kln" in
+          "  - "*)
+            kitem="${kln#  - }"; kitem="${kitem#\"}"; kitem="${kitem%\"}"
+            case "$kitem" in *[\*\?\[]*) ;; *) kcon+=("$kitem") ;; esac
+            ;;
+          *) kinc=0 ;;
+        esac
+      done < "$kfile"
+      if [ "${#kcon[@]}" -eq 0 ]; then
+        skip '未动 K：卡片里没有具体路径（全为通配符），无法对账'
+      else
+        local ktouch=" " kku=0
+        while IFS=$'\t' read -r kln kitem; do
+          [ -n "$kitem" ] && ktouch="${ktouch}${kitem} "
+        done < <(git diff --name-status "${diff_base}...HEAD" 2>/dev/null)
+        for kitem in "${kcon[@]}"; do
+          case "$ktouch" in
+            *" $kitem "*) ;;
+            *) kku=$((kku + 1)) ;;
+          esac
+        done
+        if [ "$dk" -ne "$kku" ]; then
+          bad "未动 K=${dk} 与卡片具体路径实算的 ${kku} 处不符"
+        else
+          ok "未动 K=${dk} 与卡片实算一致"
+        fi
+      fi
+    else
+      skip "未动 K=${dk}：无卡片或未给 diff base，无法对账"
+    fi
+
     # Item shape: `- <做了什么>：<路径与依据>` — the colon must be there, and the
     # text before it must not itself be a path.
     if field_bounds "改动面"; then
-      local e part
+      local e part lab
       for ((i = FA - 1; i < FB; i++)); do
         e="${BL[$i]}"
         e="${e#"${e%%[![:space:]]*}"}"
@@ -327,6 +435,14 @@ check_body() {
         part="${e%%：*}"
         case "$part" in
           */*) bad "改动面条目冒号前不得是路径（做了什么要写在前）：$e" ;;
+        esac
+        # A bare category word ("改动：", "修改：") states no action. The generator no
+        # longer emits one, and a hand-written body must not either.
+        lab="${part#- }"
+        lab="${lab%"${lab##*[![:space:]]}"}"
+        case "$lab" in
+          改动|修改|新增|删除|调整|变更|更新)
+            bad "改动面条目冒号前是空标签（写做了什么，不要写类别词）：$e" ;;
         esac
         case "$e" in
           "- 未动"*)
@@ -535,6 +651,16 @@ check_body() {
            "级别"; do
     field_line "$f" || bad "缺字段：$f"
   done
+
+  # 兼容与回滚 is a closed three-way choice: 无 / 迁移：… / 回滚：…. 「未声明」
+  # and its cousins read as a value without saying whether anything migrates.
+  if field_line "兼容与回滚"; then
+    field_value "兼容与回滚"
+    case "$FR" in
+      无|迁移：*|回滚：*) ;;
+      *) bad "兼容与回滚 须三选一（无 / 迁移：… / 回滚：…）：${FR:-（空）}" ;;
+    esac
+  fi
   section_contains "## 验证" "未验" || bad '验证缺「未验」'
   section_contains "## AI 参与" "人核" || bad 'AI 参与缺「人核」'
 
@@ -588,9 +714,11 @@ check_body() {
   fi
   [ "$fail" -eq "$v13" ] && ok '字段齐全（影响面三字段 / 验证 / AI / 平台组形态）'
 
-  # 14 — 关联: eight-class closed set, one anchor per line, absent classes omitted.
+  # 14 — 关联: eight-class closed set, one anchor per line, absent classes omitted,
+  # and the order is the fixed one (a missing class is fine, a swapped pair is not).
   if section_bounds "## 关联"; then
-    local ne=0 only="" line body2 cat hits r c
+    local ne=0 only="" line body2 cat hits r c val prev=-1 cur
+    local -a ord=(批次号 里程碑 issue PR ADR 规格条 用例 待确认事项)
     for ((i = SA; i < SB; i++)); do
       l="${BL[$i]}"
       [ -n "$l" ] || continue
@@ -611,6 +739,10 @@ check_body() {
           case "$cat" in
             批次号|里程碑|issue|PR|ADR|规格条|用例|待确认事项) ;;
             *) bad "关联 类别名不在八类内：${cat}" ;;
+          esac
+          val="${body2#*：}"
+          case "$val" in
+            无|无。|无。) bad "关联 ${cat} 写成「无」：没有锚点的类整行不出现，整节没有才写一行「无」" ;;
           esac
           ;;
       esac
@@ -637,6 +769,24 @@ check_body() {
           done
         done
         [ "$hits" -ge 2 ] && bad "关联 一行里出现 ${hits} 个类别名（应一条一行）：$l"
+
+        # Order: the eight classes have a fixed sequence; a missing one is fine.
+        cur=-1
+        for ((c = 0; c < 8; c++)); do
+          [ "${ord[$c]}" = "$cat" ] && cur=$c
+        done
+        if [ "$cur" -ge 0 ]; then
+          if [ "$cur" -lt "$prev" ]; then
+            bad "关联 次序错：${cat} 排在它应在前面的类别之后（固定次序 批次号 · 里程碑 · issue · PR · ADR · 规格条 · 用例 · 待确认事项）"
+          fi
+          prev=$cur
+        fi
+        # A class written as 「无」 is not an anchor and not an absence: it turns
+        # "nothing here" into content, and the next body copies it forward.
+        val="${body2#*：}"
+        case "$val" in
+          无|无。|无。) bad "关联 ${cat} 写成「无」：没有锚点的类整行不出现，整节没有才写一行「无」" ;;
+        esac
       done
     fi
   fi
@@ -685,6 +835,7 @@ self_test() {
 
 - **分支基线**：从 `5aa14b1` 切出，与 `main` 无分叉
 - **改动面**：动了 `2` 条路径，归为 `2` 项；未动 `0` 处
+  - 分类：新增 `0` · 修改 `2` · 删除 `0`
   - 加一条检查：`infra/tool/batch/check.py`
   - 补一句规则：`docs/specs/git-conventions.md`
 - **版号**：不变 —— 活文档不设版号
@@ -702,7 +853,7 @@ self_test() {
   bash .githooks/pr-body --self-test
   ```
 
-- **测试设计**：正例 1 条 + 负例 22 条，覆盖压段 / 编号前缀 / 路径越界 / 技术栈组只写半套
+- **测试设计**：正例 1 条 + 负例 29 条，覆盖压段 / 编号前缀 / 路径越界 / 技术栈组只写半套 / 分类行 / 版号 / 兼容与回滚 / 空标签 / 关联次序
 - **未验**：无
 
 ## UI 证据
@@ -793,6 +944,26 @@ EOF
   derive "$dir/bad21.md" "| 模块 | 是否改动 | 说明 |" ""
   # 22 — tech-stack table present but field line missing
   derive "$dir/bad22.md" "- **技术栈**：" "- **补充**：无"
+  # 23 — 分类 row whose three numbers are not numbers
+  derive "$dir/bad23.md" '  - 分类：新增 `0` · 修改 `2` · 删除 `0`' \
+    '  - 分类：新增若干 · 修改若干 · 删除若干'
+  # 24 — 版号 value outside the enum
+  derive "$dir/bad24.md" "- **版号**：不变 —— 活文档不设版号" \
+    "- **版号**：不动也不变 —— 活文档不设版号"
+  # 25 — 版号 reason empty after the dash
+  derive "$dir/bad25.md" "- **版号**：不变 —— 活文档不设版号" \
+    "- **版号**：不变 —— "
+  # 26 — 兼容与回滚 outside the three-way choice
+  derive "$dir/bad26.md" "- **兼容与回滚**：无" "- **兼容与回滚**：未声明"
+  # 27 — 改动面 item whose prefix is a bare category word
+  derive "$dir/bad27.md" '  - 加一条检查：`infra/tool/batch/check.py`' \
+    '  - 改动：`infra/tool/batch/check.py`'
+  # 28 — 关联 out of the fixed order
+  derive "$dir/bad28.md" "- 批次号：\`C17\`" \
+    $'- 用例：`TC-GIT-001`\n- 批次号：`C17`'
+  # 29 — 关联 class written as 「无」
+  derive "$dir/bad29.md" "- 批次号：\`C17\`" \
+    $'- 批次号：`C17`\n- issue：无'
 
   printf -- '--- self-test positive (expect exit 0) ---\n'
   fail=0
@@ -809,7 +980,9 @@ EOF
             "$dir"/bad9.md "$dir"/bad10.md "$dir"/bad11.md "$dir"/bad12.md \
             "$dir"/bad13.md "$dir"/bad14.md "$dir"/bad15.md "$dir"/bad16.md \
             "$dir"/bad17.md "$dir"/bad18.md "$dir"/bad19.md "$dir"/bad20.md \
-            "$dir"/bad21.md "$dir"/bad22.md; do
+            "$dir"/bad21.md "$dir"/bad22.md "$dir"/bad23.md "$dir"/bad24.md \
+            "$dir"/bad25.md "$dir"/bad26.md "$dir"/bad27.md "$dir"/bad28.md \
+            "$dir"/bad29.md; do
     n=$((n + 1))
     fail=0
     printf -- '--- self-test negative %d (expect exit 1) ---\n' "$n"

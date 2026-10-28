@@ -84,6 +84,20 @@ class PlanTests(unittest.TestCase):
         )
         self.assertEqual([name for name, _, _ in steps], ["docs"])
 
+    def test_test_paths_also_add_docs_step(self):
+        # D1-D3 pair the ledger with test landing points under app/test/, so a
+        # test-only change can still leave an unregistered case -- keying the
+        # step on the `docs/` prefix alone skips exactly that case.
+        steps = batch.planned_steps(
+            ["app/test/core/pack/x_test.dart"],
+            "main",
+            quick=False,
+            no_tests=False,
+            no_format=False,
+            pr_body=None,
+        )
+        self.assertIn("docs", [name for name, _, _ in steps])
+
     def test_quick_has_no_steps(self):
         steps = batch.planned_steps(
             ["app/lib/a.dart"],

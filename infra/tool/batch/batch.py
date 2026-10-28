@@ -16,6 +16,7 @@ existing scope guard and merge gate enforce the result.
 from __future__ import annotations
 
 import argparse
+import fnmatch
 import getpass
 import hashlib
 import json
@@ -401,7 +402,11 @@ def planned_steps(
         )
 
     app_changed = any(path.startswith("app/") for path in changed)
-    docs_changed = any(path.startswith("docs/") for path in changed)
+    # D1-D3 cross-check the ledger against test landing points under
+    # `app/test/`, so a test-only change can still leave an unregistered case.
+    # Keying this on the `docs/` prefix alone skips exactly that case: the step
+    # that would have caught it never runs.
+    docs_changed = any(path.startswith(("docs/", "app/test/")) for path in changed)
     if app_changed:
         steps.append(("analyze", ["flutter", "analyze"], REPO_ROOT / "app"))
         steps.append(("lint", ["dart", "run", "tool/lint/check.dart"], REPO_ROOT / "app"))
@@ -666,7 +671,9 @@ def build_pr_body(
     if status_map:
         lines.append(f"  - 分类：新增 `{added}` · 修改 `{modified}` · 删除 `{deleted}`")
     for path in paths:
-        lines.append(f"  - 改动：`{path}`")
+        # The action is not derivable from the diff, so the slot is marked rather
+        # than filled with a label that reads as if something had been said.
+        lines.append(f"  - （待填：做了什么）：`{path}`")
     for path in untouched:
         lines.append(f"  - 未动：`{path}`")
 
@@ -1041,6 +1048,30 @@ def command_check(args: argparse.Namespace) -> int:
     return 0 if overall else 1
 
 
+_LEDGER_PROBE = "docs/specs/controlled/probe.md"
+
+
+def scope_mutex_error(allowed: Sequence[str], forbidden: Sequence[str]) -> str | None:
+    """Reject a card whose test scope and forbidden ledger cannot both hold.
+
+    A test-only change still requires the ledger row (D1/D3 check both
+    directions), so a card that allows `app/test/` while forbidding the
+    controlled docs either blocks a required edit or invites an unregistered
+    one. Only allowed entries rooted at `app/test/` count: a broader `app/**`
+    covers tests *possibly*, not necessarily, and rejecting that would refuse
+    ordinary feature cards.
+    """
+    touches_tests = any(pat.startswith("app/test/") for pat in allowed)
+    blocks_ledger = any(fnmatch.fnmatch(_LEDGER_PROBE, pat) for pat in forbidden)
+    if touches_tests and blocks_ledger:
+        return (
+            "测试路径与受控文档互斥：allowed 含 app/test/ 而 forbidden 含受控文档。"
+            "改用例必然要动台账（D1/D3 双向核对）—— 把 docs/specs/controlled/** "
+            "加进 allowed，或去掉 app/test/ 路径"
+        )
+    return None
+
+
 def command_plan(args: argparse.Namespace) -> int:
     root = root_path(args.root)
     if args.auto_id and args.batch_id:
@@ -1063,6 +1094,10 @@ def command_plan(args: argparse.Namespace) -> int:
     code, out, _ = run_git(["rev-parse", args.base])
     base = out if code == 0 and out else args.base
     forbidden = args.forbidden or ([] if args.type == "process" else list(PROCESS_PATTERNS))
+    mutex = scope_mutex_error(args.allowed or [], forbidden)
+    if mutex:
+        print(f"refusing card: {mutex}", file=sys.stderr)
+        return 1
 
     card = {
         "batch": args.batch_id,
@@ -1100,6 +1135,10 @@ def command_approve(args: argparse.Namespace) -> int:
         return 1
     if not card.get("allowed"):
         print("card.allowed is required", file=sys.stderr)
+        return 1
+    mutex = scope_mutex_error(card.get("allowed") or [], card.get("forbidden") or [])
+    if mutex:
+        print(f"refusing approval: {mutex}", file=sys.stderr)
         return 1
 
     digest = card_hash(card)
