@@ -103,12 +103,26 @@ PackContent _widePack() => fixturePack(<FixtureNode>[
     ),
 ]);
 
-Event _passed(String itemId) => buildItemPassed(
+/// 六个可学项的包 —— `C-07` 是 5，第六项才排得进「额度用满」那种局面。
+PackContent _pack6() => fixturePack(<FixtureNode>[
+  const FixtureNode('py:sys', 'Python', slot: LevelSlot.system),
+  for (int i = 1; i <= 6; i++)
+    FixtureNode(
+      'py:$i',
+      '$i',
+      parentId: 'py:sys',
+      steps: _steps,
+      criteria: _criteria,
+      quiz: _quiz,
+    ),
+]);
+
+Event _passed(String itemId, {int minute = 0}) => buildItemPassed(
   spaceId: 'python',
   itemId: itemId,
   gradedEventId: 'graded-$itemId',
   clock: HlcClock(deviceId: 'test-device'),
-  now: DateTime.utc(2026, 10, 28, 3),
+  now: DateTime.utc(2026, 10, 28, 3, minute),
   userId: 'local',
 );
 
@@ -303,4 +317,44 @@ void main() {
     expect(find.textContaining('复习'), findsNothing);
     expect(find.text('新学 1 项'), findsOneWidget);
   });
+
+  testWidgets('TC-STEP-085 额度没用满 ⇒ 不出现「排到明天」（N=0 整行不出）（SPEC-STEP-028）', (
+    WidgetTester tester,
+  ) async {
+    await _pump(tester, _MemoryStore());
+    expect(find.byKey(const Key('overview-reviews-deferred')), findsNothing);
+    expect(find.byKey(const Key('overview-new-deferred')), findsNothing);
+    expect(find.textContaining('排到明天'), findsNothing);
+  });
+
+  testWidgets(
+    'TC-STEP-086 新学额度用满 ⇒ 灰字出、池行不出、开始键不可点（SPEC-STEP-028 · SPEC-STEP-030）',
+    (WidgetTester tester) async {
+      // 每项先判分、后写 `item_passed`：判分那一刻该项还没学过，才算「今天新学」。
+      // 各占一分钟 —— 同分钟的判定 HLC 相同、事件 id 会撞车被去重。
+      final List<Event> events = <Event>[
+        for (int i = 1; i <= 5; i++) ...<Event>[
+          _graded('py:$i', Grade.pass, minute: i * 2 - 1),
+          _passed('py:$i', minute: i * 2),
+        ],
+      ];
+      await _pumpWith(
+        tester,
+        _pack6(),
+        _MemoryStore(events),
+        now: DateTime.utc(2026, 10, 28, 12),
+      );
+
+      expect(find.byKey(const Key('overview-new-deferred')), findsOneWidget);
+      expect(find.text('另有 1 项排到明天'), findsOneWidget);
+      // 池行不出：替代它的那句说明了原因。「新学 0 项」会被读成「今天没事」。
+      expect(find.text('新学 0 项'), findsNothing);
+      expect(find.text('今天的额度用完了'), findsOneWidget);
+      expect(find.textContaining('欠'), findsNothing);
+      final FilledButton button = tester.widget<FilledButton>(
+        find.byKey(const Key('overview-start')),
+      );
+      expect(button.onPressed, isNull);
+    },
+  );
 }
