@@ -55,19 +55,24 @@ Event _graded(
   payload: <String, Object?>{'score': score},
 );
 
-Event _note(String id, int physical, String text, {String? itemId = 'py-a', int? targetVersion}) =>
-    _event(
-      id: id,
-      type: EventType.noteRevised,
-      physical: physical,
-      itemId: itemId,
-      payload: <String, Object?>{
-        'sectionKey': 'boundary',
-        'text': text,
-        'layer': 'authored',
-        'targetVersion': ?targetVersion,
-      },
-    );
+Event _note(
+  String id,
+  int physical,
+  String text, {
+  String? itemId = 'py-a',
+  int? targetVersion,
+}) => _event(
+  id: id,
+  type: EventType.noteRevised,
+  physical: physical,
+  itemId: itemId,
+  payload: <String, Object?>{
+    'sectionKey': 'boundary',
+    'text': text,
+    'layer': 'authored',
+    'targetVersion': ?targetVersion,
+  },
+);
 
 /// 笔 5c：`spaceVersion` + `target{selector, resolved}` 换成 `packVersions` +
 /// `subtreeRoot`（`event-types.md` §二 B 已同步）。
@@ -221,6 +226,44 @@ void main() {
       ]);
       expect(state.lastGrade['py-a'], Grade.fail);
     });
+
+    test('TC-STEP-036 连续两次未过折出 2（SPEC-STEP-021）', () {
+      final FoldedState state = fold(<Event>[
+        _graded('e1', 1000, 'fail'),
+        _graded('e2', 1001, 'fail'),
+      ]);
+      expect(state.consecutiveFails['py-a'], 2);
+    });
+
+    test('TC-STEP-037 中间出现一次合格即清零（SPEC-STEP-021）', () {
+      // 未过 → 合格 → 未过：数到最近那一段只有 1 次，不是「历史累计 2 次」。
+      final FoldedState state = fold(<Event>[
+        _graded('e1', 1000, 'fail'),
+        _graded('e2', 1001, 'pass'),
+        _graded('e3', 1002, 'fail'),
+      ]);
+      expect(state.consecutiveFails['py-a'], 1);
+    });
+
+    test('TC-STEP-038 熟练同样清零，不只合格（SPEC-STEP-021）', () {
+      // 写成只判 pass 就会把「熟练」当成未过继续累加 —— 熟练是「这一次会了」。
+      final FoldedState state = fold(<Event>[
+        _graded('e1', 1000, 'fail'),
+        _graded('e2', 1001, 'proficient'),
+        _graded('e3', 1002, 'fail'),
+      ]);
+      expect(state.consecutiveFails['py-a'], 1);
+    });
+
+    test('TC-STEP-039 连续数按项分开算，不串到别的项（SPEC-STEP-021）', () {
+      final FoldedState state = fold(<Event>[
+        _graded('e1', 1000, 'fail', itemId: 'py-a'),
+        _graded('e2', 1001, 'fail', itemId: 'py-b'),
+        _graded('e3', 1002, 'fail', itemId: 'py-a'),
+      ]);
+      expect(state.consecutiveFails['py-a'], 2);
+      expect(state.consecutiveFails['py-b'], 1);
+    });
   });
 
   group('幂等与去重', () {
@@ -241,7 +284,10 @@ void main() {
           payload: <String, Object?>{'sectionKey': 'boundary', 'text': '平板写的'},
         ),
       ]);
-      final FoldedNote note = state.noteOf(itemId: 'py-a', sectionKey: 'boundary')!;
+      final FoldedNote note = state.noteOf(
+        itemId: 'py-a',
+        sectionKey: 'boundary',
+      )!;
       expect(note.version, 2);
       expect(note.text, '平板写的');
     });
@@ -302,7 +348,10 @@ void main() {
           type: EventType.itemRetired,
           physical: 1000,
           itemId: null,
-          payload: <String, Object?>{'itemId': 'py-gone', 'spaceVersion': '1.2.0'},
+          payload: <String, Object?>{
+            'itemId': 'py-gone',
+            'spaceVersion': '1.2.0',
+          },
         ),
       ]);
       expect(state.retired, <String>{'py-gone'});
@@ -316,7 +365,10 @@ void main() {
         _note('e2', 1001, 'b'),
         _note('e3', 1002, 'c'),
       ]);
-      final FoldedNote note = state.noteOf(itemId: 'py-a', sectionKey: 'boundary')!;
+      final FoldedNote note = state.noteOf(
+        itemId: 'py-a',
+        sectionKey: 'boundary',
+      )!;
       expect(note.version, 3);
       expect(note.text, 'c');
     });
@@ -327,7 +379,10 @@ void main() {
         _note('e2', 1001, 'b'),
         _note('e3', 1002, '', targetVersion: 1),
       ]);
-      final FoldedNote note = state.noteOf(itemId: 'py-a', sectionKey: 'boundary')!;
+      final FoldedNote note = state.noteOf(
+        itemId: 'py-a',
+        sectionKey: 'boundary',
+      )!;
       expect(note.text, 'a');
       expect(note.version, 3);
     });
@@ -454,36 +509,38 @@ void main() {
           userId: 'u-b',
         ),
       ];
-      expect(
-        fold(events, spaceId: 'python', userId: 'u-a').passed,
-        <String>{'py-a'},
-      );
+      expect(fold(events, spaceId: 'python', userId: 'u-a').passed, <String>{
+        'py-a',
+      });
     });
   });
 
   group('计划', () {
-    test('TC-PLAN-055 plan_created 折出一份，版本从 1 起（无 SPEC：event-types.md §二 B）', () {
-      final FoldedState state = fold(<Event>[_planCreated('e1', 1000)]);
+    test(
+      'TC-PLAN-055 plan_created 折出一份，版本从 1 起（无 SPEC：event-types.md §二 B）',
+      () {
+        final FoldedState state = fold(<Event>[_planCreated('e1', 1000)]);
 
-      expect(state.plans.keys, <String>['e1'], reason: '身份 = 创建事件的 id');
-      final Plan plan = state.plans['e1']!;
-      expect(plan.id, 'e1');
-      // 信封上的 `spaceId` **不折进 `Plan`**：`fold(spaceId:)` 已按它过滤，
-      // 实体再存一份就是第二份真相。
-      expect(plan.subtreeRoot, 'python:fn', reason: '范围由子树根表达');
-      expect(plan.primaryAxis, Axis.major);
-      expect(plan.packVersions.skeleton, '1.0.0');
-      expect(plan.packVersions.payloads, <String, String>{'python': '0.1.0'});
-      expect(plan.schemeId, 'sch-full');
-      expect(plan.methodProfileId, 'method-bundle-understand');
-      expect(plan.sourcePolicy, <String, Object?>{'primary': 'src-official'});
-      expect(
-        plan.toJson().containsKey('target'),
-        isFalse,
-        reason: '`resolved` 是派生值，折的时候重算，不落盘',
-      );
-      expect(plan.version, 1);
-    });
+        expect(state.plans.keys, <String>['e1'], reason: '身份 = 创建事件的 id');
+        final Plan plan = state.plans['e1']!;
+        expect(plan.id, 'e1');
+        // 信封上的 `spaceId` **不折进 `Plan`**：`fold(spaceId:)` 已按它过滤，
+        // 实体再存一份就是第二份真相。
+        expect(plan.subtreeRoot, 'python:fn', reason: '范围由子树根表达');
+        expect(plan.primaryAxis, Axis.major);
+        expect(plan.packVersions.skeleton, '1.0.0');
+        expect(plan.packVersions.payloads, <String, String>{'python': '0.1.0'});
+        expect(plan.schemeId, 'sch-full');
+        expect(plan.methodProfileId, 'method-bundle-understand');
+        expect(plan.sourcePolicy, <String, Object?>{'primary': 'src-official'});
+        expect(
+          plan.toJson().containsKey('target'),
+          isFalse,
+          reason: '`resolved` 是派生值，折的时候重算，不落盘',
+        );
+        expect(plan.version, 1);
+      },
+    );
 
     test('TC-PLAN-056 同一子树两份计划独立存在（SPEC-PLAN-003 验收向量）', () {
       // 键是**创建事件的 id**。若有人把它改成 `subtreeRoot`，这两行会塌成一份 ——
@@ -512,14 +569,10 @@ void main() {
       expect(plan.version, 2, reason: '版本由 fold 数条数得出，payload 不写');
       expect(plan.schemeId, 'sch-narrow', reason: '重规划换了体系');
       expect(plan.subtreeRoot, 'python:async', reason: '重规划也换了范围根');
-      expect(
-        plan.packVersions.toJson(),
-        <String, Object?>{
-          'skeleton': '1.0.0',
-          'payloads': <String, Object?>{'python': '0.1.0'},
-        },
-        reason: '版本快照整份覆盖，不逐字段合并',
-      );
+      expect(plan.packVersions.toJson(), <String, Object?>{
+        'skeleton': '1.0.0',
+        'payloads': <String, Object?>{'python': '0.1.0'},
+      }, reason: '版本快照整份覆盖，不逐字段合并');
       expect(state.plans.length, 1, reason: '重规划改的是同一份，不是新开一份');
     });
 
@@ -539,13 +592,10 @@ void main() {
     });
 
     test('TC-PLAN-060 spaceId 过滤：别空间的计划折不进来（SPEC-FND-010）', () {
-      final FoldedState state = fold(
-        <Event>[
-          _planCreated('e1', 1000),
-          _planCreated('e2', 2000, spaceId: 'german'),
-        ],
-        spaceId: 'python',
-      );
+      final FoldedState state = fold(<Event>[
+        _planCreated('e1', 1000),
+        _planCreated('e2', 2000, spaceId: 'german'),
+      ], spaceId: 'python');
 
       expect(state.plans.keys, <String>['e1']);
       // `plansOf(spaceId)` 已删：`Plan` 不持空间归属，上面那行 keys 就是全部证据。
@@ -577,7 +627,10 @@ void main() {
     });
 
     test('未知 score 取值即抛错并列出允许值（SPEC-FND-014）', () {
-      expect(() => fold(<Event>[_graded('e1', 1000, 'great')]), throwsFormatException);
+      expect(
+        () => fold(<Event>[_graded('e1', 1000, 'great')]),
+        throwsFormatException,
+      );
     });
   });
 }
