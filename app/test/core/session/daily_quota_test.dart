@@ -84,7 +84,7 @@ void main() {
       expect(usage.learned, 1);
     });
 
-    test('TC-STEP-074 同一项当天判分两次只算一项，按第一次的性质归池（无 SPEC：STEP-028 未写同日重复判分，本批按「一项一份额度」定）', () {
+    test('TC-STEP-074 同一项当天判分两次只算一项，按第一次的性质归池（SPEC-STEP-028）', () {
       final DailyQuotaUsage usage = dailyQuotaUsage(
         events: <Event>[
           // 第一次判分前没学过 ⇒ 归新学；随后写了 `item_passed`，第二次判分
@@ -100,7 +100,7 @@ void main() {
       expect(usage.reviewed, 0);
     });
 
-    test('TC-STEP-075 日界按传入的时区偏移切 —— 同一份事件换个偏移就落到另一天（无 SPEC：STEP-028 只说「每日」，未写日界取哪个时区）', () {
+    test('TC-STEP-075 日界按传入的时区偏移切 —— 同一份事件换个偏移就落到另一天（SPEC-STEP-028）', () {
       // UTC 10-27 20:00 = 东八区 10-28 04:00。按 +8 是今天，按 UTC 是昨天。
       final List<Event> events = <Event>[
         _graded('e1', DateTime.utc(2026, 10, 27, 20)),

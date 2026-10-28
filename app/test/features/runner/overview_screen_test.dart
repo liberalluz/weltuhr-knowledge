@@ -349,7 +349,7 @@ void main() {
       expect(find.text('另有 1 项排到明天'), findsOneWidget);
       // 池行不出：替代它的那句说明了原因。「新学 0 项」会被读成「今天没事」。
       expect(find.text('新学 0 项'), findsNothing);
-      expect(find.text('今天的额度用完了'), findsOneWidget);
+      expect(find.text('今天的名额已用完'), findsOneWidget);
       expect(find.textContaining('欠'), findsNothing);
       final FilledButton button = tester.widget<FilledButton>(
         find.byKey(const Key('overview-start')),

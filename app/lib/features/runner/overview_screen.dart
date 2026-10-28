@@ -277,9 +277,10 @@ class _OverviewScreenState extends State<OverviewScreen> {
           Text(
             // 一项时长都没写时不留「预计 0 分钟」这种读数 —— 那是把「不知道」
             // 显示成了「不用花时间」。额度用满时也不说「时长未知」：包内写了，
-            // 只是今天排不进来。
+            // 只是今天排不进来。措辞只说「今天排到这里」，不带欠账色彩
+            // （`SPEC-STEP-030`：不得出现「欠」「逾期」，不得着警示色）。
             queue.isEmpty && queue.deferredTotal > 0
-                ? '今天的额度用完了'
+                ? '今天的名额已用完'
                 : queue.timedItems == 0
                 ? '预计时长未知（包内未写）'
                 : '今日预计 ${queue.knownMinutes} 分钟'
