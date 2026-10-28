@@ -194,6 +194,158 @@ jobs:
           print(f"ok 批次号 {batch} 与分支 {ref} 一致")
           PY
 
+      # -- 关联节八项 --------------------------------------------------------
+      # `.githooks/pr-body` judges the *shape* of this section and nothing else:
+      # it accepts any value, including `无`. That is how `- issue：无` passed a
+      # local check, a create-time check and CI in a row -- three runs of the
+      # same blind spot. This step judges the two things shape cannot see:
+      #
+      #   1. an entry whose value is `无` -- the rule is "classes without an
+      #      anchor do not appear at all", so writing one is the violation;
+      #   2. a required class that never appeared. The requirement comes from
+      #      facts outside the body (the diff, the platform), never from the
+      #      body itself, so "I forgot to list it" is decidable:
+      #        diff touches app/test or the controlled ledger -> 用例
+      #        diff touches docs/specs                          -> 规格条
+      #        diff touches docs/decisions                      -> ADR
+      #        diff adds a `[#N](.../pull/N)` link              -> PR
+      #        diff adds `TODO(confirm):`                       -> 待确认事项
+      #        a commit carries `Milestone: <id>` trailer       -> 里程碑
+      #        the PR closes issues                             -> issue
+      #
+      # WARNING: `批次号` is not repeated here -- the step above already owns it.
+      # WARNING: the body is passed via env, never interpolated into `run:`.
+      # WARNING: `gh` needs GH_TOKEN here; without PR context (local runs, push
+      #          events) the issue half is skipped rather than guessed.
+      - name: 关联节八项
+        if: github.event_name == 'pull_request'
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          import re
+          import subprocess
+          import sys
+
+          def run(cmd):
+              p = subprocess.run(cmd, capture_output=True, text=True)
+              if p.returncode != 0:
+                  print(f"FAIL 命令失败：{' '.join(cmd)}", file=sys.stderr)
+                  print((p.stderr or "").strip()[-2000:], file=sys.stderr)
+                  sys.exit(1)
+              return p.stdout
+
+          body = os.environ.get("PR_BODY", "")
+          base = os.environ.get("BASE_REF", "main")
+          number = os.environ.get("PR_NUMBER", "")
+
+          CLASSES = ["批次号", "里程碑", "issue", "PR", "ADR", "规格条", "用例", "待确认事项"]
+
+          section, inside = [], False
+          for line in body.splitlines():
+              if line.strip() == "## 关联":
+                  inside = True
+                  continue
+              if inside and line.startswith("## "):
+                  break
+              if inside:
+                  section.append(line)
+
+          entries = {}
+          for line in section:
+              m = re.match(r"^- ([^：]+)：(.*)$", line.strip())
+              if not m:
+                  continue
+              key, val = m.group(1).strip(), m.group(2).strip()
+              if key in CLASSES:
+                  entries.setdefault(key, []).append(val)
+
+          errors = []
+
+          # 1. a class written as `无` -- absent classes must not appear at all
+          for key, vals in entries.items():
+              for val in vals:
+                  if val.strip("`　 ").rstrip("。").strip() == "无":
+                      errors.append(
+                          f"`- {key}：无` —— 没有锚点的类整行不出现，不能写「无」"
+                      )
+
+          def need(key, why):
+              if key not in entries:
+                  errors.append(f"缺 `- {key}：` —— {why}")
+
+          names = run(["git", "diff", "--name-only", f"origin/{base}...HEAD"]).splitlines()
+          patch = run(["git", "diff", "-U0", f"origin/{base}...HEAD"]).splitlines()
+          added = [l[1:] for l in patch if l.startswith("+") and not l.startswith("+++")]
+
+          if any(p.startswith(("app/test/", "docs/specs/controlled/")) for p in names):
+              need("用例", "本次改动含测试文件或受控用例台账")
+          if any(p.startswith("docs/specs/") for p in names):
+              need("规格条", "本次改动含 docs/specs/ 下的规格文件")
+          if any(p.startswith("docs/decisions/") for p in names):
+              need("ADR", "本次改动含 docs/decisions/ 下的决策文件")
+          if any(re.search(r"\[#\d+\]\(https://github\.com/[\w.-]+/[\w.-]+/pull/\d+\)", a) for a in added):
+              need("PR", "本次新增行引用了其它 PR 的显示链接")
+          if any("TODO(confirm):" in a for a in added):
+              need("待确认事项", "本次新增行含 `TODO(confirm):` 标记")
+
+          trailers = sorted(
+              {
+                  t.strip()
+                  for t in run(
+                      ["git", "log", "--format=%(trailers:key=Milestone,valueonly)", f"origin/{base}..HEAD"]
+                  ).splitlines()
+                  if t.strip()
+              }
+          )
+          if trailers:
+              if "里程碑" not in entries:
+                  errors.append(
+                      f"提交带 `Milestone: {'/'.join(trailers)}` trailer，正文缺 `- 里程碑：`"
+                  )
+              else:
+                  written = " ".join(entries["里程碑"])
+                  for t in trailers:
+                      if t not in written:
+                          errors.append(f"trailer 的里程碑 {t} 不在正文 `- 里程碑：` 行里")
+          elif "里程碑" in entries:
+              errors.append("正文写了 `- 里程碑：`，但区间内提交没有 `Milestone:` trailer")
+
+          if number:
+              raw = run(["gh", "pr", "view", number, "--json", "closingIssuesReferences"])
+              try:
+                  closed = {
+                      str(item["number"])
+                      for item in (json.loads(raw or "{}").get("closingIssuesReferences") or [])
+                  }
+              except (ValueError, KeyError, TypeError):
+                  closed = set()
+              if closed:
+                  if "issue" not in entries:
+                      errors.append(
+                          f"本 PR 关了 issue {'/'.join('#' + n for n in sorted(closed))}，正文缺 `- issue：`"
+                      )
+                  else:
+                      found = set(re.findall(r"#(\d+)", " ".join(entries["issue"])))
+                      missing = closed - found
+                      if missing:
+                          errors.append(
+                              "`- issue：` 行未含 "
+                              + " ".join("#" + n for n in sorted(missing))
+                          )
+
+          if errors:
+              for item in errors:
+                  print(f"FAIL {item}")
+              sys.exit(1)
+          print("ok  关联节八项：无值为「无」、无漏列")
+          PY
+
       # -- main only accepts PRs ----------------------------------------------
       # The criterion lives in `.githooks/pre-push`, the **same file** and the
       # same `--range` entry point as the local hook. Locally it makes `git push`

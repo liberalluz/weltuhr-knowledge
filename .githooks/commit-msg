@@ -192,6 +192,54 @@ check_msg() {
     echo "      解法：git commit -s；已提交未推送则 git commit --amend -s --no-edit" >&2
     FAIL=1
   fi
+
+  # (5) trailer order: `Signed-off-by:` closes the message; `Milestone:`, when
+  #     present, sits above it. Both halves are judged here rather than in CI:
+  #     a milestone placed *below* the sign-off reads as appended after signing,
+  #     and CI pairs the trailer against the PR body's `- 里程碑：` row -- one
+  #     that drifted out of the trailer block would silently pass that pair.
+  #     `-s` appends to the end of the trailer block, so writing the milestone
+  #     into the message file first is enough to get this order.
+  local i=0 seen_dco=0 seen_ms=0 last_nonempty=0 ms_bad=0
+  while IFS= read -r line; do
+    i=$((i + 1))
+    [ -n "$line" ] && last_nonempty=$i
+    case "$line" in
+      'Signed-off-by: '*) seen_dco=$i ;;
+      'Milestone: '*)
+        seen_ms=$i
+        rest=${line#Milestone: }
+        case "${rest// /}" in
+          '') ms_bad=$i ;;
+        esac
+        ;;
+      [Mm]ilestone*)
+        # Any other spelling -- `milestone:`, `Milestone :`, `Milestone` with no
+        # value -- is a malformed key, not a different trailer.
+        ms_bad=$i
+        ;;
+    esac
+  done <<<"$msg"
+
+  if [ "$seen_dco" -ne 0 ] && [ "$last_nonempty" -ne "$seen_dco" ]; then
+    echo "FAIL $label: \`Signed-off-by:\` 必须是最后一行（其后还有第 ${last_nonempty} 行）" >&2
+    echo "      解法：把其它 trailer 移到签署行之上，再 git commit --amend -s --no-edit" >&2
+    FAIL=1
+  fi
+  if [ "$ms_bad" -ne 0 ]; then
+    echo "FAIL $label: \`Milestone:\` 形态错（第 ${ms_bad} 行）：须逐字 \`Milestone: <值>\`，值非空" >&2
+    FAIL=1
+  fi
+  if [ "$seen_ms" -ne 0 ] && [ "$seen_dco" -ne 0 ] && [ "$seen_ms" -gt "$seen_dco" ]; then
+    echo "FAIL $label: \`Milestone:\` 须在 \`Signed-off-by:\` 之前（签署行恒为 trailer 块最后一行）" >&2
+    FAIL=1
+  elif [ "$seen_ms" -ne 0 ] && [ "$seen_dco" -ne 0 ] && [ "$seen_ms" -ne "$((seen_dco - 1))" ]; then
+    # A blank line between them ends the trailer block: `%(trailers)` then
+    # reports only `Signed-off-by`, and CI -- which reads the trailer, not the
+    # prose -- sees no milestone at all.
+    echo "FAIL $label: \`Milestone:\` 须紧邻 \`Signed-off-by:\`（中间有空行就分成两段，git 不把它当 trailer）" >&2
+    FAIL=1
+  fi
 }
 
 mode=${1:-}

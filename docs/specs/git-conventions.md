@@ -223,9 +223,12 @@ git config --get core.hooksPath       # 自查：应回显 .githooks
 | 关联 Issue / PR | `Closes #123` · `Fixes #123` · `Refs #123`        |
 | 联合署名          | `Co-authored-by: 姓名 <邮箱>`                         |
 | 审查（按需）        | `Reviewed-by: 姓名 <邮箱>`                            |
+| 里程碑（有则该笔必带）   | `Milestone: <笔号>`，如 `Milestone: B15` —— 在 `<footer>` 块内、`Signed-off-by` 之上 |
 | **签署（每笔必带）**    | `Signed-off-by: 姓名 <邮箱>` —— 用 `git commit -s` 自动追加 |
 
 > `Signed-off-by` 是 **DCO 签署**，不是「有时加一下」的装饰：缺它的提交会被 `.githooks/commit-msg` 直接拒（本地与 CI 同一个文件，见 §3.5）。它只约束**分支上的原始提交** —— `main` 上的 squash 提交不受此判据约束，签名能否随 squash 落到 `main`，取决于平台如何拼接消息；本仓实测单笔与多笔都会保留，但不作保证。规则生效前未带签名的历史提交**不追改**。
+>
+> **`<footer>` 块的两条位置判据**（`.githooks/commit-msg` 拒）：`Signed-off-by:` 恒为**最后一行**；`Milestone:` 若出现，必须**紧邻其上一行** —— 中间隔一个空行就把这段切成两段，`%(trailers)` 只认 `Signed-off-by`，CI 侧读不到里程碑。不用 `git commit --trailer` 去拼顺序，把 `Milestone:` 写进 message 文件、再 `git commit -s -F <file>`：`-s` 追加到块末，天然给出这个次序。没有里程碑的提交**不加这一行**。
 
 ### 3.4 切分纪律
 
@@ -241,6 +244,8 @@ git config --get core.hooksPath       # 自查：应回显 .githooks
 | 同上 | CI | `repo-hygiene` 的「提交信息」步骤 | 每个 PR 与每次 push，只校验本次新增的提交 |
 | DCO 签署（§3.3） | 本地 | 同 `.githooks/commit-msg` | 每次 `git commit`；无行首 `Signed-off-by:` 直接拒 |
 | 同上 | CI | 同上 `repo-hygiene` 步骤 | 同一次 `--range` 调用，逐条校验 PR 新增提交 |
+| footer 位置（§3.3：`Signed-off-by` 末行、`Milestone` 紧邻其上） | 本地 | 同 `.githooks/commit-msg` | 每次 `git commit`；错位或隔空行直接拒 |
+| 同上 | CI | 同上 `repo-hygiene` 步骤 | 同一次 `--range` 调用 |
 | 提交前格式/空白（C6） | 本地 | [`.githooks/pre-commit`](../../.githooks/pre-commit) | 每次 `git commit`；暂存 Dart `dart format` / app `flutter analyze` / `git diff --cached --check`；同一句 `core.hooksPath` |
 | 推 `main` 必走 PR（§二 / §4.1） | 本地 | [`.githooks/pre-push`](../../.githooks/pre-push) | 每次 `git push`；同一句 `core.hooksPath` |
 | 非 main 分支必须有 active batch（C16） | 本地 | 同 `.githooks/pre-push` | 每次 `git push`；无 `.batch/active` 直接拒；删除 / tag / `--range` 除外 |
@@ -323,7 +328,9 @@ git config --get core.hooksPath       # 自查：应回显 .githooks
 
 **AI 参与级别**五值：`hint`（只给提示或片段）· `assist`（人主导，AI 补局部）· `pair`（交替落盘，人逐段核）· `copilot`（AI 主写，人逐行核）· `auto`（AI 全自动，人只终审）。
 
-**关联八类封闭集**：批次号 · 里程碑 · issue · PR · ADR · 规格条 · 用例 · 待确认事项。只列有锚点的类，缺的类整行不出现；0 锚点整节一行 `无`；按上述次序排。
+**关联八类封闭集**：批次号 · 里程碑 · issue · PR · ADR · 规格条 · 用例 · 待确认事项。只列有锚点的类，缺的类整行不出现；0 锚点整节一行 `无`；按上述次序排。⚠️ **逐类写「无」判红**：`- issue：无` 这类行既不是锚点也不是缺席，它把「没有」写成了内容，下一份正文照抄它就扩散开了。
+
+**谁判这一类**：`批次号` 与「缺类整行不出现」的形态由 `.githooks/pr-body` 判；「某个该有的类根本没出现」只能由外部事实判 —— `repo-hygiene` 的「关联节八项」步骤按 diff 与平台元数据逐类核对：diff 触达 `app/test/` 或受控台账 ⇒ 需 `用例`、触达 `docs/specs/` ⇒ 需 `规格条`、触达 `docs/decisions/` ⇒ 需 `ADR`、新增行含 PR 显示链接 ⇒ 需 `PR`、新增行含 `TODO(confirm):` ⇒ 需 `待确认事项`、提交带 `Milestone:` trailer ⇒ 需 `里程碑`、PR 关了 issue ⇒ 需 `issue`。判据只有一条：**该有而没有就红**，不看正文自己怎么声明。
 
 `未测` 管平台、`未验` 管手段，同一件事只出现在一处。
 

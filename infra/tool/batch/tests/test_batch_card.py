@@ -96,8 +96,74 @@ class PlanTests(unittest.TestCase):
             self.assertEqual(run(args)[0], 0)
             self.assertEqual(run(args)[0], 1)
 
+    def test_plan_refuses_test_scope_with_forbidden_ledger(self):
+        # A card that can only touch tests while forbidding the controlled docs
+        # is self-contradictory: the ledger row is mandatory either way.
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            code, out = run(
+                [
+                    "--root",
+                    str(root),
+                    "plan",
+                    "B1",
+                    "--type",
+                    "process",
+                    "--goal",
+                    "x",
+                    "--allowed",
+                    "app/test/**",
+                    "--forbidden",
+                    "docs/specs/controlled/**",
+                    "--base",
+                    "main",
+                ]
+            )
+            self.assertEqual(code, 1)
+            self.assertIn("互斥", out)
+            self.assertFalse((root / "B1" / "card.yaml").exists())
+
+    def test_plan_allows_broad_app_scope_with_forbidden_ledger(self):
+        # `app/**` covers tests only possibly; rejecting it would refuse
+        # ordinary feature cards.
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            code, _ = run(
+                [
+                    "--root",
+                    str(root),
+                    "plan",
+                    "B1",
+                    "--type",
+                    "process",
+                    "--goal",
+                    "x",
+                    "--allowed",
+                    "app/**",
+                    "--forbidden",
+                    "docs/specs/controlled/**",
+                    "--base",
+                    "main",
+                ]
+            )
+            self.assertEqual(code, 0)
+
 
 class ApproveStartTests(unittest.TestCase):
+    def test_approve_refuses_mutex_card(self):
+        # The card can be edited by hand between plan and approve, so the same
+        # judgement has to run again here.
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "B1").mkdir()
+            card.write_card(
+                root / "B1" / "card.yaml",
+                make_card(allowed=["app/test/**"], forbidden=["docs/specs/**"]),
+            )
+            code, out = run(["--root", str(root), "approve", "B1", "--chat", "--confirm", "00000000"])
+            self.assertEqual(code, 1)
+            self.assertIn("互斥", out)
+
     def test_approve_requires_confirmation(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
