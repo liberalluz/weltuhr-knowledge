@@ -8,10 +8,14 @@
 ///
 /// ## 只显示有来源的行
 ///
-/// 当前接了两条入队源：**体系序**与**缺口回补**（见 `session_queue.dart` 文件头）。
-/// 所以这一页出「新学 M 项」与（有缺口时）「缺口 K 项」两行；「复习」那一行仍不
-/// 出现 —— 一个恒为 0 的「复习 0 项」与「今天确实没有要复习的」在屏幕上长得一模
-/// 一样，而后者是假话。等 `B6` 把 `due` 折出来再补那一行。
+/// 三条入队源都已接通（见 `session_queue.dart` 文件头），所以这一页按队列实算出
+/// 三行：「缺口 K 项」「复习 R 项」「新学 M 项」，前两行**为 0 时整行不出现** ——
+/// 一个恒为 0 的「复习 0 项」与「今天确实没有要复习的」在屏幕上长得一模一样，
+/// 而后者是假话。
+///
+/// 复习行**不带明细**：复习项逐项跑，点不点名字不改怎么学；而这一页唯一的动作是
+/// 「开始」，多一行会把按钮往下挤。缺口行带明细是另一回事 —— 缺口要解释「什么在
+/// 卡住后续」。
 ///
 /// ## 范围根
 ///
@@ -40,13 +44,22 @@ import 'runner_screen.dart';
 const int _gapNamesShown = 3;
 
 class OverviewScreen extends StatefulWidget {
-  const OverviewScreen({super.key, required this.content, this.eventStore});
+  const OverviewScreen({
+    super.key,
+    required this.content,
+    this.eventStore,
+    this.now,
+  });
 
   final PackContent content;
 
   /// 事件存储。`null` = 没接（测试 / 取不到数据目录）—— 此时队列按「什么都没学过」
   /// 算，但**开始不了**，因为推进要写事件而写不进去。
   final EventStore? eventStore;
+
+  /// 「今天」。`null` = 取当下 —— 界面在生产里就该读真时钟，而 Widget 测试要注入
+  /// 定值：否则「到期 / 未到期」跟着跑测试的那一天漂移，用例会时红时绿。
+  final DateTime? now;
 
   @override
   State<OverviewScreen> createState() => _OverviewScreenState();
@@ -68,6 +81,7 @@ class _OverviewScreenState extends State<OverviewScreen> {
   Future<void> _load() async {
     final String? root = _scopeRoot(widget.content);
     final EventStore? store = widget.eventStore;
+    final DateTime at = widget.now ?? DateTime.now();
     if (root == null) {
       setState(() {
         _loading = false;
@@ -86,6 +100,7 @@ class _OverviewScreenState extends State<OverviewScreen> {
           pack: widget.content,
           subtreeRoot: root,
           passed: const <String>{},
+          now: at,
         );
       });
       return;
@@ -110,7 +125,9 @@ class _OverviewScreenState extends State<OverviewScreen> {
           pack: widget.content,
           subtreeRoot: root,
           passed: folded.passed,
+          now: at,
           gaps: gapItemIds(folded),
+          srs: folded.srs,
         );
       });
     } on FormatException catch (error) {
@@ -200,6 +217,14 @@ class _OverviewScreenState extends State<OverviewScreen> {
               _gapDetail(queue),
               key: const Key('overview-gap-detail'),
               style: text.bodyMedium,
+            ),
+            const SizedBox(height: 8),
+          ],
+          if (queue.reviewItems > 0) ...<Widget>[
+            Text(
+              '复习 ${queue.reviewItems} 项',
+              key: const Key('overview-reviews'),
+              style: text.headlineMedium,
             ),
             const SizedBox(height: 8),
           ],

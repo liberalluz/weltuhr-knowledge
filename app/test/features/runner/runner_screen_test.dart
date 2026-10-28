@@ -79,6 +79,9 @@ Future<void> _pump(WidgetTester tester, EventStore store) async {
     pack: pack,
     subtreeRoot: 'py:sys',
     passed: const <String>{},
+    // 队列要求显式时钟（它不自己取 `now`）。这里没有到期项 —— `passed` 是空的，
+    // 复习池只收学过的项 —— 所以取哪个时刻都不影响本用例。
+    now: DateTime.utc(2026, 10, 28, 12),
   );
   await tester.pumpWidget(
     MaterialApp(
