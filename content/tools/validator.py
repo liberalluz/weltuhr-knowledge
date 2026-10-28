@@ -85,6 +85,24 @@ def _is_str(v) -> bool:
     return isinstance(v, str) and v != ""
 
 
+class _DuplicateKeyError(ValueError):
+    """同一个对象里出现两次的键。
+
+    `json` 默认**后写覆盖前写**，重复键于是静默丢数据 —— 而这里最容易重复的
+    恰好是人手写的清单（`domainNames` 这类映射）。校验层不看见重复，就只能
+    校验「留下来的那一个」，等于给丢数据盖章。
+    """
+
+
+def _strict_object(pairs: list[tuple[str, object]]) -> dict:
+    out: dict = {}
+    for key, value in pairs:
+        if key in out:
+            raise _DuplicateKeyError(key)
+        out[key] = value
+    return out
+
+
 # --- 读源 -----------------------------------------------------------------
 
 
@@ -98,7 +116,15 @@ def load_source(root: str) -> tuple[dict | None, dict[str, list | None], list[Is
     else:
         try:
             with open(manifest_path, encoding="utf-8") as f:
-                manifest = json.load(f)
+                manifest = json.load(f, object_pairs_hook=_strict_object)
+        except _DuplicateKeyError as exc:
+            issues.append(
+                _issue(
+                    "E-MANIFEST-FIELD",
+                    "manifest.json",
+                    f"同一个对象里出现两次 `{exc}`（后写的会静默覆盖前写的）",
+                )
+            )
         except json.JSONDecodeError as exc:
             issues.append(_issue("E-JSON", "manifest.json", f"JSON 解析失败：{exc}"))
         else:
@@ -190,6 +216,44 @@ def _check_manifest(manifest: dict) -> list[Issue]:
             out.append(_issue("E-MANIFEST-FIELD", where, "`domainIds` 须为字符串数组"))
         elif len(set(domains)) != len(domains):
             out.append(_issue("E-MANIFEST-FIELD", where, "`domainIds` 有重复取值"))
+
+    # 域的展示名（`entity-fields` §1 `domainNames`）。**可空**：不写就是没有名字，
+    # 客户端按 slug 显示 —— `english` / `german` 现在正是这个状态，它们不压平、
+    # 域名由 `nodes[].name` 承载，不需要这张表。
+    #
+    # 键取 `domainIds` 的取值而不是 `dom-*` 标签：清单里只有 `python/lexical`
+    # 这一种写法，`dom-` 前缀是装配期给节点标签用的（`_domain_slug`），两边各写
+    # 一份就会在「域改名」时只改一侧，而那一侧恰好不报错。
+    names = manifest.get("domainNames")
+    if names is not None:
+        if not isinstance(names, dict):
+            out.append(
+                _issue(
+                    "E-MANIFEST-FIELD",
+                    where,
+                    "`domainNames` 须为对象：键 = `domainIds` 的取值，值 = 展示名",
+                )
+            )
+        else:
+            known = set(domains or [])
+            for key in sorted(names):
+                if known and key not in known:
+                    out.append(
+                        _issue(
+                            "E-MANIFEST-FIELD",
+                            where,
+                            f"`domainNames` 的键不在 `domainIds` 里：{key!r}",
+                        )
+                    )
+                value = names[key]
+                if not _is_str(value) or not value.strip():
+                    out.append(
+                        _issue(
+                            "E-MANIFEST-FIELD",
+                            where,
+                            f"`domainNames[{key!r}]` 须为非空字符串，实为 {value!r}",
+                        )
+                    )
 
     return out
 

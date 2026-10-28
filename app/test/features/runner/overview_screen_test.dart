@@ -83,6 +83,26 @@ PackContent _pack() => fixturePack(<FixtureNode>[
   ),
 ]);
 
+/// 五个可学项的包 —— 「点名前三项」这条口径要有第四项才验得出来。
+PackContent _widePack() => fixturePack(<FixtureNode>[
+  const FixtureNode('py:sys', 'Python', slot: LevelSlot.system),
+  for (final (String id, String name) in <(String, String)>[
+    ('py:1', '一'),
+    ('py:2', '二'),
+    ('py:3', '三'),
+    ('py:4', '四'),
+    ('py:5', '五'),
+  ])
+    FixtureNode(
+      id,
+      name,
+      parentId: 'py:sys',
+      steps: _steps,
+      criteria: _criteria,
+      quiz: _quiz,
+    ),
+]);
+
 Event _passed(String itemId) => buildItemPassed(
   spaceId: 'python',
   itemId: itemId,
@@ -106,9 +126,17 @@ Event _graded(String itemId, Grade score, {required int minute}) =>
     );
 
 Future<void> _pump(WidgetTester tester, EventStore? store) async {
+  await _pumpWith(tester, _pack(), store);
+}
+
+Future<void> _pumpWith(
+  WidgetTester tester,
+  PackContent pack,
+  EventStore? store,
+) async {
   await tester.pumpWidget(
     MaterialApp(
-      home: OverviewScreen(content: _pack(), eventStore: store),
+      home: OverviewScreen(content: pack, eventStore: store),
     ),
   );
   await tester.pumpAndSettle();
@@ -191,5 +219,49 @@ void main() {
     );
     expect(find.byKey(const Key('overview-gaps')), findsNothing);
     expect(find.text('新学 2 项'), findsOneWidget);
+  });
+
+  testWidgets('TC-STEP-056 缺口不足三项时全部点名（无 SPEC：概览明细点几项未入册）', (
+    WidgetTester tester,
+  ) async {
+    await _pump(
+      tester,
+      _MemoryStore(<Event>[
+        _graded('py:a', Grade.fail, minute: 1),
+        _graded('py:a', Grade.fail, minute: 2),
+      ]),
+    );
+    // 明细在「缺口 N 项」下面，按队列顺序（缺口项排在前面）点名。
+    expect(find.byKey(const Key('overview-gap-detail')), findsOneWidget);
+    expect(find.text('甲'), findsOneWidget);
+    // 不足四项时不许出现「还有」—— 那是给溢出用的措辞，用了会让人以为还有更多。
+    expect(find.textContaining('还有'), findsNothing);
+  });
+
+  testWidgets('TC-STEP-057 缺口超过三项时点名前三项并说「还有 N 项」（无 SPEC：同上）', (
+    WidgetTester tester,
+  ) async {
+    // 每项各占两个分钟：同分钟的两次判定 HLC 相同，事件 id 会撞车被去重，
+    // 结果是只有第一项数得出「连续两次」—— 那不是被测逻辑的问题，是夹具打架。
+    final List<String> ids = <String>['py:1', 'py:2', 'py:3', 'py:4', 'py:5'];
+    final List<Event> events = <Event>[
+      for (int i = 0; i < ids.length; i++) ...<Event>[
+        _graded(ids[i], Grade.fail, minute: i * 2 + 1),
+        _graded(ids[i], Grade.fail, minute: i * 2 + 2),
+      ],
+    ];
+    await _pumpWith(tester, _widePack(), _MemoryStore(events));
+
+    expect(find.text('缺口 5 项（回补）'), findsOneWidget);
+    // 前三项按 id 序点名，第四、五项不出现，改用「还有 2 项」交代。
+    expect(find.text('一、二、三… 还有 2 项'), findsOneWidget);
+    expect(find.text('四'), findsNothing);
+  });
+
+  testWidgets('TC-STEP-058 无缺口时明细整块不出现，不留空行（无 SPEC：同上）', (
+    WidgetTester tester,
+  ) async {
+    await _pump(tester, _MemoryStore());
+    expect(find.byKey(const Key('overview-gap-detail')), findsNothing);
   });
 }

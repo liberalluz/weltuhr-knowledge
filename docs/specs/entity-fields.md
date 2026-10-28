@@ -41,6 +41,7 @@
 | `review_state` | enum | `pending` / `approved` / `rejected`（可重提）/ `revoked`（仅恶意违法强制停分发，**不远程删除**） |
 | `signature` | string? | 侧载与私有包可空 |
 | `axes[]` | enum[] | 涉及哪几条轴（全类必填） |
+| `domainNames` | object? | 键 = 节点 `tags[]` 里的 `dom-*` 标签，值 = 域的中文名。**可空**：不压平的包（`english` / `german`）域是真节点、名字由 `nodes[].name` 承载，不需要这张表。压平包（`python`，`ADR-0005` 决策 3）域不占层级、只记进 `tags[]`，没有它界面上就只能显示 slug |
 
 **按 `kinds[]` 追加的特化字段**：
 

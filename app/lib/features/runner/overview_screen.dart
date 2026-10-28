@@ -33,6 +33,12 @@ import '../../core/session/session.dart';
 import '../../core/session/session_queue.dart';
 import 'runner_screen.dart';
 
+/// 概览页在「缺口 N 项」下面点名几项。超出部分只说「还有 N 项」。
+///
+/// 写成具名常量而不是内联 `3`：这一页虽在 `features/`（`R2` 不管 UI 字面量），
+/// 但「点名几项」是会改的口径，散在字符串拼接里下次没人找得到。
+const int _gapNamesShown = 3;
+
 class OverviewScreen extends StatefulWidget {
   const OverviewScreen({super.key, required this.content, this.eventStore});
 
@@ -119,6 +125,22 @@ class _OverviewScreenState extends State<OverviewScreen> {
     }
   }
 
+  /// 缺口行的明细：点名至多 `_gapNamesShown` 项，超出只说「还有 N 项」。
+  ///
+  /// 为什么不在概览页列全：这一页的职责是「今天做不做、从哪开始」，不是清单。
+  /// 全列会把唯一的动作「开始」挤到屏幕外 —— 一个只有信息没有入口的页面。
+  static String _gapDetail(SessionQueue queue) {
+    final List<String> names = <String>[
+      for (final QueueItem item in queue.items)
+        if (item.isGapFill) item.name,
+    ];
+    if (names.length <= _gapNamesShown) {
+      return names.join('、');
+    }
+    final int rest = names.length - _gapNamesShown;
+    return '${names.take(_gapNamesShown).join('、')}… 还有 $rest 项';
+  }
+
   /// 本包第一个 `system` 槽位节点。`null` = 这一包没有可学的入口。
   static String? _scopeRoot(PackContent content) {
     final List<Node> systems =
@@ -172,6 +194,12 @@ class _OverviewScreenState extends State<OverviewScreen> {
               '缺口 ${queue.gapItems} 项（回补）',
               key: const Key('overview-gaps'),
               style: text.headlineMedium,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              _gapDetail(queue),
+              key: const Key('overview-gap-detail'),
+              style: text.bodyMedium,
             ),
             const SizedBox(height: 8),
           ],

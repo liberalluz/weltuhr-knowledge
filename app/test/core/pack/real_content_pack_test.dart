@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:project_knowledge/core/entities/edge.dart';
 import 'package:project_knowledge/core/entities/entry.dart';
 import 'package:project_knowledge/core/entities/node.dart';
+import 'package:project_knowledge/core/entities/pack.dart';
 import 'package:project_knowledge/core/enums.dart';
 import 'package:project_knowledge/core/graph/terrain_graph.dart';
 import 'package:project_knowledge/core/pack/pack_reader.dart';
@@ -288,5 +289,87 @@ void main() {
 
     expect(find.text('暂无（本包不含步骤）'), findsNothing);
     expect(find.textContaining(entry.steps.first.instruction), findsOneWidget);
+  });
+
+  test('TC-PACK-071 域名字表覆盖节点上出现的全部 dom-* 标签（SPEC-PACK-005）', () {
+    // 反向覆盖：节点上的标签是**实际用到**的那一批，表里多写几个没人用的名字
+    // 无所谓，少写一个就会让界面上那一类退回显示 slug —— 而这条路径不报错。
+    final PackContent content = _load();
+    final Map<String, String> names = content.pack.domainNames;
+    expect(names, isNotEmpty, reason: 'python 压平了域，域名只能靠这张表');
+
+    final Set<String> onNodes = <String>{
+      for (final Node node in content.nodes)
+        for (final String tag in node.tags)
+          if (tag.startsWith('dom-')) tag,
+    };
+    expect(onNodes, isNotEmpty, reason: '一个 dom-* 标签都没有 —— 那这张表就是死的');
+    expect(
+      names.keys.toSet().containsAll(onNodes),
+      isTrue,
+      reason: '查不到名字：${onNodes.difference(names.keys.toSet())}',
+    );
+    expect(
+      names.values.every((String value) => value.trim().isNotEmpty),
+      isTrue,
+      reason: '有域的名字是空白 —— 那与没有名字一样看不见',
+    );
+  });
+
+  testWidgets('TC-PACK-072 详情页多一行「所属域」，写中文名而不是 slug（SPEC-PACK-005）', (
+    WidgetTester tester,
+  ) async {
+    final PackContent content = _load();
+    final Node withDomain = content.nodes.firstWhere(
+      (Node node) => node.tags.any((String tag) => tag.startsWith('dom-')),
+    );
+    final String? label = domainLabelOf(content, withDomain);
+    expect(label, isNotNull);
+    // 表里有名字就不许退回 slug —— 退回是「查不到」的降级，不是正常态。
+    expect(label!.startsWith('dom-'), isFalse, reason: '仍显示 slug：$label');
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: PlanetScreen(content: content, node: withDomain),
+      ),
+    );
+    expect(find.byKey(const Key('planet-domain')), findsOneWidget);
+    expect(find.text('所属域：$label'), findsOneWidget);
+
+    // 没有 `dom-*` 标签的节点（骨架 / 不压平的包）整行不出现，而不是写「未知」。
+    final Node withoutDomain = content.nodes.firstWhere(
+      (Node node) => node.tags.every((String tag) => !tag.startsWith('dom-')),
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        home: PlanetScreen(content: content, node: withoutDomain),
+      ),
+    );
+    expect(find.byKey(const Key('planet-domain')), findsNothing);
+  });
+
+  test('TC-PACK-073 表里查不到名字时退回显示标签本身，不显示空白（无 SPEC：降级形态未入册）', () {
+    // 真实包里十个域都有名字 ⇒ 上面那条走不到「查不到」这一支。把同一份包换成
+    // 空名字表再问一次：降级必须是「显示 slug」，因为空白会被读成「这个节点
+    // 不属于任何域」，而真实情况是「属于，只是名字还没写」。
+    final PackContent content = _load();
+    final Node node = content.nodes.firstWhere(
+      (Node n) => n.tags.any((String tag) => tag.startsWith('dom-')),
+    );
+    final String tag = node.tags.firstWhere((String t) => t.startsWith('dom-'));
+    final PackContent withoutNames = PackContent(
+      pack: Pack.fromJson(<String, Object?>{
+        ...content.pack.toJson(),
+        'domainNames': <String, String>{},
+      }),
+      nodes: content.nodes,
+      edges: content.edges,
+      entries: content.entries,
+      sources: content.sources,
+      schemes: content.schemes,
+      methods: content.methods,
+    );
+
+    expect(domainLabelOf(withoutNames, node), tag);
   });
 }

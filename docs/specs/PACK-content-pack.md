@@ -39,7 +39,7 @@
 
 | 部分 | 内容 | 备注 |
 |---|---|---|
-| 清单字段 | `plugin_id` · `name` · `version` · `kinds[]` · `namespace` · `schema_version` · `skeleton_requires` · `deps[]` · `license` · `author` · `origin` · `review_state` · `signature`（可空）· `axes[]`，加四个**可空** facts（`payload` / `terrain` / `overlay` / `method`） | 字段集与取值**唯一权威处**是 [`entity-fields.md`](entity-fields.md) §1，此处不重述 |
+| 清单字段 | `plugin_id` · `name` · `version` · `kinds[]` · `namespace` · `schema_version` · `skeleton_requires` · `deps[]` · `license` · `author` · `origin` · `review_state` · `signature`（可空）· `axes[]` · `domainNames`（可空），加四个**可空** facts（`payload` / `terrain` / `overlay` / `method`） | 字段集与取值**唯一权威处**是 [`entity-fields.md`](entity-fields.md) §1，此处不重述 |
 | `nodes` | 树节点（`StructuralNode` / `LearnableNode` 两型） | 派生三项 `path` / `inScope` / `depth` **不入库** |
 | `edges` | 三类边同段，每条带判别符 `type`（`parent` / `wormhole` / `prerequisite`） | `⪯` 必须无环（`SPEC-FND-005`） |
 | `entries` | 载荷内容，键 = `node_id` | 骨架节点**没有** entry，故为稀疏表 |
@@ -48,6 +48,8 @@
 | `methods` | 方法（配方） | — |
 
 **顶层只有这两类键**：清单字段与六段之外的任何键都是非法（旧形态的 `meta` 即此列）。
+
+⚠️ **客户端不维护字段白名单常量表**：`pack_reader` 的顶层白名单由 `Pack.toJson().keys` 派生。推论有两条 —— ① 新增清单字段必须同时成为 `Pack` 的字段，否则包里写了也被判成「六段与清单字段之外的键」；② `toJson` 里必须**无条件写出**该键，条件写出会让「空表 / 空值」那种合法值在解析期被判非法（表的键集先少一项，再看 raw 就多出来了）。
 
 **六段缺一即格式错误**，不补空数组 —— 补默认值会把「坏了」读成「空的」，而两者的修法完全不同。
 

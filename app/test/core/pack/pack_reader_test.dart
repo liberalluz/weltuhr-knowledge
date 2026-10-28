@@ -37,7 +37,10 @@ void main() {
       expect(pack.edges.whereType<ParentEdge>().length, 10);
       expect(pack.edges.whereType<WormholeEdge>().length, 1);
       expect(pack.prerequisites.length, 4);
-      expect(pack.prerequisites.where((PrerequisiteEdge e) => e.isRequired).length, 2);
+      expect(
+        pack.prerequisites.where((PrerequisiteEdge e) => e.isRequired).length,
+        2,
+      );
     });
 
     test('主父唯一：secondary 归属不冒充父（无 SPEC：entity-fields §3）', () {
@@ -48,7 +51,10 @@ void main() {
           .toList();
       expect(parents.length, 2);
       expect(parents.where((ParentEdge e) => e.isMain).length, 1);
-      expect(parents.singleWhere((ParentEdge e) => e.isMain).parentId, 'm2-demo:lang-core');
+      expect(
+        parents.singleWhere((ParentEdge e) => e.isMain).parentId,
+        'm2-demo:lang-core',
+      );
     });
 
     test('段内 id 唯一：nodes 重复即拒（SPEC-PACK-008）', () {
@@ -113,6 +119,24 @@ void main() {
           ),
         ),
       );
+    });
+
+    test('TC-PACK-069 顶层 domainNames 是清单字段，必须被接受（无 SPEC：entity-fields §1 `domainNames`）', () {
+      final String json = mutateM2((JsonMap pack) {
+        pack['domainNames'] = <String, String>{'dom-oop': '面向对象'};
+      });
+      expect(readPack(json).pack.domainNames, <String, String>{
+        'dom-oop': '面向对象',
+      });
+    });
+
+    test('TC-PACK-070 domainNames 写成空表同样合法 —— 空值不是坏值（无 SPEC：同上）', () {
+      // 这一条盯的是白名单不能靠「有没有值」判断合法性：空表也是这个键，
+      // 拒掉它就等于要求每个包都必须有域名，而 `english` / `german` 没有。
+      final String json = mutateM2((JsonMap pack) {
+        pack['domainNames'] = <String, String>{};
+      });
+      expect(readPack(json).pack.domainNames, isEmpty);
     });
 
     test('counts 与 nodes 实扫不一致即拒 —— 摘要与正文不能各说各话（无 SPEC：B13a 笔 4 新增判据）', () {
@@ -323,7 +347,10 @@ void main() {
           isA<PackContentException>().having(
             (PackContentException e) => e.problems.join('\n'),
             'problems',
-            allOf(contains('terrain.edge_counts.required'), contains('edges[]')),
+            allOf(
+              contains('terrain.edge_counts.required'),
+              contains('edges[]'),
+            ),
           ),
         ),
       );
@@ -392,7 +419,10 @@ void main() {
 
     test('TC-FND-020 `axes_covered` 元素重复即拒（无 SPEC：entity-fields §1）', () {
       final String json = mutateM4((JsonMap pack) {
-        (pack['terrain']! as JsonMap)['axes_covered'] = <String>['major', 'major'];
+        (pack['terrain']! as JsonMap)['axes_covered'] = <String>[
+          'major',
+          'major',
+        ];
       });
       expect(
         () => readPack(json),
