@@ -435,5 +435,113 @@ void main() {
       expect(queue.reviewItems, 0);
       expect(queue.length, 2);
     });
+
+    test('TC-STEP-079 复习额度用完 ⇒ 只截池尾，逾期最久的先进队（SPEC-STEP-004）', () {
+      final SessionQueue queue = buildSessionQueue(
+        pack: _pack(),
+        subtreeRoot: _root,
+        now: _today,
+        passed: const <String>{'py:a', 'py:b', 'py:c'},
+        srs: <String, SrsState>{
+          'py:a': _due('py:a', _today.subtract(const Duration(days: 5))),
+          'py:b': _due('py:b', _today.subtract(const Duration(days: 3))),
+          'py:c': _due('py:c', _today.subtract(const Duration(days: 1))),
+        },
+        reviewAllowance: 2,
+      );
+      expect(queue.items.map((QueueItem item) => item.nodeId), <String>[
+        'py:a',
+        'py:b',
+      ]);
+      expect(queue.reviewItems, 2);
+      expect(queue.reviewDeferred, 1);
+      expect(
+        queue.items.map((QueueItem item) => item.nodeId),
+        isNot(contains('py:c')),
+      );
+    });
+
+    test('TC-STEP-080 新学额度用完 ⇒ 按体系序取前几项，其余顺延（SPEC-STEP-028）', () {
+      final SessionQueue queue = buildSessionQueue(
+        pack: _pack(),
+        subtreeRoot: _root,
+        now: _today,
+        passed: const <String>{},
+        newAllowance: 1,
+      );
+      expect(queue.items.map((QueueItem item) => item.nodeId), <String>[
+        'py:a',
+      ]);
+      expect(queue.newItems, 1);
+      expect(queue.newDeferred, 2);
+    });
+
+    test('TC-STEP-081 额度 0 ⇒ 该池一条都排不进，且被挡的项数如实记下（SPEC-STEP-028）', () {
+      final SessionQueue queue = buildSessionQueue(
+        pack: _pack(),
+        subtreeRoot: _root,
+        now: _today,
+        passed: const <String>{'py:a', 'py:b', 'py:c'},
+        srs: <String, SrsState>{
+          'py:a': _due('py:a', _today.subtract(const Duration(days: 2))),
+          'py:b': _due('py:b', _today.subtract(const Duration(days: 2))),
+        },
+        reviewAllowance: 0,
+      );
+      expect(queue.reviewItems, 0);
+      expect(queue.reviewDeferred, 2);
+      expect(queue.items, isEmpty);
+      // 队列空但被挡过 —— 界面据此说「另有两项排到明天」，而不是「都学过了」。
+      expect(queue.deferredTotal, 2);
+    });
+
+    test('TC-STEP-082 缺口不受额度约束 —— 额度管两个池子，缺口是第三条源（SPEC-STEP-003）', () {
+      final SessionQueue queue = buildSessionQueue(
+        pack: _pack(),
+        subtreeRoot: _root,
+        now: _today,
+        passed: const <String>{'py:c'},
+        gaps: const <String>{'py:c'},
+        reviewAllowance: 0,
+      );
+      expect(queue.gapItems, 1);
+      expect(queue.items.first.nodeId, 'py:c');
+      expect(queue.items.first.kind, QueueItemKind.gapFill);
+      // 复习额度是 0，但没有到期项，所以一条也没被挡 —— 缺口本身不吃额度。
+      expect(queue.reviewDeferred, 0);
+    });
+
+    test('TC-STEP-083 两池各削各的：复习额度用完不影响新学（SPEC-STEP-004）', () {
+      final SessionQueue queue = buildSessionQueue(
+        pack: _pack(),
+        subtreeRoot: _root,
+        now: _today,
+        passed: const <String>{'py:a'},
+        srs: <String, SrsState>{
+          'py:a': _due('py:a', _today.subtract(const Duration(days: 2))),
+        },
+        reviewAllowance: 0,
+        newAllowance: 2,
+      );
+      expect(queue.reviewItems, 0);
+      expect(queue.reviewDeferred, 1);
+      expect(queue.newItems, 2);
+      expect(queue.newDeferred, 0);
+    });
+
+    test(
+      'TC-STEP-084 额度为 null ⇒ 不截断，被挡数恒为 0（无 SPEC：STEP-028 只说上限，未写「不限」这种入参）',
+      () {
+        final SessionQueue queue = buildSessionQueue(
+          pack: _pack(),
+          subtreeRoot: _root,
+          now: _today,
+          passed: const <String>{},
+        );
+        expect(queue.newItems, 3);
+        expect(queue.newDeferred, 0);
+        expect(queue.deferredTotal, 0);
+      },
+    );
   });
 }

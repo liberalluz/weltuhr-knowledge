@@ -32,6 +32,7 @@ import '../../core/events/event.dart';
 import '../../core/events/event_store.dart';
 import '../../core/events/fold.dart';
 import '../../core/pack/pack_reader.dart';
+import '../../core/session/daily_quota.dart';
 import '../../core/session/gaps.dart';
 import '../../core/session/session.dart';
 import '../../core/session/session_queue.dart';
@@ -82,6 +83,8 @@ class _OverviewScreenState extends State<OverviewScreen> {
     final String? root = _scopeRoot(widget.content);
     final EventStore? store = widget.eventStore;
     final DateTime at = widget.now ?? DateTime.now();
+    // 日界跟着「今天」那个时刻的时区走：测试注入了定值时钟，日界也随之可控。
+    final Duration utcOffset = at.timeZoneOffset;
     if (root == null) {
       setState(() {
         _loading = false;
@@ -101,6 +104,8 @@ class _OverviewScreenState extends State<OverviewScreen> {
           subtreeRoot: root,
           passed: const <String>{},
           now: at,
+          reviewAllowance: quotaRemaining(cap: reviewPoolCap, used: 0),
+          newAllowance: quotaRemaining(cap: newPoolCap, used: 0),
         );
       });
       return;
@@ -117,6 +122,12 @@ class _OverviewScreenState extends State<OverviewScreen> {
         spaceId: widget.content.pack.pluginId,
         userId: localDefaultUserId,
       );
+      // 当日用量只由事件决定 —— 与 `fold` 吃同一份日志，不另读一份计数表。
+      final DailyQuotaUsage usage = dailyQuotaUsage(
+        events: events,
+        asOf: at,
+        utcOffset: utcOffset,
+      );
       setState(() {
         _loading = false;
         _rootId = root;
@@ -128,6 +139,11 @@ class _OverviewScreenState extends State<OverviewScreen> {
           now: at,
           gaps: gapItemIds(folded),
           srs: folded.srs,
+          reviewAllowance: quotaRemaining(
+            cap: reviewPoolCap,
+            used: usage.reviewed,
+          ),
+          newAllowance: quotaRemaining(cap: newPoolCap, used: usage.learned),
         );
       });
     } on FormatException catch (error) {
@@ -157,6 +173,12 @@ class _OverviewScreenState extends State<OverviewScreen> {
     final int rest = names.length - _gapNamesShown;
     return '${names.take(_gapNamesShown).join('、')}… 还有 $rest 项';
   }
+
+  /// 被额度挡下的项怎么说。
+  ///
+  /// 只说排期，不说欠账 —— `SPEC-STEP-030` 不许出现「欠」「逾期」「缺」这类字，
+  /// 也不许着警示色，所以这行落在 `bodySmall`，与「会话到 N 分钟收尾」同一档。
+  static String _deferredLine(int count) => '另有 $count 项排到明天';
 
   /// 本包第一个 `system` 槽位节点。`null` = 这一包没有可学的入口。
   static String? _scopeRoot(PackContent content) {
@@ -192,7 +214,9 @@ class _OverviewScreenState extends State<OverviewScreen> {
     if (_problem != null) {
       return _centered(text, title: '暂不可用', detail: _problem!);
     }
-    if (queue == null || queue.isEmpty) {
+    // 「今天排满了」与「本来就没有」必须分开：两种情况下列表都是空的，但前者
+    // 是被额度挡住的 —— 说成「都学过了」是假话。
+    if (queue == null || (queue.isEmpty && queue.deferredTotal == 0)) {
       return _centered(
         text,
         title: '这个范围里没有可学的项',
@@ -228,12 +252,36 @@ class _OverviewScreenState extends State<OverviewScreen> {
             ),
             const SizedBox(height: 8),
           ],
-          Text('新学 ${queue.newItems} 项', style: text.headlineMedium),
-          const SizedBox(height: 8),
+          if (queue.reviewDeferred > 0) ...<Widget>[
+            Text(
+              _deferredLine(queue.reviewDeferred),
+              key: const Key('overview-reviews-deferred'),
+              style: text.bodySmall,
+            ),
+            const SizedBox(height: 8),
+          ],
+          // 新学行照旧「0 也出」；只有额度用满、一条都没排进来时才整行不出 ——
+          // 那时下面那行灰字已经说明了原因，再写「新学 0 项」只会读成「今天没事」。
+          if (queue.newItems > 0 || queue.newDeferred == 0) ...<Widget>[
+            Text('新学 ${queue.newItems} 项', style: text.headlineMedium),
+            const SizedBox(height: 8),
+          ],
+          if (queue.newDeferred > 0) ...<Widget>[
+            Text(
+              _deferredLine(queue.newDeferred),
+              key: const Key('overview-new-deferred'),
+              style: text.bodySmall,
+            ),
+            const SizedBox(height: 8),
+          ],
           Text(
             // 一项时长都没写时不留「预计 0 分钟」这种读数 —— 那是把「不知道」
-            // 显示成了「不用花时间」。
-            queue.timedItems == 0
+            // 显示成了「不用花时间」。额度用满时也不说「时长未知」：包内写了，
+            // 只是今天排不进来。措辞只说「今天排到这里」，不带欠账色彩
+            // （`SPEC-STEP-030`：不得出现「欠」「逾期」，不得着警示色）。
+            queue.isEmpty && queue.deferredTotal > 0
+                ? '今天的名额已用完'
+                : queue.timedItems == 0
                 ? '预计时长未知（包内未写）'
                 : '今日预计 ${queue.knownMinutes} 分钟'
                       '${queue.timedItems == queue.length ? '' : '（${queue.length - queue.timedItems} 项未写时长）'}',
@@ -250,7 +298,11 @@ class _OverviewScreenState extends State<OverviewScreen> {
             width: double.infinity,
             child: FilledButton(
               key: const Key('overview-start'),
-              onPressed: widget.eventStore == null ? null : () => _start(queue),
+              // 队列空的时候没有可推进的项：额度用满那种「空」也不能点进去，
+              // 进去只会立刻收尾。
+              onPressed: widget.eventStore == null || queue.isEmpty
+                  ? null
+                  : () => _start(queue),
               child: const Text('开始'),
             ),
           ),

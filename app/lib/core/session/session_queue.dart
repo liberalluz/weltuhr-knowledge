@@ -39,8 +39,13 @@
 /// 东西，新学项晚一天没有代价。同一组内谁先谁后没有语义，定成稳定序只是为了同一份
 /// 数据两次给出同一个队列 —— 与 `precedence.dart` 同一口径。
 ///
-/// **池上限（`C-06` / `C-07`）本笔不套**：那属「每日配额」口径，要一并回答「被截掉
-/// 的项在页面上怎么显示」，与本文件「接哪条源」是两件事。
+/// ## 池上限只削池尾，两池各削各的
+///
+/// 用量由 `daily_quota.dart` 按「当天已判分」算出，本文件只把超出余量的项挡在队列外
+/// 并数清楚挡了几项 —— 不说就成了静默截断，用户会以为今天只有这些。
+///
+/// **缺口不参与截断**：额度管两个池子，缺口是第三条源（`SPEC-STEP-003`）。截断只发生
+/// 在池尾 —— `STEP-004` 已定好池内顺序，余量用完时先挡掉的本来就该是排在后面的。
 ///
 /// ## 队列里装的是「步骤」，不是 id
 ///
@@ -104,12 +109,26 @@ class QueueItem {
 
 /// 一条队列。
 class SessionQueue {
-  const SessionQueue({required this.subtreeRoot, required this.items});
+  const SessionQueue({
+    required this.subtreeRoot,
+    required this.items,
+    this.reviewDeferred = 0,
+    this.newDeferred = 0,
+  });
 
   /// 队列的范围根。概览页要显示它 —— 同一份数据在不同根下给出不同队列。
   final String subtreeRoot;
 
   final List<QueueItem> items;
+
+  /// 因复习额度用满而顺延到明天的项数（`C-06`）。**不进 [items]**。
+  final int reviewDeferred;
+
+  /// 因新学额度用满而顺延到明天的项数（`C-07`）。**不进 [items]**。
+  final int newDeferred;
+
+  /// 两池合计顺延数。0 = 没有东西被挡住。
+  int get deferredTotal => reviewDeferred + newDeferred;
 
   int get length => items.length;
 
@@ -161,6 +180,11 @@ class SessionQueue {
 /// [srs] 来自 `fold(events).srs`：只有评过分的项才有条目，`due` 由 `C-03` 反解。
 /// [now] 是「今天」。[`srs`] 里 `due ≤ now` 且已学过的项进复习池。
 ///
+/// [reviewAllowance] / [newAllowance] 是今天还剩下的额度（`C-06` / `C-07` 减去
+/// `dailyQuotaUsage` 算出的已用量），`null` = 不限。0 与 `null` 不是一回事：0 表示
+/// 「今天这一池排满了」，队列里一条这一池的项都不会有，但 [SessionQueue.reviewDeferred]
+/// （或 `newDeferred`）会说明有几项被挡下 —— 界面据此区分「排满了」与「本来就没有」。
+///
 /// 没有 `entry` 的节点（结构节点）与没有步骤的项**不入队**：前者不是可学项，
 /// 后者进会话会立刻「完成」，把分母灌水。缺口项同样受这一条约束 —— 一个在包里
 /// 找不到步骤的缺口（包升级删了正文、事件还留着 id）不该出现在队列里，它会让
@@ -172,6 +196,8 @@ SessionQueue buildSessionQueue({
   required DateTime now,
   Set<String> gaps = const <String>{},
   Map<String, SrsState> srs = const <String, SrsState>{},
+  int? reviewAllowance,
+  int? newAllowance,
 }) {
   final PlanScope scope = resolvePlanScope(
     pack: pack,
@@ -286,9 +312,38 @@ SessionQueue buildSessionQueue({
     return byLevel != 0 ? byLevel : a.nodeId.compareTo(b.nodeId);
   });
 
+  // 截断在排序之后做：池内顺序已定，先被挡掉的必须是排在后面的那些。
+  final List<QueueItem> kept = <QueueItem>[];
+  int reviewsKept = 0;
+  int newItemsKept = 0;
+  int reviewDeferred = 0;
+  int newDeferred = 0;
+  for (final QueueItem item in items) {
+    switch (item.kind) {
+      case QueueItemKind.gapFill:
+        kept.add(item);
+      case QueueItemKind.review:
+        if (reviewAllowance != null && reviewsKept >= reviewAllowance) {
+          reviewDeferred += 1;
+        } else {
+          reviewsKept += 1;
+          kept.add(item);
+        }
+      case QueueItemKind.newItem:
+        if (newAllowance != null && newItemsKept >= newAllowance) {
+          newDeferred += 1;
+        } else {
+          newItemsKept += 1;
+          kept.add(item);
+        }
+    }
+  }
+
   return SessionQueue(
     subtreeRoot: subtreeRoot,
-    items: List<QueueItem>.unmodifiable(items),
+    items: List<QueueItem>.unmodifiable(kept),
+    reviewDeferred: reviewDeferred,
+    newDeferred: newDeferred,
   );
 }
 
