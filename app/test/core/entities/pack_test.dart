@@ -97,7 +97,11 @@ void main() {
         () => Pack.fromJson(raw),
         throwsA(
           isA<IllegalPackKindError>()
-              .having((IllegalPackKindError e) => e.declared, 'declared', isFalse)
+              .having(
+                (IllegalPackKindError e) => e.declared,
+                'declared',
+                isFalse,
+              )
               .having(
                 (IllegalPackKindError e) => e.kind,
                 'kind',
@@ -121,6 +125,31 @@ void main() {
           ),
         ),
       );
+    });
+
+    test('TC-PACK-066 domainNames 缺省为空表 —— 不压平的包不需要它（无 SPEC：entity-fields §1 只定字段，未定必须存在）', () {
+      // `english` / `german` 正是这个形态：它们的域是真节点、名字在 `name` 上。
+      // 缺省若给 `null`，界面每处都要多一个判空分支。
+      expect(pack.domainNames, isEmpty);
+    });
+
+    test('TC-PACK-067 domainNames 逐项落地，键是标签形态（无 SPEC：键的形态由装配器换键约定）', () {
+      final JsonMap withNames = <String, Object?>{
+        ...raw,
+        'domainNames': <String, String>{'dom-oop': '面向对象', 'dom-func': '函数'},
+      };
+      expect(Pack.fromJson(withNames).domainNames, <String, String>{
+        'dom-oop': '面向对象',
+        'dom-func': '函数',
+      });
+    });
+
+    test('TC-PACK-068 toJson 无条件写出 domainNames —— 条件写出会让空表被判非法键（无 SPEC：白名单由 toJson 派生）', () {
+      // `pack_reader._checkTopLevelKeys` 的白名单取 `Pack.toJson().keys`。
+      // 若这里改成「空表就不写」，那么一个写着 `"domainNames": {}` 的包会先被
+      // 解析成空表、再因为 toJson 里没有这个键而被判成「六段与清单字段之外的键」。
+      expect(pack.toJson().containsKey('domainNames'), isTrue);
+      expect(pack.toJson()['domainNames'], isEmpty);
     });
 
     test('序列化往返：解析 → toJson → 再解析，清单字段不变（无 SPEC：自洽性）', () {

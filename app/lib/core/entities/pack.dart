@@ -35,10 +35,7 @@ class PackDep {
   /// semver 区间，与 `Pack.version` 参与匹配。
   final String range;
 
-  JsonMap toJson() => <String, Object?>{
-    'plugin_id': pluginId,
-    'range': range,
-  };
+  JsonMap toJson() => <String, Object?>{'plugin_id': pluginId, 'range': range};
 }
 
 /// 装前路径预留（`entity-fields` §1 `path_reservations[]`）。
@@ -56,10 +53,7 @@ class PathReservation {
   final String parentId;
   final String slug;
 
-  JsonMap toJson() => <String, Object?>{
-    'parent_id': parentId,
-    'slug': slug,
-  };
+  JsonMap toJson() => <String, Object?>{'parent_id': parentId, 'slug': slug};
 }
 
 /// `payload` 特化字段（`entity-fields` §1）。
@@ -314,6 +308,7 @@ class Pack {
     required this.reviewState,
     required this.axes,
     this.signature,
+    this.domainNames = const <String, String>{},
     this.payload,
     this.terrain,
     this.overlay,
@@ -346,6 +341,11 @@ class Pack {
       'axes',
     ).map(Axis.fromWire).toList(growable: false),
     signature: optionalString(json, 'signature'),
+    domainNames: json['domainNames'] == null
+        ? const <String, String>{}
+        : Map<String, String>.unmodifiable(
+            requireStringMap(json, 'domainNames'),
+          ),
     payload: json['payload'] == null
         ? null
         : PayloadFacts.fromJson(requireMap(json, 'payload')),
@@ -387,6 +387,17 @@ class Pack {
 
   /// **可空**：侧载与私有包可以没有签名。
   final String? signature;
+
+  /// 域的展示名：键 = 节点 `tags[]` 里的 `dom-*` 标签，值 = 中文名
+  /// （`entity-fields` §1 `domainNames`）。
+  ///
+  /// 为什么键是标签形态而不是清单里的 `python/lexical`：客户端只有节点的
+  /// `tags[]`，清单在装好的包里根本不落地（`SPEC-PACK-005` 单文件）。装配器
+  /// 负责换键，界面只管查表 —— 见 `assemble_pack.py` 的 `build_domain_names`。
+  ///
+  /// 缺省为空表：不压平的包（`english` / `german`）域名由域节点的 `name`
+  /// 承载，没有这张表。查不到名字时界面退回显示标签本身，不显示空白。
+  final Map<String, String> domainNames;
 
   /// 全类必填，但可以是单元素。
   final List<Axis> axes;
@@ -432,6 +443,10 @@ class Pack {
     'review_state': reviewState.name,
     'signature': signature,
     'axes': axes.map((Axis a) => a.name).toList(),
+    // **无条件写出**，哪怕空表：`pack_reader` 的顶层白名单是拿本方法的键集
+    // 派生的（`_checkTopLevelKeys`），条件写出会让「带 `domainNames: {}` 的包」
+    // 被判成非法键 —— 而那正是最该被当成合法的空值。
+    'domainNames': domainNames,
     if (payload != null) 'payload': payload!.toJson(),
     if (terrain != null) 'terrain': terrain!.toJson(),
     if (overlay != null) 'overlay': overlay!.toJson(),

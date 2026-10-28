@@ -419,6 +419,19 @@ def build_sources(
     return out
 
 
+def build_domain_names(manifest: dict) -> dict[str, str]:
+    """清单的 `domainNames`（键 = `domainIds` 取值）→ 包顶层表（键 = 标签形态 `dom-*`）。
+
+    为什么要换一次键：客户端手里只有节点的 `tags[]`（`dom-lexical`），没有
+    `python/lexical`；让界面去拼 `dom-` 前缀，等于把装配期的命名规则复制到
+    展示层，规则一改两处不同步 —— 而错的那一侧不会报错，只会显示不出来。
+    """
+    return {
+        _domain_slug(key): value
+        for key, value in (manifest.get("domainNames") or {}).items()
+    }
+
+
 def build_schemes(schemes: list, node_of: dict[str, str]) -> list[dict]:
     out: list[dict] = []
     for scheme in schemes:
@@ -519,6 +532,12 @@ def assemble(root: str) -> tuple[dict, list[str]]:
         "schemes": mapped_schemes,
         "methods": [],
     }
+
+    # 域名字只在清单声明了才写：`english` / `german` 不压平、域名由域节点的
+    # `name` 承载，凭空多一个空表只会让它们下次重装时多出一段无意义的 diff。
+    domain_names = build_domain_names(manifest)
+    if domain_names:
+        pack["domainNames"] = domain_names
 
     notes: list[str] = []
     if dropped:

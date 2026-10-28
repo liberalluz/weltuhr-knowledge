@@ -30,5 +30,17 @@
     "python/modules",
     "python/typing",
     "python/concurrency"
-  ]
+  ],
+  "domainNames": {
+    "python/lexical": "词法",
+    "python/data-model": "数据模型",
+    "python/control": "控制流",
+    "python/func": "函数",
+    "python/oop": "面向对象",
+    "python/iteration": "迭代与生成器",
+    "python/errors": "异常处理",
+    "python/modules": "模块与导入",
+    "python/typing": "类型标注",
+    "python/concurrency": "并发"
+  }
 }

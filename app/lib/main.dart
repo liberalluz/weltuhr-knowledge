@@ -378,6 +378,23 @@ class SpaceScreen extends StatelessWidget {
 ///
 /// **空缺照实显示**（「暂无步骤」），不倒推一个默认值：旧数据里 steps / body
 /// 一栏都没有，界面若补上"看起来有内容"的占位，读者会把缺数据当成已完成。
+/// 节点的「所属域」显示名 —— 压平包里域不占层级，只记在 `tags[]` 的 `dom-*` 上
+/// （`ADR-0005` 决策 3：专业星下只剩 `system` + `planet` 两槽，装不下三层）。
+///
+/// 查不到名字时**退回标签本身**（`dom-oop`），不显示空白：空白会被读成
+/// 「这个节点不属于任何域」，而真实情况是「属于，只是名字还没写」。
+/// 无 `dom-*` 标签的节点返回 `null`，调用方据此整行不出现 —— 不压平的包
+/// （`english` / `german`）正是这种形态，它们的域是真节点、有自己的 `name`。
+String? domainLabelOf(PackContent content, Node node) {
+  final Map<String, String> names = content.pack.domainNames;
+  for (final String tag in node.tags) {
+    if (tag.startsWith('dom-')) {
+      return names[tag] ?? tag;
+    }
+  }
+  return null;
+}
+
 class PlanetScreen extends StatelessWidget {
   const PlanetScreen({
     super.key,
@@ -404,6 +421,7 @@ class PlanetScreen extends StatelessWidget {
     // 先落成局部变量再判类型：`node` 是公开字段，Dart 不对它做类型提升。
     final Node current = node;
     final LearnableNode? learnable = current is LearnableNode ? current : null;
+    final String? domain = domainLabelOf(content, node);
 
     return Scaffold(
       appBar: AppBar(
@@ -442,6 +460,14 @@ class PlanetScreen extends StatelessWidget {
               ],
             ],
           ),
+          if (domain != null) ...<Widget>[
+            const SizedBox(height: 12),
+            Text(
+              '所属域：$domain',
+              key: const Key('planet-domain'),
+              style: text.bodyMedium,
+            ),
+          ],
           const Divider(height: 32),
           _Section(title: '概要', body: entry?.summary ?? '暂无'),
           _Section(title: '正文', body: entry?.body ?? '暂无'),
