@@ -1,8 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:project_knowledge/core/constants.dart';
 import 'package:project_knowledge/core/entities/plan.dart';
+import 'package:project_knowledge/core/entities/state.dart';
 import 'package:project_knowledge/core/enums.dart';
 import 'package:project_knowledge/core/events/event.dart';
 import 'package:project_knowledge/core/events/fold.dart';
+import 'package:project_knowledge/core/srs/fsrs.dart';
 
 Event _event({
   required String id,
@@ -46,13 +49,27 @@ Event _graded(
   String score, {
   String itemId = 'py-a',
   int counter = 0,
+  String? progressKind,
 }) => _event(
   id: id,
   type: EventType.itemGraded,
   physical: physical,
   counter: counter,
   itemId: itemId,
-  payload: <String, Object?>{'score': score},
+  payload: <String, Object?>{'score': score, 'progressKind': ?progressKind},
+);
+
+Event _skipped(
+  String id,
+  int physical, {
+  String itemId = 'py-a',
+  int counter = 0,
+}) => _event(
+  id: id,
+  type: EventType.itemSkipped,
+  physical: physical,
+  counter: counter,
+  itemId: itemId,
 );
 
 Event _note(
@@ -264,6 +281,130 @@ void main() {
       expect(state.consecutiveFails['py-a'], 2);
       expect(state.consecutiveFails['py-b'], 1);
     });
+  });
+
+  group('FSRS-5 折叠（B6 笔 1）', () {
+    /// 一天 = 86,400,000 ms，用来把两条评分拉开到「隔天复习」那一支。
+    const int day = 86400000;
+
+    test('TC-QUANT-019 首评即建 D / S：熟练取 w3，D 与初值一致（SPEC-STEP-025）', () {
+      final FoldedState state = fold(<Event>[
+        _graded('e1', 1000, 'proficient'),
+      ]);
+      final SrsState srs = state.srsOf('py-a')!;
+      expect(srs.stability, fsrsW3);
+      expect(
+        srs.difficulty,
+        closeTo(fsrsInitial(Grade.proficient).difficulty, 1e-9),
+      );
+      expect(srs.reps, 1);
+      expect(srs.failCount, 0);
+      // `due` 在收尾处算：= 上次评分 + 反解(S)，不是事件里带过来的。
+      expect(srs.due.isAfter(srs.lastReviewAt), isTrue);
+    });
+
+    test('TC-QUANT-020 隔天复习：合格与熟练都涨，熟练涨得更多（C-04）', () {
+      final FoldedState passOnly = fold(<Event>[
+        _graded('e1', 1000, 'pass'),
+        _graded('e2', 1000 + day, 'pass'),
+      ]);
+      final FoldedState withProficient = fold(<Event>[
+        _graded('e1', 1000, 'pass'),
+        _graded('e2', 1000 + day, 'proficient'),
+      ]);
+      expect(passOnly.srsOf('py-a')!.stability, greaterThan(fsrsW2));
+      expect(
+        withProficient.srsOf('py-a')!.stability,
+        greaterThan(passOnly.srsOf('py-a')!.stability),
+      );
+      expect(passOnly.srsOf('py-a')!.reps, 2);
+    });
+
+    test('TC-QUANT-021 未过：S 降、D 升、failCount 加一（SPEC-QUANT-009）', () {
+      final FoldedState first = fold(<Event>[_graded('e1', 1000, 'pass')]);
+      final FoldedState after = fold(<Event>[
+        _graded('e1', 1000, 'pass'),
+        _graded('e2', 1000 + day, 'fail'),
+      ]);
+      final SrsState before = first.srsOf('py-a')!;
+      final SrsState now = after.srsOf('py-a')!;
+      expect(now.stability, lessThan(before.stability));
+      expect(now.difficulty, greaterThan(before.difficulty));
+      expect(now.failCount, 1);
+    });
+
+    test(
+      'TC-QUANT-022 打卡项冻结：算十次 S 不动，永不接近 180（SPEC-QUANT-007 / SPEC-STEP-034）',
+      () {
+        final List<Event> events = <Event>[
+          for (int i = 0; i < 10; i++)
+            _graded('e$i', 1000 + i * day, 'pass', progressKind: 'checked'),
+        ];
+        final SrsState srs = fold(events).srsOf('py-a')!;
+        expect(srs.stability, fsrsW2);
+        expect(srs.stability, lessThan(graduationSDays.toDouble()));
+        expect(srs.reps, 10);
+      },
+    );
+
+    test('TC-QUANT-023 `R(t)` 不入库：state 的 JSON 里没有 r / mastery（C-01 同段口径）', () {
+      final SrsState srs = fold(<Event>[_graded('e1', 1000, 'pass')])
+          .srsOf('py-a')!;
+      final Map<String, Object?> json = srs.toJson();
+      expect(json.containsKey('r'), isFalse);
+      expect(json.containsKey('mastery'), isFalse);
+      expect(json.keys, <String>{
+        'itemId',
+        'd',
+        's',
+        'lastReviewAt',
+        'due',
+        'failCount',
+        'reps',
+        'skipStreak',
+      });
+    });
+
+    test('TC-QUANT-024 `due` 随 S 变远：熟练首评的到期日晚于合格首评（C-03）', () {
+      final SrsState pass = fold(<Event>[_graded('e1', 1000, 'pass')])
+          .srsOf('py-a')!;
+      final SrsState proficient = fold(<Event>[
+        _graded('e1', 1000, 'proficient'),
+      ]).srsOf('py-a')!;
+      expect(proficient.due.isAfter(pass.due), isTrue);
+    });
+
+    test('TC-QUANT-025 跳过折 skipStreak、评分清零，且不碰 failCount（C-10 / C-11）', () {
+      final FoldedState skipped = fold(<Event>[
+        _skipped('e1', 1000),
+        _skipped('e2', 1001),
+        _skipped('e3', 1002),
+      ]);
+      expect(skipped.skipStreakOf('py-a'), 3);
+      // 跳过不写判定 ⇒ 还没有 `D` / `S`，但跳过这笔账已经记下了。
+      expect(skipped.srsOf('py-a'), isNull);
+
+      final FoldedState afterGrade = fold(<Event>[
+        _skipped('e1', 1000),
+        _skipped('e2', 1001),
+        _graded('e3', 1002, 'fail'),
+      ]);
+      expect(afterGrade.skipStreakOf('py-a'), 0);
+      // 两条账互不折算：跳过再多，`failCount` 仍是评分数出来的那个。
+      expect(afterGrade.srsOf('py-a')!.failCount, 1);
+      expect(afterGrade.srsOf('py-a')!.skipStreak, 0);
+    });
+
+    test(
+      'TC-QUANT-026 幂等：同一 id 重放两次，reps 不翻倍（无 SPEC：event-types.md §一 幂等靠 id）',
+      () {
+        final FoldedState state = fold(<Event>[
+          _graded('e1', 1000, 'pass'),
+          _graded('e1', 1000, 'pass'),
+        ]);
+        expect(state.srsOf('py-a')!.reps, 1);
+      },
+    );
   });
 
   group('幂等与去重', () {

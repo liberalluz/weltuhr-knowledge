@@ -56,5 +56,61 @@ void main() {
     // 它的常量，也没有「读到即抛」这条用例。删掉哨兵不等于放宽纪律：裁定内容
     // 本身有可判边界，由 `locator_test.dart` 的 `TC-QUANT-007`（连续包含才
     // 命中、跨字不命中）锁住。
+
+    test('TC-QUANT-027 C-98…C-121 FSRS-5 参数逐项对账（SPEC-STEP-025）', () {
+      // 19 个权重：值必须与上游默认逐位一致，差一位就等于换了算法。
+      expect(
+        <double>[
+          fsrsW0,
+          fsrsW1,
+          fsrsW2,
+          fsrsW3,
+          fsrsW4,
+          fsrsW5,
+          fsrsW6,
+          fsrsW7,
+          fsrsW8,
+          fsrsW9,
+          fsrsW10,
+          fsrsW11,
+          fsrsW12,
+          fsrsW13,
+          fsrsW14,
+          fsrsW15,
+          fsrsW16,
+          fsrsW17,
+          fsrsW18,
+        ],
+        <double>[
+          0.40255,
+          1.18385,
+          3.173,
+          15.69105,
+          7.1949,
+          0.5345,
+          1.4604,
+          0.0046,
+          1.54575,
+          0.1192,
+          1.01925,
+          1.9395,
+          0.11,
+          0.29605,
+          2.2698,
+          0.2315,
+          2.9898,
+          0.51655,
+          0.6621,
+        ],
+      );
+      expect(fsrsDecay, -0.5);
+      // 写成 `19 / 81` 而不是小数：小数会在不同平台四舍五入到不同位数。
+      expect(fsrsFactor, 19 / 81);
+      expect(fsrsGradeIndex[Grade.fail], 1);
+      expect(fsrsGradeIndex[Grade.pass], 3);
+      expect(fsrsGradeIndex[Grade.proficient], 4);
+      expect(fsrsDifficultyMin, 1);
+      expect(fsrsDifficultyMax, 10);
+    });
   });
 }
