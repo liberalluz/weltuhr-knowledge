@@ -15,6 +15,7 @@ import 'core/pack/pack_probe.dart';
 import 'core/pack/pack_reader.dart';
 import 'core/storage/store_layout.dart';
 import 'core/tree/landing.dart';
+import 'features/runner/overview_screen.dart';
 import 'features/tree/tree_screen.dart';
 
 void main() {
@@ -291,6 +292,17 @@ class SpaceScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text(content.pack.name),
         actions: <Widget>[
+          TextButton.icon(
+            key: const Key('space-start-session'),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (BuildContext context) =>
+                    OverviewScreen(content: content, eventStore: eventStore),
+              ),
+            ),
+            icon: const Icon(Icons.play_arrow_outlined, size: 18),
+            label: const Text('开始修习'),
+          ),
           IconButton(
             icon: const Icon(Icons.account_tree_outlined),
             tooltip: '容器树',
