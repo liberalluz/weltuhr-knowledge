@@ -1,4 +1,4 @@
-/// 九条架构与测试规范规则的实现。
+/// 十一条架构与测试规范规则的实现。
 ///
 /// - `R1` / `R2` —— 分层与常量来源（首建即在此）。
 /// - `R3` / `R4` —— 把两条「只活在注释里」的裁定变成可执行检查：
@@ -6,6 +6,8 @@
 /// - `R5` —— 测试与裁定的追溯链：每个测试必须声明它守的是哪一条。
 /// - `R6`–`R9` —— 节点类型形态（`ADR-0007`）：字段集按槽位两分、可学三项非空、
 ///   `Node` 不可直接构造、派生三项不作字段。四条都不依赖运行期，只读 AST。
+/// - `R10` —— append-only 存储接口的方法面是封闭集。
+/// - `R11` —— `⪯` 的边过滤只有一个定义点（`graph/precedence.dart`）。
 ///
 /// 为什么原先只写了两条：另两条约束**靠接口形状就够** —— `EventStore` 只暴露
 /// `append` / `readAll` / `byId`，状态只经 `fold` 派生。但形状挡得住**改**，
@@ -122,6 +124,19 @@ const String ruleNodeNoDerivedFields = 'R9';
 /// 这种读方法也会中招），而封闭集不需要启发式 —— 不在集合里就是新增。
 const String ruleAppendOnlySurface = 'R10';
 
+/// R11：`⪯` 的边过滤**只有一个定义点**。
+///
+/// `required` / `recommended` 的分类写在 `graph/precedence.dart` 的
+/// `requiredEdgesOf` 里，其余每一处都必须调它，不得再写一遍过滤。
+///
+/// 判两种形态：`x.isRequired` 属性访问 · `== EdgeStrength.required` 等值比较。
+/// `!=` 不判 —— 它出现在渲染层决定虚线，不构造偏序。豁免两处：
+/// `entities/edge.dart` 是 getter 的定义本身，`graph/precedence.dart` 是入口实现。
+///
+/// 没有这条时，「唯一入口」只剩注释：在别处再写一遍过滤，编译不报、测试不红、
+/// 评审也未必看见，两处口径分叉后唯一的症状是算错。
+const String ruleSinglePrecedenceSource = 'R11';
+
 /// `lib/core/**` 不得出现的外部依赖前缀。
 const List<String> _forbiddenUriPrefixes = <String>[
   'package:flutter',
@@ -133,6 +148,14 @@ bool _isCore(String path) => path.contains('lib/core/');
 
 /// 是否为常量表本身（R2 的唯一豁免点）。
 bool _isConstantsFile(String path) => path.endsWith('lib/core/constants.dart');
+
+/// 是否为偏序的唯一入口（R11 的豁免点之一）。
+bool _isPrecedenceSource(String path) =>
+    path.endsWith('lib/core/graph/precedence.dart');
+
+/// 是否为 `isRequired` getter 的定义文件（R11 的另一个豁免点）。
+bool _isEdgeDefinition(String path) =>
+    path.endsWith('lib/core/entities/edge.dart');
 
 /// 是否为**视觉通道**文件（R4 的作用域）。
 ///
@@ -283,6 +306,13 @@ List<LintIssue> checkSource({required String path, required String source}) {
 
   // R10 同理按接口名：`EventStore` / `AppendOnlyStoreFs` 的声明可能落在任何层。
   unit.accept(_AppendOnlySurfaceVisitor(parsed, normalized, issues));
+
+  // R11 只在 core 层生效：`⪯` 的边过滤只有 `graph/precedence.dart` 一个定义点。
+  if (_isCore(normalized) &&
+      !_isPrecedenceSource(normalized) &&
+      !_isEdgeDefinition(normalized)) {
+    unit.accept(_SinglePrecedenceSourceVisitor(parsed, normalized, issues));
+  }
 
   if (_isVisualChannel(normalized)) {
     unit.accept(_SourceNotVisualVisitor(parsed, normalized, issues));
@@ -727,6 +757,68 @@ class _NodeConstructionVisitor extends RecursiveAstVisitor<void> {
     _issues.add(
       LintIssue(
         ruleId: ruleNodeNoDirectConstruction,
+        path: _path,
+        line: _lineOf(_parsed, offset),
+        message: message,
+      ),
+    );
+  }
+}
+
+/// 判定 `⪯` 的边过滤是否只出现在唯一入口（`R11`）。
+class _SinglePrecedenceSourceVisitor extends RecursiveAstVisitor<void> {
+  _SinglePrecedenceSourceVisitor(this._parsed, this._path, this._issues);
+
+  final ParseStringResult _parsed;
+  final String _path;
+  final List<LintIssue> _issues;
+
+  /// ⚠️ **`edge.isRequired` 在 AST 里是 `PrefixedIdentifier` 而不是
+  /// `PropertyAccess`** —— 后者只用于 target 是复杂表达式的场合（`foo().b`）。
+  /// 只重写 `visitPropertyAccess` 会漏掉最常见的写法，而这条规则恰恰要在
+  /// **没有解析器**的场景下也能报。
+  @override
+  void visitPrefixedIdentifier(PrefixedIdentifier node) {
+    if (node.identifier.name == 'isRequired') {
+      _report(node.offset, '`isRequired` 只允许在 `graph/precedence.dart` 内使用');
+    }
+    super.visitPrefixedIdentifier(node);
+  }
+
+  @override
+  void visitPropertyAccess(PropertyAccess node) {
+    if (node.propertyName.name == 'isRequired') {
+      _report(node.offset, '`isRequired` 只允许在 `graph/precedence.dart` 内使用');
+    }
+    super.visitPropertyAccess(node);
+  }
+
+  @override
+  void visitBinaryExpression(BinaryExpression node) {
+    if (node.operator.lexeme == '==' &&
+        (_isRequiredConstant(node.leftOperand) ||
+            _isRequiredConstant(node.rightOperand))) {
+      _report(
+        node.offset,
+        '`== EdgeStrength.required` 应改为 `requiredEdgesOf(...)`',
+      );
+    }
+    super.visitBinaryExpression(node);
+  }
+
+  /// `EdgeStrength.required` 在 AST 里是 `PrefixedIdentifier`（前缀 + 标识符）。
+  ///
+  /// ⚠️ **只认 `==`**：`!=` 出现在渲染层决定虚线粗细，不构造偏序；把它一并判红
+  /// 会让合法的样式判断变成违规。
+  bool _isRequiredConstant(Expression expression) =>
+      expression is PrefixedIdentifier &&
+      expression.prefix.name == 'EdgeStrength' &&
+      expression.identifier.name == 'required';
+
+  void _report(int offset, String message) {
+    _issues.add(
+      LintIssue(
+        ruleId: ruleSinglePrecedenceSource,
         path: _path,
         line: _lineOf(_parsed, offset),
         message: message,
