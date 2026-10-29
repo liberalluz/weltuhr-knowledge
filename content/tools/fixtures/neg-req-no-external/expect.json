@@ -1,0 +1,8 @@
+{
+  "base": "valid-min",
+  "exit": 1,
+  "codes": [
+    "E-REQ-NO-EXTERNAL"
+  ],
+  "note": "python/variable 六要件全置 not_externalizable —— 分母为 0、掌握度无从计算（SPEC-QUANT-006）。与 neg-requirements 分开：那条测缺格与 null，这条测「全都不可外化」"
+}

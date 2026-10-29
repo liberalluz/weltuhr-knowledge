@@ -120,6 +120,7 @@ python content/tools/verify.py --suite              # 全部 fixtures（源层 +
 | `E-REQ-KEY` | 六要件缺格或多出键 |
 | `E-REQ-STATE` | 某格为 `null` —— 「还没写」用 `missing`，「本来就没有外部形态」用 `not_externalizable` |
 | `E-REQ-VALUE` | 某格取值不在三态内 |
+| `E-REQ-NO-EXTERNAL` | 六格全为 `not_externalizable` —— `d` 的分母为 0，掌握度无从计算，故构建期拒收（`SPEC-QUANT-016`） |
 | `E-EDGE-REF` | `to` 指向不存在的项且 `type != unknown` |
 | `E-SCHEME-NODE-REF` / `E-SCHEME-DUP` | `nodes` 引用不存在的项 / 有重复 |
 | `E-SOURCEREF` / `E-QUESTION-REF` | `sourceRefs` / `itemId` 指向不存在的实体 |
