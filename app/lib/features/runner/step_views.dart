@@ -56,6 +56,12 @@ class StepBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 「读」步单独一套布局：指令常驻、正文区独立滚动、底部操作区不动。
+    // 其余五步照旧是一整块可滚的 `ListView` —— 它们的输入框与折叠板与指令
+    // 天然同生共死，不必把正文单独圈出来。
+    if (step.operator == ExecutionOperator.read) {
+      return _readBody(context);
+    }
     return ListView(
       key: const Key('step-body'),
       padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
@@ -67,10 +73,81 @@ class StepBody extends StatelessWidget {
     );
   }
 
+  /// 「读」步：指令 + 正文区。
+  ///
+  /// 正文取自 `entry.body`，缺失时退回 `entry.summary`，两者皆空则只留指令 ——
+  /// 不拿一句话冒充正文，也不出一个空框让人以为没加载出来（`SPEC-STEP-012`）。
+  Widget _readBody(BuildContext context) {
+    final TextTheme text = Theme.of(context).textTheme;
+    final String? body = _readingText;
+    return Padding(
+      key: const Key('step-body'),
+      padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text(step.instruction, style: text.titleMedium),
+          if (body == null)
+            const Spacer()
+          else ...<Widget>[
+            const SizedBox(height: 16),
+            _readingPanel(context, body),
+          ],
+        ],
+      ),
+    );
+  }
+
+  /// 这一读步要读的文本。摘要只在正文缺失时顶替 —— 两者都有时正文优先，
+  /// 因为摘要只有一句话，读一句不等于读过这一项。
+  String? get _readingText {
+    for (final String? candidate in <String?>[entry.body, entry.summary]) {
+      if (candidate != null && candidate.trim().isNotEmpty) {
+        return candidate;
+      }
+    }
+    return null;
+  }
+
+  /// 正文区。
+  ///
+  /// **等宽字体**：包内正文含 `├──` 这类树形图，比例字体会把层级错开 ——
+  /// 而层级本身就是要读的内容。
+  ///
+  /// **高度随内容、由 `Flexible` 封顶**：正文短就短，长则区内滚动。这样指令
+  /// 与主按钮都留在原位，不必给正文定一个「差不多」的固定像素高。
+  Widget _readingPanel(BuildContext context, String body) {
+    final ThemeData theme = Theme.of(context);
+    return Flexible(
+      child: Container(
+        key: const Key('step-reading'),
+        width: double.infinity,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          border: Border.all(color: theme.colorScheme.outlineVariant),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: SingleChildScrollView(
+          key: const Key('step-reading-scroll'),
+          child: Text(
+            body,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              fontFamily: 'Consolas',
+              fontFamilyFallback: const <String>['Courier New', 'monospace'],
+              height: 1.5,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   List<Widget> _extra(BuildContext context) {
     final TextTheme text = Theme.of(context).textTheme;
     switch (step.operator) {
       case ExecutionOperator.read:
+        // 「读」步由 `_readBody` 单独布局，不走这一条 —— 它要正文区独立滚动，
+        // 而不是跟指令一起整页滚。
         return <Widget>[];
 
       case ExecutionOperator.example:
