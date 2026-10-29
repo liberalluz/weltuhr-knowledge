@@ -104,17 +104,19 @@ void main() {
     expect(find.byKey(treeFilterBarKey), findsNothing);
   });
 
-  testWidgets('TC-TREE-056 不给落点时行为与笔 3 一致（SPEC-TREE-003）', (
+  testWidgets('TC-TREE-056 不给落点时落在轴序第一根，且是单轴态（SPEC-TREE-003）', (
     WidgetTester tester,
   ) async {
     await pump(tester);
 
     expectCurrentRoot('skeleton:d');
     expect(find.text(breadcrumbSeparator), findsNWidgets(1));
-    // 三条轴根同时在场，`知识` 不在树里。
-    for (final String id in <String>['skeleton:d', 'skeleton:m', 'skeleton:o']) {
-      expect(find.byKey(treeRowKey(id)), findsOneWidget);
-    }
+    // 单轴态：只出当前那一条轴根，另两条要进全树态才看得见。
+    expect(find.byKey(treeRowKey('skeleton:d')), findsOneWidget);
+    expect(find.byKey(treeRowKey('skeleton:m')), findsNothing);
+    expect(find.byKey(treeRowKey('skeleton:o')), findsNothing);
+    // 首行是虚拟根，不是节点行。
+    expect(find.byKey(treeVirtualRootRowKey), findsOneWidget);
     expect(find.byKey(treeRowKey('')), findsNothing);
   });
 }

@@ -1,4 +1,4 @@
-/// 容器树的界面层（`SPEC-TREE-003` / `004` / `005` / `008`）。
+/// 容器树的界面层（`SPEC-TREE-002` / `003` / `004` / `005` / `008` / `012`）。
 ///
 /// ## 这里只有「画」和「把手势交出去」
 ///
@@ -6,11 +6,13 @@
 /// 是怎么存的，也不知道换根之后要不要跳页。两件事分开的理由是失败时的含义
 /// 不同：行集合算错是「树长得不对」，手势接错是「点了没反应 / 点错地方」。
 ///
-/// ## 树里只有两种点击
+/// ## 可点的只有三种，其余三种点了没反应
 ///
-/// `SPEC-TREE-004` 的表一共两行：点子节点 = 下钻改地址，点别的轴根 = 换根。
-/// 没有第三种 —— 「点了只筛选不改地址」是四类标签的行为（坐标语义），树里的
-/// 每一行都是容器（`SPEC-FND-006`）。
+/// 可点：子节点（改地址）· 面包屑祖先（不在此文件）· 全树态下的**另一条**轴根
+/// （换根）。不可点：虚拟根 `知识` · 计数行「还有 M 项」· **当前轴根**（它已经
+/// 展开了，再点等于没点）—— 三者都交 `onTap: null`，靠 `InkWell` 自己关掉
+/// 水波纹，而不是在回调里判一下再吞掉：后者会让「点了有反馈但什么都没发生」
+/// 与「这行本来就不能点」在观感上打平。
 library;
 
 import 'package:flutter/material.dart';
@@ -24,7 +26,14 @@ import '../../core/tree/tree_outline.dart';
 /// 展开范围变，按行号写的断言在换根之后指向另一行）。
 Key treeRowKey(String nodeId) => ValueKey<String>('tree-row:$nodeId');
 
-/// 「当前」标记（`SPEC-TREE-003`）。只应出现一次 —— 根的个数是 1。
+/// 虚拟根 `知识` 那一行的 `Key`。它没有 `nodeId`，用 [treeRowKey] 会和计数行
+/// 撞成同一个 `''`，同一列表里重复 `Key` 直接抛错。
+const Key treeVirtualRootRowKey = ValueKey<String>('tree-virtual-root');
+
+/// 计数行的 `Key`。每一级至多一个，用缩进级数区分。
+Key treeOverflowRowKey(int indent) => ValueKey<String>('tree-overflow:$indent');
+
+/// 「当前」标记（`SPEC-TREE-003`）。只应出现一次 —— 当前轴根只有一个。
 const Key treeCurrentRootMarkKey = ValueKey<String>('tree-current-root');
 
 /// 行首固定留白（px）。缩进在它**之上**叠加，断言缩进时减去它即可。
@@ -49,21 +58,26 @@ class TreeView extends StatelessWidget {
     required this.selectedId,
     required this.onDrill,
     required this.onChangeRoot,
+    this.mode = TreeMode.singleAxis,
     this.scrollController,
   });
 
   final TreeIndex tree;
 
-  /// 当前根（`SPEC-TREE-005` 换的是它）。
+  /// 当前根（`SPEC-TREE-005` 换的是它）。它只用来定「当前轴」—— 行集合由
+  /// [selectedId] 定，换根到中间节点不改变行集合。
   final String rootId;
 
   /// 当前地址所在节点。
   final String? selectedId;
 
+  /// 树的形态（`SPEC-TREE-003`）：单轴态只出一条轴根，全树态三条。
+  final TreeMode mode;
+
   /// 下钻 / 选中：改地址。
   final ValueChanged<String> onDrill;
 
-  /// 换根：改根、留在树（不触发视图切换）。
+  /// 换根：改根、留在树（不触发视图切换）。**只在全树态**点另一条轴根时调用。
   final ValueChanged<String> onChangeRoot;
 
   /// 列表的滚动控制器。
@@ -80,21 +94,32 @@ class TreeView extends StatelessWidget {
       tree: tree,
       rootId: rootId,
       selectedId: selectedId,
+      mode: mode,
     );
     return ListView.builder(
       controller: scrollController,
       itemCount: rows.length,
       itemBuilder: (BuildContext context, int index) {
         final OutlineRow row = rows[index];
-        // 「别的轴根」才换根。当前根那行点了是回它自己（改地址），不是换根 ——
-        // 两件事的回调不同，混成一个会让「换根后仍留在树」这条判据失去观测点。
-        final bool changesRoot = row.isAxisRoot && !row.isCurrentRoot;
-        return _TreeRowTile(
-          row: row,
-          onTap: changesRoot ? onChangeRoot : onDrill,
-        );
+        return _TreeRowTile(row: row, onTap: _onTapOf(row));
       },
     );
+  }
+
+  /// 这一行点了交哪个回调；`null` = 不可点。
+  ///
+  /// 「别的轴根」才换根。当前轴根那行点了什么都不做（`SPEC-TREE-004` 的
+  /// 「无反应」表），因为它已经展开了 —— 顺手改成「退回单轴态」的话，地址与
+  /// 画面都不变，用户看到的是「点了没反应」，与判据里的「无反应」长得一样却
+  /// 走了两套代码。
+  ValueChanged<String>? _onTapOf(OutlineRow row) {
+    if (!row.isClickable) {
+      return null;
+    }
+    if (row.isAxisRoot) {
+      return row.isCurrentRoot ? null : onChangeRoot;
+    }
+    return onDrill;
   }
 }
 
@@ -102,22 +127,23 @@ class _TreeRowTile extends StatelessWidget {
   const _TreeRowTile({required this.row, required this.onTap});
 
   final OutlineRow row;
-  final ValueChanged<String> onTap;
+  final ValueChanged<String>? onTap;
 
   @override
   Widget build(BuildContext context) {
     final ColorScheme colors = Theme.of(context).colorScheme;
     final TextTheme text = Theme.of(context).textTheme;
     final Layer? layer = row.layer;
+    final ValueChanged<String>? tap = onTap;
 
     return InkWell(
-      key: treeRowKey(row.nodeId),
-      onTap: () => onTap(row.nodeId),
+      key: _keyOf(row),
+      onTap: tap == null ? null : () => tap(row.nodeId),
       child: Container(
         height: treeRowHeight,
         color: row.isSelected ? colors.primaryContainer : null,
         padding: EdgeInsets.only(
-          // 缩进 = 相对当前根的段数 × 单级量（`SPEC-TREE-008`）。这里**不读**
+          // 缩进 = 相对 `知识` 的段数 × 单级量（`SPEC-TREE-008`）。这里**不读**
           // `row` 之外的任何层级信息：槽位序号、绝对层深都不该进来。
           left: treeRowLeadingGap + row.indent * treeLevelIndent,
           right: treeRowLeadingGap,
@@ -128,7 +154,7 @@ class _TreeRowTile extends StatelessWidget {
               child: Text(
                 row.label,
                 overflow: TextOverflow.ellipsis,
-                style: row.isAxisRoot ? text.titleSmall : text.bodyMedium,
+                style: _labelStyle(text, colors),
               ),
             ),
             if (layer != null)
@@ -153,5 +179,29 @@ class _TreeRowTile extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  static Key _keyOf(OutlineRow row) {
+    if (row.isVirtualRoot) {
+      return treeVirtualRootRowKey;
+    }
+    if (row.isOverflow) {
+      return treeOverflowRowKey(row.indent);
+    }
+    return treeRowKey(row.nodeId);
+  }
+
+  /// 三种行的字面：轴根与 `知识` 用强调字重，计数行退成次要色。
+  ///
+  /// 计数行**不做成按钮样式**：它不是节点，点了不改地址；给它一点灰度，比在
+  /// 它旁边写一句「不可点」更省地方。
+  TextStyle? _labelStyle(TextTheme text, ColorScheme colors) {
+    if (row.isOverflow) {
+      return text.bodySmall?.copyWith(color: colors.outline);
+    }
+    if (row.isVirtualRoot) {
+      return text.titleSmall;
+    }
+    return row.isAxisRoot ? text.titleSmall : text.bodyMedium;
   }
 }

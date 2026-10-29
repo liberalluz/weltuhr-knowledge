@@ -11,6 +11,7 @@ import 'package:project_knowledge/core/constants.dart';
 import 'package:project_knowledge/core/enums.dart';
 import 'package:project_knowledge/core/pack/pack_reader.dart';
 import 'package:project_knowledge/core/tree/tree_index.dart';
+import 'package:project_knowledge/core/tree/tree_outline.dart';
 import 'package:project_knowledge/features/tree/tree_screen.dart';
 import 'package:project_knowledge/features/tree/tree_view.dart';
 
@@ -43,6 +44,7 @@ void main() {
     String? selectedId,
     ValueChanged<String>? onDrill,
     ValueChanged<String>? onChangeRoot,
+    TreeMode mode = TreeMode.singleAxis,
   }) async {
     await tester.pumpWidget(
       MaterialApp(
@@ -54,6 +56,7 @@ void main() {
               tree: tree,
               rootId: rootId,
               selectedId: selectedId,
+              mode: mode,
               onDrill: onDrill ?? (String _) {},
               onChangeRoot: onChangeRoot ?? (String _) {},
             ),
@@ -64,18 +67,22 @@ void main() {
     await tester.pump();
   }
 
-  testWidgets('TC-TREE-030 三条轴根都画出来，只有当前根带「当前」（SPEC-TREE-003）', (
+  testWidgets('TC-TREE-030 单轴态只画当前轴根，另两条不出现（SPEC-TREE-003）', (
     WidgetTester tester,
   ) async {
     await pump(tester, rootId: 'skeleton:d', selectedId: 'skeleton:d');
 
-    for (final String id in <String>['skeleton:d', 'skeleton:m', 'skeleton:o']) {
-      expect(find.byKey(treeRowKey(id)), findsOneWidget);
-    }
+    expect(find.byKey(treeRowKey('skeleton:d')), findsOneWidget);
+    expect(
+      find.byKey(treeRowKey('skeleton:m')),
+      findsNothing,
+      reason: '单轴态画面里没有另两条轴根 —— 要看得先切全树态',
+    );
+    expect(find.byKey(treeRowKey('skeleton:o')), findsNothing);
     expect(
       find.byKey(treeCurrentRootMarkKey),
       findsOneWidget,
-      reason: '根只有一个，「当前」标记也就只有一个',
+      reason: '当前轴根只有一个',
     );
     expect(
       find.descendant(
@@ -84,6 +91,55 @@ void main() {
       ),
       findsOneWidget,
     );
+  });
+
+  testWidgets('TC-TREE-064 全树态三条轴根都画，仍只有一个「当前」（SPEC-TREE-003）', (
+    WidgetTester tester,
+  ) async {
+    await pump(
+      tester,
+      rootId: 'skeleton:d',
+      selectedId: 'skeleton:d',
+      mode: TreeMode.fullTree,
+    );
+
+    for (final String id in <String>[
+      'skeleton:d',
+      'skeleton:m',
+      'skeleton:o',
+    ]) {
+      expect(find.byKey(treeRowKey(id)), findsOneWidget);
+    }
+    expect(find.byKey(treeCurrentRootMarkKey), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byKey(treeRowKey('skeleton:m')),
+        matching: find.byKey(treeCurrentRootMarkKey),
+      ),
+      findsNothing,
+      reason: '「当前」只挂在当前轴根上，另两条轴根没有标记',
+    );
+  });
+
+  testWidgets('TC-TREE-065 虚拟根 `知识` 行画出来但点不动（SPEC-TREE-002）', (
+    WidgetTester tester,
+  ) async {
+    String? drilled;
+    int rootChanges = 0;
+    await pump(
+      tester,
+      rootId: 'skeleton:d',
+      selectedId: 'skeleton:d-01',
+      onDrill: (String id) => drilled = id,
+      onChangeRoot: (String _) => rootChanges += 1,
+    );
+
+    expect(find.byKey(treeVirtualRootRowKey), findsOneWidget);
+    await tester.tap(find.byKey(treeVirtualRootRowKey));
+    await tester.pump();
+
+    expect(drilled, isNull, reason: '它不在地址里，点了不产生任何地址变化');
+    expect(rootChanges, 0, reason: '它也不是轴根，换不出根');
   });
 
   testWidgets('TC-TREE-031 点子节点交出去的是改地址，不是换根（SPEC-TREE-004）', (
@@ -106,7 +162,7 @@ void main() {
     expect(rootChanges, 0, reason: '子节点不是根 —— 两个回调不能混');
   });
 
-  testWidgets('TC-TREE-032 点别的轴根交出去的是换根（SPEC-TREE-004 / 005）', (
+  testWidgets('TC-TREE-032 全树态点别的轴根交出去的是换根（SPEC-TREE-004 / 005）', (
     WidgetTester tester,
   ) async {
     String? changedTo;
@@ -115,6 +171,7 @@ void main() {
       tester,
       rootId: 'skeleton:d',
       selectedId: 'skeleton:d',
+      mode: TreeMode.fullTree,
       onDrill: (String _) => drills += 1,
       onChangeRoot: (String id) => changedTo = id,
     );
@@ -126,7 +183,7 @@ void main() {
     expect(drills, 0);
   });
 
-  testWidgets('TC-TREE-033 点当前根那一行是改地址，不是换根（SPEC-TREE-004）', (
+  testWidgets('TC-TREE-033 全树态点当前轴根什么都不交出去（SPEC-TREE-004）', (
     WidgetTester tester,
   ) async {
     String? drilled;
@@ -135,6 +192,7 @@ void main() {
       tester,
       rootId: 'skeleton:d',
       selectedId: 'python:p1',
+      mode: TreeMode.fullTree,
       onDrill: (String id) => drilled = id,
       onChangeRoot: (String _) => rootChanges += 1,
     );
@@ -142,25 +200,41 @@ void main() {
     await tester.tap(find.byKey(treeRowKey('skeleton:d')));
     await tester.pump();
 
-    expect(drilled, 'skeleton:d');
-    expect(rootChanges, 0);
+    expect(drilled, isNull, reason: '它已经展开了 —— 再点若改成「退回单轴」，地址与画面都不变，等于白点一次');
+    expect(rootChanges, 0, reason: '它自己不是「别的轴根」');
   });
 
-  testWidgets('TC-TREE-034 缩进逐级加 14 px，与行高无关（SPEC-TREE-008）', (
+  testWidgets('TC-TREE-034 缩进从 `知识` 起每级加 14 px，与行高无关（SPEC-TREE-008）', (
     WidgetTester tester,
   ) async {
     await pump(tester, rootId: 'skeleton:d', selectedId: 'python:p1');
 
-    expect(leftOf(tester, 'skeleton:d'), treeRowLeadingGap);
-    expect(leftOf(tester, 'skeleton:d-01'), treeRowLeadingGap + treeLevelIndent);
+    final double rootGap =
+        (tester
+                    .widget<Container>(
+                      find.descendant(
+                        of: find.byKey(treeVirtualRootRowKey),
+                        matching: find.byType(Container),
+                      ),
+                    )
+                    .padding!
+                as EdgeInsets)
+            .left;
+    expect(rootGap, treeRowLeadingGap, reason: '`知识` 行不缩进 —— 它是零点');
+
+    expect(leftOf(tester, 'skeleton:d'), treeRowLeadingGap + treeLevelIndent);
     expect(
-      leftOf(tester, 'skeleton:d-0101'),
+      leftOf(tester, 'skeleton:d-01'),
       treeRowLeadingGap + treeLevelIndent * 2,
     );
     expect(
+      leftOf(tester, 'skeleton:d-0101'),
+      treeRowLeadingGap + treeLevelIndent * 3,
+    );
+    expect(
       leftOf(tester, 'python:p1'),
-      treeRowLeadingGap + treeLevelIndent * 4,
-      reason: '载荷行星是第 4 段 —— 缩进跟着路径走，不因为它是可学节点就换一档',
+      treeRowLeadingGap + treeLevelIndent * 5,
+      reason: '载荷行星是第 5 段 —— 缩进跟着路径走，不因为它是可学节点就换一档',
     );
   });
 
@@ -187,12 +261,10 @@ void main() {
     );
   });
 
-  testWidgets('TC-TREE-036 换根后仍在树里，不新开页（SPEC-TREE-005）', (
+  testWidgets('TC-TREE-036 全树态换根后退回单轴，仍在树里不新开页（SPEC-TREE-005）', (
     WidgetTester tester,
   ) async {
-    await tester.pumpWidget(
-      MaterialApp(home: TreeScreen(contents: contents)),
-    );
+    await tester.pumpWidget(MaterialApp(home: TreeScreen(contents: contents)));
     await tester.pump();
 
     expect(find.byType(TreeView), findsOneWidget);
@@ -203,6 +275,15 @@ void main() {
       ),
       findsOneWidget,
     );
+    expect(
+      find.byKey(treeRowKey('skeleton:m')),
+      findsNothing,
+      reason: '进来是单轴态，另两条轴根不在画面上',
+    );
+
+    await tester.tap(find.byKey(treeModeToggleKey));
+    await tester.pump();
+    expect(find.byKey(treeRowKey('skeleton:m')), findsOneWidget);
 
     await tester.tap(find.byKey(treeRowKey('skeleton:m')));
     await tester.pump();
@@ -221,11 +302,9 @@ void main() {
       reason: '标记跟着当前根走',
     );
     expect(
-      find.descendant(
-        of: find.byKey(treeRowKey('skeleton:d')),
-        matching: find.byKey(treeCurrentRootMarkKey),
-      ),
+      find.byKey(treeRowKey('skeleton:d')),
       findsNothing,
+      reason: '换根后退回单轴态：画面里只剩新换的那一条轴',
     );
   });
 
@@ -245,14 +324,12 @@ void main() {
   testWidgets('TC-TREE-038 树立不起来时说出原因，不塌成「加载失败」（SPEC-FND-014）', (
     WidgetTester tester,
   ) async {
-    final PackContent a = fixturePack(
-      const <FixtureNode>[FixtureNode('dup/one', '甲')],
-      pluginId: 'a',
-    );
-    final PackContent b = fixturePack(
-      const <FixtureNode>[FixtureNode('dup/one', '乙')],
-      pluginId: 'b',
-    );
+    final PackContent a = fixturePack(const <FixtureNode>[
+      FixtureNode('dup/one', '甲'),
+    ], pluginId: 'a');
+    final PackContent b = fixturePack(const <FixtureNode>[
+      FixtureNode('dup/one', '乙'),
+    ], pluginId: 'b');
 
     await tester.pumpWidget(
       MaterialApp(home: TreeScreen(contents: <PackContent>[a, b])),
