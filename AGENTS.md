@@ -24,6 +24,7 @@ This file is the **entry point and map**; detailed rules live in `.github/` and 
 - **`feat`/`fix` batches add `changelog.d/<batch>.md`**; a missing fragment fails `batch check`.
 - **Related classes are generated from facts** (`relations.py`): milestone = card + GitHub PR field, issue = card + `Closes`, PR = card, ADR/spec/case/TODO = diff. Missing classes fail before create.
 - **SDP is an external process plan**; it holds plan only — progress belongs in `records/live` or generated reports.
+- **Records live outside this repo** at `<project>-docs/records/`; `live/` is append-only, batches are frozen. Read its `records/README.md` before writing; never edit a frozen batch.
 - **Evidence must come from real commands**; what was not run is written as "未验", never as "should pass".
 - Stop and ask when unsure; never edit card/scope/evidence just to get past a gate.
 
@@ -32,7 +33,10 @@ This file is the **entry point and map**; detailed rules live in `.github/` and 
 ```bash
 python3 infra/tool/batch/batch.py status
 # multiple agents: let the CLI generate YYYYMMDD-<6 hex chars> to avoid collisions
-python3 infra/tool/batch/batch.py plan --auto-id --type <process|feat> --goal "..." --allowed "<glob>"
+python3 infra/tool/batch/batch.py plan --auto-id --type <process|feat> --goal "..." \
+  --allowed "<glob>" --docs-impact living --profile living \
+  --milestone none --issue none --related-pr none \
+  --note "<path>=<what changed>"
 # single agent / known id: pass <id> explicitly
 python3 infra/tool/batch/batch.py plan <id> --type <process|feat> --goal "..." --allowed "<glob>"
 # human review: show the card plus the first 8 hash chars first; after the user confirms
@@ -64,6 +68,12 @@ python3 infra/tool/batch/batch.py merge --pr <n> --yes
 - `docs/`: specs, decisions, runbooks
 - `.agents/rules/`: always-on editing and platform constraints
 - `.agents/skills/`: process skills loaded on demand
+
+## External docs
+
+- `<project>-docs/records/`: F1 records. `live/` is append-only; `2026-*` batches are frozen and must not be edited. Read the external `records/README.md` first.
+- `<project>-docs/process/`: F5 plans; `sdp.md` is plan-only, progress belongs in `records/live/`.
+- Check records: `python3 <nebula-project-delivery>/scripts/check_records.py <project>-docs`; freeze with `freeze.py` (delivery skill).
 
 ## When sources conflict
 

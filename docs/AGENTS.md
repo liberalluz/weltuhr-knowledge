@@ -29,6 +29,7 @@
 - **records 分 live / frozen**：DPMR/STR 的 live 记录只追加；冻结批次不改。
 - **外仓不是第二套工程文档**：不复制 SRS/SDD/STP/STD/SCMP；主仓只写纯文本指认。
 - **`docs_impact`**：`none` 不碰 controlled；`living` 同 PR 改活文档；`controlled` 进 docs 批次。
+- **`changelog.d/` 是根级发布装置，不是 docs 目录**：`feat` / `fix` 批次写 `<批次号>.md`，`process` 不要求；规则见 ADR-0013。
 
 ## 红线
 

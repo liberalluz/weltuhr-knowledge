@@ -26,6 +26,7 @@
 | 批次检查 | `python3 tool/batch/batch.py check --batch <id>` |
 | 批次 PR | `pr --prepare` → 手写 `.batch/<id>/pr-body.md` → `pr --create --body-file ... --confirm <body-hash8>` |
 | 批次合并 | `python3 tool/batch/batch.py merge --pr <n> --yes` |
+| docs 审计 | `python3 tool/docs/audit.py all --root ..` |
 | 技能 lint | `python3 -B tool/batch/skill_lint.py` |
 | PR 周报 | `python3 tool/metrics/pr_metrics.py --since <YYYY-MM-DD>` |
 | 只读验收 | `python3 tool/verify/verify.py --batch <id>` |
@@ -35,6 +36,13 @@
 - 同一时刻只有一个 `.batch/active`；不要手工覆盖别的 agent 的 active。
 - PR 正文的 `- 批次号：` 必须与 card、分支后缀一致；本地 create 与 CI 都会校验。
 - 正常合并只走 `batch merge`；直接 `gh pr merge` 不会写 `merge.json`，会留下 stale active。
+
+## batch 新规则
+
+- `plan` 必带：`--docs-impact none|living|controlled`、`--profile code|living|controlled|release`、逐文件 `--note`；可选 `--milestone` / `--issue` / `--related-pr`。
+- `size_budget` 默认 400 行，`check` / `pr` 超预算直接失败；先拆批次。
+- `feat` / `fix` 必须有 `changelog.d/<批次号>.md`；`process` 不需要。
+- PR 八类关联由 `infra/tool/batch/relations.py` 生成并在 create 前预检；细则见根 `AGENTS.md` 与 `docs/specs/git-conventions.md` §4.1。
 
 ## 红线
 
