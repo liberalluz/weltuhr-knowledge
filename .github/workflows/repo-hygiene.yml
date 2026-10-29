@@ -195,25 +195,9 @@ jobs:
           PY
 
       # -- 关联节八项 --------------------------------------------------------
-      # `.githooks/pr-body` owns the shape of this section: the eight-class closed
-      # set, one class per line, the fixed order, and the rule that a class
-      # without an anchor does not appear at all (a class written as `无` is the
-      # violation). This step judges what shape cannot see -- a required class
-      # that never appeared. The requirement comes from facts outside the body
-      # (the diff, the platform), never from the body itself, so "I forgot to
-      # list it" is decidable:
-      #        diff touches app/test or the controlled ledger -> 用例
-      #        diff touches a spec volume (docs/specs/<UP>-*.md) -> 规格条
-      #        diff touches docs/decisions                      -> ADR
-      #        diff adds a `[#N](.../pull/N)` link              -> PR
-      #        diff adds `TODO(confirm):`                       -> 待确认事项
-      #        a commit carries `Milestone: <id>` trailer       -> 里程碑
-      #        the PR closes issues                             -> issue
-      #
-      # WARNING: `批次号` is not repeated here -- the step above already owns it.
-      # WARNING: the body is passed via env, never interpolated into `run:`.
-      # WARNING: `gh` needs GH_TOKEN here; without PR context (local runs, push
-      #          events) the issue half is skipped rather than guessed.
+      # Shape is owned by `.githooks/pr-body`; this step owns which classes the
+      # facts require. The required-class rule is shared with `batch pr`
+      # (`infra/tool/batch/relations.py`), so local prepare and CI cannot drift.
       - name: 关联节八项
         if: github.event_name == 'pull_request'
         env:
@@ -225,9 +209,11 @@ jobs:
           python3 - <<'PY'
           import json
           import os
-          import re
           import subprocess
           import sys
+
+          sys.path.insert(0, "infra/tool/batch")
+          import relations
 
           def run(cmd):
               p = subprocess.run(cmd, capture_output=True, text=True)
@@ -241,103 +227,49 @@ jobs:
           base = os.environ.get("BASE_REF", "main")
           number = os.environ.get("PR_NUMBER", "")
 
-          CLASSES = ["批次号", "里程碑", "issue", "PR", "ADR", "规格条", "用例", "待确认事项"]
-
-          section, inside = [], False
-          for line in body.splitlines():
-              if line.strip() == "## 关联":
-                  inside = True
-                  continue
-              if inside and line.startswith("## "):
-                  break
-              if inside:
-                  section.append(line)
-
-          entries = {}
-          for line in section:
-              m = re.match(r"^- ([^：]+)：(.*)$", line.strip())
-              if not m:
-                  continue
-              key, val = m.group(1).strip(), m.group(2).strip()
-              if key in CLASSES:
-                  entries.setdefault(key, []).append(val)
-
-          errors = []
-
-          def need(key, why):
-              if key not in entries:
-                  errors.append(f"缺 `- {key}：` —— {why}")
-
           names = run(["git", "diff", "--name-only", f"origin/{base}...HEAD"]).splitlines()
           patch = run(["git", "diff", "-U0", f"origin/{base}...HEAD"]).splitlines()
           added = [l[1:] for l in patch if l.startswith("+") and not l.startswith("+++")]
 
-          if any(p.startswith(("app/test/", "docs/specs/controlled/")) for p in names):
-              need("用例", "本次改动含测试文件或受控用例台账")
-          if any(re.match(r"docs/specs/[A-Z]+-", p) for p in names):
-              # SPEC 条住在 `docs/specs/<大写前缀>-*.md` 的规格卷里；
-              # `git-conventions.md` 这类工程规范没有 SPEC 条编号，改它不要求
-              # 关联节出现 `- 规格条：`。
-              need("规格条", "本次改动含规格卷（docs/specs/<大写前缀>-*.md）")
-          if any(p.startswith("docs/decisions/") for p in names):
-              need("ADR", "本次改动含 docs/decisions/ 下的决策文件")
-          if any(re.search(r"\[#\d+\]\(https://github\.com/[\w.-]+/[\w.-]+/pull/\d+\)", a) for a in added):
-              need("PR", "本次新增行引用了其它 PR 的显示链接")
-          # 标记必须落在注释语境里（`# TODO(confirm):` 或 `// TODO(confirm):`）：
-          # 裸词会被规则文本自己命中 —— 本文件与 `git-conventions` 都在描述它。
-          if any(re.search(r"(?:^|\s)(?:#|//)\s*TODO\(confirm\):", a) for a in added):
-              need("待确认事项", "本次新增行含 `# TODO(confirm):` 注释")
-
-          trailers = sorted(
-              {
-                  t.strip()
-                  for t in run(
-                      ["git", "log", "--format=%(trailers:key=Milestone,valueonly)", f"origin/{base}..HEAD"]
-                  ).splitlines()
-                  if t.strip()
-              }
+          facts = json.loads(
+              run(["gh", "pr", "view", number, "--json", "milestone,closingIssuesReferences"])
+              or "{}"
           )
-          if trailers:
-              if "里程碑" not in entries:
-                  errors.append(
-                      f"提交带 `Milestone: {'/'.join(trailers)}` trailer，正文缺 `- 里程碑：`"
-                  )
-              else:
-                  written = " ".join(entries["里程碑"])
-                  for t in trailers:
-                      if t not in written:
-                          errors.append(f"trailer 的里程碑 {t} 不在正文 `- 里程碑：` 行里")
-          elif "里程碑" in entries:
-              errors.append("正文写了 `- 里程碑：`，但区间内提交没有 `Milestone:` trailer")
+          milestone = (facts.get("milestone") or {}).get("title")
+          closed = sorted(
+              {str(item["number"]) for item in (facts.get("closingIssuesReferences") or [])}
+          )
 
-          if number:
-              raw = run(["gh", "pr", "view", number, "--json", "closingIssuesReferences"])
-              try:
-                  closed = {
-                      str(item["number"])
-                      for item in (json.loads(raw or "{}").get("closingIssuesReferences") or [])
-                  }
-              except (ValueError, KeyError, TypeError):
-                  closed = set()
-              if closed:
-                  if "issue" not in entries:
-                      errors.append(
-                          f"本 PR 关了 issue {'/'.join('#' + n for n in sorted(closed))}，正文缺 `- issue：`"
-                      )
-                  else:
-                      found = set(re.findall(r"#(\d+)", " ".join(entries["issue"])))
-                      missing = closed - found
-                      if missing:
-                          errors.append(
-                              "`- issue：` 行未含 "
-                              + " ".join("#" + n for n in sorted(missing))
-                          )
+          entries = relations.body_entries(body)
+          required = relations.required_classes(
+              names,
+              added,
+              pr_milestone=milestone,
+              closing_issues=closed,
+          )
+          missing = relations.missing_classes(body, required)
+          errors = [f"缺 `- {name}：`" for name in missing]
+
+          if milestone:
+              written = " ".join(entries.get("里程碑", []))
+              if milestone not in written:
+                  errors.append(f"`- 里程碑：` 未含 PR milestone {milestone}")
+          elif entries.get("里程碑"):
+              errors.append("正文写了 `- 里程碑：`，但 PR 没有 milestone")
+
+          if closed:
+              written = " ".join(entries.get("issue", []))
+              missing_issues = [n for n in closed if f"#{n}" not in written]
+              if missing_issues:
+                  errors.append("`- issue：` 未含 " + " ".join("#" + n for n in missing_issues))
+          elif entries.get("issue"):
+              errors.append("正文写了 `- issue：`，但 PR 没有 closing issue")
 
           if errors:
               for item in errors:
                   print(f"FAIL {item}")
               sys.exit(1)
-          print("ok  关联节八项：无漏列（形态由 .githooks/pr-body 判）")
+          print("ok  关联节八项：required-class 与正文一致")
           PY
 
       # -- main only accepts PRs ----------------------------------------------
