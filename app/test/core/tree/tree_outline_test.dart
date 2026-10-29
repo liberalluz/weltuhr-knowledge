@@ -299,7 +299,7 @@ void main() {
     );
   });
 
-  test('TC-TREE-029 未知根 ⇒ 单轴态只剩 `知识` 一行，不替调用方猜一根轴', () {
+  test('TC-TREE-029 未知根 ⇒ 单轴态只剩 `知识` 一行，不替调用方猜一根轴（SPEC-TREE-003）', () {
     final List<OutlineRow> rows = treeOutline(
       tree: tree,
       rootId: 'nope:missing',

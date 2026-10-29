@@ -40,9 +40,6 @@ import '../entities/node.dart';
 import '../enums.dart';
 import 'tree_index.dart';
 
-/// 同级兄弟一次最多出多少行（`SPEC-TREE-012`）。超出的部分折进「还有 M 项」。
-const int treeSiblingRowCap = 50;
-
 /// 树的形态（`SPEC-TREE-003`）。
 enum TreeMode {
   /// 单轴态（默认）：只出当前根所在那一条轴的轴根行。任何入口进来都是这一态。
@@ -169,7 +166,7 @@ List<OutlineRow> treeOutline({
     _walk(
       tree,
       parentId: currentAxisId,
-      indent: 2,
+      indent: treeIndentChildBase,
       selectedId: selectedId,
       rows: rows,
       siblingCap: siblingCap,
