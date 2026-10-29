@@ -36,7 +36,7 @@
 | 类型 | 何时写 | 关键 payload | 是否写判定 | 状态 |
 |---|---|---|---|---|
 | `step_completed` | 某一步骤完成 | `stepIndex` · `operator`（6 类之一） | ❌ | 已定 |
-| `item_graded` | **项末验收**（⑤） | `score`：`fail` / `pass` / `proficient`（未过 / 合格 / 熟练） · `progressKind`：`verified / checked` · `scaffold`：`none / hint / answer` | ✅ 唯一判定点 | 已定（字段为推论；`score` 的**线上取值**于 `B2` 第 3 笔补登记 —— 原文只写中文三档，`fold` 需要能对上的字符串） |
+| `item_graded` | **项末验收**（⑤） | `score`：`fail` / `pass` / `proficient`（未过 / 合格 / 熟练） · `progressKind`：`verified / checked` · `checkin`：`true / false`（**判据是否为空**，空 = 打卡项） · `scaffold`：`none / hint / answer` | ✅ 唯一判定点 | 已定（字段为推论；`score` 的**线上取值**于 `B2` 第 3 笔补登记 —— 原文只写中文三档，`fold` 需要能对上的字符串；`checkin` 于 `B6` 笔 2 补登 —— `progressKind` 管「谁判」、`checkin` 管「有没有判据」，两件事压一个字段会让所有自评项冻结） |
 | `item_passed` | **首次**验收合格 | `gradedEventId` | ✅ 已学门槛，**不可撤销** | 已定 |
 | `item_skipped` | 用户跳过该项 | 无 | ❌ 不写判定、不计 fail | 已定 |
 | `graduated` | `S ≥ 180` 首次达成 | `sAtGraduation` | ✅ 状态转换，**不可逆** | 已定 |
