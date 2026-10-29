@@ -24,7 +24,7 @@ def run(args):
     return code, out.getvalue()
 
 
-def write_batch(root: Path, allowed: list[str]):
+def write_batch(root: Path, allowed: list[str], size_budget: int | None = None):
     target = root / "B1"
     target.mkdir(parents=True, exist_ok=True)
     (target / "state.json").write_text(
@@ -39,6 +39,7 @@ def write_batch(root: Path, allowed: list[str]):
             "branch": "process/B1",
             "base": "main",
             "allowed": allowed,
+            **({"size_budget": size_budget} if size_budget is not None else {}),
         },
         "tester",
     )
@@ -194,6 +195,26 @@ class CheckTests(unittest.TestCase):
             code, out = run(["--root", str(root), "status", "--batch", "B1"])
             self.assertEqual(code, 0)
             self.assertIn("Stage: pr", out)
+
+    def test_size_budget_blocks_when_over(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_batch(root, ["infra/**"], size_budget=10)
+            with mock.patch.object(batch, "changed_paths", return_value=["infra/a.py"]), \
+                    mock.patch.object(batch, "diff_line_count", return_value=11):
+                code, out = run(["--root", str(root), "check", "--batch", "B1", "--base", "main"])
+            self.assertEqual(code, 1)
+            self.assertIn("size budget: 11 lines > 10", out)
+
+    def test_size_budget_passes_when_equal(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_batch(root, ["infra/**"], size_budget=10)
+            with mock.patch.object(batch, "changed_paths", return_value=["infra/a.py"]), \
+                    mock.patch.object(batch, "diff_line_count", return_value=10):
+                code, out = run(["--root", str(root), "check", "--batch", "B1", "--base", "main"])
+            self.assertEqual(code, 0)
+            self.assertIn("size budget: 10 lines <= 10", out)
 
     def test_scope_failure_does_not_allow_pr(self):
         with tempfile.TemporaryDirectory() as tmp:
