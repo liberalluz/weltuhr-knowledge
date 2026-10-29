@@ -22,15 +22,18 @@ import 'package:flutter/material.dart';
 
 import '../../core/constants.dart';
 import '../../core/entities/entry.dart';
+import '../../core/entities/state.dart';
 import '../../core/enums.dart';
 import '../../core/events/event.dart';
 import '../../core/events/event_store.dart';
 import '../../core/events/hlc_clock.dart';
 import '../../core/events/journal_event_store.dart';
 import '../../core/pack/pack_reader.dart';
+import '../../core/quant/mastery.dart';
 import '../../core/session/session.dart';
 import '../../core/session/session_events.dart';
 import '../../core/session/session_queue.dart';
+import '../../core/srs/advance.dart';
 import 'step_views.dart';
 
 class RunnerScreen extends StatefulWidget {
@@ -39,6 +42,8 @@ class RunnerScreen extends StatefulWidget {
     required this.content,
     required this.queue,
     required this.cursors,
+    required this.srs,
+    required this.graduated,
     this.eventStore,
   });
 
@@ -48,6 +53,14 @@ class RunnerScreen extends StatefulWidget {
   /// `fold` 算出的步内游标。进会话时读一次，之后本页不再回写 ——
   /// 回写就等于在这里造第二份进度。
   final Map<String, int> cursors;
+
+  /// `fold` 算出的记忆状态。判分后要凭「判分前的 `S`」推「判分后的 `S`」，
+  /// 才能决定写不写 `graduated`；没有它就等于把每次判分都当首次评分。
+  final Map<String, SrsState> srs;
+
+  /// `fold` 算出的已毕业集合。**已毕业的项不再写第二条 `graduated`** ——
+  /// 那条事件是状态转换，不是每次达标的记录。
+  final Set<String> graduated;
 
   final EventStore? eventStore;
 
@@ -317,14 +330,18 @@ class _RunnerScreenState extends State<RunnerScreen> {
   /// 只写后者的话它没有落点，`fold` 的 `lastGrade` 也永远是空。
   Future<void> _autoPass(QueueItem item) async {
     try {
+      // 同一批事件取同一时刻：先后顺序由 `hlc` 递增保证，不靠两次 `now()` 的
+      // 相对大小（同一毫秒内两次调用可以相等，相等就没有顺序）。
+      final DateTime now = DateTime.now();
       final Event graded = buildItemGraded(
         spaceId: widget.content.pack.pluginId,
         itemId: item.nodeId,
         score: Grade.pass,
         progressKind: ProgressKind.checked,
+        checkin: true,
         scaffold: ScaffoldLevel.none,
         clock: _clock,
-        now: DateTime.now(),
+        now: now,
         userId: localDefaultUserId,
       );
       await _append(graded);
@@ -334,10 +351,12 @@ class _RunnerScreenState extends State<RunnerScreen> {
           itemId: item.nodeId,
           gradedEventId: graded.id,
           clock: _clock,
-          now: DateTime.now(),
+          now: now,
           userId: localDefaultUserId,
         ),
       );
+      // 打卡项到此为止：`S` 冻结、永不毕业（`QUANT-007` / `N-05`），不写
+      // `graduated`。
       if (!mounted) {
         return;
       }
@@ -345,6 +364,48 @@ class _RunnerScreenState extends State<RunnerScreen> {
     } on StateError catch (error) {
       _say(error.message);
     }
+  }
+
+  /// 判分之后判毕业：`S ≥ C-02` 即再写一条 `graduated`（`QUANT-009`：只看
+  /// `S`，不加 `d` 下限）。
+  ///
+  /// **`S` 由 [advanceSrs] 算，与 `fold` 同一份** —— 各写一条递推就会出现两个
+  /// `S`，而 `fold` 那份才是事实。
+  ///
+  /// 三条跳过条件，缺一条就会写出错的事件：
+  /// - 打卡项：`S` 冻结、永不毕业（`N-05`）
+  /// - 已毕业：`graduated` 是状态转换，不是每次达标的记录
+  /// - 未达阈值
+  Future<void> _maybeGraduate(QueueItem item, Grade score, DateTime now) async {
+    if (!item.hasCriteria || widget.graduated.contains(item.nodeId)) {
+      return;
+    }
+    final SrsState? previous = widget.srs[item.nodeId];
+    final SrsAdvance next = advanceSrs(
+      previous: previous == null
+          ? null
+          : (
+              difficulty: previous.difficulty,
+              stability: previous.stability,
+              lastReviewAt: previous.lastReviewAt,
+              reps: previous.reps,
+            ),
+      grade: score,
+      at: now,
+    );
+    if (!reachedGraduation(next.stability)) {
+      return;
+    }
+    await _append(
+      buildGraduated(
+        spaceId: widget.content.pack.pluginId,
+        itemId: item.nodeId,
+        sAtGraduation: next.stability,
+        clock: _clock,
+        now: now,
+        userId: localDefaultUserId,
+      ),
+    );
   }
 
   /// 合格之后：进下一项；到点收尾（`SPEC-STEP-005`：只在项边界问）。
@@ -363,6 +424,7 @@ class _RunnerScreenState extends State<RunnerScreen> {
   Future<void> _grade(QueueItem item, Grade score) async {
     setState(() => _busy = true);
     try {
+      final DateTime now = DateTime.now();
       final ScaffoldLevel scaffold = _answerShown
           ? ScaffoldLevel.answer
           : ScaffoldLevel.none;
@@ -371,10 +433,12 @@ class _RunnerScreenState extends State<RunnerScreen> {
         itemId: item.nodeId,
         score: score,
         // 自评：判据由本人核对，系统没有可核验对象（`SPEC-STEP-019`）。
+        // 这与「是不是打卡项」是两件事：有判据的项 `checkin` 为假，`S` 照常涨。
         progressKind: ProgressKind.checked,
+        checkin: !item.hasCriteria,
         scaffold: scaffold,
         clock: _clock,
-        now: DateTime.now(),
+        now: now,
         userId: localDefaultUserId,
       );
       await _append(graded);
@@ -385,11 +449,12 @@ class _RunnerScreenState extends State<RunnerScreen> {
             itemId: item.nodeId,
             gradedEventId: graded.id,
             clock: _clock,
-            now: DateTime.now(),
+            now: now,
             userId: localDefaultUserId,
           ),
         );
       }
+      await _maybeGraduate(item, score, now);
       if (!mounted) {
         return;
       }

@@ -27,6 +27,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/constants.dart';
 import '../../core/entities/node.dart';
+import '../../core/entities/state.dart';
 import '../../core/enums.dart';
 import '../../core/events/event.dart';
 import '../../core/events/event_store.dart';
@@ -71,6 +72,11 @@ class _OverviewScreenState extends State<OverviewScreen> {
   String? _problem;
   SessionQueue? _queue;
   Map<String, int> _cursors = <String, int>{};
+
+  /// 判分后要凭「判分前的 `S`」推「判分后的 `S`」，所以这两份随会话入口一起
+  /// 带进去；它们与 `_cursors` 一样是**进会话时的一次快照**，本页不回写。
+  Map<String, SrsState> _srs = <String, SrsState>{};
+  Set<String> _graduated = <String>{};
   String? _rootId;
 
   @override
@@ -132,6 +138,8 @@ class _OverviewScreenState extends State<OverviewScreen> {
         _loading = false;
         _rootId = root;
         _cursors = folded.cursors;
+        _srs = folded.srs;
+        _graduated = folded.graduated;
         _queue = buildSessionQueue(
           pack: widget.content,
           subtreeRoot: root,
@@ -347,6 +355,8 @@ class _OverviewScreenState extends State<OverviewScreen> {
           content: widget.content,
           queue: queue,
           cursors: _cursors,
+          srs: _srs,
+          graduated: _graduated,
           eventStore: widget.eventStore,
         ),
       ),

@@ -434,6 +434,18 @@ def _check_items(items: list, space_id: str | None, manifest: dict) -> tuple[lis
                         # 与 null 分开报：一个是用错了表达方式，一个是值不在册
                         out.append(_issue("E-REQ-VALUE", where, f"`requirements.{key}` 不在三态内：{state!r}"))
 
+                # 六格全「不可外化」⇒ 深度 `d` 的分母为 0，掌握度漏了分母算不出来。
+                # 这类项不是「学得浅」，是没有任何可观测能力格，不该是行星节点
+                # （SPEC-QUANT-006）。构建期拒收，运行期才不必为除零留分支。
+                if all(reqs.get(k) == "not_externalizable" for k in REQUIREMENTS):
+                    out.append(
+                        _issue(
+                            "E-REQ-NO-EXTERNAL",
+                            where,
+                            "六要件全为 not_externalizable：`d` 的分母为 0，掌握度无从计算",
+                        )
+                    )
+
         refs = item.get("sourceRefs")
         if refs is not None:
             if not isinstance(refs, list) or not all(_is_str(r) for r in refs):

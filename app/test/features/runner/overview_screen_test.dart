@@ -147,6 +147,7 @@ Event _graded(String itemId, Grade score, {required int minute}) =>
       itemId: itemId,
       score: score,
       progressKind: ProgressKind.checked,
+      checkin: false,
       clock: HlcClock(deviceId: 'test-device'),
       now: DateTime.utc(2026, 10, 28, 3, minute),
       userId: 'local',
