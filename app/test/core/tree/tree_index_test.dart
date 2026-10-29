@@ -67,7 +67,10 @@ void main() {
     expect(crumbs.first.label, '知识');
     expect(crumbs.first.path, isEmpty);
     expect(crumbs.first.isVirtualRoot, isTrue);
-    expect(crumbs.skip(1).every((BreadcrumbSegment c) => c.path.isNotEmpty), isTrue);
+    expect(
+      crumbs.skip(1).every((BreadcrumbSegment c) => c.path.isNotEmpty),
+      isTrue,
+    );
   });
 
   test('`path` 段数 = 层深 + 1，含 `知识` 共 层深 + 2 段（`SPEC-TREE-006`）', () {
@@ -83,28 +86,46 @@ void main() {
 
   test('段名取 `name`，不是 `slug`（`SPEC-TREE-006`）', () {
     expect(
-      tree.breadcrumb('skeleton:d-0101').map((BreadcrumbSegment c) => c.label).toList(),
+      tree
+          .breadcrumb('skeleton:d-0101')
+          .map((BreadcrumbSegment c) => c.label)
+          .toList(),
       <String>['知识', '学科', '哲学', '马克思主义哲学'],
     );
   });
 
   test('换根后本子树算得出相对路径，子树外为 `null`（`SPEC-TREE-005`）', () {
-    expect(tree.relativePath(rootId: 'skeleton:d-01', nodeId: 'skeleton:d-0101'), 'd-0101');
-    expect(tree.relativePath(rootId: 'skeleton:d-01', nodeId: 'skeleton:d-01'), isEmpty);
-    expect(tree.relativePath(rootId: 'skeleton:m', nodeId: 'skeleton:d-0101'), isNull);
-    expect(tree.relativePath(rootId: 'skeleton:d', nodeId: 'skeleton:o'), isNull);
+    expect(
+      tree.relativePath(rootId: 'skeleton:d-01', nodeId: 'skeleton:d-0101'),
+      'd-0101',
+    );
+    expect(
+      tree.relativePath(rootId: 'skeleton:d-01', nodeId: 'skeleton:d-01'),
+      isEmpty,
+    );
+    expect(
+      tree.relativePath(rootId: 'skeleton:m', nodeId: 'skeleton:d-0101'),
+      isNull,
+    );
+    expect(
+      tree.relativePath(rootId: 'skeleton:d', nodeId: 'skeleton:o'),
+      isNull,
+    );
   });
 
   test('子树前序展开含自己，跨轴不串门（`SPEC-TREE-001`）', () {
-    expect(tree.subtree('skeleton:d').map((TreeRow r) => r.nodeId).toList(), <String>[
-      'skeleton:d',
-      'skeleton:d-01',
-      'skeleton:d-0101',
-      'python:sys',
-      'python:p1',
-      'skeleton:d-x',
-      'skeleton:d-02',
-    ]);
+    expect(
+      tree.subtree('skeleton:d').map((TreeRow r) => r.nodeId).toList(),
+      <String>[
+        'skeleton:d',
+        'skeleton:d-01',
+        'skeleton:d-0101',
+        'python:sys',
+        'python:p1',
+        'skeleton:d-x',
+        'skeleton:d-02',
+      ],
+    );
   });
 
   test('载荷节点接在骨架恒星之后，深度续算（`SPEC-TREE-001`）', () {
@@ -132,19 +153,55 @@ void main() {
       schemes: base.schemes,
       methods: base.methods,
     );
-    expect(() => TreeIndex.build(contents: <PackContent>[broken]), throwsArgumentError);
+    expect(
+      () => TreeIndex.build(contents: <PackContent>[broken]),
+      throwsArgumentError,
+    );
   });
 
   test('同轴两条无父链即拒（无 SPEC：`TREE-001` 只说每轴一个根，第二条出现时无断言）', () {
     final PackContent twoRoots = fixturePack(
       <FixtureNode>[
-        FixtureNode('skeleton:d', '学科', slot: LevelSlot.supercluster, axis: Axis.discipline),
-        FixtureNode('skeleton:d2', '第二条根', slot: LevelSlot.supercluster, axis: Axis.discipline),
+        FixtureNode(
+          'skeleton:d',
+          '学科',
+          slot: LevelSlot.supercluster,
+          axis: Axis.discipline,
+        ),
+        FixtureNode(
+          'skeleton:d2',
+          '第二条根',
+          slot: LevelSlot.supercluster,
+          axis: Axis.discipline,
+        ),
       ],
       pluginId: 'skeleton',
       packName: '骨架夹具',
       kinds: const <String>[],
     );
-    expect(() => TreeIndex.build(contents: <PackContent>[twoRoots]), throwsArgumentError);
+    expect(
+      () => TreeIndex.build(contents: <PackContent>[twoRoots]),
+      throwsArgumentError,
+    );
+  });
+
+  test('TC-TREE-063 轴根查询沿主父链上溯到顶（SPEC-TREE-003）', () {
+    expect(
+      tree.axisRootOf('skeleton:d')?.nodeId,
+      'skeleton:d',
+      reason: '轴根本身传进来，返回它自己',
+    );
+    expect(tree.axisRootOf('skeleton:d-0101')?.nodeId, 'skeleton:d');
+    expect(
+      tree.axisRootOf('python:p1')?.nodeId,
+      'skeleton:d',
+      reason: '载荷节点也归到它挂靠的那条轴，不是按包分',
+    );
+    expect(tree.axisRootOf('skeleton:m')?.nodeId, 'skeleton:m');
+    expect(
+      tree.axisRootOf('nope:missing'),
+      isNull,
+      reason: '不在树上就是 `null` —— 单轴态据此只留 `知识` 一行，不猜一根轴',
+    );
   });
 }
