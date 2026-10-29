@@ -113,6 +113,12 @@ jobs:
         if: steps.scope.outputs.run == 'true'
         run: dart run tool/docs/check.dart
 
+      - name: 基线登记与文档预算
+        if: steps.scope.outputs.run == 'true'
+        run: |
+          python3 ../infra/tool/docs/audit.py all --root ..
+          python3 -m unittest discover -s ../infra/tool/docs/tests
+
       # The tests read the REAL artifact `content/<space>/pack.json` (single-file
       # form since `B14`), which is not committed (`SPEC-PACK-018`), so assemble
       # it here. Without this step `real_content_pack_test.dart` fails
