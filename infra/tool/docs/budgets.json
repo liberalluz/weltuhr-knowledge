@@ -1,0 +1,9 @@
+{
+  "limits": {
+    "docs/specs/controlled/std.md": 600000,
+    "docs/specs/controlled/scmp.md": 180000,
+    "docs/specs/controlled/stp.md": 140000,
+    "docs/specs/controlled/srs.md": 60000,
+    "docs/specs/controlled/sdd.md": 40000
+  }
+}
