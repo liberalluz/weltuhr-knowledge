@@ -183,6 +183,8 @@ class CommandPrTests(unittest.TestCase):
             body_path = target / "handwritten.md"
             body_path.write_text("handwritten body\n", encoding="utf-8")
             with mock.patch.object(batch, "validate_body", return_value=0), mock.patch.object(
+                batch.rel, "required_classes", return_value=[]
+            ), mock.patch.object(
                 batch, "run_gh", return_value=(0, "https://github.com/x/y/pull/1", "")
             ) as gh:
                 code, out = run(
@@ -214,6 +216,8 @@ class CommandPrTests(unittest.TestCase):
             body_path.write_text(body, encoding="utf-8")
             digest = hashlib.sha256(body.encode("utf-8")).hexdigest()
             with mock.patch.object(batch, "validate_body", return_value=0), mock.patch.object(
+                batch.rel, "required_classes", return_value=[]
+            ), mock.patch.object(
                 batch, "run_gh", return_value=(0, "https://github.com/x/y/pull/1", "")
             ) as gh:
                 code, out = run(
@@ -248,6 +252,8 @@ class CommandPrTests(unittest.TestCase):
             body_path = target / "handwritten.md"
             body_path.write_text("- 批次号：`B1`\nhandwritten body\n", encoding="utf-8")
             with mock.patch.object(batch, "validate_body", return_value=0), mock.patch.object(
+                batch.rel, "required_classes", return_value=[]
+            ), mock.patch.object(
                 batch, "run_gh", return_value=(0, "https://github.com/x/y/pull/1", "")
             ) as gh:
                 code, out = run(
@@ -296,6 +302,8 @@ class CommandPrTests(unittest.TestCase):
             body_path.write_text(body, encoding="utf-8")
             digest = hashlib.sha256(body.encode("utf-8")).hexdigest()
             with mock.patch.object(batch, "validate_body", return_value=0), mock.patch.object(
+                batch.rel, "required_classes", return_value=[]
+            ), mock.patch.object(
                 batch, "changed_paths", return_value=["infra/a.py"]
             ), mock.patch.object(
                 batch, "run_gh", return_value=(0, "https://github.com/x/y/pull/1", "")
@@ -358,6 +366,35 @@ class ActorIdentityTests(unittest.TestCase):
             batch, "run_gh", side_effect=subprocess.TimeoutExpired("gh", 10)
         ), mock.patch.object(batch, "run_git", return_value=(0, "liberal", "")):
             self.assertEqual(batch.actor_identity(), "liberal")
+
+
+    def test_related_eight_classes_generated(self):
+        body = batch.build_pr_body(
+            {
+                "batch": "B1",
+                "type": "process",
+                "goal": "g",
+                "base": "main",
+                "milestone": "P1",
+                "issues": ["123"],
+                "related_prs": ["200"],
+            },
+            [
+                "docs/decisions/0013-x.md",
+                "docs/specs/SRS-x.md",
+                "app/test/x_test.dart",
+            ],
+            "RESULT: PASS\n",
+            added=[("app/lib/x.dart", "// TODO(confirm): pending")],
+        )
+        self.assertIn("- 里程碑：P1", body)
+        self.assertIn("- issue：[#123]", body)
+        self.assertIn("- PR：[#200]", body)
+        self.assertIn("- ADR：", body)
+        self.assertIn("- 规格条：", body)
+        self.assertIn("- 用例：", body)
+        self.assertIn("- 待确认事项：", body)
+        self.assertIn("Closes #123", body)
 
 
 if __name__ == "__main__":

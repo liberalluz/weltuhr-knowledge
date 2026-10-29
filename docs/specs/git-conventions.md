@@ -142,6 +142,8 @@ git config --get core.hooksPath       # 自查：应回显 .githooks
 
 **批次卡字段**：`plan` 必须声明 `--docs-impact none|living|controlled` 与 `--profile code|living|controlled|release`（未给 profile 时按 docs-impact 推导，二者不一致直接拒绝）；`--note <path>=<说明>` 为逐文件说明，`batch pr --prepare` 直接采用，不再输出「待填」。`size_budget` 默认 400 行（新增+删除），`batch check` 与 `batch pr` 超预算直接失败，要求拆批次。`feat` / `fix` 批次必须在 `changelog.d/<批次号>.md` 写用户可感变化，缺片段 `check` 失败。一个 batch 只做一个行为、只开一个 PR。
 
+**关联八类**：`batch pr --prepare` 用 `infra/tool/batch/relations.py` 从 diff / card 生成；`里程碑` 取 card + GitHub PR milestone（不再取 commit trailer），`issue` 取 card `--issue` 并写 `Closes #N`，`PR` 取 card `--related-pr`，`ADR` / `规格条` / `用例` / `待确认事项` 从 diff 推断。缺 required-class 时 `prepare` 直接失败，禁止 create 后 edit。
+
 以下四处最容易漏，单独强调：
 
 - **第 2 步的确认形态**：`--chat --confirm` 这条路只比对 hash，**不打印卡片、不读 stdin**（不带 `--chat` 的 TTY 路才会打印卡片全文并等输入）。所以「让人看见并点选」完全落在对话层：**先出问答卡片，拿到「批准」后才允许传 `--confirm`；未出卡片就 `approve` 一律算自批**。`approval.by` 优先记 GitHub 登录名（`gh api user --jq .login`），取不到回退 `git config user.name`、再回退 OS 用户 —— 它只是留痕，真正放行仍是平台上那道非作者 approve。

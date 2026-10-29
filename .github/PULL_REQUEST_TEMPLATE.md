@@ -79,6 +79,8 @@
 ## 关联
 
 <!-- 八类封闭集：批次号 / 里程碑 / issue / PR / ADR / 规格条 / 用例 / 待确认事项。
+     来源：里程碑=card + GitHub PR milestone；issue=card + `Closes #N`；
+     PR=card `--related-pr`；ADR/规格条/用例/待确认事项由 diff 生成。
      只列有锚点的类，没有的类整行不出现、逐类写「无」判红；0 锚点整节一行「无」；按上述顺序排。
      PR / issue 号须写成显示链接 [#N](https://github.com/<owner>/<repo>/pull/N) -->
 
