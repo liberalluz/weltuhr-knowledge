@@ -23,8 +23,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterable
 
-LIST_KEYS = ("allowed", "forbidden", "acceptance", "platforms")
-SCALAR_KEYS = ("batch", "type", "goal", "branch", "base", "docs", "size_budget", "approval")
+LIST_KEYS = ("allowed", "forbidden", "acceptance", "platforms", "notes")
+SCALAR_KEYS = ("batch", "type", "goal", "branch", "base", "docs", "docs_impact", "size_budget", "approval")
 
 
 def _quote(value: Any) -> str:
@@ -95,7 +95,7 @@ def render_card(card: dict[str, Any]) -> str:
         lines.append(f"{key}:")
         for item in card.get(key) or []:
             lines.append(f"  - {_quote(item)}")
-    for key in ("docs", "size_budget"):
+    for key in ("docs", "docs_impact", "size_budget"):
         if key in card:
             value = card[key]
             lines.append(f"{key}: {value if isinstance(value, int) else _quote(value)}")

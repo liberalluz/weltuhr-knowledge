@@ -601,11 +601,24 @@ def untouched_paths(card: dict[str, Any], changed: Sequence[str]) -> list[str]:
     )
 
 
+def note_map(card: dict[str, Any]) -> dict[str, str]:
+    notes: dict[str, str] = {}
+    for raw in card.get("notes") or []:
+        text = str(raw)
+        if "=" not in text:
+            continue
+        path, note = text.split("=", 1)
+        if path.strip() and note.strip():
+            notes[path.strip()] = note.strip()
+    return notes
+
+
 def build_pr_body(
     card: dict[str, Any],
     changed: Sequence[str],
     evidence_text: str,
     statuses: dict[str, str] | None = None,
+    notes: dict[str, str] | None = None,
 ) -> str:
     goals = str(card.get("goal") or f"批次 {card.get('batch') or '?'}")
     platforms = normalize_platforms(card.get("platforms") or [])
@@ -670,10 +683,10 @@ def build_pr_body(
     )
     if status_map:
         lines.append(f"  - 分类：新增 `{added}` · 修改 `{modified}` · 删除 `{deleted}`")
+    note_by_path = notes or {}
     for path in paths:
-        # The action is not derivable from the diff, so the slot is marked rather
-        # than filled with a label that reads as if something had been said.
-        lines.append(f"  - （待填：做了什么）：`{path}`")
+        note = note_by_path.get(path, "更新")
+        lines.append(f"  - {note}：`{path}`")
     for path in untouched:
         lines.append(f"  - 未动：`{path}`")
 
@@ -778,7 +791,11 @@ def command_pr(args: argparse.Namespace) -> int:
         body = body_path.read_text(encoding="utf-8")
     else:
         body = build_pr_body(
-            card, changed, evidence.read_text(encoding="utf-8"), diff_status(str(base))
+            card,
+            changed,
+            evidence.read_text(encoding="utf-8"),
+            diff_status(str(base)),
+            note_map(card),
         )
         body_path = args.body_out
         if body_path is None:
@@ -1110,6 +1127,8 @@ def command_plan(args: argparse.Namespace) -> int:
         "acceptance": args.acceptance or [],
         "platforms": args.platforms or [],
         "docs": args.docs,
+        "docs_impact": args.docs_impact or args.docs,
+        "notes": args.note or [],
         "size_budget": args.size_budget,
     }
     write_card(card_path, card)
@@ -1383,6 +1402,18 @@ def build_parser() -> argparse.ArgumentParser:
     plan.add_argument("--acceptance", action="append", default=[])
     plan.add_argument("--platforms", action="append", default=[])
     plan.add_argument("--docs", default="none")
+    plan.add_argument(
+        "--docs-impact",
+        choices=("none", "living", "controlled"),
+        default=None,
+        help="docs impact profile: none / living / controlled",
+    )
+    plan.add_argument(
+        "--note",
+        action="append",
+        default=[],
+        help="per-file PR note, repeatable: <path>=<what changed>",
+    )
     plan.add_argument("--size-budget", type=int, default=400)
     plan.add_argument("--base", default="origin/main")
     plan.add_argument("--branch")

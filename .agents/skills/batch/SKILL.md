@@ -38,6 +38,7 @@ metadata:
 - `approve` 后改 `card.yaml` 会让 hash 失效，必须重新批准。
 - 没有 `RESULT: PASS` 的 evidence 不进 `pr`，没有人工“合”不执行 `merge`。
 - PR 正文先 `--prepare`，手写定稿后再 `--create --body-file ... --confirm <hash8>`；不再 create 后 edit。
+- 批次卡用 `--docs-impact none|living|controlled` 声明文档影响；`--note <path>=<说明>` 留逐文件说明，生成器不再输出「待填」。
 - 不直接 `gh pr merge`；合并只走 `batch merge` / `merge.py`。
 - `.batch/` 是本地状态，不进仓库。
 - 多 agent 用 `plan --auto-id` 生成 `YYYYMMDD-<6位十六进制>`；同一时刻只允许一个 `.batch/active`。

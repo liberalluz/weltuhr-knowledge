@@ -140,6 +140,8 @@ git config --get core.hooksPath       # 自查：应回显 .githooks
 - 非 `main` 分支没有 `.batch/active` 时**直接拒推**（fail-closed，不是提示）。删除分支、推 tag、`--range` 回放不在此列。
 - 推送路径必须落在该批 `scope.json` 的 `allowed` 内。扩范围只能 `check.py --scope <scope> --add <path> --reason <…> --yes`，并由人确认后落盘 —— 不直接改卡片。
 
+**批次卡字段**：`plan` 必须声明 `--docs-impact none|living|controlled`；`--note <path>=<说明>` 为逐文件说明，`batch pr --prepare` 直接采用，不再输出「待填」。一个 batch 只做一个行为、只开一个 PR。
+
 以下四处最容易漏，单独强调：
 
 - **第 2 步的确认形态**：`--chat --confirm` 这条路只比对 hash，**不打印卡片、不读 stdin**（不带 `--chat` 的 TTY 路才会打印卡片全文并等输入）。所以「让人看见并点选」完全落在对话层：**先出问答卡片，拿到「批准」后才允许传 `--confirm`；未出卡片就 `approve` 一律算自批**。`approval.by` 优先记 GitHub 登录名（`gh api user --jq .login`），取不到回退 `git config user.name`、再回退 OS 用户 —— 它只是留痕，真正放行仍是平台上那道非作者 approve。

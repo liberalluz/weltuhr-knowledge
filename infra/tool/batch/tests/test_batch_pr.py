@@ -98,6 +98,16 @@ class BuildBodyTests(unittest.TestCase):
         self.assertNotIn("技术栈", body)
         self.assertNotIn("| 模块 | 是否改动 | 说明 |", body)
 
+    def test_body_uses_notes_and_has_no_placeholder(self):
+        body = batch.build_pr_body(
+            {"batch": "B1", "type": "process", "goal": "g", "base": "main"},
+            ["infra/a.py"],
+            "RESULT: PASS\n",
+            notes={"infra/a.py": "增加范围检查"},
+        )
+        self.assertNotIn("待填", body)
+        self.assertIn("增加范围检查：`infra/a.py`", body)
+
     def test_stack_group_appears_when_diff_spans_two_stacks(self):
         card_data = {"batch": "B1", "type": "process", "goal": "g", "base": "main"}
         body = batch.build_pr_body(

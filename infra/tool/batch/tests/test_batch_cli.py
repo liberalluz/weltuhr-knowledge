@@ -181,6 +181,34 @@ class OccupancyTests(unittest.TestCase):
             self.assertIsNotNone(match)
             self.assertTrue((root / match.group(0) / "card.yaml").exists())
 
+    def test_plan_records_docs_impact_and_notes(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            code, out = run(
+                [
+                    "--root",
+                    str(root),
+                    "plan",
+                    "--auto-id",
+                    "--type",
+                    "process",
+                    "--goal",
+                    "x",
+                    "--allowed",
+                    "infra/**",
+                    "--docs-impact",
+                    "living",
+                    "--note",
+                    "infra/a.py=加检查",
+                ]
+            )
+            self.assertEqual(code, 0)
+            match = re.search(r"\d{8}-[0-9a-f]{6}", out)
+            self.assertIsNotNone(match)
+            data = card.read_card(root / match.group(0) / "card.yaml")
+            self.assertEqual(data["docs_impact"], "living")
+            self.assertIn("infra/a.py=加检查", data["notes"])
+
     def test_start_refuses_other_active(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
