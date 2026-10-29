@@ -19,9 +19,11 @@
 /// 会让人去翻这一页的代码，而该翻的是那个包。
 library;
 
-import 'package:flutter/material.dart';
+// `Axis` 两边都有（Flutter 的绘制轴 / `core/enums.dart` 的知识轴），这里要后者。
+import 'package:flutter/material.dart' hide Axis;
 
 import '../../core/constants.dart';
+import '../../core/enums.dart';
 import '../../core/events/event_store.dart';
 import '../../core/events/hlc_clock.dart';
 import '../../core/events/journal_event_store.dart';
@@ -46,6 +48,11 @@ const Key treeFilterBarKey = ValueKey<String>('tree-filter-bar');
 
 /// 筛选条上「取消筛选」那个按钮。
 const Key treeFilterClearKey = ValueKey<String>('tree-filter-clear');
+
+/// 「全树 / 单轴」切换按钮（`SPEC-TREE-003`）：单轴态显示「全树」，全树态显示
+/// 「单轴」。放「N 个节点在树上」那一行的右侧 —— 它讲的是「树有多大」，切换讲
+/// 的是「看几条轴」，同一件事的两种看法。
+const Key treeModeToggleKey = ValueKey<String>('tree-mode-toggle');
 
 class TreeScreen extends StatefulWidget {
   const TreeScreen({
@@ -95,6 +102,11 @@ class _TreeScreenState extends State<TreeScreen> {
   /// 定位浮层是否打开。放页面状态：浮层的遮罩要盖住整棵树，而不是只盖某一行。
   bool _locating = false;
 
+  /// 树的形态（`SPEC-TREE-003`）。**默认单轴态**，且任何落点进来都回到这一态
+  /// （`SPEC-TREE-013`）—— 落点携带确定节点，三轴并列会把刚确定的维度重新摊开。
+  /// 只有用户点「全树」才进全树态，换根后自动退回单轴。
+  TreeMode _mode = TreeMode.singleAxis;
+
   /// 发事件的时钟。**一个页面一个**：同一页面内连发两条时 `counter` 才会递增，
   /// 每次新建会把「同一毫秒」的发两条排成并列（`Hlc.compareTo` 只能靠 deviceId 分）。
   final HlcClock _clock = HlcClock(deviceId: localDeviceId);
@@ -142,15 +154,34 @@ class _TreeScreenState extends State<TreeScreen> {
   }
 
   /// 换根：改根 + 地址跟到新根，**不**切视图（`SPEC-TREE-005`）。
+  ///
+  /// 换根只在全树态发生（单轴态画面里没有另两条轴根），换完退回单轴态 ——
+  /// 换轴的目的是「去看那一支」，不是「站在三岔口」。
   void _changeRoot(String nodeId) {
     setState(() {
       _rootId = nodeId;
       _selectedId = nodeId;
+      _mode = TreeMode.singleAxis;
     });
   }
 
   void _drill(String nodeId) {
     setState(() => _selectedId = nodeId);
+  }
+
+  /// 单轴态 ⇄ 全树态（`SPEC-TREE-003`）。这是**唯一**改 [TreeMode] 的地方 ——
+  /// 换根与落点都退回单轴，别处不再各写一遍。
+  void _toggleMode() {
+    setState(() {
+      _mode = _mode == TreeMode.fullTree
+          ? TreeMode.singleAxis
+          : TreeMode.fullTree;
+    });
+  }
+
+  /// 落点进来一律单轴态（`SPEC-TREE-013`）。
+  void _resetMode() {
+    _mode = TreeMode.singleAxis;
   }
 
   /// 点面包屑上的某一级：改地址，行集合跟着收到那一级（`SPEC-TREE-004` / `007`）。
@@ -214,6 +245,7 @@ class _TreeScreenState extends State<TreeScreen> {
       onPick: (LocateResult result, LocateHit hit) => _landOn(hit.target),
       onPickNear: _landOn,
       onDismiss: () => setState(() => _locating = false),
+      onPickAxis: _landOnAxis,
       onPlanHere: _planFrom,
       canPlanHere: (LocateResult result) =>
           planEntryFor(result: result, contents: widget.contents) != null,
@@ -244,8 +276,37 @@ class _TreeScreenState extends State<TreeScreen> {
         _rootId = target.rootId;
         _selectedId = target.addressId;
         _filterTag = target.filterTag;
+        // 落点进来一律单轴态（`SPEC-TREE-013`）：站着三岔口定位，等于把刚刚
+        // 确定的那个维度又摊开一次。
+        _resetMode();
       }
     });
+  }
+
+  /// 「按此轴看」：换根到那条轴的轴根，并收起浮层（`SPEC-TREE-010` 轴落点）。
+  ///
+  /// **复用 [_changeRoot]**：换根是「根 + 地址 + 退回单轴态」三件事，这条值域在
+  /// 这一页只有一处（见文件头「地址只有一份」）。这里再写一遍就是第二份判据，
+  /// 而两份分叉时不会有任何断言红 —— 只会出现「根换了、地址还在旧轴」的一帧。
+  ///
+  /// 轴根由树现查（`TreeIndex.axisRoots`）：命中行带的是 `Node.axis`，而「该轴的
+  /// 根是哪个 id」是树的结构事实，浮层手里没有树，所以它只能交轴名过来。
+  ///
+  /// 查不到就**什么都不做**：那意味着那条轴的骨架没装，浮层画得出按钮是因为它有
+  /// 自己的包；按下去无反应比按下去换到一个不存在的根诚实。
+  void _landOnAxis(Axis axis) {
+    final TreeIndex? tree = _tree;
+    if (tree == null) {
+      return;
+    }
+    for (final TreeRow row in tree.axisRoots()) {
+      if (row.axis != axis) {
+        continue;
+      }
+      _changeRoot(row.nodeId);
+      setState(() => _locating = false);
+      return;
+    }
   }
 
   /// 「按此范围建计划」（`SPEC-PLAN-016` 第三入口）。
@@ -349,13 +410,26 @@ class _TreeScreenState extends State<TreeScreen> {
       children: <Widget>[
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: Text(
-              // 不写「共 N 个节点」：那是装配器的读数，不是树的位置信息。
-              '${tree.nodeCount} 个节点在树上',
-              style: text.bodySmall,
-            ),
+          child: Row(
+            children: <Widget>[
+              Expanded(
+                child: Text(
+                  // 不写「共 N 个节点」：那是装配器的读数，不是树的位置信息。
+                  '${tree.nodeCount} 个节点在树上',
+                  style: text.bodySmall,
+                ),
+              ),
+              // 「全树 / 单轴」（`SPEC-TREE-003`）：文案跟着当前态走 —— 按钮写的
+              // 是「点了会去哪」，不是「现在在哪」。
+              TextButton(
+                key: treeModeToggleKey,
+                onPressed: _toggleMode,
+                child: Text(
+                  _mode == TreeMode.fullTree ? '单轴' : '全树',
+                  style: text.bodySmall,
+                ),
+              ),
+            ],
           ),
         ),
         if (_filterTag != null) _filterBar(context, _filterTag!),
@@ -365,6 +439,7 @@ class _TreeScreenState extends State<TreeScreen> {
             tree: tree,
             rootId: rootId,
             selectedId: _selectedId,
+            mode: _mode,
             onDrill: _drill,
             onChangeRoot: _changeRoot,
           ),

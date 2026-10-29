@@ -166,8 +166,10 @@ class TreeIndex {
       Map<String, String>.unmodifiable(parentOf),
       Map<String, List<String>>.unmodifiable(
         childIdsOf.map(
-          (String key, List<String> value) =>
-              MapEntry<String, List<String>>(key, List<String>.unmodifiable(value)),
+          (String key, List<String> value) => MapEntry<String, List<String>>(
+            key,
+            List<String>.unmodifiable(value),
+          ),
         ),
       ),
       Map<String, String>.unmodifiable(pathOf),
@@ -327,6 +329,23 @@ class TreeIndex {
       return null;
     }
     return nodePath.substring(prefix.length);
+  }
+
+  /// [nodeId] 所在那一条轴的轴根（`SPEC-TREE-003` 的「当前根所在那一条轴」）。
+  ///
+  /// 轴根本身传进来返回它自己；`null` = 不在树上。沿主父链上溯到顶，而不是
+  /// 拿 `path` 第一段反查：路径段是 slug、轴根要的是行（名称与层深都得带出来）。
+  TreeRow? axisRootOf(String nodeId) {
+    final Set<String> visiting = <String>{};
+    String? current = nodeId;
+    while (current != null && visiting.add(current)) {
+      final String? parent = _parentOf[current];
+      if (parent == null) {
+        return _rowOrNull(current);
+      }
+      current = parent;
+    }
+    return null;
   }
 
   /// 按 id 取一行；`null` = 不在树上。

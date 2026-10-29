@@ -12,6 +12,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:project_knowledge/core/enums.dart';
 import 'package:project_knowledge/core/pack/pack_reader.dart';
 import 'package:project_knowledge/core/tree/landing.dart';
+import 'package:project_knowledge/features/locate/locate_overlay.dart';
 import 'package:project_knowledge/features/tree/tree_breadcrumb.dart';
 import 'package:project_knowledge/features/tree/tree_screen.dart';
 import 'package:project_knowledge/features/tree/tree_view.dart';
@@ -104,17 +105,51 @@ void main() {
     expect(find.byKey(treeFilterBarKey), findsNothing);
   });
 
-  testWidgets('TC-TREE-056 不给落点时行为与笔 3 一致（SPEC-TREE-003）', (
+  testWidgets('TC-TREE-056 不给落点时落在轴序第一根，且是单轴态（SPEC-TREE-003）', (
     WidgetTester tester,
   ) async {
     await pump(tester);
 
     expectCurrentRoot('skeleton:d');
     expect(find.text(breadcrumbSeparator), findsNWidgets(1));
-    // 三条轴根同时在场，`知识` 不在树里。
-    for (final String id in <String>['skeleton:d', 'skeleton:m', 'skeleton:o']) {
-      expect(find.byKey(treeRowKey(id)), findsOneWidget);
-    }
+    // 单轴态：只出当前那一条轴根，另两条要进全树态才看得见。
+    expect(find.byKey(treeRowKey('skeleton:d')), findsOneWidget);
+    expect(find.byKey(treeRowKey('skeleton:m')), findsNothing);
+    expect(find.byKey(treeRowKey('skeleton:o')), findsNothing);
+    // 首行是虚拟根，不是节点行。
+    expect(find.byKey(treeVirtualRootRowKey), findsOneWidget);
     expect(find.byKey(treeRowKey('')), findsNothing);
+  });
+
+  testWidgets('TC-TREE-067 轴命中行有「按此轴看」，点后换根到该轴且退回单轴态（SPEC-TREE-010）', (
+    WidgetTester tester,
+  ) async {
+    await pump(tester);
+    // 先切到全树态：不这么做的话「点完是单轴态」在本来就在单轴态时也成立，
+    // 断言就验不出「退回」这个动作 —— 这三行是这一条的前提，不是装饰。
+    await tester.tap(find.byKey(treeModeToggleKey));
+    await tester.pump();
+    expect(find.byKey(treeRowKey('skeleton:m')), findsOneWidget);
+
+    await tester.tap(find.byKey(treeLocateKey));
+    await tester.pump();
+    // 夹具里 `skeleton:m` 的名字就是「专业」，而 `supercluster` 不是落点档位
+    // （`locateKindOf` 只把 group / galaxy / cluster 读成域），所以这一句只会
+    // 命中一条**轴**命中，不会顺带出一条同名项。
+    await tester.enterText(find.byKey(locateFieldKey), '专业');
+    await tester.pump();
+
+    final Finder here = find.byKey(locateAxisHereKey(Axis.major.name));
+    expect(here, findsOneWidget, reason: '轴落点没有界面入口，就等于这条落点不存在');
+    await tester.tap(here);
+    await tester.pump();
+
+    expectCurrentRoot('skeleton:m');
+    expect(find.byKey(locateOverlayKey), findsNothing, reason: '选完落点要收起浮层');
+    expect(
+      find.byKey(treeRowKey('skeleton:o')),
+      findsNothing,
+      reason: '换完根退回单轴态 —— 另两条轴根不该还各占一行',
+    );
   });
 }
