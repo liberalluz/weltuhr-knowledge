@@ -187,12 +187,6 @@ const int viewTransitionMinMs = 180;
 /// `C-22` 视图切换动画上界（毫秒）。
 const int viewTransitionMaxMs = 220;
 
-/// `C-22` 视图切换的**实际时长**：取上下界中点。
-///
-/// 界面层不该自己挑一个「差不多」的数 —— `C-22` 给的是区间，中点是最不偏的取值，
-/// 且区间改了这一处跟着变。
-const int viewTransitionMs = (viewTransitionMinMs + viewTransitionMaxMs) ~/ 2;
-
 /// `C-23` 亮度通道远档灰阶层数。
 const int lodBrightnessFar = 3;
 

@@ -89,7 +89,11 @@ class Note {
 
   /// 显示优先级：`authored > autoFilled > generated`。
   String? get displayText {
-    for (final String key in const <String>['authored', 'autoFilled', 'generated']) {
+    for (final String key in const <String>[
+      'authored',
+      'autoFilled',
+      'generated',
+    ]) {
       final String? value = layers[key];
       if (value != null && value.isNotEmpty) {
         return value;
@@ -128,7 +132,9 @@ class Submission {
       domainId: requireString(json, 'domainId'),
       description: requireString(json, 'description'),
       status: SubmissionStatus.values.byName(requireString(json, 'status')),
-      verdict: verdict == null ? null : SubmissionVerdict.values.byName('$verdict'),
+      verdict: verdict == null
+          ? null
+          : SubmissionVerdict.values.byName('$verdict'),
     );
   }
 
@@ -144,7 +150,8 @@ class Submission {
 
   /// 提交后**立即进本地 overlay，立刻可学** —— 不等审核。
   bool get isLearnableNow =>
-      status == SubmissionStatus.localOverlay || status == SubmissionStatus.publicOverlay;
+      status == SubmissionStatus.localOverlay ||
+      status == SubmissionStatus.publicOverlay;
 
   JsonMap toJson() => <String, Object?>{
     'id': id,
@@ -160,7 +167,7 @@ class Submission {
 /// 界面状态（**本地，不入事件流**）。
 class ViewState {
   const ViewState({
-    this.mode = ViewMode.universe,
+    this.mode = ViewMode.tree,
     this.focusSlot = LevelSlot.supercluster,
     this.selectedItemId,
     this.focusChain = const <String>[],

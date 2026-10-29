@@ -117,6 +117,19 @@ PackContent _pack6() => fixturePack(<FixtureNode>[
     ),
 ]);
 
+/// 只含一个可学项的包 —— 判完它队列就走完了，runner 会自己 `pop` 回概览。
+PackContent _singlePack() => fixturePack(<FixtureNode>[
+  const FixtureNode('py:sys', 'Python', slot: LevelSlot.system),
+  const FixtureNode(
+    'py:a',
+    '甲',
+    parentId: 'py:sys',
+    steps: _steps,
+    criteria: _criteria,
+    quiz: _quiz,
+  ),
+]);
+
 Event _passed(String itemId, {int minute = 0}) => buildItemPassed(
   spaceId: 'python',
   itemId: itemId,
@@ -357,4 +370,24 @@ void main() {
       expect(button.onPressed, isNull);
     },
   );
+
+  testWidgets('TC-STEP-087 判完最后一项自动回概览 ⇒ 读数按最新事件重算，不停在进页面时的快照（SPEC-STEP-016）', (
+    WidgetTester tester,
+  ) async {
+    await _pumpWith(tester, _singlePack(), _MemoryStore());
+    expect(find.text('新学 1 项'), findsOneWidget);
+
+    // 开始 → 唯一的 read 步 → 进验收 → 判合格：队列走完，runner 自己 pop。
+    await tester.tap(find.byKey(const Key('overview-start')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('runner-next')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('grade-pass')));
+    await tester.pumpAndSettle();
+
+    // 回到概览：该项已判合格，新学行不该还在 —— 不重算的话这里仍是「新学 1 项」。
+    expect(find.byKey(const Key('runner-position')), findsNothing);
+    expect(find.text('新学 1 项'), findsNothing);
+    expect(find.textContaining('新学'), findsNothing);
+  });
 }
