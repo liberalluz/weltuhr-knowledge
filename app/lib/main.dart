@@ -155,6 +155,14 @@ class _WeltuhrAppState extends State<WeltuhrApp> {
         useMaterial3: true,
         brightness: Brightness.light,
       ),
+      // 深浅两套同一 seed，**跟随系统**：项目没有设置页，为三档颜色单造一个
+      // 页面成本远大于收益；桌面用户本来就在系统层切深浅。
+      darkTheme: ThemeData(
+        colorSchemeSeed: const Color(0xFF534AB7),
+        useMaterial3: true,
+        brightness: Brightness.dark,
+      ),
+      themeMode: ThemeMode.system,
       home: _boot.isEmpty
           ? EmptySpaceScreen(problems: _boot.problems)
           : (_boot.packs.length == 1
