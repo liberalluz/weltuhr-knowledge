@@ -121,7 +121,7 @@ void main() {
     expect(find.byKey(treeRowKey('')), findsNothing);
   });
 
-  testWidgets('TC-TREE-066 轴命中行有「按此轴看」，点后换根到该轴且退回单轴态（SPEC-TREE-010）', (
+  testWidgets('TC-TREE-067 轴命中行有「按此轴看」，点后换根到该轴且退回单轴态（SPEC-TREE-010）', (
     WidgetTester tester,
   ) async {
     await pump(tester);

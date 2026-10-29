@@ -334,7 +334,7 @@ void main() {
     expect(rowOf(rows, 'skeleton:d-01').isSelected, isTrue);
   });
 
-  test('TC-TREE-057 全树态三条轴根连续列出，只有当前轴往下展（SPEC-TREE-003）', () {
+  test('TC-TREE-058 全树态三条轴根连续列出，只有当前轴往下展（SPEC-TREE-003）', () {
     final List<OutlineRow> rows = treeOutline(
       tree: tree,
       rootId: 'skeleton:d',
@@ -363,7 +363,7 @@ void main() {
     );
   });
 
-  test('TC-TREE-058 全树态也只展开当前轴一条链（SPEC-TREE-003）', () {
+  test('TC-TREE-059 全树态也只展开当前轴一条链（SPEC-TREE-003）', () {
     final List<OutlineRow> rows = treeOutline(
       tree: tree,
       rootId: 'skeleton:d',
@@ -385,7 +385,7 @@ void main() {
     ], reason: '`m` / `o` 后面没有任何子行；链只在学科轴上展开');
   });
 
-  test('TC-TREE-059 同级超 50 行截断，末行「还有 M 项」（SPEC-TREE-012）', () {
+  test('TC-TREE-060 同级超 50 行截断，末行「还有 M 项」（SPEC-TREE-012）', () {
     final TreeIndex wide = wideTree(60);
     final List<OutlineRow> rows = treeOutline(
       tree: wide,
@@ -404,7 +404,7 @@ void main() {
     expect(overflow.isClickable, isFalse, reason: '它是截断提示，不是节点 —— 点了不能改地址');
   });
 
-  test('TC-TREE-060 同级不超 50 行时不出计数行（SPEC-TREE-012）', () {
+  test('TC-TREE-061 同级不超 50 行时不出计数行（SPEC-TREE-012）', () {
     final List<OutlineRow> rows = treeOutline(
       tree: tree,
       rootId: 'skeleton:d',
@@ -414,7 +414,7 @@ void main() {
     expect(rows.any((OutlineRow row) => row.isOverflow), isFalse);
   });
 
-  test('TC-TREE-061 地址落在截断范围外时仍补进屏内（SPEC-TREE-012）', () {
+  test('TC-TREE-062 地址落在截断范围外时仍补进屏内（SPEC-TREE-012）', () {
     final TreeIndex wide = wideTree(60);
     final List<OutlineRow> rows = treeOutline(
       tree: wide,
@@ -431,7 +431,7 @@ void main() {
     expect(rows.last.label, '还有 10 项', reason: '`M` 仍按「总数 − 50」算，不因补回这一行而变');
   });
 
-  test('TC-TREE-062 地址更深时它的父行也必显，链不在那一级断（SPEC-TREE-012）', () {
+  test('TC-TREE-063 地址更深时它的父行也必显，链不在那一级断（SPEC-TREE-012）', () {
     final TreeIndex wide = wideTree(60, withGrandchild: true);
     final List<OutlineRow> rows = treeOutline(
       tree: wide,

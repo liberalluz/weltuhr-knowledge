@@ -167,7 +167,7 @@ void main() {
     );
   });
 
-  testWidgets('TC-TREE-067 轴命中行给「按此轴看」，点了交出那条轴（SPEC-TREE-010）', (
+  testWidgets('TC-TREE-068 轴命中行给「按此轴看」，点了交出那条轴（SPEC-TREE-010）', (
     WidgetTester tester,
   ) async {
     Axis? picked;
@@ -191,7 +191,7 @@ void main() {
     expect(picked, Axis.major, reason: '交出去的是那条轴，不是「命中了」这件事');
   });
 
-  testWidgets('TC-TREE-068 没有上层接收 ⇒ 不渲染「按此轴看」（SPEC-TREE-010）', (
+  testWidgets('TC-TREE-069 没有上层接收 ⇒ 不渲染「按此轴看」（SPEC-TREE-010）', (
     WidgetTester tester,
   ) async {
     // 不传 `onPickAxis`：按下去没人接，按钮就不该出现（与 `TC-PLAN-078` 同口径）。

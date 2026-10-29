@@ -93,7 +93,7 @@ void main() {
     );
   });
 
-  testWidgets('TC-TREE-064 全树态三条轴根都画，仍只有一个「当前」（SPEC-TREE-003）', (
+  testWidgets('TC-TREE-065 全树态三条轴根都画，仍只有一个「当前」（SPEC-TREE-003）', (
     WidgetTester tester,
   ) async {
     await pump(
@@ -121,7 +121,7 @@ void main() {
     );
   });
 
-  testWidgets('TC-TREE-065 虚拟根 `知识` 行画出来但点不动（SPEC-TREE-002）', (
+  testWidgets('TC-TREE-066 虚拟根 `知识` 行画出来但点不动（SPEC-TREE-002）', (
     WidgetTester tester,
   ) async {
     String? drilled;

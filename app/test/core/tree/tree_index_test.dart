@@ -185,7 +185,7 @@ void main() {
     );
   });
 
-  test('TC-TREE-063 轴根查询沿主父链上溯到顶（SPEC-TREE-003）', () {
+  test('TC-TREE-064 轴根查询沿主父链上溯到顶（SPEC-TREE-003）', () {
     expect(
       tree.axisRootOf('skeleton:d')?.nodeId,
       'skeleton:d',
