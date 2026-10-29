@@ -57,6 +57,8 @@ python3 infra/tool/docs/audit.py all --root .
 
 # 入口门禁：根/模块/外仓 AGENTS 与关键规则
 python3 infra/tool/docs/check_entrypoints.py --root .
+# 规则变更同步：规则文件改了但 AGENTS 没动 → 红
+python3 infra/tool/docs/check_entrypoints.py --root . --diff-base origin/main
 
 # 跨仓边界：主仓不得链外仓、外仓不得复制受控文档
 python3 infra/tool/docs/check_boundary.py --root .

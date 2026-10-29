@@ -4,6 +4,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
@@ -55,6 +56,24 @@ class EntrypointTests(unittest.TestCase):
         external = Path(tempfile.mkdtemp())
         items = ce.check_static(root, external)
         self.assertTrue(any(status == "fail" and "外仓" in item for status, item, _ in items))
+
+    def _diff(self, files: list[str], allow_noop: bool = False):
+        root = make_root()
+        fake = mock.Mock(returncode=0, stdout="\n".join(files), stderr="")
+        with mock.patch.object(ce.subprocess, "run", return_value=fake):
+            return ce.check_diff(root, "origin/main", allow_noop)
+
+    def test_rule_change_without_agents_fails(self):
+        items = self._diff(["docs/specs/git-conventions.md"])
+        self.assertTrue(any(status == "fail" for status, _, _ in items))
+
+    def test_rule_change_with_agents_passes(self):
+        items = self._diff(["docs/specs/git-conventions.md", "AGENTS.md"])
+        self.assertTrue(any(status == "ok" for status, _, _ in items))
+
+    def test_non_rule_change_does_not_trigger(self):
+        items = self._diff(["app/lib/x.dart"])
+        self.assertTrue(any(status == "ok" and "未改规则" in detail for status, _, detail in items))
 
 
 if __name__ == "__main__":
