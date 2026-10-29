@@ -27,7 +27,7 @@
 - **受控五份按基线升版，不按 PR 升版**：日常 PR 不改版号、不加历史行、不改 `SCMP §5.1`；基线/发布时统一更新。
 - **SDP 只写计划，进度不写 SDP**：SDP 在外仓 `process/`；进度写 `records/live/` 或生成报告。
 - **records 分 live / frozen**：DPMR/STR 的 live 记录只追加；冻结批次不改。
-- **外仓不是第二套工程文档**：不复制 SRS/SDD/STP/STD/SCMP；主仓只写纯文本指认。
+- **外仓不是第二套工程文档**：不复制 SRS/SDD/STP/STD/SCMP；主仓只写纯文本指认，不写外仓 Markdown 链接（ADR-0014）。
 - **`docs_impact`**：`none` 不碰 controlled；`living` 同 PR 改活文档；`controlled` 进 docs 批次。
 - **`changelog.d/` 是根级发布装置，不是 docs 目录**：`feat` / `fix` 批次写 `<批次号>.md`，`process` 不要求；规则见 ADR-0013。
 
@@ -57,6 +57,9 @@ python3 infra/tool/docs/audit.py all --root .
 
 # 入口门禁：根/模块/外仓 AGENTS 与关键规则
 python3 infra/tool/docs/check_entrypoints.py --root .
+
+# 跨仓边界：主仓不得链外仓、外仓不得复制受控文档
+python3 infra/tool/docs/check_boundary.py --root .
 ```
 
 ## 译本规范

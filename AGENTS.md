@@ -74,6 +74,8 @@ python3 infra/tool/batch/batch.py merge --pr <n> --yes
 - `<project>-docs/records/`: F1 records. `live/` is append-only; `2026-*` batches are frozen and must not be edited. Read the external `records/README.md` first.
 - `<project>-docs/process/`: F5 plans; `sdp.md` is plan-only, progress belongs in `records/live/`.
 - Check records: `python3 <nebula-project-delivery>/scripts/check_records.py <project>-docs`; freeze with `freeze.py` (delivery skill).
+- **Main → external is plain text only**: never write a Markdown link to `<project>-docs/`; external → main may use relative links (ADR-0014).
+- Check the boundary: `python3 infra/tool/docs/check_boundary.py --root .`.
 
 ## When sources conflict
 

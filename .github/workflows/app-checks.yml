@@ -118,6 +118,7 @@ jobs:
         run: |
           python3 ../infra/tool/docs/audit.py all --root ..
           python3 ../infra/tool/docs/check_entrypoints.py --root ..
+          python3 ../infra/tool/docs/check_boundary.py --root ..
           python3 -m unittest discover -s ../infra/tool/docs/tests
 
       # The tests read the REAL artifact `content/<space>/pack.json` (single-file

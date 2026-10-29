@@ -8,7 +8,7 @@
 | 目录 | 一句话定义 | 内容 | 版号 |
 |---|---|---|---|
 | [specs/](specs/00-index.md) | **应当如何** | 设计规格 21 份：10 份主题规格 + 8 份横切表/规格 + 2 份工程规范 + 索引；另 [`controlled/`](specs/controlled/) 下 5 份受控交付物 | 活文档不设版号，**`controlled/` 例外** |
-| [decisions/](decisions/) | **定没定** | 13 份 ADR（为什么这么选，含被否方案与代价）+ 2 份台账（`not-list` 已裁不做 · `open-decisions` 未裁待定） | 活文档，不设版号 |
+| [decisions/](decisions/) | **定没定** | 14 份 ADR（为什么这么选，含被否方案与代价）+ 2 份台账（`not-list` 已裁不做 · `open-decisions` 未裁待定） | 活文档，不设版号 |
 | [intent/](intent/) | **为什么** | 两份方法论长文 —— 全案的上游依据，`specs/` 全部引用它而它不引用 `specs/` | 活文档，不设版号 |
 | [ideas/](ideas/README.md) | **还没认定的想做什么** | 候选，尚未被接受成决策或规格。**当前为空，空本身是信息** | 活文档，不设版号 |
 | [runbooks/](runbooks/environment.md) | **怎么把东西跑起来** | 操作手册：环境搭建与跑法、已知的坑 | 活文档，不设版号 |
@@ -58,6 +58,8 @@
 `specs/controlled/` 只装**有版号序列、受 `D2` 管**的五份：`SCMP` `SRS` `SDD` `STP` `STD`（`ADR-0011`）。
 
 - **版号按基线/发布递增，不按每个 PR 递增**：日常 PR 不改版号、不加历史行、不改 `SCMP §5.1`；基线时统一对账（`ADR-0012`）。
+
+> 主仓引用外仓只写**纯文本指认**（`<project>-docs/...`，仓外需另行检出），不写 Markdown 链接；外仓不复制受控五份。见 `ADR-0014`。
 
 > 根级 [`changelog.d/`](../changelog.d/README.md) 是**发布说明片段装置**，不是 `docs/` 的第六个分类；`feat` / `fix` 批次按 `ADR-0013` 写片段。
 

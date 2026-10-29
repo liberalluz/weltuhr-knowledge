@@ -19,6 +19,7 @@
 | [0011](0011-specs-controlled-subdir.md) | `specs/` 下再分一层：受控交付物迁入 `controlled/` | 已接受（2026-10-23，**同日执行完毕**） | 五份受控文档 · `rules.dart` 四常量 · `migrate_docs.dart` 批 8 · `docs/README.md` · `docs/AGENTS.md` · `00-index` · 技能 `nebula-project-builder` |
 | [0012](0012-doc-governance.md) | 文档治理：基线级版号、Batch=PR、SDP/records 分离 | 已接受（2026-10-29，DOC-1） | `docs/AGENTS.md` · `docs/README.md` · `git-conventions` §六 · 根 `AGENTS.md` · 外仓 records |
 | [0013](0013-changelog-fragments.md) | 根级 `changelog.d/`：发布说明片段，不是 docs 第六目录 | 已接受（2026-10-29，DOC-2C） | 根目录 · `changelog.d/README.md` · `git-conventions` · `AGENTS.md` · `nebula-bootstrap` 模板 |
+| [0014](0014-external-boundary.md) | 主仓与外仓引用边界：主仓只写纯文本，外仓不复制受控文档 | 已接受（2026-10-29，DOC-6） | `docs/README.md` · `docs/AGENTS.md` · 根 `AGENTS.md` · `check_boundary.py` · 外仓 AGENTS |
 
 ## 何时需要 ADR
 
