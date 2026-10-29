@@ -19,9 +19,11 @@
 /// 会让人去翻这一页的代码，而该翻的是那个包。
 library;
 
-import 'package:flutter/material.dart';
+// `Axis` 两边都有（Flutter 的绘制轴 / `core/enums.dart` 的知识轴），这里要后者。
+import 'package:flutter/material.dart' hide Axis;
 
 import '../../core/constants.dart';
+import '../../core/enums.dart';
 import '../../core/events/event_store.dart';
 import '../../core/events/hlc_clock.dart';
 import '../../core/events/journal_event_store.dart';
@@ -243,6 +245,7 @@ class _TreeScreenState extends State<TreeScreen> {
       onPick: (LocateResult result, LocateHit hit) => _landOn(hit.target),
       onPickNear: _landOn,
       onDismiss: () => setState(() => _locating = false),
+      onPickAxis: _landOnAxis,
       onPlanHere: _planFrom,
       canPlanHere: (LocateResult result) =>
           planEntryFor(result: result, contents: widget.contents) != null,
@@ -278,6 +281,32 @@ class _TreeScreenState extends State<TreeScreen> {
         _resetMode();
       }
     });
+  }
+
+  /// 「按此轴看」：换根到那条轴的轴根，并收起浮层（`SPEC-TREE-010` 轴落点）。
+  ///
+  /// **复用 [_changeRoot]**：换根是「根 + 地址 + 退回单轴态」三件事，这条值域在
+  /// 这一页只有一处（见文件头「地址只有一份」）。这里再写一遍就是第二份判据，
+  /// 而两份分叉时不会有任何断言红 —— 只会出现「根换了、地址还在旧轴」的一帧。
+  ///
+  /// 轴根由树现查（`TreeIndex.axisRoots`）：命中行带的是 `Node.axis`，而「该轴的
+  /// 根是哪个 id」是树的结构事实，浮层手里没有树，所以它只能交轴名过来。
+  ///
+  /// 查不到就**什么都不做**：那意味着那条轴的骨架没装，浮层画得出按钮是因为它有
+  /// 自己的包；按下去无反应比按下去换到一个不存在的根诚实。
+  void _landOnAxis(Axis axis) {
+    final TreeIndex? tree = _tree;
+    if (tree == null) {
+      return;
+    }
+    for (final TreeRow row in tree.axisRoots()) {
+      if (row.axis != axis) {
+        continue;
+      }
+      _changeRoot(row.nodeId);
+      setState(() => _locating = false);
+      return;
+    }
   }
 
   /// 「按此范围建计划」（`SPEC-PLAN-016` 第三入口）。

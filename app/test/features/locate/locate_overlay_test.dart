@@ -15,7 +15,8 @@
 /// 所以这里只造 `system`（子树根，自己不参与落点）与 `planet`（项）两种。
 library;
 
-import 'package:flutter/material.dart';
+// `Axis` 两边都有（Flutter 的绘制轴 / `core/enums.dart` 的知识轴），这里要后者。
+import 'package:flutter/material.dart' hide Axis;
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:project_knowledge/core/enums.dart';
@@ -66,6 +67,7 @@ void main() {
     String? scopePluginId,
     VoidCallback? onDismiss,
     void Function(LocateResult result)? onPlanHere,
+    void Function(Axis axis)? onPickAxis,
   }) async {
     await tester.pumpWidget(
       MaterialApp(
@@ -83,6 +85,7 @@ void main() {
               onPickNear: onPickNear ?? (String _) {},
               onDismiss: onDismiss ?? () {},
               onPlanHere: onPlanHere,
+              onPickAxis: onPickAxis,
             ),
           ),
         ),
@@ -161,6 +164,45 @@ void main() {
       find.descendant(of: row, matching: find.text('筛选')),
       findsOneWidget,
       reason: '同一行还要说清按下去的效果是筛选',
+    );
+  });
+
+  testWidgets('TC-TREE-067 轴命中行给「按此轴看」，点了交出那条轴（SPEC-TREE-010）', (
+    WidgetTester tester,
+  ) async {
+    Axis? picked;
+    await pump(
+      tester,
+      onPick: (_, _) {},
+      onPickAxis: (Axis axis) => picked = axis,
+    );
+    await type(tester, '专业');
+
+    expect(
+      find.byKey(locateAxisHereKey(Axis.major.name)),
+      findsOneWidget,
+      reason: '轴落点没有界面入口，用户在浮层里就没有「按这条轴去看」这条路',
+    );
+    // 一条行上两个动作各自可达：整行是筛选（`VIEW-028`），按钮是换根。
+    expect(find.text('筛选'), findsOneWidget);
+
+    await tester.tap(find.byKey(locateAxisHereKey(Axis.major.name)));
+    await tester.pump();
+    expect(picked, Axis.major, reason: '交出去的是那条轴，不是「命中了」这件事');
+  });
+
+  testWidgets('TC-TREE-068 没有上层接收 ⇒ 不渲染「按此轴看」（SPEC-TREE-010）', (
+    WidgetTester tester,
+  ) async {
+    // 不传 `onPickAxis`：按下去没人接，按钮就不该出现（与 `TC-PLAN-078` 同口径）。
+    await pump(tester, onPick: (_, _) {});
+    await type(tester, '专业');
+
+    expect(find.byKey(locateAxisHereKey(Axis.major.name)), findsNothing);
+    expect(
+      find.text('筛选'),
+      findsOneWidget,
+      reason: '没有换根入口时，这一行仍是可用的筛选入口 —— 不能连它一起消失',
     );
   });
 
@@ -327,22 +369,18 @@ void main() {
     );
     await type(tester, '闭包');
     // 多包时浮层把圈定根置空（别的包的树根不可能在这个子树下），这里同口径。
-    final LocateHit foreign = locateIn(there, '闭包', subtreeRoot: null).hits.first;
+    final LocateHit foreign = locateIn(
+      there,
+      '闭包',
+      subtreeRoot: null,
+    ).hits.first;
     await tester.tap(find.byKey(locateRowKey(foreign)));
     await tester.pump();
 
-    expect(
-      picked,
-      isNotNull,
-      reason: '多根之后拦下来就成了「搜得到却点不动」—— 换根是屏幕层的事',
-    );
+    expect(picked, isNotNull, reason: '多根之后拦下来就成了「搜得到却点不动」—— 换根是屏幕层的事');
     expect(picked!.packId, 'go', reason: '命中带着包 id，调用方才换得对根');
     expect(picked!.target, 'go/closure');
-    expect(
-      find.byKey(locateNoticeKey),
-      findsNothing,
-      reason: '能跳就不该给一句「做不到」',
-    );
+    expect(find.byKey(locateNoticeKey), findsNothing, reason: '能跳就不该给一句「做不到」');
   });
 
   testWidgets('没有内容包时浮层照样打开并说明原因（SPEC-FND-014）', (WidgetTester tester) async {
@@ -477,11 +515,7 @@ void main() {
 
     expect(find.byKey(locatePlanHereKey), findsOneWidget);
     await tester.tap(find.byKey(locatePlanHereKey));
-    expect(
-      handed?.query,
-      '协程',
-      reason: '交出去的是整次定位结果 —— 范围由查询词唯一确定，与点了哪一行无关',
-    );
+    expect(handed?.query, '协程', reason: '交出去的是整次定位结果 —— 范围由查询词唯一确定，与点了哪一行无关');
   });
 
   testWidgets('TC-PLAN-077 只命中筛选类 ⇒ 不给「按此范围建计划」（SPEC-PLAN-016）', (

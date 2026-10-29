@@ -58,9 +58,11 @@
 /// 并不比这里多。
 library;
 
-import 'package:flutter/material.dart';
+// `Axis` 两边都有（Flutter 的绘制轴 / `core/enums.dart` 的知识轴），这里要后者。
+import 'package:flutter/material.dart' hide Axis;
 import 'package:flutter/services.dart';
 
+import '../../core/enums.dart';
 import '../../core/locate/diagnose.dart';
 import '../../core/locate/locator.dart';
 import '../../core/pack/pack_reader.dart';
@@ -102,6 +104,11 @@ const Key locateSearchAllKey = Key('locate-search-all');
 /// 定位结果底部的「按此范围建计划」（`SPEC-PLAN-016` 第三入口，`B4` `P-7`）。
 const Key locatePlanHereKey = Key('locate-plan-here');
 
+/// 轴命中行上的「按此轴看」（`SPEC-TREE-010` 轴落点的界面入口）。
+///
+/// 按轴名定 key：一个包内每条轴至多贡献一条轴命中，不会撞。
+Key locateAxisHereKey(String axisKey) => Key('locate-axis-here-$axisKey');
+
 /// 空间前缀与标题之间的分隔符。抽出来是因为测试要断言「没有它」。
 ///
 /// 名字里的「空间」保持原样：它对应 `VIEW-033` 的原文措辞（`SPEC-VIEW-*` 待
@@ -136,6 +143,7 @@ class LocateOverlay extends StatefulWidget {
     required this.onDismiss,
     this.onPlanHere,
     this.canPlanHere,
+    this.onPickAxis,
     this.otherPacks = const <PackContent>[],
     this.scopePluginId,
     this.domainId,
@@ -199,6 +207,15 @@ class LocateOverlay extends StatefulWidget {
   /// 交给上层判的后果是：跨子树时按钮**不出现**，而不是「出现但点了没反应」
   /// （`SPEC-PLAN-016` 第三入口的验收口径）。
   final bool Function(LocateResult result)? canPlanHere;
+
+  /// 轴命中行上的「按此轴看」：换根到该轴根、退回单轴态（`SPEC-TREE-010`）。
+  ///
+  /// 为什么挂在**行**上而不是底部 CTA：一条轴命中说的是「这一条轴」，而底部那条
+  /// CTA 说的是「这一轮搜索圈出的范围」—— 两件事的范围不同，混到一处就只能取并，
+  /// 取并之后「按此轴看」就成了「按三轴看」。
+  ///
+  /// `null` = 没有上层接收，按钮不渲染（与 [onPlanHere] 同口径）。
+  final ValueChanged<Axis>? onPickAxis;
 
   /// 当前视图的域上下文（选中项所在的域）。只影响分诊的 ③ / ④ 分野
   /// （`VIEW-030`）：知道往哪放才谈得上新增。
@@ -630,6 +647,9 @@ class _LocateOverlayState extends State<LocateOverlay> {
 
   Widget _row(LocateHit hit, {required bool prefix}) {
     final bool filter = hit.kind == LocateKind.axis;
+    // 「按此轴看」只在有上层接收时渲染（与 `onPlanHere` 同口径），而「哪条轴」
+    // 得从命中行反解 —— 键不认识就不出按钮，让这一行退回纯筛选入口。
+    final Axis? axis = filter ? _axisOf(hit) : null;
     return InkWell(
       key: locateRowKey(hit),
       onTap: () => _pick(hit),
@@ -650,15 +670,56 @@ class _LocateOverlayState extends State<LocateOverlay> {
                 style: const TextStyle(color: paletteTextPrimary, fontSize: 13),
               ),
             ),
+            // 两件事并排出现在一行，所以必须各说各的：整行点下去是**筛选**
+            // （`VIEW-028`，不换根），右边那个按钮才是**换根去看这条轴**。
+            // 只留按钮会让人以为点行也是换根，只留「筛选」则这条入口根本不存在。
             if (filter)
-              const Text(
-                '筛选',
-                style: TextStyle(color: paletteTextSecondary, fontSize: 10),
+              const Padding(
+                padding: EdgeInsets.only(right: 8),
+                child: Text(
+                  '筛选',
+                  style: TextStyle(color: paletteTextSecondary, fontSize: 10),
+                ),
               ),
+            if (axis != null && widget.onPickAxis != null) _axisHere(axis),
           ],
         ),
       ),
     );
+  }
+
+  /// 轴命中行上的「按此轴看」（`SPEC-TREE-010` 轴落点的界面入口）。
+  ///
+  /// 换根这件事归调用方（这里是**显示**层，见文件头）：浮层只把「用户要看哪条
+  /// 轴」交出去 —— 轴根 id 是树的结构事实，浮层手里没有那棵树。
+  Widget _axisHere(Axis axis) => TextButton(
+    key: locateAxisHereKey(axis.name),
+    onPressed: () => widget.onPickAxis?.call(axis),
+    style: TextButton.styleFrom(
+      backgroundColor: paletteSelected,
+      foregroundColor: paletteTextPrimary,
+      minimumSize: const Size(76, 26),
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+    ),
+    child: const Text('按此轴看', style: TextStyle(fontSize: 11)),
+  );
+
+  /// 轴命中行说的是哪一条轴；`null` = 键不在册。
+  ///
+  /// 不用 `Axis.fromWire`：它按「包级数据坏了」的思路抛 `FormatException`，
+  /// 而这里只是**少画一个按钮**。界面不该因为一条命中的元数据异常就整片红。
+  Axis? _axisOf(LocateHit hit) {
+    final String? key = hit.axisKey;
+    if (key == null) {
+      return null;
+    }
+    for (final Axis axis in Axis.values) {
+      if (axis.name == key) {
+        return axis;
+      }
+    }
+    return null;
   }
 
   /// 分诊面板（`VIEW-030`）。四类各说各的事实与出口。
