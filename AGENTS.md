@@ -17,6 +17,8 @@ This file is the **entry point and map**; detailed rules live in `.github/` and 
 - **No push to a non-main branch without `.batch/active`**; `pre-push` rejects it, it is not a hint.
 - **No direct push to `main`**, no direct `gh pr merge`; merges go through `batch merge` only.
 - **Authors cannot self-approve**; the C10 ruleset requires one non-author approval plus code-owner review.
+- **Controlled docs version at baselines, not per PR**; daily PRs do not bump `SCMP`/`STD`/`STP` or add history rows.
+- **SDP is an external process plan**; it holds plan only — progress belongs in `records/live` or generated reports.
 - **Evidence must come from real commands**; what was not run is written as "未验", never as "should pass".
 - Stop and ask when unsure; never edit card/scope/evidence just to get past a gate.
 
