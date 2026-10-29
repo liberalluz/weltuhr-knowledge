@@ -15,6 +15,7 @@ import 'core/pack/pack_probe.dart';
 import 'core/pack/pack_reader.dart';
 import 'core/storage/store_layout.dart';
 import 'core/tree/landing.dart';
+import 'features/progress/progress_screen.dart';
 import 'features/runner/overview_screen.dart';
 import 'features/tree/tree_screen.dart';
 
@@ -324,6 +325,19 @@ class SpaceScreen extends StatelessWidget {
                   initialLanding: PackLanding(content.pack.pluginId),
                   eventStore: eventStore,
                 ),
+              ),
+            ),
+          ),
+          // 进展（`SPEC-QUANT-011` 的入口）。放在这里而不是树屏：进展按
+          // `spaceId` 折事件，而树屏跨包、没有「当前包」这个概念。
+          IconButton(
+            key: const Key('space-progress'),
+            icon: const Icon(Icons.insights_outlined),
+            tooltip: '进展',
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (BuildContext context) =>
+                    ProgressScreen(content: content, eventStore: eventStore),
               ),
             ),
           ),
