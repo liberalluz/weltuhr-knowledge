@@ -146,6 +146,10 @@ mastery = d × s
 **判据**：方法本身**不标等级**（方法无权威谱系），但**进度有可信度差异** —— 给方法编等级是编的，给进度标「这条是打卡来的」是事实。
 `src:` N-k · SF-1
 
+**实现落点**（`B6` 笔 3）：空间进度的取数层是 `app/lib/core/quant/progress.dart` 的 `progressOf`，返回 `({int verified, int checked, int total})`。`total` 原样取 `PlanScope.denominator`（不自己数 `nodes.length`）、分子只数圈内项、两档按 `NodeEntry.isCheckin`（`criteria.isEmpty`）分；圈内为空返回 `(0, 0, 0)` 而**不抛** —— 与 `depthOf` 对分母为 0 抛 `StateError` 不是同一口径：那里是数据坏了（六格全不可外化），这里是合法空态（还没选体系）。
+
+**本段不新增 `SPEC` 编号** —— 它只是 `001` / `002` / `003` / `015` 四条的落点说明，条文本身未改。⚠️ 计划进度（`013` 的已完成段与循环轮次、`014` 的分段来自 `methodProfile`）**尚未实现**，形态仍记 `TBD-11`。
+
 ---
 
 ## 验收表
