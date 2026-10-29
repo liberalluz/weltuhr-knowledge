@@ -33,6 +33,9 @@ from typing import Any, Sequence
 
 from card import approve_card, card_hash, read_card, verify_card, write_card
 from check import PROCESS_PATTERNS, check_paths, sign_scope, verify_scope
+import relations as rel
+
+REPO_SLUG = "liberalluz/weltuhr-knowledge"
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 DEFAULT_ROOT = REPO_ROOT / ".batch"
@@ -177,6 +180,25 @@ def diff_status(base: str) -> dict[str, str]:
         flag = parts[0][:1]
         statuses[parts[-1]] = "A" if flag == "A" else "D" if flag == "D" else "M"
     return statuses
+
+
+def diff_added_with_paths(base: str) -> list[tuple[str, str]]:
+    """Added lines plus their file, from the branch and the working tree."""
+    added: list[tuple[str, str]] = []
+    for command in (
+        ["diff", "-U0", f"{base}...HEAD"],
+        ["diff", "-U0", "HEAD"],
+    ):
+        code, out, _ = run_git(command)
+        if code != 0:
+            continue
+        current = ""
+        for line in out.splitlines():
+            if line.startswith("+++ b/"):
+                current = line[6:]
+            elif line.startswith("+") and not line.startswith("+++"):
+                added.append((current, line[1:]))
+    return added
 
 
 def diff_line_count(base: str) -> int:
@@ -635,12 +657,64 @@ def note_map(card: dict[str, Any]) -> dict[str, str]:
     return notes
 
 
+def related_links(
+    card: dict[str, Any],
+    paths: Sequence[str],
+    added: Sequence[tuple[str, str]],
+) -> tuple[list[str], list[str]]:
+    lines = [f"- 批次号：`{card.get('batch') or '?'}`"]
+    milestone = str(card.get("milestone") or "none")
+    if milestone != "none":
+        lines.append(f"- 里程碑：{milestone}")
+    issues = [str(n).lstrip("#") for n in (card.get("issues") or []) if str(n).lower() != "none"]
+    if issues:
+        links = "、".join(
+            f"[#{n}](https://github.com/{REPO_SLUG}/issues/{n})" for n in issues
+        )
+        lines.append(f"- issue：{links}")
+    related = [str(n).lstrip("#") for n in (card.get("related_prs") or []) if str(n).lower() != "none"]
+    if not related:
+        found = []
+        for _, text in added:
+            found.extend(rel.PR_LINK_RE.findall(text))
+        if found:
+            lines.append("- PR：" + "、".join(dict.fromkeys(found)))
+    elif related:
+        links = "、".join(
+            f"[#{n}](https://github.com/{REPO_SLUG}/pull/{n})" for n in related
+        )
+        lines.append(f"- PR：{links}")
+    decisions = [f"`{p}`" for p in paths if p.startswith("docs/decisions/")]
+    if decisions:
+        lines.append("- ADR：" + "、".join(decisions))
+    specs = [f"`{p}`" for p in paths if rel.SPEC_RE.match(p)]
+    if specs:
+        lines.append("- 规格条：" + "、".join(specs))
+    cases = [
+        f"`{p}`"
+        for p in paths
+        if p.startswith(("app/test/", "docs/specs/controlled/"))
+    ]
+    if cases:
+        lines.append("- 用例：" + "、".join(cases))
+    todos = [
+        f"`{path}` {text.strip()}"
+        for path, text in added
+        if rel.TODO_RE.search(text)
+    ]
+    if todos:
+        lines.append("- 待确认事项：" + "；".join(todos))
+    closing = [f"Closes #{n}" for n in issues]
+    return lines, closing
+
+
 def build_pr_body(
     card: dict[str, Any],
     changed: Sequence[str],
     evidence_text: str,
     statuses: dict[str, str] | None = None,
     notes: dict[str, str] | None = None,
+    added: Sequence[tuple[str, str]] | None = None,
 ) -> str:
     goals = str(card.get("goal") or f"批次 {card.get('batch') or '?'}")
     platforms = normalize_platforms(card.get("platforms") or [])
@@ -653,13 +727,17 @@ def build_pr_body(
         evidence_summary = "scope=PASS"
 
     paths = [path for path in changed if path]
+    related, closing = related_links(card, paths, added or [])
     stacks = {
         path.split("/", 1)[0]
         for path in paths
         if "/" in path and path.split("/", 1)[0] in {"app", "server", "content", "infra"}
     }
 
-    lines = ["## 变更摘要", "", goals, "", "## 影响面", ""]
+    lines = ["## 变更摘要", "", goals]
+    if closing:
+        lines.extend(["", *closing])
+    lines.extend(["", "## 影响面", ""])
     if platforms:
         lines.append("- **平台**：")
         for platform in platforms:
@@ -748,7 +826,7 @@ def build_pr_body(
             "",
             "## 关联",
             "",
-            f"- 批次号：`{card.get('batch') or '?'}`",
+            *related,
             "",
             "## 评审提示",
             "",
@@ -787,6 +865,7 @@ def command_pr(args: argparse.Namespace) -> int:
 
     base = args.base or state.get("base") or card.get("base") or "origin/main"
     changed = changed_paths(str(base))
+    added = diff_added_with_paths(str(base))
     budget = int(card.get("size_budget") or 0)
     if budget:
         line_count = diff_line_count(str(base))
@@ -827,6 +906,7 @@ def command_pr(args: argparse.Namespace) -> int:
             evidence.read_text(encoding="utf-8"),
             diff_status(str(base)),
             note_map(card),
+            added,
         )
         body_path = args.body_out
         if body_path is None:
@@ -849,11 +929,30 @@ def command_pr(args: argparse.Namespace) -> int:
         )
         return 1
 
+    def related_ok() -> bool:
+        required = rel.required_classes(
+            changed,
+            [text for _, text in added],
+            card=card,
+        )
+        missing = rel.missing_classes(body, required)
+        if missing:
+            print(
+                "body missing required related classes: "
+                + "、".join(missing)
+                + "（create 前必须补齐，禁止 create 后 edit）",
+                file=sys.stderr,
+            )
+            return False
+        return True
+
     code = validate_body(body_path, str(base))
     if code != 0:
         print("pr-body validation failed; fix the body then rerun", file=sys.stderr)
         return 1
     if not args.create:
+        if not related_ok():
+            return 1
         print(
             "body validated; edit it, then rerun with "
             "--create --body-file <path> --confirm <body-hash8>"
@@ -867,6 +966,8 @@ def command_pr(args: argparse.Namespace) -> int:
             f"body hash mismatch: expected {digest[:8]}, got {args.confirm}",
             file=sys.stderr,
         )
+        return 1
+    if not related_ok():
         return 1
 
     branch = state.get("branch") or card.get("branch")
@@ -884,20 +985,22 @@ def command_pr(args: argparse.Namespace) -> int:
     if not title:
         title_code, title_out, _ = run_git(["log", "-1", "--format=%s"])
         title = title_out if title_code == 0 and title_out else f"batch: {card.get('batch')}"
-    code, out, err = run_gh(
-        [
-            "pr",
-            "create",
-            "--base",
-            base_branch,
-            "--head",
-            str(branch),
-            "--title",
-            str(title),
-            "--body-file",
-            str(body_path),
-        ]
-    )
+    command = [
+        "pr",
+        "create",
+        "--base",
+        base_branch,
+        "--head",
+        str(branch),
+        "--title",
+        str(title),
+        "--body-file",
+        str(body_path),
+    ]
+    milestone = str(card.get("milestone") or "none")
+    if milestone != "none":
+        command.extend(["--milestone", milestone])
+    code, out, err = run_gh(command)
     if code != 0:
         print(f"error: gh pr create failed: {err or out}", file=sys.stderr)
         return 3
@@ -1208,7 +1311,10 @@ def command_plan(args: argparse.Namespace) -> int:
         "docs": args.docs,
         "docs_impact": docs_impact,
         "profile": profile,
+        "milestone": args.milestone,
         "notes": args.note or [],
+        "issues": args.issue or [],
+        "related_prs": args.related_pr or [],
         "size_budget": args.size_budget,
     }
     write_card(card_path, card)
@@ -1500,6 +1606,9 @@ def build_parser() -> argparse.ArgumentParser:
         default=[],
         help="per-file PR note, repeatable: <path>=<what changed>",
     )
+    plan.add_argument("--milestone", default="none", help="GitHub milestone title or none")
+    plan.add_argument("--issue", action="append", default=[], help="closing issue number, repeatable")
+    plan.add_argument("--related-pr", action="append", default=[], help="related PR number, repeatable")
     plan.add_argument("--size-budget", type=int, default=400)
     plan.add_argument("--base", default="origin/main")
     plan.add_argument("--branch")

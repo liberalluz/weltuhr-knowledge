@@ -22,6 +22,7 @@ This file is the **entry point and map**; detailed rules live in `.github/` and 
 - **`profile` must match `docs-impact`** (`code`↔`none`, `living`↔`living`, `controlled`↔`controlled`; `release` is explicit).
 - **`size_budget` is a hard gate** (default 400 changed lines); over-budget batches must split, not raise the number.
 - **`feat`/`fix` batches add `changelog.d/<batch>.md`**; a missing fragment fails `batch check`.
+- **Related classes are generated from facts** (`relations.py`): milestone = card + GitHub PR field, issue = card + `Closes`, PR = card, ADR/spec/case/TODO = diff. Missing classes fail before create.
 - **SDP is an external process plan**; it holds plan only — progress belongs in `records/live` or generated reports.
 - **Evidence must come from real commands**; what was not run is written as "未验", never as "should pass".
 - Stop and ask when unsure; never edit card/scope/evidence just to get past a gate.
