@@ -179,6 +179,28 @@ def diff_status(base: str) -> dict[str, str]:
     return statuses
 
 
+def diff_line_count(base: str) -> int:
+    """Count added+deleted lines on the branch plus the working tree."""
+    total = 0
+    for command in (
+        ["diff", "--numstat", f"{base}...HEAD"],
+        ["diff", "--numstat", "HEAD"],
+    ):
+        code, out, _ = run_git(command)
+        if code != 0:
+            continue
+        for line in out.splitlines():
+            parts = line.split("\t")
+            if len(parts) < 3:
+                continue
+            added, deleted = parts[0], parts[1]
+            if added.isdigit():
+                total += int(added)
+            if deleted.isdigit():
+                total += int(deleted)
+    return total
+
+
 def read_card_safe(batch_dir: Path) -> tuple[dict[str, Any] | None, str | None]:
     path = batch_dir / "card.yaml"
     if not path.exists():
@@ -765,6 +787,15 @@ def command_pr(args: argparse.Namespace) -> int:
 
     base = args.base or state.get("base") or card.get("base") or "origin/main"
     changed = changed_paths(str(base))
+    budget = int(card.get("size_budget") or 0)
+    if budget:
+        line_count = diff_line_count(str(base))
+        if line_count > budget:
+            print(
+                f"refusing to create PR: {line_count} changed lines exceed size_budget {budget}; split the batch",
+                file=sys.stderr,
+            )
+            return 1
     if args.prepare and args.create:
         print("--prepare and --create are mutually exclusive", file=sys.stderr)
         return 2
@@ -1012,6 +1043,14 @@ def command_check(args: argparse.Namespace) -> int:
     if args.quick:
         return 0 if scope_ok else 1
 
+    card, _ = read_card_safe(batch_dir)
+    budget = int((card or {}).get("size_budget") or 0)
+    line_count = diff_line_count(str(base)) if budget else 0
+    budget_ok = not budget or line_count <= budget
+    if budget:
+        status = "ok" if budget_ok else "FAIL"
+        print(f"[{status}] size budget: {line_count} lines <= {budget}" if budget_ok else f"[FAIL] size budget: {line_count} lines > {budget}")
+
     pr_body = args.pr_body
     if pr_body is not None and not pr_body.is_absolute():
         pr_body = REPO_ROOT / pr_body
@@ -1027,7 +1066,7 @@ def command_check(args: argparse.Namespace) -> int:
     if args.dry_run:
         for name, command, cwd in steps:
             print(f"[plan] {name}: {display_command(command)} (cwd={display_path(cwd)})")
-        return 0 if scope_ok else 1
+        return 0 if (scope_ok and budget_ok) else 1
 
     lines = [
         f"# batch check {state.get('batch') or batch_dir.name}",
@@ -1035,13 +1074,14 @@ def command_check(args: argparse.Namespace) -> int:
         f"base={base}",
         f"changed={len(changed)}",
         f"scope={'PASS' if scope_ok else 'FAIL'}",
+        f"size_budget={'PASS' if budget_ok else 'FAIL'} ({line_count}/{budget or 'none'})",
     ]
     if hash_error:
         lines.append(f"scope-error={hash_error}")
     for violation in violations:
         lines.append(f"scope-violation={violation}")
 
-    overall = scope_ok
+    overall = scope_ok and budget_ok
     if scope_ok:
         for name, command, cwd in steps:
             code, out, err = run_command(command, cwd)

@@ -140,7 +140,7 @@ git config --get core.hooksPath       # 自查：应回显 .githooks
 - 非 `main` 分支没有 `.batch/active` 时**直接拒推**（fail-closed，不是提示）。删除分支、推 tag、`--range` 回放不在此列。
 - 推送路径必须落在该批 `scope.json` 的 `allowed` 内。扩范围只能 `check.py --scope <scope> --add <path> --reason <…> --yes`，并由人确认后落盘 —— 不直接改卡片。
 
-**批次卡字段**：`plan` 必须声明 `--docs-impact none|living|controlled`；`--note <path>=<说明>` 为逐文件说明，`batch pr --prepare` 直接采用，不再输出「待填」。一个 batch 只做一个行为、只开一个 PR。
+**批次卡字段**：`plan` 必须声明 `--docs-impact none|living|controlled`；`--note <path>=<说明>` 为逐文件说明，`batch pr --prepare` 直接采用，不再输出「待填」。`size_budget` 默认 400 行（新增+删除），`batch check` 与 `batch pr` 超预算直接失败，要求拆批次。一个 batch 只做一个行为、只开一个 PR。
 
 以下四处最容易漏，单独强调：
 
