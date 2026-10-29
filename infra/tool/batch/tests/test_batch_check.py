@@ -216,6 +216,24 @@ class CheckTests(unittest.TestCase):
             self.assertEqual(code, 0)
             self.assertIn("size budget: 10 lines <= 10", out)
 
+    def test_changelog_required_for_feat(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            batch_dir = root / ".batch" / "B1"
+            batch_dir.mkdir(parents=True)
+            card = {"batch": "B1", "type": "feat"}
+            self.assertIn("缺 changelog.d/B1.md", batch.changelog_error(root, batch_dir, card))
+            (root / "changelog.d").mkdir()
+            (root / "changelog.d" / "B1.md").write_text("- 说明：加功能\n", encoding="utf-8")
+            self.assertIsNone(batch.changelog_error(root, batch_dir, card))
+
+    def test_changelog_not_required_for_process(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            batch_dir = root / ".batch" / "B1"
+            batch_dir.mkdir(parents=True)
+            self.assertIsNone(batch.changelog_error(root, batch_dir, {"batch": "B1", "type": "process"}))
+
     def test_scope_failure_does_not_allow_pr(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

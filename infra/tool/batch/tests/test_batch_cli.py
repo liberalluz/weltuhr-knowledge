@@ -207,7 +207,32 @@ class OccupancyTests(unittest.TestCase):
             self.assertIsNotNone(match)
             data = card.read_card(root / match.group(0) / "card.yaml")
             self.assertEqual(data["docs_impact"], "living")
+            self.assertEqual(data["profile"], "living")
             self.assertIn("infra/a.py=加检查", data["notes"])
+
+    def test_plan_rejects_profile_mismatch(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            code, out = run(
+                [
+                    "--root",
+                    str(root),
+                    "plan",
+                    "--auto-id",
+                    "--type",
+                    "process",
+                    "--goal",
+                    "x",
+                    "--allowed",
+                    "infra/**",
+                    "--docs-impact",
+                    "living",
+                    "--profile",
+                    "code",
+                ]
+            )
+            self.assertEqual(code, 1)
+            self.assertIn("profile=code", out)
 
     def test_start_refuses_other_active(self):
         with tempfile.TemporaryDirectory() as tmp:

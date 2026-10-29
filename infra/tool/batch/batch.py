@@ -1044,12 +1044,21 @@ def command_check(args: argparse.Namespace) -> int:
         return 0 if scope_ok else 1
 
     card, _ = read_card_safe(batch_dir)
+    docs_impact = str((card or {}).get("docs_impact") or (card or {}).get("docs") or "none")
+    profile = str((card or {}).get("profile") or {"none": "code", "living": "living", "controlled": "controlled"}.get(docs_impact, "code"))
+    profile_problem = profile_error(profile, docs_impact)
+    if profile_problem:
+        print(f"[FAIL] profile: {profile_problem}")
     budget = int((card or {}).get("size_budget") or 0)
     line_count = diff_line_count(str(base)) if budget else 0
     budget_ok = not budget or line_count <= budget
     if budget:
         status = "ok" if budget_ok else "FAIL"
         print(f"[{status}] size budget: {line_count} lines <= {budget}" if budget_ok else f"[FAIL] size budget: {line_count} lines > {budget}")
+
+    changelog_problem = changelog_error(root, batch_dir, card or {})
+    if changelog_problem:
+        print(f"[FAIL] changelog: {changelog_problem}")
 
     pr_body = args.pr_body
     if pr_body is not None and not pr_body.is_absolute():
@@ -1075,13 +1084,15 @@ def command_check(args: argparse.Namespace) -> int:
         f"changed={len(changed)}",
         f"scope={'PASS' if scope_ok else 'FAIL'}",
         f"size_budget={'PASS' if budget_ok else 'FAIL'} ({line_count}/{budget or 'none'})",
+        f"changelog={'FAIL' if changelog_problem else 'PASS'}",
+        f"profile={'FAIL' if profile_problem else 'PASS'} ({profile}/{docs_impact})",
     ]
     if hash_error:
         lines.append(f"scope-error={hash_error}")
     for violation in violations:
         lines.append(f"scope-violation={violation}")
 
-    overall = scope_ok and budget_ok
+    overall = scope_ok and budget_ok and changelog_problem is None and profile_problem is None
     if scope_ok:
         for name, command, cwd in steps:
             code, out, err = run_command(command, cwd)
@@ -1129,6 +1140,27 @@ def scope_mutex_error(allowed: Sequence[str], forbidden: Sequence[str]) -> str |
     return None
 
 
+def profile_error(profile: str, docs_impact: str) -> str | None:
+    expected = {"code": "none", "living": "living", "controlled": "controlled"}
+    if profile in expected and docs_impact != expected[profile]:
+        return f"profile={profile} 要求 docs_impact={expected[profile]}，实际 {docs_impact}"
+    if profile == "release" and docs_impact not in ("none", "living", "controlled"):
+        return f"profile=release 的 docs_impact 非法：{docs_impact}"
+    return None
+
+
+def changelog_error(root: Path, batch_dir: Path, card: dict[str, Any]) -> str | None:
+    if str(card.get("type") or "") not in ("feat", "fix"):
+        return None
+    batch_id = str(card.get("batch") or batch_dir.name)
+    path = root / "changelog.d" / f"{batch_id}.md"
+    if not path.is_file():
+        return f"缺 changelog.d/{batch_id}.md；feat/fix 批次必须写用户可感变化"
+    if not path.read_text(encoding="utf-8", errors="replace").strip():
+        return f"changelog.d/{batch_id}.md 为空"
+    return None
+
+
 def command_plan(args: argparse.Namespace) -> int:
     root = root_path(args.root)
     if args.auto_id and args.batch_id:
@@ -1156,6 +1188,13 @@ def command_plan(args: argparse.Namespace) -> int:
         print(f"refusing card: {mutex}", file=sys.stderr)
         return 1
 
+    docs_impact = args.docs_impact or args.docs
+    profile = args.profile or {"none": "code", "living": "living", "controlled": "controlled"}.get(docs_impact, "code")
+    profile_problem = profile_error(profile, docs_impact)
+    if profile_problem:
+        print(f"refusing card: {profile_problem}", file=sys.stderr)
+        return 1
+
     card = {
         "batch": args.batch_id,
         "type": args.type,
@@ -1167,7 +1206,8 @@ def command_plan(args: argparse.Namespace) -> int:
         "acceptance": args.acceptance or [],
         "platforms": args.platforms or [],
         "docs": args.docs,
-        "docs_impact": args.docs_impact or args.docs,
+        "docs_impact": docs_impact,
+        "profile": profile,
         "notes": args.note or [],
         "size_budget": args.size_budget,
     }
@@ -1447,6 +1487,12 @@ def build_parser() -> argparse.ArgumentParser:
         choices=("none", "living", "controlled"),
         default=None,
         help="docs impact profile: none / living / controlled",
+    )
+    plan.add_argument(
+        "--profile",
+        choices=("code", "living", "controlled", "release"),
+        default=None,
+        help="PR profile; defaults from docs-impact",
     )
     plan.add_argument(
         "--note",
