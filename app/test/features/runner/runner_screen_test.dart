@@ -5,6 +5,7 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:project_knowledge/core/entities/entry.dart';
+import 'package:project_knowledge/core/entities/state.dart';
 import 'package:project_knowledge/core/enums.dart';
 import 'package:project_knowledge/core/events/event.dart';
 import 'package:project_knowledge/core/events/event_store.dart';
@@ -73,7 +74,15 @@ PackContent _pack() => fixturePack(<FixtureNode>[
 ]);
 
 /// 把 Runner 推进一层，好让「到点收尾」时的 `pop` 有地方可回。
-Future<void> _pump(WidgetTester tester, EventStore store) async {
+///
+/// [srs] 与 [graduated] 是进会话时的那份快照 —— 判毕业要凭「判分前的 S」，
+/// 所以这两项默认空（等于「没学过」）。
+Future<void> _pump(
+  WidgetTester tester,
+  EventStore store, {
+  Map<String, SrsState> srs = const <String, SrsState>{},
+  Set<String> graduated = const <String>{},
+}) async {
   final PackContent pack = _pack();
   final SessionQueue queue = buildSessionQueue(
     pack: pack,
@@ -94,6 +103,8 @@ Future<void> _pump(WidgetTester tester, EventStore store) async {
                   content: pack,
                   queue: queue,
                   cursors: const <String, int>{},
+                  srs: srs,
+                  graduated: graduated,
                   eventStore: store,
                 ),
               ),
@@ -106,6 +117,23 @@ Future<void> _pump(WidgetTester tester, EventStore store) async {
   );
   await tester.tap(find.text('进入'));
   await tester.pumpAndSettle();
+}
+
+/// 一个「差一点就毕业」的记忆状态：判一次合格就会越过 `C-02`。
+///
+/// 取 179.9 而不是 180：180 已经毕业，测不出「本次判分让它过线」这件事。
+SrsState _srsAlmostGraduated() {
+  final DateTime now = DateTime.now();
+  return SrsState(
+    itemId: 'py:a',
+    difficulty: 5,
+    stability: 179.9,
+    lastReviewAt: now.subtract(const Duration(days: 1)),
+    due: now,
+    failCount: 0,
+    reps: 3,
+    skipStreak: 0,
+  );
 }
 
 void main() {
@@ -219,5 +247,80 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(store.events[2].payload['scaffold'], 'none');
+  });
+
+  testWidgets('TC-QUANT-036 判未过不写 graduated：S 再高，未过也不毕业（SPEC-STEP-002）', (
+    WidgetTester tester,
+  ) async {
+    final _MemoryStore store = _MemoryStore();
+    await _pump(
+      tester,
+      store,
+      srs: <String, SrsState>{'py:a': _srsAlmostGraduated()},
+    );
+    await tester.tap(find.byKey(const Key('runner-next')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('runner-next')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('grade-fail')));
+    await tester.pumpAndSettle();
+
+    expect(
+      store.events.where((Event event) => event.type == EventType.graduated),
+      isEmpty,
+    );
+  });
+
+  testWidgets(
+    'TC-QUANT-037 判分后 S 过线写一条 graduated，payload 带当时的 S（SPEC-QUANT-009 / SPEC-QUANT-018）',
+    (WidgetTester tester) async {
+      final _MemoryStore store = _MemoryStore();
+      await _pump(
+        tester,
+        store,
+        srs: <String, SrsState>{'py:a': _srsAlmostGraduated()},
+      );
+      await tester.tap(find.byKey(const Key('runner-next')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('runner-next')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('grade-pass')));
+      await tester.pumpAndSettle();
+
+      final List<Event> graduated = store.events
+          .where((Event event) => event.type == EventType.graduated)
+          .toList();
+      expect(graduated, hasLength(1));
+      expect(graduated.single.itemId, 'py:a');
+      expect(
+        graduated.single.payload['sAtGraduation']! as double,
+        greaterThanOrEqualTo(180),
+      );
+      // 顺序固定为 graded → passed → graduated：毕业以「已学」为前提。
+      expect(store.events.last.type, EventType.graduated);
+    },
+  );
+
+  testWidgets('TC-QUANT-038 已毕业的项不再写第二条 graduated（SPEC-STEP-002）', (
+    WidgetTester tester,
+  ) async {
+    final _MemoryStore store = _MemoryStore();
+    await _pump(
+      tester,
+      store,
+      srs: <String, SrsState>{'py:a': _srsAlmostGraduated()},
+      graduated: <String>{'py:a'},
+    );
+    await tester.tap(find.byKey(const Key('runner-next')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('runner-next')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('grade-pass')));
+    await tester.pumpAndSettle();
+
+    expect(
+      store.events.where((Event event) => event.type == EventType.graduated),
+      isEmpty,
+    );
   });
 }

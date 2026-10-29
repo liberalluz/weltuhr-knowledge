@@ -27,8 +27,11 @@ import '../events/id.dart';
 
 /// 判定来源（`event-types.md`：`progressKind`）。
 ///
-/// `verified` = 判据可被系统核验；`checked` = 只被本人核对过（打卡 / 自评）。
-/// 它由判据类型派生（`SPEC-STEP-019`），不由用户标注。
+/// `verified` = 判据可被系统核验；`checked` = 只被本人核对过（自评）。
+///
+/// ⚠️ **它不承载「是不是打卡项」** —— 那是 [`buildItemGraded`] 的 `checkin`
+/// 参数。两个维度压进一个字段，结果是「有判据但自评」的项被当成打卡项，`S`
+/// 从此冻结（`QUANT-007` 的冻结只对判据为空的项成立）。
 enum ProgressKind { verified, checked }
 
 /// 脚手架档位（`event-types.md`：`scaffold`）。
@@ -60,11 +63,20 @@ Event buildStepCompleted({
 );
 
 /// 造一条 `item_graded` —— 项末验收，判定的唯一写入点。
+///
+/// [progressKind] 与 [checkin] 是**两个维度**，不可互相顶替：
+/// - `progressKind` 管「谁判」：系统能核验的题 → `verified`，本人核对的 → `checked`；
+/// - `checkin` 管「有没有判据」：判据为空 = 打卡项 ⇒ `S` 冻结、永不毕业
+///   （`QUANT-007` / `N-05`）。
+///
+/// 一个「讲给别人听」的项完全可以是 `checked` + `checkin: false` —— 它有判据
+/// （讲完了），只是判定由本人做，`S` 应当照常增长。
 Event buildItemGraded({
   required String spaceId,
   required String itemId,
   required Grade score,
   required ProgressKind progressKind,
+  required bool checkin,
   required HlcClock clock,
   required DateTime now,
   required String userId,
@@ -80,6 +92,7 @@ Event buildItemGraded({
     'score': score.name,
     'progressKind': progressKind.name,
     'scaffold': scaffold.name,
+    'checkin': checkin,
   },
 );
 
@@ -102,6 +115,31 @@ Event buildItemPassed({
   now: now,
   userId: userId,
   payload: <String, Object?>{'gradedEventId': gradedEventId},
+);
+
+/// 造一条 `graduated` —— 记忆强度首次达到毕业阈值（`S ≥ ` `C-02`）。
+///
+/// [sAtGraduation] 是**毕业那一刻**的 `S`。事后 `S` 还会继续涨，事件里不记这个
+/// 值，回放时就答不出「靠多少毕业的」。它是状态转换的观测值、不是派生值 ——
+/// 派生值（`R` / `due`）一律不入库。
+///
+/// **只有判分写入点造这条事件**，且顺序固定在 `item_graded` → `item_passed` →
+/// `graduated`：毕业以「已学」为前提，事件流里能直接读出这个前置。
+Event buildGraduated({
+  required String spaceId,
+  required String itemId,
+  required double sAtGraduation,
+  required HlcClock clock,
+  required DateTime now,
+  required String userId,
+}) => _build(
+  type: EventType.graduated,
+  spaceId: spaceId,
+  itemId: itemId,
+  clock: clock,
+  now: now,
+  userId: userId,
+  payload: <String, Object?>{'sAtGraduation': sAtGraduation},
 );
 
 Event _build({

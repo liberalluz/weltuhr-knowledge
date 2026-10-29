@@ -16,16 +16,20 @@ import '../entities/plan.dart';
 import '../entities/state.dart';
 import '../enums.dart';
 import '../json.dart';
+import '../srs/advance.dart';
 import '../srs/fsrs.dart';
 import 'event.dart';
 import 'migration.dart';
 
-/// `item_graded.payload` 里判「打卡式」的两个字面量（`event-types.md` §二 A）。
+/// `item_graded.payload` 里判「打卡式」的键（`event-types.md` §二 A）。
 ///
 /// **只在这一处写字符串**：`ProgressKind` 枚举定义在 `core/session/session_events.dart`，
 /// 事件层引它会把依赖倒成「事件 → 会话」，而会话本就依赖事件。
-const String _progressKindKey = 'progressKind';
-const String _checkedWire = 'checked';
+///
+/// ⚠️ 判冻结**只认 `checkin`**，不认 `progressKind`：后者管「谁判」（系统 /
+/// 自评），自评但有判据的项照样涨 `S`。把两者当成一件事，会让所有自评项冻结 ——
+/// 而本项目的项末验收全部是自评。
+const String _checkinKey = 'checkin';
 
 /// 一节笔记折叠后的样子。
 class FoldedNote {
@@ -233,7 +237,7 @@ FoldedState fold(
 
   /// 评分累计器：`D` / `S` / 上次评分时刻 / 评分次数。
   /// 只有评过分的项才有条目（见 [FoldedState.srs] 的说明）。
-  final Map<String, _SrsAcc> srsAcc = <String, _SrsAcc>{};
+  final Map<String, SrsAdvance> srsAcc = <String, SrsAdvance>{};
 
   /// 连续跳过次数。**含没评过分的项** —— 与 [FoldedState.skipStreaks] 同一本账。
   final Map<String, int> skipStreaks = <String, int>{};
@@ -264,39 +268,16 @@ FoldedState fold(
         consecutiveFails[gradedItem] = grade == Grade.fail
             ? (consecutiveFails[gradedItem] ?? 0) + 1
             : 0;
-        // `D` / `S`：首次评分给初值，之后由 `fsrsNext` 递推。**打卡项冻结** ——
-        // 无检验输入 ⇒ `S` 不更新、永不毕业（`QUANT-007` / `STEP-034`）。
-        final bool checkedOnly =
-            event.payload[_progressKindKey] == _checkedWire;
-        final _SrsAcc? previous = srsAcc[gradedItem];
-        if (previous == null) {
-          final ({double difficulty, double stability}) initial = fsrsInitial(
-            grade,
-          );
-          srsAcc[gradedItem] = _SrsAcc(
-            difficulty: initial.difficulty,
-            stability: initial.stability,
-            lastReviewAt: event.at,
-            reps: 1,
-          );
-        } else {
-          final double elapsedDays =
-              event.at.difference(previous.lastReviewAt).inSeconds /
-              Duration.secondsPerDay;
-          final ({double difficulty, double stability}) next = fsrsNext(
-            grade: grade,
-            difficulty: previous.difficulty,
-            stability: previous.stability,
-            elapsedDays: elapsedDays,
-            freeze: checkedOnly,
-          );
-          srsAcc[gradedItem] = _SrsAcc(
-            difficulty: next.difficulty,
-            stability: next.stability,
-            lastReviewAt: event.at,
-            reps: previous.reps + 1,
-          );
-        }
+        // `D` / `S`：三种分支（无历史 / 有历史 / 打卡冻结）收在 [advanceSrs]
+        // 一处，与判分写入点共用同一份 —— 判分侧要凭新 `S` 决定写不写
+        // `graduated`，各写一份就会出现两个 `S`。
+        final bool checkin = event.payload[_checkinKey] == true;
+        srsAcc[gradedItem] = advanceSrs(
+          previous: srsAcc[gradedItem],
+          grade: grade,
+          at: event.at,
+          checkedOnly: checkin,
+        );
         // 评分就是「这次做了」—— 连续跳过到此为止。反向不成立：
         // 跳过不清零 `failCount`（两件事，见 [FoldedState.skipStreaks]）。
         skipStreaks[gradedItem] = 0;
@@ -372,8 +353,8 @@ FoldedState fold(
   // `due` 在收尾处一次算：它是 `lastReviewAt + 反解(S)`，与事件序无关；
   // 每来一条事件就重算一遍会在回放中途留下半截时刻，而那个值没有任何消费者。
   final Map<String, SrsState> srs = <String, SrsState>{};
-  for (final MapEntry<String, _SrsAcc> entry in srsAcc.entries) {
-    final _SrsAcc acc = entry.value;
+  for (final MapEntry<String, SrsAdvance> entry in srsAcc.entries) {
+    final SrsAdvance acc = entry.value;
     srs[entry.key] = SrsState(
       itemId: entry.key,
       difficulty: acc.difficulty,
@@ -400,22 +381,6 @@ FoldedState fold(
     merges: merges,
     plans: plans,
   );
-}
-
-/// 评分累计器。`D` / `S` 一旦存在就只由 [fsrsNext] 更新 —— 这里不存派生值
-/// （`R(t)` / `due`），存了就是第二份真相。
-class _SrsAcc {
-  const _SrsAcc({
-    required this.difficulty,
-    required this.stability,
-    required this.lastReviewAt,
-    required this.reps,
-  });
-
-  final double difficulty;
-  final double stability;
-  final DateTime lastReviewAt;
-  final int reps;
 }
 
 /// 从一条计划类事件折出一份 `Plan`。

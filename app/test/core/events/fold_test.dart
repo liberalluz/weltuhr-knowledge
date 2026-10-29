@@ -50,13 +50,47 @@ Event _graded(
   String itemId = 'py-a',
   int counter = 0,
   String? progressKind,
+  bool? checkin,
 }) => _event(
   id: id,
   type: EventType.itemGraded,
   physical: physical,
   counter: counter,
   itemId: itemId,
-  payload: <String, Object?>{'score': score, 'progressKind': ?progressKind},
+  payload: <String, Object?>{
+    'score': score,
+    'progressKind': ?progressKind,
+    'checkin': ?checkin,
+  },
+);
+
+Event _passed(
+  String id,
+  int physical, {
+  String itemId = 'py-a',
+  int counter = 0,
+  String gradedEventId = 'e1',
+}) => _event(
+  id: id,
+  type: EventType.itemPassed,
+  physical: physical,
+  counter: counter,
+  itemId: itemId,
+  payload: <String, Object?>{'gradedEventId': gradedEventId},
+);
+
+Event _graduated(
+  String id,
+  int physical, {
+  String itemId = 'py-a',
+  int counter = 0,
+}) => _event(
+  id: id,
+  type: EventType.graduated,
+  physical: physical,
+  counter: counter,
+  itemId: itemId,
+  payload: <String, Object?>{'sAtGraduation': graduationSDays.toDouble()},
 );
 
 Event _skipped(
@@ -338,7 +372,13 @@ void main() {
       () {
         final List<Event> events = <Event>[
           for (int i = 0; i < 10; i++)
-            _graded('e$i', 1000 + i * day, 'pass', progressKind: 'checked'),
+            _graded(
+              'e$i',
+              1000 + i * day,
+              'pass',
+              progressKind: 'checked',
+              checkin: true,
+            ),
         ];
         final SrsState srs = fold(events).srsOf('py-a')!;
         expect(srs.stability, fsrsW2);
@@ -346,6 +386,59 @@ void main() {
         expect(srs.reps, 10);
       },
     );
+
+    test('TC-QUANT-031 冻结只认 checkin：自评但有判据的项 S 照涨（SPEC-QUANT-007 / SPEC-QUANT-017）', () {
+      // 本项目的项末验收全部是自评 ⇒ `progressKind` 恒为 `checked`。若拿它判
+      // 冻结，所有项的 `S` 都会停在初值、永远到不了毕业阈值。
+      final List<Event> events = <Event>[
+        for (int i = 0; i < 10; i++)
+          _graded(
+            'e$i',
+            1000 + i * day,
+            'pass',
+            progressKind: 'checked',
+            checkin: false,
+          ),
+      ];
+      final SrsState srs = fold(events).srsOf('py-a')!;
+      expect(srs.stability, greaterThan(fsrsW2));
+    });
+
+    test('TC-QUANT-028 三层单调：复习未过不改 passed，也不写 graduated（SPEC-STEP-002）', () {
+      final FoldedState state = fold(<Event>[
+        _graded('e1', 1000, 'pass'),
+        _passed('e2', 1000),
+        _graded('e3', 1000 + day, 'fail'),
+      ]);
+      expect(state.passed.contains('py-a'), isTrue);
+      expect(state.graduated, isEmpty);
+      expect(state.lastGrade['py-a'], Grade.fail);
+    });
+
+    test(
+      'TC-QUANT-029 毕业后判分不合格不撤 graduated（SPEC-STEP-002 / SPEC-QUANT-009）',
+      () {
+        final FoldedState state = fold(<Event>[
+          _graded('e1', 1000, 'pass'),
+          _passed('e2', 1000),
+          _graduated('e3', 1000),
+          _graded('e4', 1000 + day, 'fail'),
+        ]);
+        expect(state.graduated.contains('py-a'), isTrue);
+        expect(state.passed.contains('py-a'), isTrue);
+      },
+    );
+
+    test('TC-QUANT-030 graduated 与 passed 各自独立：只有一条时不互相推断（SPEC-STEP-002）', () {
+      final FoldedState state = fold(<Event>[
+        _graded('e1', 1000, 'pass'),
+        _graduated('e2', 1000),
+      ]);
+      // 只有 `graduated` 没有 `item_passed` 时，已学门槛不成立 —— 两条事件
+      // 各自表达一件事，写事件的那侧按 graded → passed → graduated 顺序落。
+      expect(state.graduated.contains('py-a'), isTrue);
+      expect(state.passed.contains('py-a'), isFalse);
+    });
 
     test('TC-QUANT-023 `R(t)` 不入库：state 的 JSON 里没有 r / mastery（C-01 同段口径）', () {
       final SrsState srs = fold(<Event>[_graded('e1', 1000, 'pass')])
