@@ -21,6 +21,15 @@
 | 怎么操作 | `runbooks/` |
 | 对外交付、需签字、需版号 | 分两种：**仓内受控**（`SCMP` `SRS` `SDD` `STP` `STD`）→ `specs/controlled/`；**出仓托管**（`STR` `DPMR` `SDP` 等）→ 仓外，本仓不留 |
 
+## 文档生命周期
+
+- **Batch = 一个 PR = 一个行为**；一个 milestone 可含多个 batch；历史 batch 不重排。
+- **受控五份按基线升版，不按 PR 升版**：日常 PR 不改版号、不加历史行、不改 `SCMP §5.1`；基线/发布时统一更新。
+- **SDP 只写计划，进度不写 SDP**：SDP 在外仓 `process/`；进度写 `records/live/` 或生成报告。
+- **records 分 live / frozen**：DPMR/STR 的 live 记录只追加；冻结批次不改。
+- **外仓不是第二套工程文档**：不复制 SRS/SDD/STP/STD/SCMP；主仓只写纯文本指认。
+- **`docs_impact`**：`none` 不碰 controlled；`living` 同 PR 改活文档；`controlled` 进 docs 批次。
+
 ## 红线
 
 - **记录类不追溯补录**。`DPMR` / `STR` 记录的是「当时确实如此」，事后补写会让证据退化为叙述。判据：这份文档在**记录一次已发生的事**，还是在**描述当前应当如此**？前者不补，后者可补。
