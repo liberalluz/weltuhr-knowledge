@@ -43,6 +43,7 @@ metadata:
 - `size_budget` 默认 400 行；`check`/`pr` 超预算直接失败，先拆批次，不要靠调大预算过门。
 - `feat`/`fix` 必须有 `changelog.d/<批次号>.md`；`process` 不需要。
 - 关联八类由 `relations.py` 生成：`--milestone` + PR milestone、`--issue` + `Closes`、`--related-pr`；ADR/规格/用例/待确认从 diff 推断。`prepare` 缺类直接失败。
+- 改规则文件（`git-conventions` / `.githooks` / batch skill / AGENTS）时，同批同步入口，并跑 `check_entrypoints.py`；否则门禁红。
 - 不直接 `gh pr merge`；合并只走 `batch merge` / `merge.py`。
 - `.batch/` 是本地状态，不进仓库。
 - 多 agent 用 `plan --auto-id` 生成 `YYYYMMDD-<6位十六进制>`；同一时刻只允许一个 `.batch/active`。

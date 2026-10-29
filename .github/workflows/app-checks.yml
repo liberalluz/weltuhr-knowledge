@@ -113,10 +113,11 @@ jobs:
         if: steps.scope.outputs.run == 'true'
         run: dart run tool/docs/check.dart
 
-      - name: 基线登记与文档预算
+      - name: 基线登记、文档预算与入口
         if: steps.scope.outputs.run == 'true'
         run: |
           python3 ../infra/tool/docs/audit.py all --root ..
+          python3 ../infra/tool/docs/check_entrypoints.py --root ..
           python3 -m unittest discover -s ../infra/tool/docs/tests
 
       # The tests read the REAL artifact `content/<space>/pack.json` (single-file

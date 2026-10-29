@@ -27,6 +27,7 @@
 | 批次 PR | `pr --prepare` → 手写 `.batch/<id>/pr-body.md` → `pr --create --body-file ... --confirm <body-hash8>` |
 | 批次合并 | `python3 tool/batch/batch.py merge --pr <n> --yes` |
 | docs 审计 | `python3 tool/docs/audit.py all --root ..` |
+| AGENTS 门禁 | `python3 tool/docs/check_entrypoints.py --root ..` |
 | 技能 lint | `python3 -B tool/batch/skill_lint.py` |
 | PR 周报 | `python3 tool/metrics/pr_metrics.py --since <YYYY-MM-DD>` |
 | 只读验收 | `python3 tool/verify/verify.py --batch <id>` |

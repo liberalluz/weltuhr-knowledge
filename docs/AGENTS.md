@@ -54,6 +54,9 @@ dart run tool/docs/check.dart --fix
 
 # 基线表 + 受控文档体积预算
 python3 infra/tool/docs/audit.py all --root .
+
+# 入口门禁：根/模块/外仓 AGENTS 与关键规则
+python3 infra/tool/docs/check_entrypoints.py --root .
 ```
 
 ## 译本规范
