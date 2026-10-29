@@ -121,6 +121,17 @@ jobs:
           python3 ../infra/tool/docs/check_boundary.py --root ..
           python3 -m unittest discover -s ../infra/tool/docs/tests
 
+      # Runs even when the app scope is false: a docs-only PR can change a rule
+      # file and must still prove that the AGENTS entry points moved with it.
+      - name: AGENTS 规则变更同步
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          git fetch --no-tags origin "$BASE_REF"
+          python3 ../infra/tool/docs/check_entrypoints.py \
+            --root .. --diff-base "origin/$BASE_REF"
+
       # The tests read the REAL artifact `content/<space>/pack.json` (single-file
       # form since `B14`), which is not committed (`SPEC-PACK-018`), so assemble
       # it here. Without this step `real_content_pack_test.dart` fails
