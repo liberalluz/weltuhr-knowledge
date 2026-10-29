@@ -19,7 +19,9 @@ This file is the **entry point and map**; detailed rules live in `.github/` and 
 - **Authors cannot self-approve**; the C10 ruleset requires one non-author approval plus code-owner review.
 - **Controlled docs version at baselines, not per PR**; daily PRs do not bump `SCMP`/`STD`/`STP` or add history rows.
 - **Each batch declares `docs-impact`** (`none|living|controlled`) and per-file `--note`; PR bodies must not contain placeholders.
+- **`profile` must match `docs-impact`** (`code`↔`none`, `living`↔`living`, `controlled`↔`controlled`; `release` is explicit).
 - **`size_budget` is a hard gate** (default 400 changed lines); over-budget batches must split, not raise the number.
+- **`feat`/`fix` batches add `changelog.d/<batch>.md`**; a missing fragment fails `batch check`.
 - **SDP is an external process plan**; it holds plan only — progress belongs in `records/live` or generated reports.
 - **Evidence must come from real commands**; what was not run is written as "未验", never as "should pass".
 - Stop and ask when unsure; never edit card/scope/evidence just to get past a gate.
@@ -57,6 +59,7 @@ python3 infra/tool/batch/batch.py merge --pr <n> --yes
 - `server/`: Serverpod backend
 - `content/`: content packs and the content pipeline
 - `infra/`: CI, build, batch / metrics / verify tooling
+- `changelog.d/`: release-note fragments, one per `feat`/`fix` batch (not a docs category)
 - `docs/`: specs, decisions, runbooks
 - `.agents/rules/`: always-on editing and platform constraints
 - `.agents/skills/`: process skills loaded on demand
