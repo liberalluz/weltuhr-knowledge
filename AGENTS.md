@@ -6,7 +6,7 @@ This file is the **entry point and map**; detailed rules live in `.github/` and 
 
 1. [`.github/CONTRIBUTING.md`](.github/CONTRIBUTING.md): governance, review, merge entry points
 2. [`docs/specs/git-conventions.md`](docs/specs/git-conventions.md) §3–§4: criteria for commits, PRs, merges
-3. The `AGENTS.md` of the module you touch (`app/` · `server/` · `content/` · `infra/` · `docs/`)
+3. The `AGENTS.md` of the module you touch (`app/` · `server/` · `content/` · `infra/` · `docs/`); the docs entry is [`docs/AGENTS.md`](docs/AGENTS.md)
 4. For the batch workflow load [`.agents/skills/batch/SKILL.md`](.agents/skills/batch/SKILL.md)
 
 ## Non-negotiable
