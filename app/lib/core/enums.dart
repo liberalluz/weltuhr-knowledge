@@ -193,7 +193,10 @@ enum CandidateOrigin {
 }
 
 /// 视图模式：底部导航是视距刻度，不是功能标签栏（`N-11`）。
-enum ViewMode { universe, tree, detail, locateResult, progress, practice }
+///
+/// **没有 `universe`** —— 宇宙视图整层已删，`B17b` 重建时按那时的形态加回。
+/// 留一个指向不存在视图的默认值，编译期不会有任何东西变红。
+enum ViewMode { tree, detail, locateResult, progress, practice }
 
 // `ZoomLevel` **不在这里** —— 它带 `code` / `label` 两个界面字段，是
 // `core/view/zoom.dart` 的 `enum ZoomLevel`。两个同名枚举并存过一阵，
@@ -325,7 +328,11 @@ enum ParentEdgeKind {
         return value;
       }
     }
-    _unknownWire('ParentEdgeKind', raw, values.map((ParentEdgeKind v) => v.name));
+    _unknownWire(
+      'ParentEdgeKind',
+      raw,
+      values.map((ParentEdgeKind v) => v.name),
+    );
   }
 }
 
@@ -472,7 +479,11 @@ enum AuthorityLevel {
         return value;
       }
     }
-    _unknownWire('AuthorityLevel', raw, values.map((AuthorityLevel v) => v.name));
+    _unknownWire(
+      'AuthorityLevel',
+      raw,
+      values.map((AuthorityLevel v) => v.name),
+    );
   }
 }
 

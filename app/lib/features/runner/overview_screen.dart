@@ -335,8 +335,13 @@ class _OverviewScreenState extends State<OverviewScreen> {
     );
   }
 
-  void _start(SessionQueue queue) {
-    Navigator.of(context).push(
+  /// 进会话，**回来重算一次队列**。
+  ///
+  /// 队列只在 `initState` 里算过一遍，而判分写的是事件日志 —— runner 判完最后
+  /// 一项自己 `pop` 回来时本页的 State 还活着，不重算就会停在进页面那一刻的
+  /// 快照上：明明学满了名额，屏幕还说「新学 2 项 / 13 分钟」。
+  Future<void> _start(SessionQueue queue) async {
+    await Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (BuildContext context) => RunnerScreen(
           content: widget.content,
@@ -346,5 +351,9 @@ class _OverviewScreenState extends State<OverviewScreen> {
         ),
       ),
     );
+    if (!mounted) {
+      return;
+    }
+    await _load();
   }
 }
