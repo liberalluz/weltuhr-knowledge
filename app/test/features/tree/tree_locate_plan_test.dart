@@ -67,6 +67,18 @@ PackContent _payload() => fixturePack(
   packName: 'Python',
 );
 
+/// 挂在**另一条轴**（occupation）下的包：它不在学科轴的子树里。
+///
+/// 作用域按「地址子树覆盖的包集合」算之后，轴根这一层已经把骨架与学科轴下的
+/// 载荷都圈进来了 —— 要有「另外的空间」可扩，就得有一个真的在圈外的包。
+PackContent _crossAxisPayload() => fixturePack(
+  const <FixtureNode>[
+    FixtureNode('py:y', '己', parentId: 'sk:sys-i', axis: Axis.occupation),
+  ],
+  pluginId: 'extra',
+  packName: 'Extra',
+);
+
 Future<void> _pump(WidgetTester tester, List<PackContent> contents) async {
   // 树的列与树行在 800×600 下会溢出；这里验的是「有没有这个控件」，
   // 撑高视口让 overflow 的报错不盖住断言。
@@ -105,12 +117,14 @@ void main() {
   });
 
   testWidgets('跨轴的命中 ⇒ 按钮不出现（SPEC-PLAN-016）', (WidgetTester tester) async {
-    // 树的作用域是**当前根**：跨轴那一条先被判成圈外，本来就进不了 CTA。
-    // 要让两条轴真正同时出现在命中集里，得先按「在全部空间中搜索」
-    // （`SPEC-VIEW-031`）把作用域放宽 —— 那正是这里的场景。
+    // 树的作用域是**当前地址子树覆盖的包集合**（`SPEC-VIEW-031`）：轴根这一层
+    // 覆盖骨架与挂在它下面的载荷，但另一条轴下的包不在圈内 —— 跨轴那一条仍先被
+    // 判成圈外，本来就进不了 CTA。要让两条轴真正同时出现在命中集里，得先按
+    // 「在全部空间中搜索」把作用域放宽，那正是这里的场景。
     await _pump(tester, <PackContent>[
       _skeleton(withInterest: true),
       _payload(),
+      _crossAxisPayload(),
     ]);
     await _openLocate(tester);
     await _type(tester, '量表');

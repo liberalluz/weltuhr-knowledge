@@ -33,6 +33,7 @@ import '../../core/plan/plan_entry.dart';
 import '../../core/plan/plan_events.dart';
 import '../../core/tree/landing.dart';
 import '../../core/tree/landing_target.dart';
+import '../../core/tree/pack_coverage.dart';
 import '../../core/tree/tree_index.dart';
 import '../../core/tree/tree_outline.dart';
 import '../locate/locate_overlay.dart';
@@ -228,18 +229,32 @@ class _TreeScreenState extends State<TreeScreen> {
     );
   }
 
-  /// 浮层本体。**作用域就是当前根**：`subtreeRoot` 给的是 `_rootId`，于是「圈内」
-  /// 只有本包当前子树，跨包命中会落在分诊里（`VIEW-030` ①）。
+  /// 浮层本体。**作用域 = 当前地址这棵子树覆盖的包集合**（`SPEC-VIEW-031`）。
+  ///
+  /// 不是「地址所在的那个包」：树是跨包的，`英语` 这一行在骨架包里、它下面的
+  /// 载荷域在 english 包里。只取一个包，选中「英语」时作用域会落在骨架上，
+  /// 而骨架里没有可学项 —— 搜什么都是 0 条。
   Widget _locateOverlay() {
-    final PackContent? pack = _packContaining(_rootId);
+    final TreeIndex? tree = _tree;
+    final String address = _selectedId ?? _rootId ?? '';
+    final List<PackContent> covered = tree == null
+        ? const <PackContent>[]
+        : packsUnderRoot(
+            tree: tree,
+            contents: widget.contents,
+            addressId: address,
+          );
+    final PackContent? pack = _packForLocate(covered);
     return LocateOverlay(
       pack: pack,
+      // 窄态搜的那一组包。空表时浮层退回「只搜 `pack`」，与单包时代一致。
+      scopePacks: covered,
       subtreeRoot: _rootId ?? '',
-      // 树是跨包的，本包之外的包照样能搜到 —— 但只在用户主动点「在全部空间中
-      // 搜索」之后（`SPEC-VIEW-031`），所以这里给全量与 `scopePluginId`。
+      // 宽态要的是「全部包」：覆盖集之外的也要给，否则「在全部空间中搜索」
+      // 搜到的仍是同一批。`pack` 不在覆盖集时也不能落下它。
       otherPacks: <PackContent>[
         for (final PackContent content in widget.contents)
-          if (!identical(content, pack)) content,
+          if (!identical(content, pack) && !covered.contains(content)) content,
       ],
       scopePluginId: pack?.pack.pluginId,
       onPick: (LocateResult result, LocateHit hit) => _landOn(hit.target),
@@ -250,6 +265,23 @@ class _TreeScreenState extends State<TreeScreen> {
       canPlanHere: (LocateResult result) =>
           planEntryFor(result: result, contents: widget.contents) != null,
     );
+  }
+
+  /// 浮层分诊与「本包」文案要的那个包：覆盖集里第一个**有可学内容**的，
+  /// 都在骨架层时退回骨架，覆盖集为空时退回当前根所在包。
+  ///
+  /// 判据用 `kinds` 而非包名：骨架包的 `kinds` 为空是装载契约（`ADR-0005`
+  /// 决策 2），`packRootsOf` 也按这一条认骨架 —— 两处同源，不另立名单。
+  PackContent? _packForLocate(List<PackContent> covered) {
+    for (final PackContent content in covered) {
+      if (content.pack.kinds.isNotEmpty) {
+        return content;
+      }
+    }
+    if (covered.isNotEmpty) {
+      return covered.first;
+    }
+    return _packContaining(_rootId);
   }
 
   /// 把地址落到某个节点上（`SPEC-TREE-010` 第一类）。走 `landInTree` 而不是直接
