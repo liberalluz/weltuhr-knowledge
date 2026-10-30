@@ -9,6 +9,20 @@ This file is the **entry point and map**; detailed rules live in `.github/` and 
 3. The `AGENTS.md` of the module you touch (`app/` · `server/` · `content/` · `infra/` · `docs/`); the docs entry is [`docs/AGENTS.md`](docs/AGENTS.md)
 4. For the batch workflow load [`.agents/skills/batch/SKILL.md`](.agents/skills/batch/SKILL.md)
 
+## Nebula project skills
+
+This project uses the Nebula lifecycle skills. Read the current agent's
+`nebula-project/SKILL.md` first, then follow its route:
+
+- DSH: `.agents/skills/nebula-project/SKILL.md`
+- Codex: `.codex/skills/nebula-project/SKILL.md`
+- CodeBuddy: `.codebuddy/skills/nebula-project/SKILL.md`
+- WorkBuddy: `.workbuddy/skills/nebula-project/SKILL.md`
+
+If the current agent's directory is absent, install the project-level skills
+with the Nebula installer (`install.ps1` in the skill repo); do not copy skill
+files by hand. Claude Code uses `CLAUDE.md` instead.
+
 ## Non-negotiable
 
 - **One batch, one PR**; never cram two goals into one card.
