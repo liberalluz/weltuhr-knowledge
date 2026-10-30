@@ -66,5 +66,9 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<!-- Flutter GPU：`flutter_scene` 0.24 起渲染前置，release 也认。回滚见
+	     windows/runner/main.cpp 同一处注释。 -->
+	<key>FLTEnableFlutterGPU</key>
+	<true/>
 </dict>
 </plist>
