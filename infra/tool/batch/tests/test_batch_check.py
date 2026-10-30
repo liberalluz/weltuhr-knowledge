@@ -24,17 +24,17 @@ def run(args):
     return code, out.getvalue()
 
 
-def write_batch(root: Path, allowed: list[str], size_budget: int | None = None):
+def write_batch(root: Path, allowed: list[str], size_budget: int | None = None, batch_type: str = "process"):
     target = root / "B1"
     target.mkdir(parents=True, exist_ok=True)
     (target / "state.json").write_text(
-        json.dumps({"batch": "B1", "type": "process", "branch": "process/B1", "base": "main"}),
+        json.dumps({"batch": "B1", "type": batch_type, "branch": "process/B1", "base": "main"}),
         encoding="utf-8",
     )
     approved = card.approve_card(
         {
             "batch": "B1",
-            "type": "process",
+            "type": batch_type,
             "goal": "test",
             "branch": "process/B1",
             "base": "main",
@@ -47,7 +47,7 @@ def write_batch(root: Path, allowed: list[str], size_budget: int | None = None):
     scope = check.sign_scope(
         {
             "batch": "B1",
-            "type": "process",
+            "type": batch_type,
             "allowed": allowed,
             "forbidden": [],
             "acceptance": [],
@@ -233,6 +233,24 @@ class CheckTests(unittest.TestCase):
             batch_dir = root / ".batch" / "B1"
             batch_dir.mkdir(parents=True)
             self.assertIsNone(batch.changelog_error(root, batch_dir, {"batch": "B1", "type": "process"}))
+
+    def test_check_reads_changelog_from_repo_root(self):
+        # Regression for D2: the batch state root is `.batch`, but the release
+        # fragment is at `<repo>/changelog.d/<batch>.md`.
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            target = write_batch(root, ["changelog.d/**", "infra/**"], batch_type="feat")
+            (root / "changelog.d").mkdir()
+            (root / "changelog.d" / "B1.md").write_text("- 说明：加功能\n", encoding="utf-8")
+            with mock.patch.object(batch, "REPO_ROOT", root), \
+                    mock.patch.object(batch, "changed_paths", return_value=["changelog.d/B1.md", "infra/a.py"]), \
+                    mock.patch.object(batch, "diff_line_count", return_value=1), \
+                    mock.patch.object(batch, "planned_steps", return_value=[]):
+                code, out = run(["--root", str(root), "check", "--batch", "B1", "--base", "main"])
+            self.assertEqual(code, 0, out)
+            evidence = (target / "evidence.log").read_text(encoding="utf-8")
+            self.assertIn("changelog=PASS", evidence)
+            self.assertNotIn("changelog: 缺", out)
 
     def test_scope_failure_does_not_allow_pr(self):
         with tempfile.TemporaryDirectory() as tmp:

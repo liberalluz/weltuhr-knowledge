@@ -70,6 +70,7 @@ def _configure_stdio() -> None:
 def glob_to_regex(pattern: str) -> re.Pattern[str]:
     """Translate a repo-relative glob (with **) into an anchored regex."""
     pattern = pattern.replace("\\", "/").strip("/")
+    bare = not any(char in pattern for char in "*?[")
     out: list[str] = ["^"]
     index = 0
     while index < len(pattern):
@@ -88,6 +89,11 @@ def glob_to_regex(pattern: str) -> re.Pattern[str]:
             else:
                 out.append(re.escape(char))
             index += 1
+    if bare:
+        # A literal path is a file or a directory. Git does not track
+        # directories, so also accept its descendants; a sibling with a
+        # longer name still cannot match.
+        out.append("(?:/.*)?")
     out.append("$")
     return re.compile("".join(out))
 
