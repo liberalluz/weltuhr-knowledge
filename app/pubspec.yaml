@@ -11,6 +11,13 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: 1.0.9
+  # 3D 渲染栈（`ADR-0006`）。0.24 起 Flutter GPU 须显式开启 —— 三端各改一处，
+  # 见 `windows/runner/main.cpp` 与两个 `Info.plist`。
+  flutter_scene: 0.24.3
+  # 下面两个是 spike 直接 import 的，虽由 `flutter_scene` 传递引入，仍显式声明：
+  # `hooks` 是 `hook/build.dart` 的宿主，`vector_math` 是场景变换用的向量类型。
+  hooks: 2.2.0
+  vector_math: 2.4.3
 
 dev_dependencies:
   flutter_test:
@@ -20,4 +27,20 @@ dev_dependencies:
   analyzer: 14.5.0
 
 flutter:
+  assets:
+    - flutter_scene_generated/
+    - path: flutter_scene_generated/metal_ios/
+      platforms:
+        - ios
+    - path: flutter_scene_generated/metal_desktop/
+      platforms:
+        - macos
+    - path: flutter_scene_generated/opengl_es_vulkan/
+      platforms:
+        - android
+        - linux
+        - windows
+    - path: flutter_scene_generated/opengl_es/
+      platforms:
+        - web
   uses-material-design: true

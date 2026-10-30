@@ -1,7 +1,7 @@
 # ADR-0006 · 3D 渲染栈与视觉风格
 
-- **状态**：已接受
-- **日期**：2026-10-20
+- **状态**：已接受（2026-10-30 修订一至四，见文末）
+- **日期**：2026-10-20 · 修订 2026-10-30
 - **决策人**：liberal
 - **覆盖范围**：[`ADR-0005`](0005-three-axis-tree-replaces-six-axis.md)「未在本 ADR 决定」的第一项（3D 渲染技术栈）· [`ADR-0003`](0003-view-radial-axis-and-channel-thresholds.md) 的通道判据（**前提已由 `ADR-0005` 取代，本 ADR 只接其视觉资产部分**）· `SPEC-VIEW-*` 的渲染前提
 
@@ -32,11 +32,13 @@
 | 项 | 取值 |
 |---|---|
 | 包 | `flutter_scene` |
-| 版本 | `^0.23.0` |
+| 版本 | `0.24.3` —— **钉死到补丁位**，不用 `^` |
 | 生效范围 | `app/features/universe/presentation/` —— `core/` 与 `application/` 不得 import |
 | 平台 | Android / iOS / Linux / macOS / Web / Windows 全覆盖；本项目只用三端 |
 
-`^0.23.0` 在 pub 语义下等价 `>=0.23.0 <0.24.0`，即**只接受 0.23.x 补丁**。0.24 须手动升并重跑 spike —— 该包 0.14 与 0.22 均有 `BREAKING`，不能跟 `latest`。
+**版本钉死，不用 `^`（本 ADR 修订一）**：仓规要求版本钉死（`app/pubspec.yaml` 顶部同一口径，全部依赖写精确版本）。原决定的 `^0.23.0` 在 pub 语义下等价 `>=0.23.0 <0.24.0`，锁 minor、允许补丁漂移；而该包 0.14 与 0.22 均有 `BREAKING`，minor 恰恰是会出大变化的那一位。钉到补丁位同时满足仓规与原意，更严一档。
+
+**为什么是 0.24.3 而不是 0.23**：本 ADR 原文写「0.24 须手动升并重跑 spike」，即允许升、只要求重验。spike 一次未跑时，此刻升 0.24 是零成本；若先用 0.23 验完再升，三端采帧要重跑一次。本次就是首验。
 
 选它的唯一实质理由：**`Scene.skybox` + `EnvironmentSkySource` 与 `Scene.postProcess` 同时提供**，前者吃 equirect 全景图，后者含 bloom / 色彩分级 / 暗角 / 景深。自研要分别实现这两块，其中 bloom 的自研成本不低于整个天球采样。
 
@@ -60,8 +62,10 @@ Impeller 在三端的启用状态、`flutter_scene` 的实际帧时间，**只�
 |---|---|
 | 帧率 | P50 ≥ 30 fps，P95 帧时间 ≤ 50 ms（`B17b` 的 60 fps 目标不在 spike 判据内 —— spike 验「能不能跑」，不验「跑得多好」） |
 | 白屏 / 崩溃 | 0 次 |
-| 渲染路径 | 无 `PlatformView`、无 fork、无原生平台代码 |
+| 渲染路径 | 无 `PlatformView`、无 fork、无**自写**原生渲染代码 |
 | 三端一致 | 三端均须通过；任一端不过即判 spike 失败 |
+
+**「无原生平台代码」的边界（本 ADR 修订二）**：这条禁的是**自己写渲染**的原生实现（`ADR-0006` 被否方案④那种 FFI / Metal / D3D12），不是禁「开一个引擎开关」。`flutter_scene` 0.24 要求显式开启 Flutter GPU，而 Windows 侧的开关只能写在 `windows/runner/main.cpp` 里 —— 那是一行 `project.set_enable_flutter_gpu(true)`，不含任何渲染逻辑。若按字面把这一行也算违规，三端就只剩「每次跑带命令行参数」一条路，而 release 构建不认那个参数 —— 判据会把可行的做法判死。故口径收窄为「自写」，一行配置开关不算。
 
 **失败处置**：回落 `FragmentProgram`（每像素反投影）+ 预渲染光晕 sprite，并把本 ADR 标为**已取代**、新立 ADR 记录取舍。回落后接受「无真 bloom」这一观感损失，须在 ADR 中显式写明。
 
@@ -90,6 +94,20 @@ Impeller 在三端的启用状态、`flutter_scene` 的实际帧时间，**只�
 | 标注 | Flutter Widget 叠加，≤60 条，`Paragraph` LRU 200 | 超 60 走聚合，不缩字号 |
 | LOD | 同屏语义节点 >1,200 转聚合 | 帧率不因节点数抖动 |
 | 过渡 | 虫洞过渡为相机弧线插值，时长入常量 | 中途不出现空白帧 |
+
+### 6. Flutter GPU 的启用方式（本 ADR 修订三）
+
+`flutter_scene` 建在 Flutter GPU 之上，而 Flutter GPU **默认关闭**，每端须开一次。开发期可以靠命令行的 `--enable-flutter-gpu` 临时打开，但 **release 构建不认这个参数** —— 所以三端写死在各自的平台文件里，而不是靠命令行。
+
+| 平台 | 位置 | 写法 |
+|---|---|---|
+| Windows | `app/windows/runner/main.cpp` | `project.set_enable_flutter_gpu(true);`（需引擎头文件有此方法，已核对本机 SDK 存在） |
+| macOS | `app/macos/Runner/Info.plist` | `<key>FLTEnableFlutterGPU</key><true/>` |
+| iOS | `app/ios/Runner/Info.plist` | 同上 |
+
+**两条前置**：Flutter 须 3.47 以上（本机 3.47.7）；**Windows / Linux 要出 release 包须 3.47.1 以上**，3.47.0 会把引擎的环境开关编掉。
+
+**回滚条件**：这三处开关随 `flutter_scene` 存在。若 spike 失败、本 ADR 转为「已取代」并回落到 `FragmentProgram`，三处必须同时删掉 —— 否则程序仍以 Flutter GPU 后端启动，而没有任何代码用它，等于永久背着一个与功能无关的实验后端。三处均已留注释指明这一点。
 
 ## 被否方案
 
@@ -132,11 +150,32 @@ Impeller 在三端的启用状态、`flutter_scene` 的实际帧时间，**只�
 
 | 项 | 变化 |
 |---|---|
-| `app/pubspec.yaml` | 新增 `flutter_scene: ^0.23.0` |
+| `app/pubspec.yaml` | 新增 `flutter_scene: 0.24.3`（钉死）；另显式声明 `hooks` / `vector_math` —— 两者由前者传递引入，但被直接 import，按「直接 import 必须声明」补上 |
+| `app/hook/build.dart` | 由 `dart run flutter_scene:init` 生成的构建钩子（转换 `assets/` 下的模型、材质、图片） |
+| `app/flutter_scene_generated/` | 生成目录，各级 `.gitignore` 入库、生成物不入库 |
 | `infra/` | 新增天球烘焙脚本（星表 → equirect 贴图 → KTX2） |
-| 构建前置 | Impeller 须在三端启用；Windows 侧的启用方式须在 spike 中确认 |
+| 构建前置 | Flutter GPU 三端启用，见决策 6；Flutter 3.47+，Windows 出 release 包须 3.47.1+ |
 | 制品体积 | 三端各增约 2–4 MB（KTX2 贴图，默认级） |
+
+### 五、spike 实测状态（本 ADR 修订四）
+
+本文写的四条判据**尚未实测**：沙箱不能 `build` / `run`，三端帧率须在终端或真机上采。目前只到「代码与三端配置就位、`flutter analyze` 与架构 lint 干净」。
+
+`spike` 的形态已定为**独立入口**：`app/lib/spike_main.dart`，用 `flutter run -t lib/spike_main.dart` 启动，不经过主 app 的任何路由 —— 主界面刚通过 `B4` 验收，不为一次实验增加分支。读数面板在左上角，采 300 帧后给出 P50 / P95 与是否过闸。
+
+**其中一处读数口径改了实现**：判「P50 ≥ 30 fps」时直接比帧时间（`p50Ms <= 1000/30`），不先换算成 fps 再比 30。两者数学等价，但 `1000 / (1000 / 30)` 在浮点下会落在 `29.999999999999996`，让恰好压线的读数翻成不通过。这不是放宽判据，是去掉换算引入的假阴性。
 
 ### 五、未在本 ADR 决定
 
 开源协议与数据许可（用户决策项）· 视觉回归测试方式（golden 图或截图比对，随 `B17b` 定）· 国际化 · 空间内搜索（`V2`）· Web 端是否保留（`flutter_scene` 有 Web 后端，但本项目三端目标不含 Web）
+
+## 修订
+
+| 序 | 日期 | 内容 |
+|---|---|---|
+| 一 | 2026-10-30 | 依赖版本 `^0.23.0` → `0.24.3`：钉死到补丁位，并说明为何此刻随首验一起升到 0.24 |
+| 二 | 2026-10-30 | 决策 3 的「无原生平台代码」收窄为「无**自写**原生渲染代码」，一行引擎开关不算 |
+| 三 | 2026-10-30 | 新增决策 6：Flutter GPU 的三端启用方式、版本前置与回滚条件 |
+| 四 | 2026-10-30 | 影响·四 按实际落地重写，新增「spike 实测状态」与帧率判据的浮点口径 |
+
+修订不改原决策的取舍方向：渲染栈仍是 `flutter_scene`（而非 `FragmentProgram` / 自研 / 平台原生），使用面仍限于 skybox 与后处理。改的是**版本口径、判据边界与启用方式**这三处「原决定写下时无法确认、只能实跑确认」的部分。

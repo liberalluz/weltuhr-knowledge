@@ -24,6 +24,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
 
   project.set_dart_entrypoint_arguments(std::move(command_line_arguments));
 
+  // Flutter GPU 须显式开启，`flutter_scene` 0.24 起才能渲染。release 构建
+  // 不认命令行的 --enable-flutter-gpu，只能在这里写死。
+  // 回滚：移除 flutter_scene 时，连同两个 Info.plist 里的 FLTEnableFlutterGPU
+  // 一并删掉 —— 否则程序仍以 Flutter GPU 后端启动，而没有任何代码用它。
+  project.set_enable_flutter_gpu(true);
+
   FlutterWindow window(project);
   Win32Window::Point origin(10, 10);
   Win32Window::Size size(1280, 720);
