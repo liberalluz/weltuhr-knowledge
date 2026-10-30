@@ -88,7 +88,9 @@ Future<void> _searchArticle(WidgetTester tester) async {
 }
 
 void main() {
-  testWidgets('选中「英语」：窄态只搜骨架 + english，德语一条不出现', (WidgetTester tester) async {
+  testWidgets('选中「英语」：窄态只搜骨架 + english，德语一条不出现（SPEC-VIEW-031）', (
+    WidgetTester tester,
+  ) async {
     await _pump(tester);
     await tester.tap(find.byKey(treeRowKey('sk:en')));
     await tester.pump();
@@ -104,7 +106,9 @@ void main() {
     );
   });
 
-  testWidgets('停在轴根：覆盖全部包，德语那条照常出现', (WidgetTester tester) async {
+  testWidgets('停在轴根：覆盖全部包，德语那条照常出现（SPEC-VIEW-031）', (
+    WidgetTester tester,
+  ) async {
     await _pump(tester);
 
     await _searchArticle(tester);

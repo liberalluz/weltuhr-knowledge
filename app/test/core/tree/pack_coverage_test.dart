@@ -32,26 +32,26 @@ void main() {
       content.pack.pluginId,
   ];
 
-  test('选中骨架星：覆盖骨架与挂在它下面的载荷', () {
+  test('选中骨架星：覆盖骨架与挂在它下面的载荷（SPEC-VIEW-031）', () {
     // `skeleton:d-0101` 是骨架星，`python:sys` 的父边指向它。
     expect(coveredAt('skeleton:d-0101'), <String>['skeleton', 'python']);
   });
 
-  test('选中载荷域：只覆盖那一个包', () {
+  test('选中载荷域：只覆盖那一个包（SPEC-VIEW-031）', () {
     expect(coveredAt('python:sys'), <String>['python']);
   });
 
-  test('选中轴根：覆盖全部包', () {
+  test('选中轴根：覆盖全部包（SPEC-VIEW-031）', () {
     expect(coveredAt('skeleton:d'), <String>['skeleton', 'python']);
   });
 
-  test('同轴的另一支：不牵连别的包', () {
+  test('同轴的另一支：不牵连别的包（SPEC-VIEW-031）', () {
     // `skeleton:d-02`（经济学）下没有载荷，覆盖集应只剩骨架 —— 与「轴根」
     // 那一组读数不同，说明判据是子树而不是「同轴」。
     expect(coveredAt('skeleton:d-02'), <String>['skeleton']);
   });
 
-  test('地址为空或不在树上：空表，不抛错', () {
+  test('地址为空或不在树上：空表，不抛错（无 SPEC：空地址不构成子树，防御性边界）', () {
     expect(coveredAt(null), isEmpty);
     expect(coveredAt(''), isEmpty);
     expect(coveredAt('不存在:的节点'), isEmpty);
