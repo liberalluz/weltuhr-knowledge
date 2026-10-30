@@ -145,6 +145,7 @@ class LocateOverlay extends StatefulWidget {
     this.canPlanHere,
     this.onPickAxis,
     this.otherPacks = const <PackContent>[],
+    this.scopePacks = const <PackContent>[],
     this.scopePluginId,
     this.domainId,
     this.initialQuery = '',
@@ -161,6 +162,13 @@ class LocateOverlay extends StatefulWidget {
   /// 事，浮层只管「用户选了哪条」。给不出来时留空：空列表等于「只有一个包」，
   /// 那一行「在全部空间中搜索」也就不会出现。
   final List<PackContent> otherPacks;
+
+  /// 窄态要搜的那一组包 —— 作用域 = 当前地址子树覆盖到的包（`SPEC-VIEW-031`）。
+  ///
+  /// 与 [otherPacks] 的区别是**谁算在里面**：这里放的是「圈内」的包，可以是
+  /// 两个以上（选中骨架星时，骨架与挂在它下面的载荷都在圈内）；[otherPacks]
+  /// 放的是「圈外、点了那一行才搜」的。空表退回「只搜 [pack]」，与单包时代一致。
+  final List<PackContent> scopePacks;
 
   /// 当前视图的作用域（`SPEC-VIEW-031`）：`null` = 全部（`Z0` 本就是跨包
   /// 视角）；非 `null` = 默认只搜本包，结果区顶部给一行「在全部空间中搜索」。
@@ -283,24 +291,63 @@ class _LocateOverlayState extends State<LocateOverlay> {
   ///
   /// 作用域宽 = `Z0`（`scopePluginId == null`）**或**用户点了那一行。两者都宽时
   /// 不必再分，因为「全部」只有一种含义。
+  ///
+  /// 窄态给的是 [LocateOverlay.scopePacks]（地址子树覆盖的一组包），**不是**
+  /// 「一个包」：骨架星下面挂着别的包，只搜骨架等于把子树里另一半丢掉。
   List<PackContent> get _searchedPacks {
     final PackContent? pack = widget.pack;
     if (pack == null) {
       return const <PackContent>[];
     }
-    final bool wide = widget.scopePluginId == null || _searchAll;
-    return wide
-        ? <PackContent>[pack, ...widget.otherPacks]
-        : <PackContent>[pack];
+    if (widget.scopePluginId != null && !_searchAll) {
+      final List<PackContent> scoped = widget.scopePacks;
+      if (scoped.isEmpty) {
+        return <PackContent>[pack];
+      }
+      if (scoped.any((PackContent content) => identical(content, pack))) {
+        return scoped;
+      }
+      return <PackContent>[pack, ...scoped];
+    }
+    // 宽态 = 全部包。三份来源要并起来：本包、覆盖集外的、以及覆盖集本身
+    // （`pack` 可能不在覆盖集里，那时它会漏掉自己的子树）。
+    final List<PackContent> all = <PackContent>[];
+    void add(PackContent content) {
+      if (!all.any((PackContent seen) => identical(seen, content))) {
+        all.add(content);
+      }
+    }
+
+    add(pack);
+    for (final PackContent content in widget.otherPacks) {
+      add(content);
+    }
+    for (final PackContent content in widget.scopePacks) {
+      add(content);
+    }
+    return all;
   }
 
-  /// 传给引擎的圈定根：**只在单包时给**。
+  /// 传给引擎的圈定根。
   ///
-  /// 宽到全部包时置空（= 不判圈内）：别的包的树根不可能出现在这个子树下，
-  /// 硬传会让每一条跨包命中都被判成「圈外」，于是「搜得到」变成「点不动」。
-  /// 这条规则归调用方（也就是这里）决定，引擎不替它猜。
-  String? get _scopeRoot =>
-      _searchedPacks.length == 1 ? widget.subtreeRoot : null;
+  /// 窄态**一律给**：那里的包是地址子树覆盖到的（[LocateOverlay.scopePacks]），
+  /// 每个包都在这棵子树里有节点，判圈内不会误伤。判据不能写成「包有几个 =
+  /// 一个」—— 选中骨架星时圈内跨两个包，按包数判会把这种情形误判成宽态，
+  /// `inScopeOf` 整段失效，「圈外」与「库里没有」在界面上长得一样。
+  ///
+  /// 宽态沿用旧判据：只有一个包时才给。多个包时别的包的树根不可能出现在这个
+  /// 子树下，硬传会让每一条跨包命中都被判成「圈外」，于是「搜得到」变成
+  /// 「点不动」。这条规则归调用方（也就是这里）决定，引擎不替它猜。
+  String? get _scopeRoot {
+    if (widget.subtreeRoot.isEmpty) {
+      return null;
+    }
+    final bool wide = widget.scopePluginId == null || _searchAll;
+    if (!wide || _searchedPacks.length == 1) {
+      return widget.subtreeRoot;
+    }
+    return null;
+  }
 
   /// 作用域是否还窄着 —— 也就是那一行「在全部空间中搜索」该不该出现。
   bool get _canWiden =>
