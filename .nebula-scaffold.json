@@ -2,22 +2,44 @@
   "schema": 1,
   "name": "weltuhr-knowledge",
   "stack": "flutter",
-  "stackSkeleton": ["app", "server", "content", "infra"],
+  "stackSkeleton": [
+    "app",
+    "server",
+    "content",
+    "infra"
+  ],
   "toolchain": {
     "dart": "3.13.5",
     "flutter": "3.47.7",
-    "platforms": ["windows", "macos", "ios"],
+    "platforms": [
+      "windows",
+      "macos",
+      "ios"
+    ],
     "mirror": "flutter-io.cn",
     "bundleId": "com.weltuhr.projectKnowledge"
   },
   "docsProfile": {
     "id": "swebok-v4",
     "rev": 3,
-    "dirs": ["decisions", "intent", "ideas", "specs", "runbooks"]
+    "dirs": [
+      "decisions",
+      "intent",
+      "ideas",
+      "specs",
+      "runbooks"
+    ]
   },
   "docsLocale": {
     "primary": "zh-CN",
-    "supported": ["zh-CN", "en", "de", "it", "ja", "fr"],
+    "supported": [
+      "zh-CN",
+      "en",
+      "de",
+      "it",
+      "ja",
+      "fr"
+    ],
     "scheme": "suffix",
     "external": "en",
     "changelog": "zh-CN"
@@ -37,5 +59,24 @@
     "decidedAt": "2026-10-23T14:14:25+08:00"
   },
   "createdAt": "2026-10-22T07:51:41+08:00",
-  "updatedAt": "2026-10-27T15:26:00+08:00"
+  "updatedAt": "2026-10-27T15:26:00+08:00",
+  "project": "weltuhr-knowledge",
+  "components": [
+    {
+      "name": "client",
+      "stack": "flutter",
+      "dirs": [
+        "app",
+        "server",
+        "content",
+        "infra"
+      ],
+      "platforms": [
+        "windows",
+        "macos",
+        "ios"
+      ]
+    }
+  ],
+  "migrated_from": ".swe-init.json"
 }
