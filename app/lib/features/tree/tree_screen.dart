@@ -234,6 +234,11 @@ class _TreeScreenState extends State<TreeScreen> {
   /// 不是「地址所在的那个包」：树是跨包的，`英语` 这一行在骨架包里、它下面的
   /// 载荷域在 english 包里。只取一个包，选中「英语」时作用域会落在骨架上，
   /// 而骨架里没有可学项 —— 搜什么都是 0 条。
+  ///
+  /// ⚠️ **「搜哪些包」与「判圈内」必须用同一棵子树**，否则两条都会歪：
+  /// 圈定根若仍取轴根（`_rootId`），而父链只用单包索引，跨包那一段就断了 ——
+  /// 命中全被判「圈外」，建计划入口不出现。所以根也用 `address`，父链用
+  /// 树索引的合并表（`tree.parents`）。
   Widget _locateOverlay() {
     final TreeIndex? tree = _tree;
     final String address = _selectedId ?? _rootId ?? '';
@@ -249,7 +254,12 @@ class _TreeScreenState extends State<TreeScreen> {
       pack: pack,
       // 窄态搜的那一组包。空表时浮层退回「只搜 `pack`」，与单包时代一致。
       scopePacks: covered,
-      subtreeRoot: _rootId ?? '',
+      // 圈定根 = 当前地址，不是轴根：作用域既然按地址的子树算，判「圈内」也
+      // 得判这一棵。取轴根会把「整个轴」当成范围 —— 与「此范围」不是一回事。
+      subtreeRoot: address,
+      // 跨包父链：`PackContent.parents` 只装本包父边，载荷项的祖先链到骨架
+      // 就断，用单包索引会把挂在本子树下的项全判成圈外。
+      parents: tree?.parents,
       // 宽态要的是「全部包」：覆盖集之外的也要给，否则「在全部空间中搜索」
       // 搜到的仍是同一批。`pack` 不在覆盖集时也不能落下它。
       otherPacks: <PackContent>[

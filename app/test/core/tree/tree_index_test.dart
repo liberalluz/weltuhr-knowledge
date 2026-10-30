@@ -1,6 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:project_knowledge/core/entities/edge.dart';
+import 'package:project_knowledge/core/entities/node.dart';
 import 'package:project_knowledge/core/enums.dart';
+import 'package:project_knowledge/core/graph/in_scope.dart';
+import 'package:project_knowledge/core/graph/parent_index.dart';
 import 'package:project_knowledge/core/pack/pack_reader.dart';
 import 'package:project_knowledge/core/tree/tree_index.dart';
 
@@ -202,6 +205,39 @@ void main() {
       tree.axisRootOf('nope:missing'),
       isNull,
       reason: '不在树上就是 `null` —— 单轴态据此只留 `知识` 一行，不猜一根轴',
+    );
+  });
+
+  test('TC-TREE-070 合并父链把载荷项的祖先链接到骨架（SPEC-VIEW-031）', () {
+    // 载荷包只看得见自己这一侧的父边：`python:sys` 挂到 `skeleton:d-0101` 的
+    // 那一条在它里面，再往上的骨架内部边一条都没有（`pack_coverage.dart`
+    // 文件头：`PackContent.parents` 只装本包父边）—— 链就断在这里。
+    final ParentIndex singlePack = payloadFixture().parents;
+    expect(singlePack.ancestorsOf('python:p1'), <String>[
+      'python:sys',
+      'skeleton:d-0101',
+    ], reason: '`skeleton:d-0101` 的父在骨架包里，载荷包没有那条边');
+
+    // 树索引把全部包的主父边合成一张表，骨架那一段才接得上。
+    final ParentIndex merged = tree.parents;
+    expect(merged.ancestorsOf('python:p1'), <String>[
+      'python:sys',
+      'skeleton:d-0101',
+      'skeleton:d-01',
+      'skeleton:d',
+    ]);
+
+    // 圈内判定要的就是「根在不在祖先链里」：同一份数据、同一个根，两份索引
+    // 给出相反答案 —— 而这条项本来就挂在那个根下面。
+    final Node item = tree.nodeOf('python:p1')!;
+    expect(
+      inScopeOf(item, subtreeRoot: 'skeleton:d-01', parents: merged),
+      isTrue,
+    );
+    expect(
+      inScopeOf(item, subtreeRoot: 'skeleton:d-01', parents: singlePack),
+      isFalse,
+      reason: '用单包索引判，挂在这个子树下的项会被判成圈外 ——「搜得到、建不了计划」就是这么来的',
     );
   });
 }

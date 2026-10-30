@@ -116,4 +116,41 @@ void main() {
     expect(find.text('定冠词'), findsOneWidget);
     expect(find.text('德语定冠词'), findsOneWidget);
   });
+
+  testWidgets('TC-VIEW-392 选中「英语」：三条命中全判圈内（SPEC-VIEW-031）', (
+    WidgetTester tester,
+  ) async {
+    await _pump(tester);
+    await tester.tap(find.byKey(treeRowKey('sk:en')));
+    await tester.pump();
+
+    await _searchArticle(tester);
+
+    expect(find.text('定冠词'), findsOneWidget);
+    expect(
+      find.text('圈外'),
+      findsNothing,
+      reason:
+          '圈定根 `sk:en` 在骨架包里、命中在 english 包里。单包父链到不了根，'
+          '用合并表才连得上 —— 这里出一条「圈外」，就是父链还断着',
+    );
+  });
+
+  testWidgets('TC-PLAN-109 选中「英语」：底部「按此范围建计划」出现（SPEC-PLAN-016）', (
+    WidgetTester tester,
+  ) async {
+    await _pump(tester);
+    await tester.tap(find.byKey(treeRowKey('sk:en')));
+    await tester.pump();
+
+    await _searchArticle(tester);
+
+    expect(
+      find.byKey(locatePlanHereKey),
+      findsOneWidget,
+      reason:
+          '命中有落点、公共根在 english 包内。三条全判圈外时这个入口不出现，'
+          'B4 的「三段跑通」就永远到不了',
+    );
+  });
 }

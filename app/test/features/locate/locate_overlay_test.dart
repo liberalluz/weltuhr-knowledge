@@ -20,8 +20,10 @@ import 'package:flutter/material.dart' hide Axis;
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:project_knowledge/core/enums.dart';
+import 'package:project_knowledge/core/graph/parent_index.dart';
 import 'package:project_knowledge/core/locate/locator.dart';
 import 'package:project_knowledge/core/pack/pack_reader.dart';
+import 'package:project_knowledge/core/tree/tree_index.dart';
 import 'package:project_knowledge/features/locate/locate_overlay.dart';
 
 import '../../support/pack_fixture.dart';
@@ -64,6 +66,9 @@ void main() {
     String? domainId,
     PackContent? packOverride,
     List<PackContent> otherPacks = const <PackContent>[],
+    List<PackContent> scopePacks = const <PackContent>[],
+    ParentIndex? parents,
+    String? subtreeRoot,
     String? scopePluginId,
     VoidCallback? onDismiss,
     void Function(LocateResult result)? onPlanHere,
@@ -77,8 +82,10 @@ void main() {
             height: 700,
             child: LocateOverlay(
               pack: withPack ? (packOverride ?? pack) : null,
-              subtreeRoot: _root,
+              subtreeRoot: subtreeRoot ?? _root,
+              parents: parents,
               otherPacks: otherPacks,
+              scopePacks: scopePacks,
               scopePluginId: scopePluginId,
               domainId: domainId,
               onPick: onPick,
@@ -547,6 +554,54 @@ void main() {
       find.byKey(locatePlanHereKey),
       findsNothing,
       reason: '按下没反应的按钮比没有这个按钮更糟',
+    );
+  });
+
+  testWidgets('TC-VIEW-391 跨包父链：骨架根下的载荷项不判圈外（SPEC-VIEW-031）', (
+    WidgetTester tester,
+  ) async {
+    // 树里最普通的一种形状：根在骨架（`sk:en`）、命中在 english 包里。
+    // 载荷包的 `parents` 只装本包父边，祖先链到 `en:np` 就断 —— 拿它判圈内，
+    // 这一条必红。合并表（`TreeIndex.parents`）才把骨架那一段接上。
+    final PackContent skeleton = fixturePack(
+      const <FixtureNode>[
+        FixtureNode('sk:root', '学科', slot: LevelSlot.supercluster),
+        FixtureNode('sk:en', '英语', slot: LevelSlot.star, parentId: 'sk:root'),
+      ],
+      pluginId: 'skeleton',
+      packName: '骨架',
+      kinds: const <String>[],
+    );
+    final PackContent english = fixturePack(
+      const <FixtureNode>[
+        FixtureNode('en:np', '名词短语', slot: LevelSlot.system, parentId: 'sk:en'),
+        FixtureNode('en:a1', '定冠词', parentId: 'en:np'),
+      ],
+      pluginId: 'english',
+      packName: '英语',
+      attachTo: 'sk:en',
+    );
+    final TreeIndex tree = TreeIndex.build(
+      contents: <PackContent>[skeleton, english],
+    );
+
+    await pump(
+      tester,
+      packOverride: english,
+      subtreeRoot: 'sk:en',
+      parents: tree.parents,
+      scopePacks: <PackContent>[skeleton, english],
+      otherPacks: <PackContent>[skeleton],
+      scopePluginId: 'english',
+      onPick: (_, _) {},
+    );
+    await type(tester, '冠词');
+
+    expect(find.text('定冠词'), findsOneWidget);
+    expect(
+      find.text('圈外'),
+      findsNothing,
+      reason: '它的父链经 `en:np` 接在 `sk:en` 上，本来就在圈内 —— 标圈外就是索引选错了',
     );
   });
 }

@@ -19,6 +19,7 @@ import '../constants.dart';
 import '../entities/edge.dart';
 import '../entities/node.dart';
 import '../enums.dart';
+import '../graph/parent_index.dart';
 import '../pack/pack_reader.dart';
 
 /// 树里的一行。**不含虚拟根** —— 虚拟根只在面包屑第 1 段（`SPEC-TREE-002`），
@@ -182,6 +183,34 @@ class TreeIndex {
   final Map<String, List<String>> _childIdsOf;
   final Map<String, String> _pathOf;
   final Map<Axis, String> _axisRoots;
+
+  /// 跨包主父索引（[ParentIndex]）。
+  ///
+  /// ## 为什么不拿调用方手里的 `PackContent.parents`
+  ///
+  /// 那个只装**本包**父边：载荷包的域节点把父边指向骨架星（`minimal-pack.md`
+  /// §4.1），所以 `english` 包里的祖先链走到 `english:dom-*` 就到头，再往上
+  /// 的骨架那一段不在里面。定位的圈内判定（`inScopeOf`）比的正是「子树根在
+  /// 不在祖先链里」—— 拿单包索引判，挂在骨架星下的载荷项会被一律判成「圈外」，
+  /// 界面上表现为「搜得到、但三条全标圈外、建计划入口不出现」。
+  ///
+  /// 这份索引与 [`packsUnderRoot`] 用的是同一张表（[TreeIndex.build] 里的
+  /// `parentOf`），两处不会再对「谁在谁下面」给出不同答案。
+  ///
+  /// 延迟到首次使用：纯展示的树（不定位、不算覆盖）不必付这一趟。
+  late final ParentIndex parents = ParentIndex(
+    mainParentOf: _parentOf,
+    slugOf: <String, String>{
+      for (final MapEntry<String, Node> entry in _nodeById.entries)
+        entry.key: entry.value.slug,
+    },
+    // 骨架节点的 `path` 由外部注入（`minimal-pack.md` §4.2）：树索引里
+    // `_pathOf` 存的正是「从轴根 slug 起算」的完整地址，与那条口径同义。
+    skeletonPaths: <String, String>{
+      for (final MapEntry<String, String> entry in _pathOf.entries)
+        if (ParentIndex.isSkeleton(entry.key)) entry.key: entry.value,
+    },
+  );
 
   /// 兄弟排序：官方码升序，无码的排后，再按 `name`，最后按 `id` 兜底。
   ///
