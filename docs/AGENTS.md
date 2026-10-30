@@ -71,7 +71,7 @@ python3 infra/tool/docs/check_boundary.py --root .
 | 项 | 规则 |
 |---|---|
 | 命名 | `<原名>.<lang>.md` —— `README.zh-CN.md` · `SDP-软件开发计划.en.md`。**原文保留 `<原名>.md`**，不加后缀 |
-| 语言码 | `zh-CN` `en` `de` `it` `ja` `fr`（BCP 47）。**简体固定写 `zh-CN`，不写裸 `zh`** —— `zh` 是宏语言码、不区分简繁；将来加繁体用 `zh-TW`。取值与 `.swe-init.json` 的 `docsLocale.supported` 一致 |
+| 语言码 | `zh-CN` `en` `de` `it` `ja` `fr`（BCP 47）。**简体固定写 `zh-CN`，不写裸 `zh`** —— `zh` 是宏语言码、不区分简繁；将来加繁体用 `zh-TW`。取值与 `.nebula-scaffold.json` 的 `docsLocale.supported` 一致 |
 | 对外层 | **根 [`README.md`](../README.md) 及仓根五份译文**：权威 = **英文** `README.md`（首页渲染，账本 `docsLocale.external = en`），`README.zh-CN.md` 是译文之一、不是原文。**其余三份对外文件不出译文**：[`.github/CONTRIBUTING.md`](../.github/CONTRIBUTING.md)（新 issue / PR 界面自动链接）· [`.github/SECURITY.md`](../.github/SECURITY.md)（Security 页 policy）· [`.github/CONTRIBUTING.ai.md`](../.github/CONTRIBUTING.ai.md)（AI 参与准入）—— 治理、安全与准入三处措辞不一致会引发歧义 |
 | 落点 | 译本**与权威版同目录**：根 README 的五份译文即在仓根；库内文档的译本与其**中文原文**同目录。**`.github/` 下不出译文**（见上「对外层」） |
 | 切换条 | `English · 简体中文 · Deutsch · Italiano · 日本語 · Français` 固定顺序，**当前语言加粗不设链接**。**对外层置于 `# 标题` 之前**（访客第一眼看到）；**库内文档置于 `# 标题` 之下** |
