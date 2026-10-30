@@ -1159,7 +1159,7 @@ def command_check(args: argparse.Namespace) -> int:
         status = "ok" if budget_ok else "FAIL"
         print(f"[{status}] size budget: {line_count} lines <= {budget}" if budget_ok else f"[FAIL] size budget: {line_count} lines > {budget}")
 
-    changelog_problem = changelog_error(root, batch_dir, card or {})
+    changelog_problem = changelog_error(REPO_ROOT, batch_dir, card or {})
     if changelog_problem:
         print(f"[FAIL] changelog: {changelog_problem}")
 

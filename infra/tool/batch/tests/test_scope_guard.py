@@ -32,6 +32,22 @@ class GlobTests(unittest.TestCase):
         self.assertTrue(check.matches_any("infra/tool/batch/check.py", ["**/*.py"]))
         self.assertTrue(check.matches_any("check.py", ["**/*.py"]))
 
+    def test_literal_directory_matches_descendants(self):
+        self.assertTrue(
+            check.matches_any("app/lib/core/tree/pack_coverage.dart", ["app/lib/core/tree"])
+        )
+        self.assertTrue(
+            check.matches_any("app/lib/core/tree/sub/a.dart", ["app/lib/core/tree/"])
+        )
+        self.assertFalse(
+            check.matches_any("app/lib/core/treehouse/a.dart", ["app/lib/core/tree"])
+        )
+
+    def test_literal_file_still_matches_exactly(self):
+        self.assertTrue(
+            check.matches_any(".githooks/pre-push", [".githooks/pre-push"])
+        )
+
 
 class CheckTests(unittest.TestCase):
     def test_in_scope_passes(self):
