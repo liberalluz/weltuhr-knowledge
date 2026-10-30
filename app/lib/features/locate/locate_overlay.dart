@@ -63,6 +63,7 @@ import 'package:flutter/material.dart' hide Axis;
 import 'package:flutter/services.dart';
 
 import '../../core/enums.dart';
+import '../../core/graph/parent_index.dart';
 import '../../core/locate/diagnose.dart';
 import '../../core/locate/locator.dart';
 import '../../core/pack/pack_reader.dart';
@@ -146,6 +147,7 @@ class LocateOverlay extends StatefulWidget {
     this.onPickAxis,
     this.otherPacks = const <PackContent>[],
     this.scopePacks = const <PackContent>[],
+    this.parents,
     this.scopePluginId,
     this.domainId,
     this.initialQuery = '',
@@ -173,6 +175,13 @@ class LocateOverlay extends StatefulWidget {
   /// 当前视图的作用域（`SPEC-VIEW-031`）：`null` = 全部（`Z0` 本就是跨包
   /// 视角）；非 `null` = 默认只搜本包，结果区顶部给一行「在全部空间中搜索」。
   final String? scopePluginId;
+
+  /// 判圈内用的跨包父链索引（`TreeIndex.parents`）。
+  ///
+  /// 不给时退回「各包自己的父边」。那在**单包**场景里没问题（详情页邻项本就
+  /// 在同一包内），但树是跨包的：圈定根常在骨架里、命中常在载荷里，单包索引
+  /// 的父链到包边界就断，整片命中会被判成圈外。所以由树屏幕把合并表交进来。
+  final ParentIndex? parents;
 
   /// 当前视图圈定范围的根（`Plan.subtree_root`）。
   ///
@@ -370,6 +379,7 @@ class _LocateOverlayState extends State<LocateOverlay> {
     final LocateResult result = Locator(
       _searchedPacks,
       subtreeRoot: _scopeRoot,
+      parents: widget.parents,
     ).locate(query);
     _result = result;
     // 分诊仍读**本包**：类 ② 的邻近候选是「换词」出口，跨包换词没有意义
@@ -410,6 +420,7 @@ class _LocateOverlayState extends State<LocateOverlay> {
       final LocateResult result = Locator(
         _searchedPacks,
         subtreeRoot: _scopeRoot,
+        parents: widget.parents,
       ).locate(query);
       _result = result;
       final PackContent? pack = widget.pack;

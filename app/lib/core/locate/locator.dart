@@ -28,6 +28,7 @@ import '../entities/node.dart';
 import '../entities/scheme.dart';
 import '../enums.dart';
 import '../graph/in_scope.dart';
+import '../graph/parent_index.dart';
 import '../pack/pack_reader.dart';
 
 /// 定位三态（`SPEC-FND-008`）：衡量的只是「定位成没成」。
@@ -147,11 +148,11 @@ class LocateResult {
 /// 这也顺带吃掉了旧 `LoadedPack` 那一层：包自带身份（`PackContent.pack`），
 /// 再包一个「装载记录」只是把 `name` 抄第二遍。
 class Locator {
-  const Locator(this.packs, {this.pluginId, this.subtreeRoot});
+  const Locator(this.packs, {this.pluginId, this.subtreeRoot, this.parents});
 
   /// 只有一个包时的退化写法：此刻「全部包」就等于「本包」。
-  Locator.single(PackContent pack, {String? subtreeRoot})
-    : this(<PackContent>[pack], subtreeRoot: subtreeRoot);
+  Locator.single(PackContent pack, {String? subtreeRoot, ParentIndex? parents})
+    : this(<PackContent>[pack], subtreeRoot: subtreeRoot, parents: parents);
 
   /// 装进内存的全部包。空列表是合法的（返回空命中集，不抛）。
   final List<PackContent> packs;
@@ -168,6 +169,18 @@ class Locator {
   /// 跨包搜索时它只对本包有意义 —— 别的包的树根不可能出现在这个子树下，
   /// 硬传会让所有跨包命中都被判成「圈外」。所以可空，且由调用方决定给不给。
   final String? subtreeRoot;
+
+  /// 判圈内用的父链索引。`null` = 各包拿自己的 [PackContent.parents]。
+  ///
+  /// ## 为什么必须能换
+  ///
+  /// `PackContent.parents` 只装本包父边，父链到骨架节点就断；而树是跨包的
+  /// （载荷域挂骨架星）。拿单包索引配一个**骨架**根判圈内，载荷项永远上溯不
+  /// 到根，于是整片被判「圈外」—— 那不是数据在圈外，是索引少了那一段。
+  ///
+  /// 跨包合并表由 `TreeIndex.parents` 给（与 `packsUnderRoot` 同一张表）。
+  /// 不给时退回单包索引：单包场景（详情页邻项）本来就是包内的，行为不变。
+  final ParentIndex? parents;
 
   /// 定位。
   ///
@@ -212,7 +225,13 @@ class Locator {
         if (root == null) {
           return true;
         }
-        return inScopeOf(node, subtreeRoot: root, parents: pack.parents);
+        // 跨包索引优先：单包索引在包边界断链，而圈定根常在骨架里、命中常在
+        // 载荷里 —— 用错那一份会把整片子树的项判成圈外。
+        return inScopeOf(
+          node,
+          subtreeRoot: root,
+          parents: parents ?? pack.parents,
+        );
       }
 
       void consider(
@@ -279,7 +298,7 @@ class Locator {
             continue;
           }
           // 包外引用（跨包体系）：`inScope` 判不了父链，只能算可用 —— 判成圈外
-            // 会让「体系里写着、包里没有」的东西既搜得到又点不动。
+          // 会让「体系里写着、包里没有」的东西既搜得到又点不动。
           consider(LocateKind.item, nodeId, nodeId);
         }
       }
@@ -382,8 +401,9 @@ LocateKind? locateKindOf(Node node) {
     // 轴根就是旧的「空间」档：点它换的是整棵树，不是某一段。
     LevelSlot.supercluster => LocateKind.space,
     // 「域」= 门类 / 类 / 中类三档。
-    LevelSlot.group || LevelSlot.galaxy || LevelSlot.cluster =>
-      LocateKind.domain,
+    LevelSlot.group ||
+    LevelSlot.galaxy ||
+    LevelSlot.cluster => LocateKind.domain,
     // 恒星归「项」：它是骨架里唯一能直接落到的东西 —— 官方目录最细的正式
     // 条目，是内容本身而不是分类容器。
     LevelSlot.star => LocateKind.item,
