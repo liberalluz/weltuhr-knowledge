@@ -1,5 +1,3 @@
-import 'dart:typed_data';
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:project_knowledge/spike/sphere_shells.dart';
 
@@ -7,7 +5,11 @@ import 'package:project_knowledge/spike/sphere_shells.dart';
 ///
 /// 层数与半径比例是**结构判据**，不是观感参数：节点将来要落在这些壳上，
 /// 半径比例错了，同层等距与层间距离这两件事就都不成立，而画面上只是
-/// 「几条圈的位置不太对」—— 没人看得出是错的。
+/// 「节点位置不太对」—— 没人看得出是错的。
+///
+/// **`TC-SPIKE-018` / `019` 已随经纬网格删除**（2026-10-31）：那两条测的是
+/// `shellSegments()` 的线段数与端点半径，网格实现已整体移除，用例失去被测
+/// 对象。壳本身仍成立，由 `017` / `020` 两条守。
 void main() {
   test('TC-SPIKE-017 五层半径按固定倍数等比放大，且都在天球之内（ADR-0006 决策表·布局）', () {
     final List<double> radii = shellRadii();
@@ -23,35 +25,6 @@ void main() {
 
     // 最外层必须小于星空半径 100：节点在近处、星空在无穷远，这个层次不能反。
     expect(radii.last, lessThan(100));
-  });
-
-  test('TC-SPIKE-018 一层网格的线段数 = 纬线 + 经线，每条 6 个浮点（ADR-0006 决策表·布局）', () {
-    final Float32List segments = shellSegments(kInnermostShellRadius);
-
-    // 每条线段两个端点、每端点三个坐标 = 6 个浮点。
-    expect(segments.length % 6, 0);
-    final int segmentCount = segments.length ~/ 6;
-    expect(
-      segmentCount,
-      (kShellLatitudeCount + kShellMeridianCount) * kShellCircleSegments,
-    );
-  });
-
-  test('TC-SPIKE-019 网格端点都落在指定半径上（ADR-0006 决策表·布局）', () {
-    const double radius = 20.0;
-    final Float32List segments = shellSegments(radius);
-
-    for (int i = 0; i < segments.length; i += 3) {
-      final double x = segments[i];
-      final double y = segments[i + 1];
-      final double z = segments[i + 2];
-      final double length = (x * x + y * y + z * z);
-      expect(
-        length,
-        closeTo(radius * radius, 1e-3),
-        reason: '第 ${i ~/ 3} 个端点偏离球面',
-      );
-    }
   });
 
   test('TC-SPIKE-020 三轴深度按编目取 4/4/5，不为对称造层'
