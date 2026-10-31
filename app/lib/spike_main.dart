@@ -18,7 +18,7 @@ library;
 
 import 'package:flutter/material.dart';
 
-import 'spike/spike_scene.dart';
+import 'features/universe/presentation/spike_scene.dart';
 
 void main() {
   runApp(const SpikeApp());
@@ -34,7 +34,7 @@ class SpikeApp extends StatelessWidget {
       title: 'Weltuhr spike',
       debugShowCheckedModeBanner: false,
       theme: ThemeData.dark(useMaterial3: true),
-      home: const SpikeSceneView(),
+      home: const SpikeSceneView(showReadout: true),
     );
   }
 }

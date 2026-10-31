@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:project_knowledge/spike/star_catalog.dart';
+import 'package:project_knowledge/features/universe/presentation/star_catalog.dart';
 
 /// Hipparcos 主表解析的用例。
 ///
