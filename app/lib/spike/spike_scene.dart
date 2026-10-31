@@ -25,6 +25,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter_scene/scene.dart' as fs;
 import 'package:vector_math/vector_math.dart' as vm;
 
+import 'constellations.dart';
 import 'frame_stats.dart';
 import 'sky_image.dart';
 import 'sphere_shells.dart';
@@ -75,7 +76,7 @@ const double kResampleSeconds = 30.0;
 ///
 /// 单独成类而不是散在 State 里，是因为它**能在 `flutter test` 里验**：真机画面
 /// 采不到，但「拖 100 像素转多少度」「滚轮夹不夹」这些算术可以逐条断言。
-class SkyCamera {
+class SkyCamera implements SkyView {
   SkyCamera({
     this.yaw = 0,
     this.pitch = 0,
@@ -85,13 +86,16 @@ class SkyCamera {
 
   /// 水平朝向，弧度，`[0, 2π)`。**只经 [drag] / [spin] 改** —— 字段公开是为了
   /// 让测试能直读与构造，不是因为允许外部乱写。
+  @override
   double yaw;
 
   /// 俯仰，弧度，夹在 ±(π/2 − 0.01) —— 正对极点时 `target` 与视线同向，
   /// 相机退化成「看不出在转」。
+  @override
   double pitch;
 
   /// 视场角，度。
+  @override
   double fovDeg;
 
   /// 自动绕行是否还在生效。用户拖过一次就永久关掉。
@@ -203,12 +207,22 @@ class SpikeSceneView extends StatefulWidget {
   State<SpikeSceneView> createState() => _SpikeSceneViewState();
 }
 
-class _SpikeSceneViewState extends State<SpikeSceneView> {
+class _SpikeSceneViewState extends State<SpikeSceneView>
+    with SingleTickerProviderStateMixin {
   final fs.Scene _scene = fs.Scene();
   final List<double> _frames = <double>[];
   final ValueNotifier<FrameStats?> _stats = ValueNotifier<FrameStats?>(null);
   final ValueNotifier<double> _elapsed = ValueNotifier<double>(0);
   final SkyCamera _camera = SkyCamera();
+
+  /// 每帧递增。连线层挂在这个 notifier 上重绘 —— 相机是原地改字段的对象，
+  /// 靠 `setState` 重画会连带把 `SceneView` 整棵子树重建一遍。
+  final ValueNotifier<int> _tick = ValueNotifier<int>(0);
+
+  /// HIP 号 → 星表记录，连线按号取坐标用。
+  Map<int, StarRecord> _starsByHip = const <int, StarRecord>{};
+
+  late final Ticker _ticker;
 
   bool _ready = false;
   String? _error;
@@ -224,12 +238,15 @@ class _SpikeSceneViewState extends State<SpikeSceneView> {
   void initState() {
     super.initState();
     SchedulerBinding.instance.addTimingsCallback(_onTimings);
+    _ticker = createTicker((_) => _tick.value++)..start();
     _build();
   }
 
   @override
   void dispose() {
     SchedulerBinding.instance.removeTimingsCallback(_onTimings);
+    _ticker.dispose();
+    _tick.dispose();
     _stats.dispose();
     _elapsed.dispose();
     super.dispose();
@@ -241,6 +258,9 @@ class _SpikeSceneViewState extends State<SpikeSceneView> {
       await fs.Scene.initializeStaticResources();
 
       final StarCatalog catalog = await loadHipparcosCatalog();
+      _starsByHip = <int, StarRecord>{
+        for (final StarRecord star in catalog.stars) star.hip: star,
+      };
       final List<StarRecord> sorted = <StarRecord>[...catalog.stars]
         ..sort((StarRecord a, StarRecord b) => a.vMag.compareTo(b.vMag));
       final List<StarRecord> bright = sorted
@@ -399,6 +419,20 @@ class _SpikeSceneViewState extends State<SpikeSceneView> {
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )),
           ),
+          // 星座连线画在场景之上、读数之下：`IgnorePointer` 让手势照旧落到下层。
+          if (_ready)
+            Positioned.fill(
+              child: IgnorePointer(
+                child: CustomPaint(
+                  size: ui.Size.infinite,
+                  painter: ConstellationPainter(
+                    view: _camera,
+                    starsByHip: _starsByHip,
+                    repaint: _tick,
+                  ),
+                ),
+              ),
+            ),
           Positioned(
             left: 16,
             top: 16,
