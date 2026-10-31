@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:project_knowledge/spike/star_catalog.dart';
 
-/// `V/50` 星表解析的用例。
+/// Hipparcos 主表解析的用例。
 ///
 /// 星表一旦解析错，画面上**看不出错** —— 星星会照样铺满天空，只是位置全错、
 /// 亮度全错，而那种错只有在「抬头找不到北斗」的时候才暴露。所以这里逐条对着
@@ -11,137 +11,143 @@ import 'package:project_knowledge/spike/star_catalog.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  test('TC-SPIKE-007 全表 9,110 个对象，其中 9,096 颗有坐标（ADR-0006 决策表·背景）', () async {
-    final StarCatalog catalog = await loadBsc5Catalog(
-      cwd: Directory.current.path,
-    );
-
-    expect(catalog.objects, kBsc5ObjectCount);
-    expect(catalog.stars.length, kBsc5StarCount);
-    expect(catalog.skipped, 14, reason: '14 个是 1908 年初版保留编号的客星与河外星系，坐标为空');
+  /// 全量读一次给所有用例共用 —— 118,218 行、解压后约 60 MB，
+  /// 每条用例各读一次会让这套测试慢到没人愿意跑。
+  late StarCatalog catalog;
+  setUpAll(() async {
+    catalog = await loadHipparcosCatalog(cwd: Directory.current.path);
   });
 
-  test('TC-SPIKE-008 六颗已知恒星的赤经赤纬与星等对得上（ADR-0006 决策表·背景）', () async {
-    final StarCatalog catalog = await loadBsc5Catalog(
-      cwd: Directory.current.path,
+  test('TC-SPIKE-007 全表 118,218 行，其中 118,217 颗有星等（ADR-0006 决策表·背景）', () {
+    expect(catalog.rows, kHipparcosRowCount);
+    expect(catalog.stars.length, kHipparcosStarCount);
+    expect(
+      catalog.skipped,
+      kHipparcosMissingMagCount,
+      reason: '实测只有 1 条缺 vmag；缺星等就画不出亮度，整条跳过',
     );
-    final Map<int, StarRecord> byHr = <int, StarRecord>{
-      for (final StarRecord star in catalog.stars) star.hr: star,
+    expect(catalog.objects, catalog.stars.length + catalog.skipped);
+  });
+
+  test('TC-SPIKE-008 六颗已知恒星的坐标与星等对得上（ADR-0006 决策表·背景）', () {
+    final Map<int, StarRecord> byHip = <int, StarRecord>{
+      for (final StarRecord star in catalog.stars) star.hip: star,
     };
 
-    // 每行：HR 号、名称、赤经（小时）、赤纬（度）、视星等。数值取自星表的公开数据。
+    // 每行：HIP 号、名称、赤经（度）、赤纬（度）、视星等。数值取自表内实测。
     const List<(int, String, double, double, double)> expected =
         <(int, String, double, double, double)>[
-          (2491, '天狼星', 6.752472, -16.716111, -1.46),
-          (7001, '织女星', 18.615639, 38.783611, 0.03),
-          (5340, '大角星', 14.261028, 19.182500, -0.04),
-          (1713, '参宿四', 5.242306, -8.201667, 0.12),
-          (4301, '天枢（北斗一）', 11.062139, 61.750833, 1.79),
-          (4295, '天璇（北斗二）', 11.030694, 56.382500, 2.37),
+          (32349, '天狼星', 101.28854105, -16.71314306, -1.44),
+          (91262, '织女星', 279.23410832, 38.78299311, 0.03),
+          (69673, '大角星', 213.91811403, 19.18726997, -0.05),
+          (27989, '参宿四', 88.79287161, 7.40703634, 0.45),
+          (54061, '天枢（北斗一）', 165.93265365, 61.75111888, 1.81),
+          (11767, '北极星', 37.94614689, 89.26413805, 1.97),
         ];
 
-    for (final (int hr, String name, double ra, double dec, double mag)
+    for (final (int hip, String name, double ra, double dec, double mag)
         in expected) {
-      final StarRecord? star = byHr[hr];
-      expect(star, isNotNull, reason: 'HR $hr $name 应在表内');
-      expect(star!.raHours, closeTo(ra, 1e-4), reason: 'HR $hr $name 赤经');
-      expect(star.decDeg, closeTo(dec, 1e-4), reason: 'HR $hr $name 赤纬');
-      expect(star.vMag, closeTo(mag, 1e-2), reason: 'HR $hr $name 星等');
+      final StarRecord? star = byHip[hip];
+      expect(star, isNotNull, reason: 'HIP $hip $name 应在表内');
+      expect(star!.raDeg, closeTo(ra, 1e-6), reason: 'HIP $hip $name 赤经');
+      expect(star.decDeg, closeTo(dec, 1e-6), reason: 'HIP $hip $name 赤纬');
+      expect(star.vMag, closeTo(mag, 1e-6), reason: 'HIP $hip $name 星等');
     }
   });
 
-  test('TC-SPIKE-009 全表最亮的是天狼星（ADR-0006 决策表·背景）', () async {
-    final StarCatalog catalog = await loadBsc5Catalog(
-      cwd: Directory.current.path,
-    );
-
+  test('TC-SPIKE-009 全表最亮的是天狼星（ADR-0006 决策表·背景）', () {
     final StarRecord brightest = catalog.stars.reduce(
-      (StarRecord a, StarRecord b) => (a.vMag ?? 99) <= (b.vMag ?? 99) ? a : b,
+      (StarRecord a, StarRecord b) => a.vMag <= b.vMag ? a : b,
     );
 
-    expect(brightest.hr, 2491);
-    expect(brightest.vMag, closeTo(-1.46, 1e-6));
+    expect(brightest.hip, 32349);
+    expect(brightest.vMag, closeTo(-1.44, 1e-6));
   });
 
-  test('TC-SPIKE-010 所有坐标落在定义域内（ADR-0006 决策表·背景）', () async {
-    final StarCatalog catalog = await loadBsc5Catalog(
-      cwd: Directory.current.path,
-    );
-
+  test('TC-SPIKE-010 所有坐标落在定义域内（ADR-0006 决策表·背景）', () {
     for (final StarRecord star in catalog.stars) {
       expect(
-        star.raHours,
-        inInclusiveRange(0.0, 24.0),
-        reason: 'HR ${star.hr} 赤经越界 ⇒ 列切错了',
+        star.raDeg,
+        inInclusiveRange(0.0, 360.0),
+        reason: 'HIP ${star.hip} 赤经越界 ⇒ 列位置错了',
       );
-      expect(star.raHours, lessThan(24.0), reason: '赤经是 [0, 24)');
+      expect(star.raDeg, lessThan(360.0), reason: '赤经是 [0, 360)');
       expect(star.decDeg, inInclusiveRange(-90.0, 90.0));
     }
   });
 
-  test('TC-SPIKE-011 坐标缺失的记录整条跳过，不编一个位置（ADR-0006 决策表·背景）', () {
-    // 两条合成记录：一条坐标全空（表里那 14 条的形态），一条是真实的天狼星。
-    final String blank = _record(hr: 1);
-    final String full = _record(
-      hr: 2491,
-      raHour: '06',
-      raMinute: '45',
-      raSecond: '08.9',
-      decSign: '-',
-      decDegree: '16',
-      decMinute: '42',
-      decSecond: '58',
-      vMag: '-1.46',
-      bv: '+0.00',
+  test('TC-SPIKE-011 缺星等的记录整条跳过，不编一个亮度（ADR-0006 决策表·背景）', () {
+    final String text = _tdat(<List<String>>[
+      <String>['HIP 1', '10.0', '20.0', '1', ''],
+      <String>['HIP 32349', '101.28854105', '-16.71314306', '32349', '-1.44'],
+    ]);
+
+    final StarCatalog parsed = parseHipparcos(text);
+
+    expect(parsed.rows, 2);
+    expect(parsed.skipped, 1, reason: '第四列空 = 缺 vmag，算跳过');
+    expect(parsed.stars.single.hip, 32349);
+    expect(parsed.stars.single.vMag, closeTo(-1.44, 1e-9));
+  });
+
+  test('TC-SPIKE-023 坐标越界的记录整条跳过（ADR-0006 决策表·背景）', () {
+    final String text = _tdat(<List<String>>[
+      <String>['HIP 2', '400.0', '20.0', '2', '5.0'],
+      <String>['HIP 3', '10.0', '-91.0', '3', '5.0'],
+      <String>['HIP 4', '10.0', '20.0', '4', '5.0'],
+    ]);
+
+    final StarCatalog parsed = parseHipparcos(text);
+
+    expect(parsed.skipped, 2);
+    expect(parsed.stars.single.hip, 4);
+  });
+
+  test('TC-SPIKE-024 表头缺必需字段就抛，不静默错位（ADR-0006 决策表·背景）', () {
+    // 去掉 `ra` 这一列 —— 硬编码列号的实现会安然无恙地拿错列，
+    // 而按名字反查的实现必须当场炸。
+    final String text = _tdat(
+      <List<String>>[
+        <String>['HIP 1', '20.0', '1', '5.0'],
+      ],
+      fields: <String>['name', 'dec', 'hip_number', 'vmag'],
     );
 
-    final StarCatalog catalog = parseBsc5('$blank\n$full\n');
+    expect(() => parseHipparcos(text), throwsFormatException);
+  });
 
-    expect(catalog.skipped, 1, reason: '坐标空的算跳过，不算恒星');
-    expect(catalog.stars.length, 1);
-    final StarRecord star = catalog.stars.single;
-    expect(star.hr, 2491);
-    expect(star.raHours, closeTo(6.752472, 1e-4));
-    expect(star.decDeg, closeTo(-16.716111, 1e-4));
-    expect(star.vMag, closeTo(-1.46, 1e-2));
+  test('TC-SPIKE-025 声明行数与实测不等就抛，不静默少几千颗（ADR-0006 决策表·背景）', () {
+    final String text = _tdat(<List<String>>[
+      <String>['HIP 1', '10.0', '20.0', '1', '5.0'],
+    ], declaredRows: 99);
+
+    expect(() => parseHipparcos(text), throwsFormatException);
   });
 }
 
-/// 按 `bsc5.readme` 的字节表拼一条定宽记录。
+/// 拼一份最小的 `.tdat`（表头 + 数据 + `<END>`）。
 ///
-/// 手写空格对齐极易数错一格，而列错一格的症状是「解析成功但位置错」——
-/// 正好是这套用例要防的那类错，所以用列号写、不用肉眼数。
-String _record({
-  required int hr,
-  String? raHour,
-  String? raMinute,
-  String? raSecond,
-  String? decSign,
-  String? decDegree,
-  String? decMinute,
-  String? decSecond,
-  String? vMag,
-  String? bv,
+/// 字段顺序刻意**不等于**真实表里的顺序：按名字反查的实现必须能扛住任意顺序，
+/// 按列号硬编码的实现在这里就会错位。
+String _tdat(
+  List<List<String>> rows, {
+  List<String>? fields,
+  int? declaredRows,
 }) {
-  final List<String> cols = List<String>.filled(160, ' ');
-  void put(int column, String? text) {
-    if (text == null) {
-      return;
-    }
-    for (int i = 0; i < text.length; i++) {
-      cols[column - 1 + i] = text[i];
-    }
+  final List<String> names =
+      fields ?? <String>['name', 'ra', 'dec', 'hip_number', 'vmag'];
+  final StringBuffer buffer = StringBuffer()
+    ..writeln('<HEADER>')
+    ..writeln('#         TABLE: heasarc_hipparcos')
+    ..writeln('#    TOTAL ROWS: ${declaredRows ?? rows.length}')
+    ..writeln('#');
+  for (final String name in names) {
+    buffer.writeln('field[$name] = char10  // $name');
   }
-
-  put(1, hr.toString().padLeft(4));
-  put(76, raHour);
-  put(78, raMinute);
-  put(80, raSecond);
-  put(84, decSign);
-  put(85, decDegree);
-  put(87, decMinute);
-  put(89, decSecond);
-  put(103, vMag);
-  put(110, bv);
-  return cols.join();
+  buffer.writeln('<DATA>');
+  for (final List<String> row in rows) {
+    buffer.writeln(row.join('|'));
+  }
+  buffer.writeln('<END>');
+  return buffer.toString();
 }
