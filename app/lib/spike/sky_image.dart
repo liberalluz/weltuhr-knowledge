@@ -40,10 +40,6 @@ const double kMilkyWayHalfWidthDeg = 9.0;
 /// 银河带采样点数，整个大圆 360 点 = 每度一个。
 const int kMilkyWaySamples = 360;
 
-/// 银河带沿银纬切成多少层。层数决定羽化的平滑度：层越多阶跃越小，
-/// 每层都要画一条闭合带，24 层是「看不出台阶」与「启动别太慢」的折中。
-const int kMilkyWayBands = 24;
-
 /// 银河带中心的最高不透明度。压得很低 —— 真实银河是底色上的一层灰白，
 /// 压高了整片天会变成一块蓝布。
 const double kMilkyWayPeakAlpha = 0.55;
@@ -106,42 +102,45 @@ void _paintBackground(ui.Canvas canvas, double w, double h) {
   );
 }
 
-/// 银河在某个银纬上的不透明度：中心满值，边缘**平滑降到 0**。
-///
-/// 段 2 画的是一条等亮的带子，边界像刀切 —— 真实银河没有边，是逐渐稀下去的。
-/// 用 `(1 − t)²` 而不是 `1 − t`：后者在边缘处斜率不为零，仍能看出折角。
-double milkyWayAlphaAt(double galacticLatDeg) {
-  final double t = (galacticLatDeg.abs() / kMilkyWayHalfWidthDeg).clamp(
-    0.0,
-    1.0,
-  );
-  return (1 - t) * (1 - t);
-}
-
-/// 银河带：沿**银道面**分层画，每层按银纬给不透明度，边缘自然消失。
+/// 银河带：**一条路径、一次成形**，边缘靠模糊摊开。
 ///
 /// 走向由坐标旋转算出（ICRS→Galactic 矩阵的转置），与星位同源 —— 所以银河
 /// 不会和星星打架。
+///
+/// 为什么不分层：段 3 曾按银纬切 24 层、每层一个多边形、各给一个不透明度。
+/// 层与层是**各自独立的填充**，公共边被抗锯齿各算一次，同色叠加得不到应有的
+/// 覆盖率，于是每条缝都与两侧不同；24 层就是 23 条缝，间距正好一层宽
+/// （0.75°）。实测旧实现沿法向每步跳 16/255（银道面附近最大），这条用例
+/// `TC-SPIKE-028` 在旧实现下直接红。改成单路径后整块带只有一条边界，不存在
+/// 内部接缝。
 void _paintMilkyWay(ui.Canvas canvas, double w, double h) {
-  const double bandWidth = 2 * kMilkyWayHalfWidthDeg / kMilkyWayBands;
-  for (int i = 0; i < kMilkyWayBands; i++) {
-    final double b0 = -kMilkyWayHalfWidthDeg + bandWidth * i;
-    final double b1 = b0 + bandWidth;
-    final double alpha = milkyWayAlphaAt((b0 + b1) / 2) * kMilkyWayPeakAlpha;
-    if (alpha <= 0.001) {
-      continue;
-    }
-    canvas.drawPath(
-      _bandPath(b0, b1, w, h),
-      ui.Paint()..color = ui.Color.fromARGB((alpha * 255).round(), 46, 54, 80),
-    );
-  }
-  // 一层很宽的模糊只压中央亮部：银河核心比两翼亮，这一点 blur 比再切十层便宜。
+  final double pxPerDeg = h / 180;
+
+  // 形体半宽取亮带半宽的**一半**，模糊半径再取一半：两者叠加后，不透明度在
+  // kMilkyWayHalfWidthDeg 处已经收敛到 erfc(2) / 2 ≈ 0.002（不到 1/255），
+  // 中心仍是满值。半径取小了边缘会留硬边，取大了亮带会瘫成一片灰雾。
+  const double shapeHalfDeg = kMilkyWayHalfWidthDeg / 2;
+  final double sigma = kMilkyWayHalfWidthDeg / 4 * pxPerDeg;
+
   canvas.drawPath(
-    _bandPath(-3.0, 3.0, w, h),
+    _bandPath(-shapeHalfDeg, shapeHalfDeg, w, h),
+    ui.Paint()
+      ..color = ui.Color.fromARGB(
+        (kMilkyWayPeakAlpha * 255).round(),
+        46,
+        54,
+        80,
+      )
+      ..maskFilter = ui.MaskFilter.blur(ui.BlurStyle.normal, sigma),
+  );
+
+  // 核部：一条更窄的带，用同一个模糊摊开，只把中央压亮一点 —— 银河核心比
+  // 两翼亮，再切十层不如叠这一笔便宜。
+  canvas.drawPath(
+    _bandPath(-shapeHalfDeg / 3, shapeHalfDeg / 3, w, h),
     ui.Paint()
       ..color = const ui.Color.fromARGB(38, 72, 80, 118)
-      ..maskFilter = const ui.MaskFilter.blur(ui.BlurStyle.normal, 30),
+      ..maskFilter = ui.MaskFilter.blur(ui.BlurStyle.normal, sigma),
   );
 }
 
