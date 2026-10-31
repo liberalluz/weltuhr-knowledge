@@ -92,6 +92,8 @@
 *.sqlite          binary
 *.sqlite3         binary
 *.pdf             binary
+# Compressed source data (content/stars/source/bsc5.dat.gz)
+*.gz              binary
 
 # ─── Generated: host collapses the diff, no language stats ─────────
 app/windows/**    linguist-generated=true
