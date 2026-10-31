@@ -28,7 +28,6 @@ import 'package:vector_math/vector_math.dart' as vm;
 import 'constellations.dart';
 import 'frame_stats.dart';
 import 'sky_image.dart';
-import 'sphere_shells.dart';
 import 'star_catalog.dart';
 import 'star_sprite.dart';
 
@@ -289,7 +288,8 @@ class _SpikeSceneViewState extends State<SpikeSceneView>
         ..scatter = 0.78;
 
       await _addBrightStars(bright);
-      _scene.add(buildShellsNode());
+      // 球壳不画：经纬网格已删（2026-10-31，见 `sphere_shells.dart` 头注释）。
+      // 节点落地时按 `shellRadius()` 算位置，壳本身仍不需要可见。
 
       if (mounted) {
         setState(() => _ready = true);
@@ -491,7 +491,7 @@ class _Readout extends StatelessWidget {
         final String body =
             '$head\n'
             '星 $stars 颗'
-            '${lost > 0 ? "（跳 $lost）" : ""} · $kShellCount 层球壳\n'
+            '${lost > 0 ? "（跳 $lost）" : ""}\n'
             'fov ${camera.fovDeg.toStringAsFixed(0)}°'
             '${camera.autoSpin ? " · 自转中" : ""}'
             ' · 拖动转 / 滚轮缩放$tail';
