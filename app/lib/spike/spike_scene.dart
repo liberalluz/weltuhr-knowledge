@@ -1,12 +1,13 @@
-/// `B17b` 段 2 的最小场景：真实星表天球 + 亮星光斑 + 5 层同心球壳 + bloom。
+/// `B17b` 段 3 的场景：Hipparcos 全量星表天球 + 亮星光斑 + 5 层同心球壳 +
+/// 可旋转可缩放的天球 + bloom。
 ///
-/// 与笔 1 的差别只有一处但很关键：**星星不再是随机撒的了**。位置、亮度、颜色
-/// 全部取自 `V/50` 星表（`star_catalog.dart`），抬头能真的找到北斗七星。
+/// 与段 2 的差别：星源从 `V/50`（9,096 颗）换成 Hipparcos（118,217 颗），
+/// 相机从「按时间自动绕行」换成**手势驱动**，贴图的极区畸变在绘制期补偿。
 ///
 /// 分工沿 `ADR-0006` 的结论：**暗星烘进贴图、亮星做成 billboard**。理由是实测
 /// 出来的 —— 像素翻 1.6 倍帧时间只涨 0.1 ms，说明填充率不是瓶颈；而几何实例数
 /// 会直接把帧时间顶上去（1,200 个 billboard 是当前唯一的几何负载）。
-/// 所以 9,096 颗星里最亮的 1,200 颗占几何，其余 7,896 颗留在贴图里。
+/// 所以 118,217 颗里最亮的 1,200 颗占几何，其余 117,017 颗留在贴图里。
 ///
 /// 相机按 `ADR-0006` 决策 2 定死在球心、**只旋转不平移**：平移会让同心球壳的
 /// 透视崩掉。
@@ -18,6 +19,7 @@ library;
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_scene/scene.dart' as fs;
@@ -48,6 +50,152 @@ const double kBrightStarMaxSize = 0.62;
 const double kBrightStarMinGain = 0.7;
 const double kBrightStarMaxGain = 2.6;
 
+/// 拖动灵敏度：一个屏幕像素转多少弧度。
+///
+/// 1920 像素宽、fov 70°（1.22 弧度）时，整屏拖一遍转过 0.96 弧度 ≈ 55°，
+/// 比「拖到头刚好转过一屏」略钝一点 —— 太灵敏会很难对准一颗星。
+const double kDragRadiansPerPixel = 0.0005;
+
+/// 滚轮一格改变多少视场角（度）。
+const double kZoomDegreesPerNotch = 4.0;
+
+/// 视场角上下限。上限比段 2 的 70° 宽一档，下限留给「看清一片天区」。
+const double kMinFovDeg = 20.0;
+const double kMaxFovDeg = 100.0;
+
+/// 自动绕行的角速度（弧度/秒）。**用户一拖动就永久停** —— 自转与手势抢方向
+/// 是最烦的一种手感。
+const double kAutoSpinRadiansPerSecond = 0.02;
+
+/// 重采按钮用的采样时长（秒）。默认 [kSampleSeconds] 只够看个大概，
+/// 要判断 P95 是否收敛得拉长窗口。
+const double kResampleSeconds = 30.0;
+
+/// 球心相机的状态：只转、不平移。
+///
+/// 单独成类而不是散在 State 里，是因为它**能在 `flutter test` 里验**：真机画面
+/// 采不到，但「拖 100 像素转多少度」「滚轮夹不夹」这些算术可以逐条断言。
+class SkyCamera {
+  SkyCamera({
+    this.yaw = 0,
+    this.pitch = 0,
+    this.fovDeg = 70,
+    this.autoSpin = true,
+  });
+
+  /// 水平朝向，弧度，`[0, 2π)`。**只经 [drag] / [spin] 改** —— 字段公开是为了
+  /// 让测试能直读与构造，不是因为允许外部乱写。
+  double yaw;
+
+  /// 俯仰，弧度，夹在 ±(π/2 − 0.01) —— 正对极点时 `target` 与视线同向，
+  /// 相机退化成「看不出在转」。
+  double pitch;
+
+  /// 视场角，度。
+  double fovDeg;
+
+  /// 自动绕行是否还在生效。用户拖过一次就永久关掉。
+  bool autoSpin;
+
+  /// 视线方向（单位向量）。
+  vm.Vector3 get direction {
+    final double cosPitch = math.cos(pitch);
+    return vm.Vector3(
+      math.sin(yaw) * cosPitch,
+      math.sin(pitch),
+      math.cos(yaw) * cosPitch,
+    );
+  }
+
+  /// 拖动。像素位移 → 角度：手指往右拖，天球跟着往右走（视线左转）。
+  void drag(ui.Offset delta) {
+    autoSpin = false;
+    yaw = _wrap(yaw - delta.dx * kDragRadiansPerPixel);
+    pitch = (pitch + delta.dy * kDragRadiansPerPixel).clamp(
+      -_maxPitch,
+      _maxPitch,
+    );
+  }
+
+  /// 滚轮 / 触控板缩放。`delta` 为正表示放大（视场角变小）。
+  void zoom(double delta) {
+    autoSpin = false;
+    fovDeg = (fovDeg - delta * kZoomDegreesPerNotch / 100).clamp(
+      kMinFovDeg,
+      kMaxFovDeg,
+    );
+  }
+
+  /// 自动绕行一帧。返回值表示有没有动过 —— 动了才需要重绘。
+  bool spin(double dtSeconds) {
+    if (!autoSpin || dtSeconds <= 0) {
+      return false;
+    }
+    yaw = _wrap(yaw + kAutoSpinRadiansPerSecond * dtSeconds);
+    return true;
+  }
+
+  static const double _maxPitch = math.pi / 2 - 0.01;
+
+  static double _wrap(double radians) {
+    const double twoPi = 2 * math.pi;
+    final double wrapped = radians % twoPi;
+    return wrapped < 0 ? wrapped + twoPi : wrapped;
+  }
+}
+
+/// 手势层：把手势翻译成 [SkyCamera] 的调用。
+///
+/// 单独一个 widget 是为了**能测** —— 真正的 `SceneView` 要 GPU，在
+/// `flutter test` 里挂不起来，而「手势有没有被识别、有没有落到相机上」
+/// 这一层不需要 GPU。
+class SkyGestureLayer extends StatefulWidget {
+  const SkyGestureLayer({
+    required this.camera,
+    required this.child,
+    this.onChanged,
+    super.key,
+  });
+
+  final SkyCamera camera;
+  final Widget child;
+
+  /// 相机变化后的回调（画面要重绘）。
+  final VoidCallback? onChanged;
+
+  @override
+  State<SkyGestureLayer> createState() => _SkyGestureLayerState();
+}
+
+class _SkyGestureLayerState extends State<SkyGestureLayer> {
+  ui.Offset _lastPan = ui.Offset.zero;
+
+  @override
+  Widget build(BuildContext context) {
+    return Listener(
+      onPointerSignal: (PointerSignalEvent event) {
+        if (event is PointerScrollEvent) {
+          widget.camera.zoom(event.scrollDelta.dy);
+          widget.onChanged?.call();
+        }
+      },
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onPanStart: (DragStartDetails details) {
+          _lastPan = details.localPosition;
+        },
+        onPanUpdate: (DragUpdateDetails details) {
+          final ui.Offset delta = details.localPosition - _lastPan;
+          _lastPan = details.localPosition;
+          widget.camera.drag(delta);
+          widget.onChanged?.call();
+        },
+        child: widget.child,
+      ),
+    );
+  }
+}
+
 class SpikeSceneView extends StatefulWidget {
   const SpikeSceneView({super.key});
 
@@ -60,13 +208,17 @@ class _SpikeSceneViewState extends State<SpikeSceneView> {
   final List<double> _frames = <double>[];
   final ValueNotifier<FrameStats?> _stats = ValueNotifier<FrameStats?>(null);
   final ValueNotifier<double> _elapsed = ValueNotifier<double>(0);
+  final SkyCamera _camera = SkyCamera();
 
   bool _ready = false;
   String? _error;
   int _seen = 0;
   int? _sampleStartUs;
+  int? _lastFrameUs;
   bool _samplingDone = false;
+  double _sampleSeconds = kSampleSeconds;
   int _starCount = 0;
+  int _lostStars = 0;
 
   @override
   void initState() {
@@ -88,13 +240,9 @@ class _SpikeSceneViewState extends State<SpikeSceneView> {
       // 引擎的静态资源要在建几何、材质之前就绪，否则它们拿不到 shader。
       await fs.Scene.initializeStaticResources();
 
-      final StarCatalog catalog = await loadBsc5Catalog();
+      final StarCatalog catalog = await loadHipparcosCatalog();
       final List<StarRecord> sorted = <StarRecord>[...catalog.stars]
-        ..sort((StarRecord a, StarRecord b) {
-          final double ma = a.vMag ?? kFaintestMag;
-          final double mb = b.vMag ?? kFaintestMag;
-          return ma.compareTo(mb);
-        });
+        ..sort((StarRecord a, StarRecord b) => a.vMag.compareTo(b.vMag));
       final List<StarRecord> bright = sorted
           .take(kSpikeBillboardCount)
           .toList(growable: false);
@@ -102,6 +250,7 @@ class _SpikeSceneViewState extends State<SpikeSceneView> {
           .skip(bright.length)
           .toList(growable: false);
       _starCount = catalog.stars.length;
+      _lostStars = catalog.skipped;
 
       // 天球：只画暗星。亮星交给下面的 billboard，两边都画会重影。
       final ui.Image image = await paintSkyImage(stars: faint);
@@ -144,14 +293,16 @@ class _SpikeSceneViewState extends State<SpikeSceneView> {
 
     for (int i = 0; i < bright.length; i++) {
       final StarRecord star = bright[i];
-      final Vec3 dir = unitVector(star.raHours, star.decDeg);
+      final Vec3 dir = unitVector(star.raDeg, star.decDeg);
       // 场景是 Y 轴朝上，而星表的 `z` 指向北天极 ⇒ 换轴时才不会躺在赤道面上。
       final vm.Vector3 center =
           vm.Vector3(dir.x, dir.z, dir.y) * kSpikeSphereRadius;
 
-      final double mag = star.vMag ?? kFaintestMag;
-      final double t = ((kFaintestMag - mag) / (kFaintestMag - kBrightestMag))
-          .clamp(0.0, 1.0);
+      final double t =
+          ((kFaintestMag - star.vMag) / (kFaintestMag - kBrightestMag)).clamp(
+            0.0,
+            1.0,
+          );
       final double size =
           kBrightStarMinSize + t * (kBrightStarMaxSize - kBrightStarMinSize);
       final double gain =
@@ -171,23 +322,34 @@ class _SpikeSceneViewState extends State<SpikeSceneView> {
     _scene.add(fs.Node(mesh: fs.Mesh(geometry, buildStarMaterial(texture))));
   }
 
-  /// 球心视角：只看方向，不平移。
+  /// 球心视角：只看方向，不平移。方向取 [SkyCamera]，每帧推进一次自动绕行。
   fs.PerspectiveCamera _cameraAt(Duration elapsed) {
-    final double t = elapsed.inMicroseconds / 1e6;
-    final double yaw = t * 0.10;
-    final double pitch = math.sin(t * 0.31) * 0.16;
-    final vm.Vector3 dir = vm.Vector3(
-      math.sin(yaw) * math.cos(pitch),
-      math.sin(pitch),
-      math.cos(yaw) * math.cos(pitch),
-    );
+    final int nowUs = elapsed.inMicroseconds;
+    final int previousUs = _lastFrameUs ?? nowUs;
+    _lastFrameUs = nowUs;
+    final double dt = (nowUs - previousUs) / 1e6;
+    _camera.spin(dt.clamp(0.0, 0.25));
+
     return fs.PerspectiveCamera(
       position: vm.Vector3.zero(),
-      target: dir * kSpikeSphereRadius,
-      // 视场稍宽，一屏能装下的星多些，帧预算更接近真实使用。
-      fovRadiansY: 70 * math.pi / 180,
+      target: _camera.direction * kSpikeSphereRadius,
+      fovRadiansY: _camera.fovDeg * math.pi / 180,
       fovFar: kSpikeSphereRadius * 4,
     );
+  }
+
+  /// 重采：清空样本、拉长窗口。用来判断 P95 是「首帧上传」还是「稳态抖动」——
+  /// 只在 8 秒窗口里看，这两种分不开。
+  void _resample() {
+    setState(() {
+      _frames.clear();
+      _seen = 0;
+      _sampleStartUs = null;
+      _samplingDone = false;
+      _sampleSeconds = kResampleSeconds;
+      _stats.value = null;
+      _elapsed.value = 0;
+    });
   }
 
   void _onTimings(List<FrameTiming> timings) {
@@ -209,6 +371,7 @@ class _SpikeSceneViewState extends State<SpikeSceneView> {
       if (shouldStopSampling(
         elapsedSeconds: elapsed,
         samples: _frames.length,
+        minSeconds: _sampleSeconds,
       )) {
         _samplingDone = true;
         _stats.value = summarize(_frames);
@@ -227,7 +390,11 @@ class _SpikeSceneViewState extends State<SpikeSceneView> {
             child: _error != null
                 ? _ErrorPane(message: _error!)
                 : (_ready
-                      ? fs.SceneView(_scene, cameraBuilder: _cameraAt)
+                      ? SkyGestureLayer(
+                          camera: _camera,
+                          onChanged: () => setState(() {}),
+                          child: fs.SceneView(_scene, cameraBuilder: _cameraAt),
+                        )
                       : const Center(
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )),
@@ -238,7 +405,11 @@ class _SpikeSceneViewState extends State<SpikeSceneView> {
             child: _Readout(
               stats: _stats,
               elapsed: _elapsed,
+              camera: _camera,
               stars: _starCount,
+              lost: _lostStars,
+              window: () => _sampleSeconds,
+              onResample: _ready ? _resample : null,
             ),
           ),
         ],
@@ -252,34 +423,45 @@ class _Readout extends StatelessWidget {
   const _Readout({
     required this.stats,
     required this.elapsed,
+    required this.camera,
     required this.stars,
+    required this.lost,
+    required this.window,
+    required this.onResample,
   });
 
   final ValueNotifier<FrameStats?> stats;
   final ValueNotifier<double> elapsed;
+  final SkyCamera camera;
   final int stars;
+  final int lost;
+  final double Function() window;
+  final VoidCallback? onResample;
 
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder<FrameStats?>(
       valueListenable: stats,
       builder: (BuildContext context, FrameStats? value, _) {
-        final String body;
-        if (value == null) {
-          body =
-              '采样中 ${elapsed.value.toStringAsFixed(1)} / '
-              '${kSampleSeconds.toStringAsFixed(1)} 秒\n'
-              '星表 $stars 颗';
-        } else {
-          body =
-              'P50 ${value.p50Ms.toStringAsFixed(1)} ms '
-              '(${value.p50Fps.toStringAsFixed(1)} fps)\n'
-              'P95 ${value.p95Ms.toStringAsFixed(1)} ms\n'
-              '样本 ${value.samples} · '
-              '${kSampleSeconds.toStringAsFixed(1)} 秒\n'
-              '星表 $stars 颗 · $kShellCount 层球壳\n'
-              '${value.passesGate ? "闸门通过" : "闸门未过"}';
-        }
+        final double seconds = window();
+        final String head = value == null
+            ? '采样中 ${elapsed.value.toStringAsFixed(1)} / '
+                  '${seconds.toStringAsFixed(0)} 秒'
+            : 'P50 ${value.p50Ms.toStringAsFixed(1)} ms '
+                  '(${value.p50Fps.toStringAsFixed(1)} fps)\n'
+                  'P95 ${value.p95Ms.toStringAsFixed(1)} ms\n'
+                  '样本 ${value.samples} · ${seconds.toStringAsFixed(0)} 秒';
+        final String tail = value == null
+            ? ''
+            : '\n${value.passesGate ? "闸门通过" : "闸门未过"}';
+        final String body =
+            '$head\n'
+            '星 $stars 颗'
+            '${lost > 0 ? "（跳 $lost）" : ""} · $kShellCount 层球壳\n'
+            'fov ${camera.fovDeg.toStringAsFixed(0)}°'
+            '${camera.autoSpin ? " · 自转中" : ""}'
+            ' · 拖动转 / 滚轮缩放$tail';
+
         return DecoratedBox(
           decoration: BoxDecoration(
             color: Colors.black.withValues(alpha: 0.55),
@@ -287,14 +469,38 @@ class _Readout extends StatelessWidget {
           ),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-            child: Text(
-              body,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 12,
-                height: 1.5,
-                fontFeatures: <FontFeature>[FontFeature.tabularFigures()],
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Text(
+                  body,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    height: 1.5,
+                    fontFeatures: <FontFeature>[FontFeature.tabularFigures()],
+                  ),
+                ),
+                if (onResample != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 6),
+                    child: OutlinedButton(
+                      onPressed: onResample,
+                      style: OutlinedButton.styleFrom(
+                        visualDensity: VisualDensity.compact,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 2,
+                        ),
+                        textStyle: const TextStyle(fontSize: 11),
+                      ),
+                      child: Text(
+                        '重采 ${kResampleSeconds.toStringAsFixed(0)} 秒',
+                      ),
+                    ),
+                  ),
+              ],
             ),
           ),
         );
