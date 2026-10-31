@@ -55,6 +55,28 @@ class FrameStats {
   bool get passesGate => p50Ms > 0 && p50Ms <= 1000 / 30 && p95Ms <= 50;
 }
 
+/// 稳态采样的**时长下限**（秒）。
+///
+/// 笔 1 用的是「采满 300 帧」—— 那个判据在 30 fps 的机器上等于 10 秒，没问题；
+/// 但在这台机器上 300 帧只要 **1.2 秒**，采样窗口比「把窗口拖到最大」还短，
+/// 于是「改完分辨率再读一次」这个动作根本做不到，读数会在拖动过程中定格。
+///
+/// 改成按时长：**至少采 [kSampleSeconds] 秒**。帧率快的机器采到的样本更多
+/// （这正好是我们要的 —— 分位数需要样本量），慢的机器也不会因为帧数不够而
+/// 提前结束。
+const double kSampleSeconds = 8.0;
+
+/// 采样是否该停。
+///
+/// 两条都要满足：采到了样本（否则分位数无从谈起），且已过时长下限。
+/// 只有时长没有样本 = 一帧都没跑起来，那种情况给的读数是 `0`，
+/// 不能当成「极快」。
+bool shouldStopSampling({
+  required double elapsedSeconds,
+  required int samples,
+  double minSeconds = kSampleSeconds,
+}) => samples > 0 && elapsedSeconds >= minSeconds;
+
 /// 汇总一次采集。
 FrameStats summarize(List<double> frameMs) => FrameStats(
   samples: frameMs.length,

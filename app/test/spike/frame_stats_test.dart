@@ -68,4 +68,23 @@ void main() {
     // 边界：33.33 ms 约合 30.0 fps，恰好压线。
     expect(summarize(const <double>[1000 / 30]).passesGate, isTrue);
   });
+
+  test('TC-SPIKE-021 采样按「至少 N 秒」停，不按帧数（ADR-0006 决策四·采样口径）', () {
+    // 截止时间整秒：不到 8 秒不停，到 8 秒才停。
+    expect(
+      shouldStopSampling(elapsedSeconds: 7.9, samples: 2000),
+      isFalse,
+      reason: '笔 1 的「采满 300 帧」在这台机器上只有 1.2 秒，窗口都来不及放大',
+    );
+    expect(shouldStopSampling(elapsedSeconds: 8.0, samples: 2000), isTrue);
+    expect(shouldStopSampling(elapsedSeconds: 12.0, samples: 2000), isTrue);
+  });
+
+  test('TC-SPIKE-022 一帧都没采到不算采完（ADR-0006 决策四·采样口径）', () {
+    expect(
+      shouldStopSampling(elapsedSeconds: 30, samples: 0),
+      isFalse,
+      reason: '没有样本时 `summarize` 给 0 ms，误当成「极快」会把失败读成通过',
+    );
+  });
 }

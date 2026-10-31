@@ -1,14 +1,18 @@
-/// `B17b` 笔 1 的最小场景：天球贴图 + 1,200 个 billboard 点 + bloom。
+/// `B17b` 段 2 的最小场景：真实星表天球 + 亮星光斑 + 5 层同心球壳 + bloom。
 ///
-/// 这条链只回答一个问题：**这套引擎在你这台机器上能不能跑到 30 帧**
-/// （`ADR-0006` §3）。它不判断好不好看 —— 那属段 2 的观感调校。
+/// 与笔 1 的差别只有一处但很关键：**星星不再是随机撒的了**。位置、亮度、颜色
+/// 全部取自 `V/50` 星表（`star_catalog.dart`），抬头能真的找到北斗七星。
 ///
-/// 相机按 `ADR-0006` 决策 2 定死在球心、**只旋转不平移**：平移会让同心球壳
-/// 的透视崩掉，那是一个看起来很小、改起来很贵的错误。
+/// 分工沿 `ADR-0006` 的结论：**暗星烘进贴图、亮星做成 billboard**。理由是实测
+/// 出来的 —— 像素翻 1.6 倍帧时间只涨 0.1 ms，说明填充率不是瓶颈；而几何实例数
+/// 会直接把帧时间顶上去（1,200 个 billboard 是当前唯一的几何负载）。
+/// 所以 9,096 颗星里最亮的 1,200 颗占几何，其余 7,896 颗留在贴图里。
 ///
-/// 引擎类型一律带 `fs.` 前缀：`flutter_scene` 的 `Node` / `Scene` 与本项目
-/// 领域模型同名，不加前缀时 `R8`（不得直接构造领域 `Node`）会误判 —— 加前缀
-/// 既让规则分得清，也让读代码的人一眼知道这是引擎的类。
+/// 相机按 `ADR-0006` 决策 2 定死在球心、**只旋转不平移**：平移会让同心球壳的
+/// 透视崩掉。
+///
+/// 引擎类型一律带 `fs.` 前缀：`flutter_scene` 的 `Node` / `Scene` 与本项目领域
+/// 模型同名，不加前缀时 `R8`（不得直接构造领域 `Node`）会误判。
 library;
 
 import 'dart:math' as math;
@@ -21,6 +25,9 @@ import 'package:vector_math/vector_math.dart' as vm;
 
 import 'frame_stats.dart';
 import 'sky_image.dart';
+import 'sphere_shells.dart';
+import 'star_catalog.dart';
+import 'star_sprite.dart';
 
 /// `ADR-0006` §3 规定的同屏点数。
 const int kSpikeBillboardCount = 1200;
@@ -32,9 +39,14 @@ const double kSpikeSphereRadius = 100.0;
 /// 一个与稳态无关的数 —— 丢掉。
 const int kWarmupFrames = 30;
 
-/// 稳态采样帧数。300 帧在 30 fps 下是 10 秒，足够压住抖动，又不至于让你
-/// 在终端前干等。
-const int kSampleFrames = 300;
+/// 亮星光斑的世界尺寸端点：按星等线性映射，最亮的给 [kBrightStarMaxSize]。
+const double kBrightStarMinSize = 0.18;
+const double kBrightStarMaxSize = 0.62;
+
+/// 亮星光斑的亮度倍数端点。超过 1 才会被 bloom 的阈值（1.0）吃到，
+/// 所以最亮的星给到 2.6，让光晕在画面上真的散开。
+const double kBrightStarMinGain = 0.7;
+const double kBrightStarMaxGain = 2.6;
 
 class SpikeSceneView extends StatefulWidget {
   const SpikeSceneView({super.key});
@@ -47,11 +59,14 @@ class _SpikeSceneViewState extends State<SpikeSceneView> {
   final fs.Scene _scene = fs.Scene();
   final List<double> _frames = <double>[];
   final ValueNotifier<FrameStats?> _stats = ValueNotifier<FrameStats?>(null);
+  final ValueNotifier<double> _elapsed = ValueNotifier<double>(0);
 
   bool _ready = false;
   String? _error;
   int _seen = 0;
+  int? _sampleStartUs;
   bool _samplingDone = false;
+  int _starCount = 0;
 
   @override
   void initState() {
@@ -64,6 +79,7 @@ class _SpikeSceneViewState extends State<SpikeSceneView> {
   void dispose() {
     SchedulerBinding.instance.removeTimingsCallback(_onTimings);
     _stats.dispose();
+    _elapsed.dispose();
     super.dispose();
   }
 
@@ -72,13 +88,27 @@ class _SpikeSceneViewState extends State<SpikeSceneView> {
       // 引擎的静态资源要在建几何、材质之前就绪，否则它们拿不到 shader。
       await fs.Scene.initializeStaticResources();
 
-      // 天球：一张运行期画的 equirect 图，不落盘（`ADR-0006` 决策 4）。
-      final ui.Image image = await paintSkyImage();
+      final StarCatalog catalog = await loadBsc5Catalog();
+      final List<StarRecord> sorted = <StarRecord>[...catalog.stars]
+        ..sort((StarRecord a, StarRecord b) {
+          final double ma = a.vMag ?? kFaintestMag;
+          final double mb = b.vMag ?? kFaintestMag;
+          return ma.compareTo(mb);
+        });
+      final List<StarRecord> bright = sorted
+          .take(kSpikeBillboardCount)
+          .toList(growable: false);
+      final List<StarRecord> faint = sorted
+          .skip(bright.length)
+          .toList(growable: false);
+      _starCount = catalog.stars.length;
+
+      // 天球：只画暗星。亮星交给下面的 billboard，两边都画会重影。
+      final ui.Image image = await paintSkyImage(stars: faint);
       final fs.EnvironmentMap env = await fs.EnvironmentMap.fromUIImages(
         radianceImage: image,
       );
       _scene.environment = env;
-      // 背景直接用环境本身：星空的「亮」由贴图决定，不额外打光。
       _scene.skybox = fs.Skybox(fs.EnvironmentSkySource());
 
       // bloom 是全案唯一的「必须」后处理（`ADR-0006` 决策 2）：亮星光晕靠它，
@@ -86,10 +116,11 @@ class _SpikeSceneViewState extends State<SpikeSceneView> {
       _scene.postProcess.bloom
         ..enabled = true
         ..threshold = 1.0
-        ..intensity = 0.35
-        ..scatter = 0.75;
+        ..intensity = 0.42
+        ..scatter = 0.78;
 
-      _addBillboards();
+      await _addBrightStars(bright);
+      _scene.add(buildShellsNode());
 
       if (mounted) {
         setState(() => _ready = true);
@@ -101,41 +132,43 @@ class _SpikeSceneViewState extends State<SpikeSceneView> {
     }
   }
 
-  /// 1,200 个点均匀铺在球壳上，亮度按幂律压向暗端 —— 与真实星空的分布同向。
+  /// 最亮的 [kSpikeBillboardCount] 颗星铺在球壳上，位置取真实赤经赤纬。
   ///
-  /// 用**一个** `BillboardGeometry` 装 1,200 个实例，不是 1,200 个节点：后者
-  /// 会变成 1,200 次 draw call，测出来的是调度开销而不是渲染开销。
-  void _addBillboards() {
+  /// 用**一个** `BillboardGeometry` 装全部实例，不是每颗一个节点：后者会变成
+  /// 上千次 draw call，测出来的是调度开销而不是渲染开销。
+  Future<void> _addBrightStars(List<StarRecord> bright) async {
+    final fs.Texture2D texture = await buildStarSpriteTexture();
     final fs.BillboardGeometry geometry = fs.BillboardGeometry(
-      capacity: kSpikeBillboardCount,
+      capacity: bright.length,
     );
-    final math.Random rng = math.Random(20261030);
 
-    for (int i = 0; i < kSpikeBillboardCount; i++) {
-      // 球面均匀采样：`z` 均匀、`θ` 均匀，避免在极点堆积。
-      final double z = rng.nextDouble() * 2 - 1;
-      final double theta = rng.nextDouble() * 2 * math.pi;
-      final double r = math.sqrt(1 - z * z);
+    for (int i = 0; i < bright.length; i++) {
+      final StarRecord star = bright[i];
+      final Vec3 dir = unitVector(star.raHours, star.decDeg);
+      // 场景是 Y 轴朝上，而星表的 `z` 指向北天极 ⇒ 换轴时才不会躺在赤道面上。
       final vm.Vector3 center =
-          vm.Vector3(r * math.cos(theta), z, r * math.sin(theta)) *
-          kSpikeSphereRadius;
+          vm.Vector3(dir.x, dir.z, dir.y) * kSpikeSphereRadius;
 
-      final double u = rng.nextDouble();
-      final double lum = u * u * u;
-      // 0.10 在半径 100 处约合 1 像素，亮星再放大几倍。
-      final double size = 0.10 + lum * 0.26;
+      final double mag = star.vMag ?? kFaintestMag;
+      final double t = ((kFaintestMag - mag) / (kFaintestMag - kBrightestMag))
+          .clamp(0.0, 1.0);
+      final double size =
+          kBrightStarMinSize + t * (kBrightStarMaxSize - kBrightStarMinSize);
+      final double gain =
+          kBrightStarMinGain + t * (kBrightStarMaxGain - kBrightStarMinGain);
 
+      final ui.Color color = starColor(star);
       geometry.setInstance(
         i,
         center: center,
         width: size,
         height: size,
-        color: vm.Vector4(1, 0.98, 0.94, 0.35 + lum * 0.65),
+        color: vm.Vector4(color.r * gain, color.g * gain, color.b * gain, 0.85),
       );
     }
-    geometry.commit(kSpikeBillboardCount);
+    geometry.commit(bright.length);
 
-    _scene.add(fs.Node(mesh: fs.Mesh(geometry, fs.SpriteMaterial())));
+    _scene.add(fs.Node(mesh: fs.Mesh(geometry, buildStarMaterial(texture))));
   }
 
   /// 球心视角：只看方向，不平移。
@@ -166,8 +199,17 @@ class _SpikeSceneViewState extends State<SpikeSceneView> {
       if (_seen <= kWarmupFrames) {
         continue;
       }
+      final int nowUs = timing.timestampInMicroseconds(
+        ui.FramePhase.vsyncStart,
+      );
+      _sampleStartUs ??= nowUs;
       _frames.add(timing.totalSpan.inMicroseconds / 1000.0);
-      if (_frames.length >= kSampleFrames) {
+      final double elapsed = (nowUs - _sampleStartUs!) / 1000000.0;
+      _elapsed.value = elapsed;
+      if (shouldStopSampling(
+        elapsedSeconds: elapsed,
+        samples: _frames.length,
+      )) {
         _samplingDone = true;
         _stats.value = summarize(_frames);
         break;
@@ -195,8 +237,8 @@ class _SpikeSceneViewState extends State<SpikeSceneView> {
             top: 16,
             child: _Readout(
               stats: _stats,
-              sampled: _frames.length,
-              total: kSampleFrames,
+              elapsed: _elapsed,
+              stars: _starCount,
             ),
           ),
         ],
@@ -205,17 +247,17 @@ class _SpikeSceneViewState extends State<SpikeSceneView> {
   }
 }
 
-/// 左上角读数。spike 的产物就是这个面板上的四个数 —— 记下来回填 `ADR`。
+/// 左上角读数。spike 的产物就是这个面板上的几个数 —— 记下来回填 `ADR`。
 class _Readout extends StatelessWidget {
   const _Readout({
     required this.stats,
-    required this.sampled,
-    required this.total,
+    required this.elapsed,
+    required this.stars,
   });
 
   final ValueNotifier<FrameStats?> stats;
-  final int sampled;
-  final int total;
+  final ValueNotifier<double> elapsed;
+  final int stars;
 
   @override
   Widget build(BuildContext context) {
@@ -224,13 +266,18 @@ class _Readout extends StatelessWidget {
       builder: (BuildContext context, FrameStats? value, _) {
         final String body;
         if (value == null) {
-          body = '采样中 $sampled / $total';
+          body =
+              '采样中 ${elapsed.value.toStringAsFixed(1)} / '
+              '${kSampleSeconds.toStringAsFixed(1)} 秒\n'
+              '星表 $stars 颗';
         } else {
           body =
               'P50 ${value.p50Ms.toStringAsFixed(1)} ms '
               '(${value.p50Fps.toStringAsFixed(1)} fps)\n'
               'P95 ${value.p95Ms.toStringAsFixed(1)} ms\n'
-              '样本 ${value.samples}\n'
+              '样本 ${value.samples} · '
+              '${kSampleSeconds.toStringAsFixed(1)} 秒\n'
+              '星表 $stars 颗 · $kShellCount 层球壳\n'
               '${value.passesGate ? "闸门通过" : "闸门未过"}';
         }
         return DecoratedBox(
