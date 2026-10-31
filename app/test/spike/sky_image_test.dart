@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter_test/flutter_test.dart';
@@ -7,9 +8,10 @@ import 'package:project_knowledge/spike/sky_image.dart';
 /// 天球贴图里那些**纯算术**的用例：坐标映射、银道面旋转、极区补偿、
 /// 银河羽化、星等与颜色。
 ///
-/// 这几条不碰 GPU，也不画图 —— 但它们是「星星位置为什么对」「极区为什么不再
-/// 拉成椭圆」的全部依据。画出来的东西对不对，肉眼只能验个大概（看着像夜空
-/// ≠ 位置正确）；而映射算错了，画面照样漂亮。
+/// 除 `TC-SPIKE-028` 外都不碰画布：那一条要读像素，因为「银河边缘有没有缝」
+/// 是抗锯齿的产物，纯算术测不到。其余几条是「星星位置为什么对」「极区为什么
+/// 不再拉成椭圆」的全部依据 —— 画出来的东西对不对，肉眼只能验个大概（看着像
+/// 夜空 ≠ 位置正确）；而映射算错了，画面照样漂亮。
 void main() {
   const double w = 4096;
   const double h = 2048;
@@ -137,24 +139,71 @@ void main() {
     }
   });
 
-  test('TC-SPIKE-028 银河边缘羽化到 0，中心最亮且单调（ADR-0006 决策表·布局）', () {
-    // 银道面上满值。
-    expect(milkyWayAlphaAt(0), closeTo(1.0, 1e-12));
-    // 到半宽处正好归零 —— 段 2 的硬边就是这条不成立。
-    expect(milkyWayAlphaAt(kMilkyWayHalfWidthDeg), closeTo(0.0, 1e-12));
-    expect(milkyWayAlphaAt(-kMilkyWayHalfWidthDeg), closeTo(0.0, 1e-12));
-    // 超过半宽仍为 0，不出现负值（负 alpha 会让后面的绘制反相）。
-    expect(milkyWayAlphaAt(30), 0.0);
-    expect(milkyWayAlphaAt(-90), 0.0);
-    // 单调递减。
-    double previous = 2;
-    for (double b = 0; b <= 20; b += 1) {
-      final double alpha = milkyWayAlphaAt(b);
-      expect(alpha, lessThanOrEqualTo(previous), reason: '银纬 $b 处');
-      expect(alpha, greaterThanOrEqualTo(0.0));
-      previous = alpha;
+  test('TC-SPIKE-028 银河边缘无阶跃：渲图后沿银道面法向采样（ADR-0006 决策表·布局）', () async {
+    // 这条要读**画出来的像素**，不是算公式 —— 段 3 的分层实现在公式上是连续
+    // 的（(1−t)² 单调），缝只出现在填充的抗锯齿里，纯算术测不到。
+    const int tw = 2048;
+    const int th = 1024;
+    final ui.Image image = await paintSkyImage(
+      stars: const [],
+      width: tw,
+      height: th,
+    );
+    final ByteData? bytes = await image.toByteData(
+      format: ui.ImageByteFormat.rawRgba,
+    );
+    image.dispose();
+    final ByteData data = bytes!;
+
+    int blueAt(double lDeg, double bDeg) {
+      final ui.Offset at = equirectOf(
+        galacticToEquatorial(lDeg * math.pi / 180, bDeg * math.pi / 180),
+        tw.toDouble(),
+        th.toDouble(),
+      );
+      final int x = at.dx.floor().clamp(0, tw - 1);
+      final int y = at.dy.floor().clamp(0, th - 1);
+      return data.getUint8((y * tw + x) * 4 + 2);
     }
-    // 边缘附近确实是**渐近**到 0 而不是阶跃：半宽前 1° 还剩一点。
-    expect(milkyWayAlphaAt(kMilkyWayHalfWidthDeg - 1), greaterThan(0.005));
+
+    // 沿银经 0° 的法向，从银道面走到带外 3°（半宽 9° 之外）。
+    final List<int> profile = <int>[];
+    for (double b = 0; b <= 12.0001; b += 0.25) {
+      profile.add(blueAt(0, b));
+    }
+
+    // 1) 中心明显亮于带外 —— 羽化还在，没有被抹成一片灰。
+    expect(
+      profile.first,
+      greaterThan(profile.last + 8),
+      reason: '银道面中心 $profile.first 应明显亮于带外 ${profile.last}',
+    );
+
+    // 2) 没有阶跃：相邻采样点（0.25° ≈ 1.4 像素）的亮度差不超过 3/255。
+    //    分层实现每 0.75° 跳 4–8/255，这一条会红 —— 见 PR 正文的反证。
+    for (int i = 1; i < profile.length; i++) {
+      expect(
+        (profile[i] - profile[i - 1]).abs(),
+        lessThanOrEqualTo(3),
+        reason:
+            '银纬 ${(i * 0.25).toStringAsFixed(2)}° 处跳变 ${profile[i] - profile[i - 1]}',
+      );
+    }
+
+    // 3) 单调不增：从银道面往外不会又亮回去。留 1/255 给量化。
+    for (int i = 1; i < profile.length; i++) {
+      expect(
+        profile[i],
+        lessThanOrEqualTo(profile[i - 1] + 1),
+        reason: '银纬 ${(i * 0.25).toStringAsFixed(2)}°',
+      );
+    }
+
+    // 4) 到半宽之后已经贴平背景 —— 「边界收敛到 0」的渲图版判据。
+    expect(
+      (profile[36] - profile.last).abs(),
+      lessThanOrEqualTo(1),
+      reason: '半宽 9° 处 $profile[36] 与带外 ${profile.last} 应有区别',
+    );
   });
 }
