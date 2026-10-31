@@ -324,7 +324,7 @@
 
 > **这七条是节点的空间位置，不是观感参数** —— 它们定了「一个节点落在哪一层球壳、朝哪个方向」，改任一条都会让已算出的坐标失效、让将来的截图失去可比性。
 > **为什么必须进本表**：`lib/core/**` 不许出现裸数字（`R2`）；而本节之前这些值只存在于 `lib/spike/sphere_shells.dart` —— 那是实验目录，产品不该依赖它。收编进本表的同时给它们编号，`core/universe/placement.dart` 只引具名常量。
-> ⚠️ **`spike/` 里另有一套同名常量**（`kInnermostShellRadius` / `kShellRadiusRatio` / `kShellCount`），值相同。两处并存是**临时状态**，`B17b` 笔 2 把 spike 收编进 `features/universe/` 时一并删掉旧的。
+> ✅ **2026-11-01 双份已消除**（`B17b` 笔 2）：`kInnermostShellRadius` / `kShellRadiusRatio` / `kShellCount` 三个旧常量已从代码里删除，半径计算统一走 `core/universe/placement.dart` 的 `shellRadiusOf()`。全仓只有本节这一份定义。
 
 | 编号 | 名称 | 值 | 说明 | 依据 |
 |---|---|---|---|---|

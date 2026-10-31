@@ -3,7 +3,7 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:project_knowledge/spike/sky_image.dart';
+import 'package:project_knowledge/features/universe/presentation/sky_image.dart';
 
 /// 天球贴图里那些**纯算术**的用例：坐标映射、银道面旋转、极区补偿、
 /// 银河羽化、星等与颜色。

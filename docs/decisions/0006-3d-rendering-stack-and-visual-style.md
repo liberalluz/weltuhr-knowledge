@@ -1,6 +1,6 @@
 # ADR-0006 · 3D 渲染栈与视觉风格
 
-- **状态**：已接受（2026-10-30 修订一至四、2026-10-31 修订五至十二，见文末）
+- **状态**：已接受（2026-10-30 修订一至四、2026-10-31 修订五至十二、2026-11-01 修订十三，见文末）
 - **日期**：2026-10-20 · 修订 2026-10-30
 - **决策人**：liberal
 - **覆盖范围**：[`ADR-0005`](0005-three-axis-tree-replaces-six-axis.md)「未在本 ADR 决定」的第一项（3D 渲染技术栈）· [`ADR-0003`](0003-view-radial-axis-and-channel-thresholds.md) 的通道判据（**前提已由 `ADR-0005` 取代，本 ADR 只接其视觉资产部分**）· `SPEC-VIEW-*` 的渲染前提
@@ -33,7 +33,7 @@
 |---|---|
 | 包 | `flutter_scene` |
 | 版本 | `0.24.3` —— **钉死到补丁位**，不用 `^` |
-| 生效范围 | `app/features/universe/presentation/` —— `core/` 与 `application/` 不得 import |
+| 生效范围 | `app/lib/features/universe/presentation/` —— `core/` 与 `application/` 不得 import |
 | 平台 | Android / iOS / Linux / macOS / Web / Windows 全覆盖；本项目只用三端 |
 
 **版本钉死，不用 `^`（本 ADR 修订一）**：仓规要求版本钉死（`app/pubspec.yaml` 顶部同一口径，全部依赖写精确版本）。原决定的 `^0.23.0` 在 pub 语义下等价 `>=0.23.0 <0.24.0`，锁 minor、允许补丁漂移；而该包 0.14 与 0.22 均有 `BREAKING`，minor 恰恰是会出大变化的那一位。钉到补丁位同时满足仓规与原意，更严一档。
@@ -178,7 +178,9 @@ Impeller 在三端的启用状态、`flutter_scene` 的实际帧时间，**只�
 
 **像素翻 1.6 倍、P50 只涨 0.1 ms** —— 本栈在 spike 负载下**不是填充率瓶颈**：bloom 的多段全屏后处理、天球贴图采样、230 万像素光栅化，边际成本接近零。段 2 可直接用这条结论：加大贴图与后处理几乎不花帧时间，真正的成本在**几何实例数** —— 1,200 个 billboard 是当前唯一的几何负载。
 
-`spike` 的形态已定为**独立入口**：`app/lib/spike_main.dart`，用 `flutter run -t lib/spike_main.dart` 启动，不经过主 app 的任何路由 —— 主界面刚通过 `B4` 验收，不为一次实验增加分支。读数面板在左上角，**至少采 8 秒**后给出 P50 / P95 与是否过闸（修订六改，原为「采满 300 帧」）。
+`spike` 的形态**当时**定为独立入口：`app/lib/spike_main.dart`，用 `flutter run -t lib/spike_main.dart` 启动，不经过主 app 的任何路由 —— 主界面刚通过 `B4` 验收，不为一次实验增加分支。读数面板在左上角，**至少采 8 秒**后给出 P50 / P95 与是否过闸（修订六改，原为「采满 300 帧」）。
+
+⚠️ **这一条已被修订十三部分推翻**：`B17b` 笔 2 把渲染整包搬进 `features/universe/presentation/`，并在容器树标题栏加了「宇宙视图」入口 —— 产品路径上确实多了一个分支，理由是它从「一次实验」变成了「产品功能」。`spike_main.dart` 保留为调试入口，采样面板只在那里显示（`SpikeSceneView.showReadout` 默认关）。
 
 **采样时长与机器性能绑定的缺陷已在段 2 修掉**：原 `kSampleFrames = 300` 的注释按「30 fps 下 10 秒」估算，而在 249 fps 的机器上 300 帧只有约 1.2 秒；且采样在启动后立刻开始、采满即定格，**窗口来不及放大**。判据改为按**时长**（`kSampleSeconds = 8.0`），面板同步显示「已采 X / 8.0 秒」。判据的形态从「帧数」改成「时长」不是放宽：分位数需要的是样本量，而样本量在快机器上自然更多 —— 慢机器也不会因为帧数不够而提前结束。
 
@@ -194,10 +196,10 @@ Impeller 在三端的启用状态、`flutter_scene` 的实际帧时间，**只�
 
 | 项 | 实现 | 落地 |
 |---|---|---|
-| 星位 / 亮度 / 颜色 | `V/50` Bright Star Catalogue 的 J2000 赤经赤纬、视星等、`B−V` | `content/stars/source/bsc5.dat.gz` + `app/lib/spike/star_catalog.dart` |
-| 银河 | 银道面大圆，由 ICRS→Galactic 旋转矩阵反解 | `app/lib/spike/sky_image.dart` |
-| 星点形状 | 运行期画的径向渐变光斑，加性混合 | `app/lib/spike/star_sprite.dart` |
-| 同心球壳 | 5 层，半径对数等比（8 → 约 55，最外层仍在天球内） | `app/lib/spike/sphere_shells.dart`（经纬网格已随修订十删除，只留结构定义） |
+| 星位 / 亮度 / 颜色 | `V/50` Bright Star Catalogue 的 J2000 赤经赤纬、视星等、`B−V` | `content/stars/source/bsc5.dat.gz` + `app/lib/features/universe/presentation/star_catalog.dart` |
+| 银河 | 银道面大圆，由 ICRS→Galactic 旋转矩阵反解 | `app/lib/features/universe/presentation/sky_image.dart` |
+| 星点形状 | 运行期画的径向渐变光斑，加性混合 | `app/lib/features/universe/presentation/star_sprite.dart` |
+| 同心球壳 | 5 层，半径对数等比（8 → 约 55，最外层仍在天球内） | `app/lib/features/universe/presentation/sphere_shells.dart`（经纬网格已随修订十删除，只留结构定义） |
 
 四条取值与理由：
 
@@ -311,7 +313,7 @@ Impeller 在三端的启用状态、`flutter_scene` 的实际帧时间，**只�
 
 fov 拉到 94°、视角靠近球壳极点时最难看：12 条经线在一个点汇聚，整屏像一张蛛网，正好盖在星座上。故整层移除。
 
-**保留的**：五层半径（`kInnermostShellRadius` 8.0 × `kShellRadiusRatio` 1.62）、层数（`kShellCount` 5）、三轴深度（`kAxisDepth` 4 / 4 / 5）三组结构定义 —— 节点落地时要按它们算半径。`TC-SPIKE-017`（半径等比）与 `TC-SPIKE-020`（三轴深度）仍在守这两条。删掉的只是绘制，以及测绘制的 `TC-SPIKE-018` / `019`（41 → 39 条）。这两条测试编号**从未登记进 STD 台账**（`std.md` 查无此编号，spike 用例只活在测试文件里），所以删用例即为完整处置。
+**保留的**：五层半径（`kInnermostShellRadius` 8.0 × `kShellRadiusRatio` 1.62）、层数（`kShellCount` 5）、三轴深度（`kAxisDepth` 4 / 4 / 5）三组结构定义 —— 节点落地时要按它们算半径（⚠️ 前三个名字已在修订十三收编进 `C-124`–`C-126`，此处保留当次原文）。`TC-SPIKE-017`（半径等比）与 `TC-SPIKE-020`（三轴深度）仍在守这两条。删掉的只是绘制，以及测绘制的 `TC-SPIKE-018` / `019`（41 → 39 条）。这两条测试编号**从未登记进 STD 台账**（`std.md` 查无此编号，spike 用例只活在测试文件里），所以删用例即为完整处置。
 
 代价说清楚：**「五层结构成立」此后在画面上不可见**，只能等节点落地后看节点的半径落点。之前「可见」是假象，不算证据。
 
@@ -338,8 +340,30 @@ fov 拉到 94°、视角靠近球壳极点时最难看：12 条经线在一个�
 
 - **只算一屏**：入参是「一条路径 + 它末位的直接子级」，不给整棵树算绝对坐标。原因是全树绝对坐标必然重叠 —— 不同父的子在同一层球壳上会抢同一批格子，除非真做球面递归细分，而那样深层格会小到失去意义。
 - **深层不下钻**：`layoutUniverse` 不返回孙级；下钻是换一次入参，不是同一个坐标系的连续缩放。
-- **`spike/` 里另有一套同名半径常量**（`kInnermostShellRadius` 等），值与本笔新增的 `C-124`–`C-126` 相同。两处并存是临时状态，笔 2 把 spike 收编进 `features/universe/` 时删旧的。
+- ✅ **同名半径常量已收编**（修订十三）：笔 1 时 `spike/` 里另有一套 `kInnermostShellRadius` 等，与 `C-124`–`C-126` 同值并存；笔 2 已删旧的那套，全仓只剩常量表一份，半径计算走 `shellRadiusOf()`。
 - **坐标没有渲染过**：本笔只产出数值与用例，一个点都没画。方位好不好看、120 格够不够疏，要等笔 3 上球才看得见。
+
+## B17b 笔 2：收编与入口（本 ADR 修订十三）
+
+笔 1 之后，渲染代码仍在 `app/lib/spike/`，而本 ADR 的生效范围写的是 `features/universe/presentation/` —— 那份代码是产品的，不该住在实验目录。这一笔把它搬进去，并挂上入口。
+
+**收编**：七个源文件与六组测试整体 `git mv`（同目录内互相 import 保持相对路径，只有跨目录的引用要改）：
+
+| 原 | 现 |
+|---|---|
+| `app/lib/spike/*.dart`（7 个） | `app/lib/features/universe/presentation/` |
+| `app/test/spike/*.dart`（6 个） | `app/test/features/universe/` |
+| `app/lib/spike_main.dart` | 保留（调试入口，改 import） |
+
+**入口挂在容器树标题栏**，不是包详情页。依据是 `SPEC-TREE-007`：宇宙视图读树的**同一份当前地址** —— 在树里看到哪，切过去就该是那一片天。包详情页是单包视角，而宇宙画的是全骨架 3,375 个节点，从包页进来会没有「当前地址」可对。入口常量 `treeUniverseKey`，`Icons.blur_on`。
+
+**采样面板加了开关**：`SpikeSceneView.showReadout` 默认 `false`，产品入口不传、看不到 `P50` / `P95`；`spike_main.dart` 显式传 `true`。默认关而不是默认开 —— 忘记传参的那一侧要落在安全的一边。验收口径不变：帧率仍只在调试入口采。
+
+**半径常量收编**：`kInnermostShellRadius` / `kShellRadiusRatio` / `kShellCount` 三个已删，`sphere_shells.dart` 只留 `kAxisDepth` 与 `shellDepthForAxis`，半径一律走 `core/universe/placement.dart` 的 `shellRadiusOf()`。
+
+### 未验
+
+**「点进去能出、退出再进不崩」没有自动化用例守**：宇宙屏一构建就要 `gpuContext()`，widget 测试没有 Impeller 后端，会抛 `Flutter GPU requires the Impeller rendering backend` 并让整棵子树构建失败 —— 在那里断言「路由里有没有宇宙屏」，测到的只是环境限制。`TC-TREE-069` 因此只守「入口存在且唯一」，进出行为由终端 `flutter run -t lib/spike_main.dart` 与真机各看一次。
 
 ## 修订
 
@@ -357,6 +381,7 @@ fov 拉到 94°、视角靠近球壳极点时最难看：12 条经线在一个�
 | 十 | 2026-10-31 | **球壳经纬网格整层移除**：相机在球心，五层球面上的同经纬度点投影后完全重合 —— 既数不出层数（原目的从未达到，段 3 读的是面板文字），alpha 又叠了五次约 0.41；fov 94° 正对球壳极时 12 条经线汇聚一处，整屏蛛网盖住星座。删 `buildShellsNode` / `shellSegments` 与五个绘制常量，`TC-SPIKE-018/019` 随之删除（41 → 39 条）；五层半径、层数、三轴深度三组结构定义保留。新增「球壳网格移除」一节 |
 | 十一 | 2026-10-31 | 段 4 的「未验」改为**实机已验**：三个星座形状逐条核对（猎户沙漏与腰带共线、北斗斗勺闭合加三节柄、仙后歪 W 系真实赤纬所致）、投影手性无镜像；30 秒窗口连测三次 P95 `8.3 / 7.2 / 6.9 ms`；星座名压线记为待改 |
 | 十二 | 2026-10-31 | 新增「B17b 笔 1：节点落位」一节：半径取**槽位序**（不读 `kAxisDepth`，两处量纲不同）、子级按官方码落 **120 格**（12×10；最大同父实测 105，顶部两行留来路走廊）、仰角只铺 −60°..+60°（极点方位角无意义）。七个常量收编为 `C-124`–`C-130`，此前只存在于 `spike/sphere_shells.dart`。四条已知边界：只算一屏、深层不下钻、spike 常量待收编、坐标未渲染过 |
+| 十三 | 2026-11-01 | 新增「B17b 笔 2：收编与入口」：渲染整包 `git mv` 进 `features/universe/presentation/`（7 源 + 6 测试），入口挂**容器树标题栏**（`SPEC-TREE-007` 同一份地址），采样面板加 `showReadout` 开关且默认关，三个同名半径常量删除、统一走 `shellRadiusOf()`。**部分推翻** §五「spike 用独立入口、不给主界面加分支」——它已从实验变成产品功能。一条未验：进出与退出再进不崩无自动化用例（widget 测试无 Impeller） |
 
 修订不改原决策的取舍方向：渲染栈仍是 `flutter_scene`（而非 `FragmentProgram` / 自研 / 平台原生），使用面仍限于 skybox 与后处理。改的是**版本口径、判据边界与启用方式**这三处「原决定写下时无法确认、只能实跑确认」的部分。
 

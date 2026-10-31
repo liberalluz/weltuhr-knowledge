@@ -5,7 +5,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:vector_math/vector_math.dart' as vm;
-import 'package:project_knowledge/spike/spike_scene.dart';
+import 'package:project_knowledge/features/universe/presentation/spike_scene.dart';
 
 /// 球心相机的用例。
 ///

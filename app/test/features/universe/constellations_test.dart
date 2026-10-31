@@ -11,9 +11,9 @@ import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:project_knowledge/spike/constellations.dart';
-import 'package:project_knowledge/spike/sky_image.dart';
-import 'package:project_knowledge/spike/star_catalog.dart';
+import 'package:project_knowledge/features/universe/presentation/constellations.dart';
+import 'package:project_knowledge/features/universe/presentation/sky_image.dart';
+import 'package:project_knowledge/features/universe/presentation/star_catalog.dart';
 
 /// 只带姿态的假相机：投影只需要 yaw / pitch / fov 三个数。
 class _View implements SkyView {

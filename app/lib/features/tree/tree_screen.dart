@@ -38,11 +38,19 @@ import '../../core/tree/tree_index.dart';
 import '../../core/tree/tree_outline.dart';
 import '../locate/locate_overlay.dart';
 import '../planner/planner_screen.dart';
+import '../universe/presentation/universe_screen.dart';
 import 'tree_breadcrumb.dart';
 import 'tree_view.dart';
 
 /// 标题栏上的「定位」（`SPEC-PLAN-016` 第三入口的进处）。
 const Key treeLocateKey = ValueKey<String>('tree-locate');
+
+/// 标题栏上的「宇宙视图」（`B17b` 笔 2 的进处）。
+///
+/// 入口放树屏而不是包详情页：`SPEC-TREE-007` 裁定宇宙视图读**树的同一份当前
+/// 地址**，在树里看到哪、切过去就是那一片天。包详情页是单包视角，而宇宙画的
+/// 是全骨架 3,375 个节点 —— 从包页进来会没有「当前地址」可对。
+const Key treeUniverseKey = ValueKey<String>('tree-universe');
 
 /// 筛选条（第四类落点生效时出现，`SPEC-TREE-014`）。
 const Key treeFilterBarKey = ValueKey<String>('tree-filter-bar');
@@ -210,6 +218,16 @@ class _TreeScreenState extends State<TreeScreen> {
             ? const Text(treeVirtualRootLabel)
             : TreeBreadcrumb(tree: tree, nodeId: address, onJump: _jumpTo),
         actions: <Widget>[
+          IconButton(
+            key: treeUniverseKey,
+            icon: const Icon(Icons.blur_on),
+            tooltip: '宇宙视图',
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (BuildContext context) => const UniverseScreen(),
+              ),
+            ),
+          ),
           IconButton(
             key: treeLocateKey,
             icon: const Icon(Icons.search),

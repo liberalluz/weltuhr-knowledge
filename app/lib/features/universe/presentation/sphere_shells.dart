@@ -16,8 +16,14 @@
 /// 2. 「数出几层」从来没被真正验过：球心视角下数不出环，段 3 当时读的是
 ///    面板上那行字。
 ///
-/// 所以网格整体移除。**层数与半径比例这些结构定义保留** —— 节点落地时要按
-/// 它们算位置，`TC-SPIKE-017` / `TC-SPIKE-020` 仍在守这两条。
+/// 所以网格整体移除，**层数与半径比例这些结构定义保留**。
+///
+/// **2026-11-01 半径收编进常量表**（`B17b` 笔 2）。原先这里有一套
+/// `kInnermostShellRadius` / `kShellRadiusRatio` / `kShellCount`，与
+/// `core/constants.dart` 的 `C-124`–`C-126` 同值并存 —— 那是笔 1 留下的临时
+/// 状态（`ADR-0006` 修订十二明写「笔 2 收编时删旧的」）。现在只剩常量表一份，
+/// 半径计算统一走 `core/universe/placement.dart` 的 `shellRadiusOf()`，本文件
+/// 不再重复那条公式。
 ///
 /// **层数按三轴的真实深度取最大值，不为视觉对称造层**。学科与专业只有 4 层
 /// （根 / 门类或大类 / 一级或中类 / 学位类别或小类或细类），角色轴 5 层；
@@ -26,17 +32,7 @@
 /// 浅轴用不满 5 层，最外层留空。
 library;
 
-import 'dart:math' as math;
-
-/// 球壳层数 = 三轴深度的最大值（角色轴 5 层）。
-const int kShellCount = 5;
-
-/// 最内层半径（世界单位）。星空在 100，五层最外层约 55，仍在天球之内 ——
-/// 节点是「近处的东西」，星空是「无穷远的背景」，这个层次不能反。
-const double kInnermostShellRadius = 8.0;
-
-/// 相邻两层的半径倍数（对数等比的「等比」）。
-const double kShellRadiusRatio = 1.62;
+import '../../../core/constants.dart';
 
 /// 三轴各自的层级深度。键用轴名，与 `enums.dart` 的 `Axis` 取值一致。
 ///
@@ -49,16 +45,5 @@ const Map<String, int> kAxisDepth = <String, int>{
   'occupation': 5,
 };
 
-/// 第 [index] 层（0 起）的半径。
-double shellRadius(int index) {
-  assert(index >= 0 && index < kShellCount, '层号取 0..${kShellCount - 1}');
-  return kInnermostShellRadius * math.pow(kShellRadiusRatio, index).toDouble();
-}
-
-/// 全部五层的半径，内到外。
-List<double> shellRadii() => <double>[
-  for (int i = 0; i < kShellCount; i++) shellRadius(i),
-];
-
 /// 某条轴实际用得上几层。取不到轴名时按最深轴给 —— 未知轴不缩水。
-int shellDepthForAxis(String axis) => kAxisDepth[axis] ?? kShellCount;
+int shellDepthForAxis(String axis) => kAxisDepth[axis] ?? universeShellCount;

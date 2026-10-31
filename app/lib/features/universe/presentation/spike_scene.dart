@@ -200,7 +200,17 @@ class _SkyGestureLayerState extends State<SkyGestureLayer> {
 }
 
 class SpikeSceneView extends StatefulWidget {
-  const SpikeSceneView({super.key});
+  const SpikeSceneView({super.key, this.showReadout = false});
+
+  /// 是否显示左上角的采样面板（`P50` / `P95` / 重采按钮）。
+  ///
+  /// **默认关**：产品入口走的是默认值，调试面板不该出现在用户面前。只有
+  /// `lib/spike_main.dart` 这个调试入口会显式传 `true` —— 帧率读数仍只在
+  /// 那里采，验收口径不变（`ADR-0006` §段 3）。
+  ///
+  /// 默认关而不是默认开，是为了让**忘记传参**的那一侧落在安全的一边：
+  /// 新增的调用点不带这个参数，就不会把调试面板漏到产品里。
+  final bool showReadout;
 
   @override
   State<SpikeSceneView> createState() => _SpikeSceneViewState();
@@ -289,7 +299,7 @@ class _SpikeSceneViewState extends State<SpikeSceneView>
 
       await _addBrightStars(bright);
       // 球壳不画：经纬网格已删（2026-10-31，见 `sphere_shells.dart` 头注释）。
-      // 节点落地时按 `shellRadius()` 算位置，壳本身仍不需要可见。
+      // 节点落地时按 `shellRadiusOf()` 算位置，壳本身仍不需要可见。
 
       if (mounted) {
         setState(() => _ready = true);
@@ -433,19 +443,20 @@ class _SpikeSceneViewState extends State<SpikeSceneView>
                 ),
               ),
             ),
-          Positioned(
-            left: 16,
-            top: 16,
-            child: _Readout(
-              stats: _stats,
-              elapsed: _elapsed,
-              camera: _camera,
-              stars: _starCount,
-              lost: _lostStars,
-              window: () => _sampleSeconds,
-              onResample: _ready ? _resample : null,
+          if (widget.showReadout)
+            Positioned(
+              left: 16,
+              top: 16,
+              child: _Readout(
+                stats: _stats,
+                elapsed: _elapsed,
+                camera: _camera,
+                stars: _starCount,
+                lost: _lostStars,
+                window: () => _sampleSeconds,
+                onResample: _ready ? _resample : null,
+              ),
             ),
-          ),
         ],
       ),
     );
