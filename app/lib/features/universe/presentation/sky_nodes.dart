@@ -80,6 +80,32 @@ double alphaFactorOfStep(int step) {
   return universeBrightnessFloor + (1 - universeBrightnessFloor) * ratio;
 }
 
+/// 聚合点的不透明度系数（0..1）：取被合并子级亮度的**均值**。
+///
+/// 与「骨架点取子树均值」同一个口径（`B17b` 笔 4）：聚合点代表那一片，
+/// 不是其中某一颗。成员里查不到亮度的按 0 计，与单点口径一致（`table[id] ?? 0`）
+/// —— **不能跳过**，跳过会让「少数几个没数据」把整片拉亮，而那正是
+/// `C-145`「不知道不等于没学过」要防的情形。
+double aggregateAlphaFactorOf(
+  SkyAggregate aggregate,
+  Map<String, double>? brightness,
+) {
+  if (brightness == null) {
+    return alphaFactorOfStep(brightnessStepOf(universeBrightnessUnknown));
+  }
+  if (aggregate.memberIds.isEmpty) {
+    return alphaFactorOfStep(brightnessStepOf(0));
+  }
+  double sum = 0;
+  for (final String id in aggregate.memberIds) {
+    sum += brightness[id] ?? 0;
+  }
+  return alphaFactorOfStep(brightnessStepOf(sum / aggregate.memberIds.length));
+}
+
+/// 聚合点上那行字。
+String aggregateLabelOf(SkyAggregate aggregate) => '+${aggregate.count}';
+
 /// 节点光点。每帧重画，不缓存。
 class SkyNodesPainter extends CustomPainter {
   SkyNodesPainter({
@@ -137,6 +163,13 @@ class SkyNodesPainter extends CustomPainter {
       universeChildDotSize,
       color,
     );
+
+    // 聚合点画在最后：它占的是网格最后一格，不参与上面那三层的分档，
+    // 亮度按被合并的成员求均值。
+    final SkyAggregate? aggregate = layout.aggregate;
+    if (aggregate != null) {
+      _paintAggregate(canvas, projection, aggregate, color);
+    }
   }
 
   /// 该骨架点的不透明度系数（0..1）。
@@ -181,6 +214,69 @@ class SkyNodesPainter extends CustomPainter {
         canvas.drawCircle(center, radius * universeDotCoreScale, core);
       }
     });
+  }
+
+  /// 画聚合点：一个点 + 一行「+N」。
+  ///
+  /// 文字每帧现建一个 `Paragraph`、画完即 `dispose`，**不进** `SkyLabelCache`
+  /// （笔 5 那份缓存按文字做键、上限 200）：一屏至多一个聚合点，建一次的开销
+  /// 在噪声里；塞进缓存只会让那张表多一类永远只有一两条的内容。
+  void _paintAggregate(
+    ui.Canvas canvas,
+    SkyProjection projection,
+    SkyAggregate aggregate,
+    ui.Color color,
+  ) {
+    final ui.Offset? center = projection.project(
+      directionOfSkyPoint(aggregate.point),
+    );
+    // 与子级同一处置：落在镜头后方就不画。
+    if (center == null) {
+      return;
+    }
+    final double alpha = aggregateAlphaFactorOf(aggregate, brightness);
+    final ui.Paint glow = ui.Paint()
+      ..color = color.withValues(alpha: universeDotGlowAlpha * alpha)
+      ..maskFilter = ui.MaskFilter.blur(
+        ui.BlurStyle.normal,
+        universeAggregateDotSize,
+      );
+    final ui.Paint core = ui.Paint()
+      ..color = color.withValues(alpha: universeDotCoreAlpha * alpha);
+    canvas.drawCircle(
+      center,
+      universeAggregateDotSize * universeDotGlowScale,
+      glow,
+    );
+    canvas.drawCircle(
+      center,
+      universeAggregateDotSize * universeDotCoreScale,
+      core,
+    );
+
+    final ui.ParagraphBuilder builder =
+        ui.ParagraphBuilder(
+          ui.ParagraphStyle(
+            fontSize: universeLabelFontSize,
+            textDirection: ui.TextDirection.ltr,
+          ),
+        )..pushStyle(
+          ui.TextStyle(
+            color: color.withValues(alpha: universeLabelAlpha),
+            fontSize: universeLabelFontSize,
+          ),
+        );
+    builder.addText(aggregateLabelOf(aggregate));
+    final ui.Paragraph paragraph = builder.build()
+      ..layout(const ui.ParagraphConstraints(width: double.infinity));
+    canvas.drawParagraph(
+      paragraph,
+      center.translate(
+        universeAggregateDotSize + universeAggregateLabelGapPx,
+        -paragraph.height / 2,
+      ),
+    );
+    paragraph.dispose();
   }
 
   /// 恒返回 `true`：相机是**原地改字段**的对象，比较引用永远相等；真正的

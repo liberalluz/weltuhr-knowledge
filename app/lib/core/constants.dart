@@ -1057,3 +1057,18 @@ const double universeLabelGapPx = 8.0;
 /// 「这个名字不显眼」。固定值也让 `Paragraph` 缓存只需要按文字内容做键 ——
 /// 颜色一变，缓存全失效。
 const double universeLabelAlpha = 0.78;
+
+// ─────────────────── 二十四、子级聚合（`B17b` 笔 6 · `ADR-0006`） ───────────────────
+
+/// 聚合点（「+N」）的点径（逻辑像素）。
+///
+/// 比子级点（`universeChildDotSize`）大一档，与来路点同径。它代表的是
+/// 「一片」而不是「一颗」，画成子级点大小会被读成一个普通节点。
+const double universeAggregateDotSize = 8.0;
+
+/// 聚合点与它那行「+N」之间的间距（逻辑像素）。
+///
+/// 与 [universeLabelGapPx] 同源：光点带模糊晕，贴边画会被晕吃掉半个数字。
+/// 不直接复用它是因为聚合点的字是**计数**不是**名字** —— 前者贴得更近才
+/// 读成一个整体，后者要留出「属于哪个点」的距离。
+const double universeAggregateLabelGapPx = 6.0;

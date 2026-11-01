@@ -56,6 +56,46 @@ class SkyPoint {
       'el=${elevationDeg.toStringAsFixed(skyPointDecimalPlaces)}°)';
 }
 
+/// 子级超出格位后合并成的一个聚合点 —— `B17b` 笔 6。
+///
+/// 格位只有 [universeChildCellCount] 个（12 × 10），超出部分原先由
+/// [childPointOf] 取模回卷、与前面的节点**静默叠放**：两个点画在同一位置，
+/// 看起来像渲染错误。改成合并之后，那个位置有了语义 —— 「还有 N 项没画」。
+class SkyAggregate {
+  const SkyAggregate({required this.point, required this.memberIds});
+
+  /// 聚合点自己的位置，固定占网格最后一格。
+  final SkyPoint point;
+
+  /// 被合并进来的子级 id，按官方码排序后的末尾一段，顺序即落格顺序。
+  ///
+  /// 留这张表而不是只留个数：亮度要按成员求均值（笔 6 的口径），
+  /// 只给个数就得让绘制层反查排序，等于把落位规则复制一份。
+  final List<String> memberIds;
+
+  int get count => memberIds.length;
+
+  @override
+  bool operator ==(Object other) {
+    if (other is! SkyAggregate || other.point != point) {
+      return false;
+    }
+    if (other.memberIds.length != memberIds.length) {
+      return false;
+    }
+    // 逐位比：成员顺序有意义（官方码排序），不按集合比。
+    for (int i = 0; i < memberIds.length; i++) {
+      if (other.memberIds[i] != memberIds[i]) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  @override
+  int get hashCode => Object.hashAll(<Object>[point, ...memberIds]);
+}
+
 /// 一次视角内的完整落位：当前节点、它的来路、它的直接子级。
 class UniverseLayout {
   const UniverseLayout({
@@ -67,6 +107,9 @@ class UniverseLayout {
     // 关心文字。给默认值让它们不必逐个补一个空表 —— 但那不等于「名字可选」，
     // `layoutUniverse` 产出的布局里这张表总是齐的。
     this.names = const <String, String>{},
+    // 有默认值：绝大多数视角的子级数远小于格位数（实测中位 4、最大 105），
+    // 聚合只在极端父节点上出现。给默认值让它们不必逐个补 `null`。
+    this.aggregate,
   });
 
   /// 当前节点，恒在正前方、仰角 0。
@@ -93,6 +136,13 @@ class UniverseLayout {
   /// 标注层要的是「给我这个 id 的字」，按 id 查一次比按组判断三次省事，
   /// 也不会出现同一个 id 在两张表里名字不一致。
   final Map<String, String> names;
+
+  /// 子级超出格位时合并出的那一个点；未超出时为 `null`。
+  ///
+  /// **它不在 [children] 里**，也不是任何节点的坐标 —— 它是「剩下这些没画」
+  /// 这一件事的表示。因此标注层遍历 `children` 时天然看不到它，不需要额外
+  /// 判断「这不是真节点」。
+  final SkyAggregate? aggregate;
 
   /// 本视角内的全部点（当前 + 来路 + 子级），供渲染层直接遍历。
   List<SkyPoint> get all => <SkyPoint>[
@@ -146,9 +196,9 @@ double shellRadiusOf(int shellIndex) =>
 
 /// 子级的格子总数 = 列 × 行。
 ///
-/// 该值必须 ≥ 骨架里最大的同父子数（实测 105）。小于它时多出来的子会与
-/// 同格位的节点叠放在一起 —— 不报错，因为数据侧写多少子不受这里控制，
-/// 而「算不出坐标」比「两个点重叠」严重得多。
+/// 该值必须 ≥ 骨架里最大的同父子数（实测 105）。**超出时不再叠放**：
+/// 自 `B17b` 笔 6 起，`layoutUniverse` 留最后一格画聚合点，其余子级并进
+/// 那一个点（见 [SkyAggregate]）—— 原先取模回卷会静默画出两个重合的点。
 int get universeChildCellCount => universeSkyGridColumns * universeSkyGridRows;
 
 /// 子级第 [index] 个（0 起，按官方码排序后）落在格心。
@@ -160,7 +210,9 @@ SkyPoint childPointOf({required int index, required double radius}) {
   const int rows = universeSkyGridRows;
   final int column = index % columns;
   final int row = index ~/ columns;
-  // 超出格数时取模回卷，与前面的节点叠放（判据要求不报错）。
+  // 超出格数时取模回卷。`layoutUniverse` 自笔 6 起**不会**再让索引进到这个
+  // 区间（超出的子级并成聚合点），但本函数是可以被单独调用的纯函数 ——
+  // 给一个确定的位置，好过抛错。
   final int wrappedRow = row % rows;
   // 相对位置各归一化到 −0.5..+0.5，再乘各自的跨度 —— 这样既不用写
   // 360 / 180 / 2 这几个字面量，也不会把「半格」的含义散成几处。
@@ -243,9 +295,26 @@ UniverseLayout layoutUniverse({
       : shellIndexOf(axis: sorted.first.axis, slot: sorted.first.levelSlot)!;
   final double childRadius = shellRadiusOf(childShell);
 
+  // 格位不够时留最后一格给聚合点：前（格数 − 1）个正常落格，其余并成一个。
+  // 判据是**严格超过**格位数 —— 正好用满 120 个时不聚合、不出「+0」，
+  // 因为那 120 个本来就都画得下。
+  final int capacity = universeChildCellCount;
+  final bool overflow = sorted.length > capacity;
+  final int cellPlaced = overflow ? capacity - 1 : sorted.length;
+
   final Map<String, SkyPoint> childPoints = <String, SkyPoint>{};
-  for (int i = 0; i < sorted.length; i++) {
+  for (int i = 0; i < cellPlaced; i++) {
     childPoints[sorted[i].id] = childPointOf(index: i, radius: childRadius);
+  }
+
+  SkyAggregate? aggregate;
+  if (overflow) {
+    aggregate = SkyAggregate(
+      point: childPointOf(index: capacity - 1, radius: childRadius),
+      memberIds: <String>[
+        for (int i = cellPlaced; i < sorted.length; i++) sorted[i].id,
+      ],
+    );
   }
 
   return UniverseLayout(
@@ -255,10 +324,14 @@ UniverseLayout layoutUniverse({
     children: childPoints,
     // 名字只从传进来的节点取，不去查树 —— 落位模块不认识 `TreeIndex`，
     // 一旦在这里反查，它就同时依赖树与坐标两份事实源。
+    //
+    // 只收落位了的子级：被并进聚合点的那些没有自己的点，也就不该有自己的
+    // 名字 —— 否则标注层拿着一张更宽的名字表，迟早会给一个不存在的点标字。
     names: <String, String>{
       for (final Node node in path) node.id: node.name,
-      for (final Node node in sorted) node.id: node.name,
+      for (final Node node in sorted.take(cellPlaced)) node.id: node.name,
     },
+    aggregate: aggregate,
   );
 }
 

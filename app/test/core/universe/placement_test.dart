@@ -302,6 +302,97 @@ void main() {
     });
   });
 
+  group('子级聚合（ADR-0006 修订十七）', () {
+    /// 造 [count] 个官方码从 `001` 起的子级，id 与码同序 —— 排序结果可预知。
+    List<Node> many(int count) => <Node>[
+      for (int i = 0; i < count; i++)
+        coded(
+          id: 'c-$i',
+          slug: 's-$i',
+          code: (i + 1).toString().padLeft(3, '0'),
+        ),
+    ];
+
+    test('TC-UNIVERSE-030 骨架实测最大值 105 不触发聚合（ADR-0006 修订十七）', () {
+      // 105 是三轴里最大的同父子数（专业轴那一个），格位 120 装得下。
+      // 这一条守的是「改小了格数才会聚合」，而不是「有子级就聚合」。
+      final UniverseLayout layout = layoutUniverse(
+        path: <Node>[rootOf(Axis.discipline)],
+        children: many(105),
+      );
+      expect(layout.children, hasLength(105));
+      expect(layout.aggregate, isNull);
+    });
+
+    test('TC-UNIVERSE-031 正好用满 120 格不聚合，也不出「+0」（ADR-0006 修订十七）', () {
+      final UniverseLayout layout = layoutUniverse(
+        path: <Node>[rootOf(Axis.discipline)],
+        children: many(universeChildCellCount),
+      );
+      expect(layout.children, hasLength(universeChildCellCount));
+      // 判据是**严格超过**格位数：120 个本来就都画得下，出「+0」是噪音。
+      expect(layout.aggregate, isNull);
+    });
+
+    test('TC-UNIVERSE-032 121 个时前 119 个落格、末尾两个并成聚合点（ADR-0006 修订十七）', () {
+      final UniverseLayout layout = layoutUniverse(
+        path: <Node>[rootOf(Axis.discipline)],
+        children: many(universeChildCellCount + 1),
+      );
+      // 留最后一格给聚合点 ⇒ 正常落格的是 119 个。
+      expect(layout.children, hasLength(universeChildCellCount - 1));
+      final SkyAggregate aggregate = layout.aggregate!;
+      expect(aggregate.count, 2);
+      // 排序后末尾两个：码 120 / 121 ⇒ id `c-119` / `c-120`。
+      expect(aggregate.memberIds, <String>['c-119', 'c-120']);
+    });
+
+    test('TC-UNIVERSE-033 聚合点固定占网格最后一格（ADR-0006 修订十七）', () {
+      final UniverseLayout layout = layoutUniverse(
+        path: <Node>[rootOf(Axis.discipline)],
+        children: many(universeChildCellCount + 40),
+      );
+      final double childRadius = layout.children.values.first.radius;
+      expect(
+        layout.aggregate!.point,
+        childPointOf(index: universeChildCellCount - 1, radius: childRadius),
+      );
+      // 正常子级占的是 0..118，与聚合点不重叠。
+      expect(
+        layout.children['c-0'],
+        childPointOf(index: 0, radius: childRadius),
+      );
+    });
+
+    test('TC-UNIVERSE-034 被聚合的是官方码排序后的末尾，与传入顺序无关（ADR-0006 修订十七）', () {
+      // 码最大的放第一个传进去：若按传入顺序取末尾，被聚合的会是 `c-118`。
+      final List<Node> children = <Node>[
+        coded(id: 'big', slug: 'big', code: '999'),
+        ...many(universeChildCellCount),
+      ];
+      final UniverseLayout layout = layoutUniverse(
+        path: <Node>[rootOf(Axis.discipline)],
+        children: children,
+      );
+      expect(layout.aggregate!.memberIds, <String>['c-119', 'big']);
+    });
+
+    test('TC-UNIVERSE-035 被聚合的子级既不在 children 里，也没有名字（ADR-0006 修订十七）', () {
+      // 标注层遍历的是 `children`、取名查的是 `names` —— 两者都不含被聚合的
+      // id，聚合点就天然不会被标上某个子级的名字。
+      final UniverseLayout layout = layoutUniverse(
+        path: <Node>[rootOf(Axis.discipline)],
+        children: many(universeChildCellCount + 1),
+      );
+      expect(layout.children.containsKey('c-119'), isFalse);
+      expect(layout.names.containsKey('c-119'), isFalse);
+      expect(layout.children.containsKey('c-118'), isTrue);
+      expect(layout.names['c-118'], isNotNull);
+      // 聚合点自己不是节点，也不该出现在任何一张按 id 索引的表里。
+      expect(layout.names.containsKey('c-120'), isFalse);
+    });
+  });
+
   group('真实骨架', () {
     /// 骨架包是装配产物、不入库，`app-checks` 现场跑装配脚本。
     /// **缺产物就 fail，不 skip** —— skip 会让「忘了装配」表现成绿灯。
