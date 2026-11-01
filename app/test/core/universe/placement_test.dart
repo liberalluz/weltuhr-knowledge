@@ -6,7 +6,10 @@ import 'package:project_knowledge/core/entities/edge.dart';
 import 'package:project_knowledge/core/entities/node.dart';
 import 'package:project_knowledge/core/enums.dart';
 import 'package:project_knowledge/core/pack/pack_reader.dart';
+import 'package:project_knowledge/core/tree/tree_index.dart';
 import 'package:project_knowledge/core/universe/placement.dart';
+
+import '../../support/tree_fixture.dart';
 
 /// 造一个带官方码的结构节点。`officialCode` 决定它在兄弟里的次序，
 /// 因此这一组用例必须能指定它 —— `node_fixture` 的 `structuralNode` 没开这个口子。
@@ -403,6 +406,61 @@ void main() {
           reason: '$parent 下有 ${kids.length} 个子却只落了 ${points.length} 个不同的格',
         );
       });
+    });
+  });
+
+  group('从树取一片天', () {
+    late TreeIndex tree;
+
+    setUp(() {
+      tree = treeFixture();
+    });
+
+    test('骨架星：来路自轴根起，载荷子级不进子级列表（ADR-0006 修订十四）', () {
+      // `skeleton:d-0101` 是学科轴上的星，载荷 `python:sys` 挂在它下面。
+      // 载荷没有球壳可上 —— 留着它，`layoutUniverse` 取层序时会抛。
+      final UniverseView? view = layoutOfNode(tree, 'skeleton:d-0101');
+      expect(view, isNotNull);
+      expect(view!.anchorId, 'skeleton:d-0101');
+      expect(view.axis, Axis.discipline);
+      expect(view.layout.children, isEmpty, reason: '载荷子级不该出现在骨架的天上');
+      expect(
+        view.layout.ancestors,
+        hasLength(2),
+        reason: '哲学（门类）→ 学科（轴根），近的在前',
+      );
+      expect(view.layout.current.azimuthDeg, 0);
+      expect(view.layout.current.elevationDeg, 0);
+    });
+
+    test('载荷节点上取最近的骨架祖先，不给近似坐标（ADR-0006 修订十四）', () {
+      // 行星系没有槽位可上（`legalSkeletonSlots` 里没有 `system`）。给个近似
+      // 位置等于承认 `system` 能挂在学科轴上 —— 与合法槽位表直接冲突。
+      final UniverseView? view = layoutOfNode(tree, 'python:sys');
+      expect(view, isNotNull);
+      expect(view!.anchorId, 'skeleton:d-0101');
+      expect(view.axis, Axis.discipline);
+    });
+
+    test('再深一级的载荷叶子上取到同一颗骨架星（ADR-0006 修订十四）', () {
+      // `python:p1` → `python:sys` → 骨架星。上取要看整条来路，只看父会漏。
+      final UniverseView? view = layoutOfNode(tree, 'python:p1');
+      expect(view, isNotNull);
+      expect(view!.anchorId, 'skeleton:d-0101');
+    });
+
+    test('轴根：来路为空、子级是该轴的直接子（ADR-0006 修订十四）', () {
+      final UniverseView? view = layoutOfNode(tree, 'skeleton:d');
+      expect(view, isNotNull);
+      expect(view!.anchorId, 'skeleton:d');
+      expect(view.layout.ancestors, isEmpty);
+      expect(view.layout.children, hasLength(2), reason: '门类 `01` 与 `02`');
+    });
+
+    test('树里没有的 id 返回 null，不抛（ADR-0006 修订十四）', () {
+      // 骨架未装载、地址过期都走这条路。返回 null 的语义是「这一片天画不出来」，
+      // 由渲染层按「只画星空」处置 —— 不是拿一个空布局凑数。
+      expect(layoutOfNode(tree, 'no-such-node'), isNull);
     });
   });
 }

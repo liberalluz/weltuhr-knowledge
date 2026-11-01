@@ -17,6 +17,7 @@ import 'dart:math' as math;
 import '../constants.dart';
 import '../entities/node.dart';
 import '../enums.dart';
+import '../tree/tree_index.dart';
 
 /// 一个节点在球心视角下的位置。
 ///
@@ -230,6 +231,99 @@ UniverseLayout layoutUniverse({
     children: childPoints,
   );
 }
+
+/// 一次宇宙视角的完整结果：落位 + 轴 + **实际落位的是哪个节点**。
+class UniverseView {
+  const UniverseView({
+    required this.layout,
+    required this.axis,
+    required this.anchorId,
+  });
+
+  /// 当前节点、来路、直接子级的坐标。
+  final UniverseLayout layout;
+
+  /// 整幅视图取这一条轴的颜色。
+  ///
+  /// 一条路径只走一条轴（`SPEC-TREE-007`），所以「按节点取色」与「按视图取色」
+  /// 是同一件事 —— 不必逐点上色，也就不会出现同一屏三种颜色的情形。
+  final Axis axis;
+
+  /// 实际落位的节点 id。
+  ///
+  /// **不保证等于调用方给的地址**：载荷节点（`system` / `planet`）没有球壳可上
+  /// （`legalSkeletonSlots` 里不存在这两个槽位），此时取最近的、能上球的祖先。
+  /// 把这件事写在一个字段里而不是让调用方去反推：界面上要说「你在哪一片天」，
+  /// 说的就是这个 id。
+  final String anchorId;
+}
+
+/// 从树与当前地址算出宇宙视角；算不出时返回 `null`。
+///
+/// 三个 `null` 出口，都是「这一片天画不出来」，不是错误：
+/// - 树里没有这个 id（骨架未装载、地址过期）；
+/// - 整条来路里没有一个能上球的节点（连轴根都不在）；
+/// - 来路成环（坏数据，`TreeIndex.build` 已挡过，这里兜底不递归）。
+///
+/// ⚠️ **只画骨架**：载荷节点（`system` / `planet`）既不做当前节点、也不进
+/// 子级列表。宇宙是骨架的全景（3,375 个节点），载荷属于某个包、不属于骨架，
+/// 混进来会让同一屏出现「有球壳的」和「没球壳的」两类点。
+UniverseView? layoutOfNode(TreeIndex tree, String nodeId) {
+  // 走上来时是「当前 → 根」，翻成「根 → 当前」：落位要的是自顶向下的路径。
+  final List<Node> chain = <Node>[];
+  final Set<String> seen = <String>{};
+  String? cursor = nodeId;
+  while (cursor != null) {
+    if (!seen.add(cursor)) {
+      return null;
+    }
+    final Node? node = tree.nodeOf(cursor);
+    if (node == null) {
+      return null;
+    }
+    chain.add(node);
+    cursor = tree.parents.mainParentOf(cursor);
+  }
+  final List<Node> topDown = chain.reversed.toList(growable: false);
+
+  // 从当前节点往上找第一个能上球的 —— 载荷叶子先落到它挂靠的骨架星上。
+  int anchorIndex = -1;
+  for (int i = topDown.length - 1; i >= 0; i--) {
+    if (_canOccupyShell(topDown[i])) {
+      anchorIndex = i;
+      break;
+    }
+  }
+  if (anchorIndex < 0) {
+    return null;
+  }
+  final List<Node> path = topDown.sublist(0, anchorIndex + 1);
+  final Node anchor = path.last;
+  if (path.first.levelSlot != LevelSlot.supercluster) {
+    return null;
+  }
+
+  final List<Node> children = <Node>[];
+  for (final TreeRow row in tree.childrenOf(anchor.id)) {
+    final Node? child = tree.nodeOf(row.nodeId);
+    if (child != null && _canOccupyShell(child)) {
+      children.add(child);
+    }
+  }
+
+  return UniverseView(
+    layout: layoutUniverse(path: path, children: children),
+    axis: anchor.axis,
+    anchorId: anchor.id,
+  );
+}
+
+/// 该节点在这条轴上有没有球壳可上。
+///
+/// 判据就是 [`shellIndexOf`] 能不能给出层序 —— 与 [`layoutUniverse`] 内部
+/// `!` 所依赖的是同一个事实，所以过滤过的节点再交给它必不抛。
+bool _canOccupyShell(Node node) =>
+    shellIndexOf(axis: node.axis, slot: node.levelSlot) != null;
 
 /// 排序键：官方码优先、`slug` 兜底。
 ///

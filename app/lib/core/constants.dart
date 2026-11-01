@@ -934,3 +934,47 @@ const double universeCellCenterOffset = 0.5;
 /// 只为读数可读，不参与任何判据。度数保留两位时，`1/255` 这种量级的差别
 /// 看不出来 —— 那本来也不是要看的东西；能看出「格与格差 30°」就够。
 const int skyPointDecimalPlaces = 2;
+
+// ─────────────────── 十九、节点光点（`B17b` 笔 3 · `ADR-0006`） ───────────────────
+
+/// 方位角与赤经之间的偏移（度）。
+///
+/// 落位给的是「方位角 0 = 正前」；投影层 `SkyProjection` 吃的是**星表坐标系**，
+/// 它的赤经 0 在视线右手边 90°。两者差一个直角 —— 相机 `yaw` 为 0 时视线
+/// 正对方位角 0，而它对应的赤经是 90°。
+///
+/// 单起一个名字而不是在转换处直接减 90：这个直角是两套坐标系的口径差，
+/// 写进算式里就成了一个来历不明的修正量，换个地方又要再猜一次。
+const double universeSkyAzimuthToRightAscensionDeg = 90.0;
+
+/// 当前节点的光点半径（逻辑像素）。
+///
+/// 三档里最大：视线该先落在这里，它也是唯一恒在视野正中的点。
+const double universeCurrentDotSize = 5.0;
+
+/// 来路（祖先）的光点半径。比当前节点小一档 —— 它们是「从哪来」，不是主语。
+const double universeAncestorDotSize = 3.2;
+
+/// 直接子级的光点半径。
+///
+/// 最小一档：一屏最多同时有 105 个（骨架最大同父），再大就糊成一片光。
+const double universeChildDotSize = 2.4;
+
+/// 光晕半径相对光点半径的倍数。
+///
+/// 大于 1 才有「光晕」可言；取 2.8 是因为星点光斑的可见直径约是画布半径的
+/// 六倍（`star_sprite.dart` 的贴图留白），而节点要落在同一片星空里、看着
+/// 像同一套光，又不能大到盖住旁边的点。
+const double universeDotGlowScale = 2.8;
+
+/// 实心核半径相对光点半径的倍数。
+///
+/// 小于 1：核嵌在晕里。核负责「这个点在哪」，晕负责「它亮」。两者都取 1
+/// 会变成一个边缘生硬的圆片，与旁边带柔边的星点明显不是一套。
+const double universeDotCoreScale = 0.55;
+
+/// 光晕的不透明度（0..1）。
+const double universeDotGlowAlpha = 0.30;
+
+/// 实心核的不透明度（0..1）。核要实，晕要淡 —— 反过来会糊。
+const double universeDotCoreAlpha = 0.95;
