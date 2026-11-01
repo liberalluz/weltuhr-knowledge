@@ -478,5 +478,25 @@ void main() {
         ]),
       );
     });
+
+    test('TC-UNIVERSE-029 当前、来路、子级的名字都在同一张表里（ADR-0006 修订十六）', () {
+      // 标注层按 id 查名字，查不到就静默跳过 —— 缺一条不会报错，只会让某个
+      // 点悄悄没有名字。所以必须按三组逐位点验，不能只看表非空。
+      final UniverseView view = layoutOfNode(tree, 'skeleton:d-0101')!;
+      final UniverseLayout layout = view.layout;
+
+      expect(layout.names[view.anchorId], isNotNull, reason: '当前节点的名字');
+      for (final String id in layout.ancestorIds) {
+        expect(layout.names[id], isNotNull, reason: '来路 $id 缺名字');
+      }
+      for (final String id in layout.children.keys) {
+        expect(layout.names[id], isNotNull, reason: '子级 $id 缺名字');
+      }
+      // 取的是 `Node.name` 而不是 slug 或官方码：界面上写给人看的是这个名字。
+      expect(
+        layout.names['skeleton:d-0101'],
+        tree.nodeOf('skeleton:d-0101')!.name,
+      );
+    });
   });
 }
