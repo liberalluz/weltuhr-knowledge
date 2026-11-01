@@ -72,13 +72,22 @@ class _UniverseScreenState extends State<UniverseScreen> {
   /// 骨架点 id → 亮度。`null` = 还没算出来或算不出来 —— 见类文档的四个空态。
   Map<String, double>? _brightness;
 
+  /// 当前地址。
+  ///
+  /// 初值取树屏传来的那一行；**在宇宙里下钻后会本地前进**（`B17b` 笔 7），
+  /// 退出时原样带回树屏。所以它有两层含义：进来时「树在哪」，走时「我到了哪」。
+  ///
+  /// 不用 `widget.currentNodeId` 直接当地址，是因为下钻不该回写树屏 —— 树屏
+  /// 此刻还在栈里、看不见，让它在后台重建除了制造时序问题没有别的好处。
+  String? _address;
+
   /// 这一片天。算不出来时是 `null`，由 `SpikeSceneView` 按「只画星空」处置。
   ///
   /// 在 `build` 里算而不是缓存：`layoutOfNode` 是纯函数，输入只有树与地址，
   /// 而这两个都是本组件的字段 —— 缓存反而要处理「树换了但 id 没变」这种失效。
   UniverseView? get _universe {
     final TreeIndex? tree = widget.tree;
-    final String? id = widget.currentNodeId;
+    final String? id = _address;
     if (tree == null || id == null) {
       return null;
     }
@@ -88,6 +97,7 @@ class _UniverseScreenState extends State<UniverseScreen> {
   @override
   void initState() {
     super.initState();
+    _address = widget.currentNodeId;
     _load();
   }
 
@@ -97,11 +107,32 @@ class _UniverseScreenState extends State<UniverseScreen> {
     // 地址或树换了 ⇒ 亮度对的是另一批点。不重算的话，从 A 进宇宙、返回、走到 B
     // 再进来，State 若是复用的，画的就是 A 的亮度（A 的 id 在新视角里查不到，
     // 于是全落成「未学」—— 看起来像刚把学过的都清空了）。
+    //
+    // 外部换了地址 ⇒ **以外部为准**，丢掉本地下钻的位置：树屏那一行是这份地址
+    // 的源头（`SPEC-TREE-007`），它说去哪就去哪。
     if (oldWidget.currentNodeId != widget.currentNodeId ||
         oldWidget.tree != widget.tree) {
+      _address = widget.currentNodeId;
       _brightness = null;
       _load();
     }
+  }
+
+  /// 下钻到某个子级：只改本页地址，不动树屏。
+  ///
+  /// 由 [SpikeSceneView.onDrill] 在相机转到位之后调用 —— 那时才换片天，
+  /// 在此之前画的一直是旧的那一片。
+  void _drill(String childId) {
+    if (_address == childId) {
+      return;
+    }
+    setState(() {
+      _address = childId;
+      // 新的一片天要重算亮度：旧表里的 id 在新视角里大多查不到，留着会让
+      // 新片天整片落成「未学」。
+      _brightness = null;
+    });
+    _load();
   }
 
   Future<void> _load() async {
@@ -181,18 +212,37 @@ class _UniverseScreenState extends State<UniverseScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Theme(
-      data: ThemeData.dark(useMaterial3: true),
-      child: Scaffold(
-        backgroundColor: Colors.black,
-        extendBodyBehindAppBar: true,
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          scrolledUnderElevation: 0,
-          title: const Text('宇宙'),
+    return PopScope(
+      // 退出时把地址带回树屏（`B17b` 笔 7）：在宇宙里下钻走到别处，退出来
+      // 树里那一行要跟着走 —— 两者读同一份地址（`SPEC-TREE-007`）。
+      //
+      // `canPop: false` 拦住系统返回（Android 手势 / 返回键），由下面这次
+      // `pop` 带上结果。手动 `Navigator.pop` 不受 `canPop` 限制，所以不会
+      // 拦成死循环。
+      canPop: false,
+      onPopInvokedWithResult: (bool didPop, Object? result) {
+        if (didPop) {
+          return;
+        }
+        Navigator.of(context).pop(_address);
+      },
+      child: Theme(
+        data: ThemeData.dark(useMaterial3: true),
+        child: Scaffold(
+          backgroundColor: Colors.black,
+          extendBodyBehindAppBar: true,
+          appBar: AppBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            scrolledUnderElevation: 0,
+            title: const Text('宇宙'),
+          ),
+          body: SpikeSceneView(
+            universe: _universe,
+            brightness: _brightness,
+            onDrill: _drill,
+          ),
         ),
-        body: SpikeSceneView(universe: _universe, brightness: _brightness),
       ),
     );
   }

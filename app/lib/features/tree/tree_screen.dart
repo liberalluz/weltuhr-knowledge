@@ -63,6 +63,24 @@ const Key treeFilterClearKey = ValueKey<String>('tree-filter-clear');
 /// 的是「看几条轴」，同一件事的两种看法。
 const Key treeModeToggleKey = ValueKey<String>('tree-mode-toggle');
 
+/// 从宇宙屏带回来的地址该不该采纳（`B17b` 笔 7）。
+///
+/// 返回 `null` 表示**什么都不用做**：没带回来（用户按了取消式的返回）、或者
+/// 带回来的就是进来时那一行（宇宙里没下钻）。两种情况都不该 `setState` ——
+/// 无谓重建会让树的滚动位置抖一下，而画面上一模一样。
+///
+/// 抽成顶层函数是为了能单独验：真正走一遍「进宇宙 → 下钻 → 返回」要构建
+/// `UniverseScreen`，而它一构建就要 `gpuContext()`，widget 测试里起不来。
+String? adoptReturnedAddress({
+  required String? picked,
+  required String? current,
+}) {
+  if (picked == null || picked == current) {
+    return null;
+  }
+  return picked;
+}
+
 class TreeScreen extends StatefulWidget {
   const TreeScreen({
     super.key,
@@ -178,6 +196,36 @@ class _TreeScreenState extends State<TreeScreen> {
     setState(() => _selectedId = nodeId);
   }
 
+  /// 进宇宙视图；回来时把那份地址接回来（`B17b` 笔 7）。
+  ///
+  /// 宇宙里点一个子级会下钻，退出来树里那一行要跟着走 —— 两者读同一份地址
+  /// （`SPEC-TREE-007`）。地址没变（`null` 或与进来时相同）就不 `setState`：
+  /// 无谓重建会让树的滚动位置抖一下。
+  ///
+  /// 用 `pop` 的返回值而不是在宇宙页里直接回调本页：宇宙是**压在本页之上的
+  /// 路由**，它下钻时本页在栈里谁也看不见，此刻重建只是把「一帧后就会被
+  /// 覆盖的状态」提前算了一遍。
+  Future<void> _openUniverse(TreeIndex? tree, String? address) async {
+    final String? picked = await Navigator.of(context).push<String>(
+      MaterialPageRoute<String>(
+        builder: (BuildContext context) => UniverseScreen(
+          tree: tree,
+          currentNodeId: address,
+          contents: widget.contents,
+          eventStore: widget.eventStore,
+        ),
+      ),
+    );
+    final String? adopt = adoptReturnedAddress(
+      picked: picked,
+      current: address,
+    );
+    if (!mounted || adopt == null) {
+      return;
+    }
+    _drill(adopt);
+  }
+
   /// 单轴态 ⇄ 全树态（`SPEC-TREE-003`）。这是**唯一**改 [TreeMode] 的地方 ——
   /// 换根与落点都退回单轴，别处不再各写一遍。
   void _toggleMode() {
@@ -225,16 +273,7 @@ class _TreeScreenState extends State<TreeScreen> {
             // 地址与索引原样传过去：宇宙不自己再建一份（`SPEC-TREE-007`）。
             // 这里传的是 `build` 的局部量，进宇宙那一刻取的就是屏幕上这一行。
             // 包与事件存储一并传：亮度要两者的合成，而它们本来就在这一层。
-            onPressed: () => Navigator.of(context).push(
-              MaterialPageRoute<void>(
-                builder: (BuildContext context) => UniverseScreen(
-                  tree: tree,
-                  currentNodeId: address,
-                  contents: widget.contents,
-                  eventStore: widget.eventStore,
-                ),
-              ),
-            ),
+            onPressed: () => _openUniverse(tree, address),
           ),
           IconButton(
             key: treeLocateKey,

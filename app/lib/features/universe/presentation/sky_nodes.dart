@@ -106,12 +106,52 @@ double aggregateAlphaFactorOf(
 /// 聚合点上那行字。
 String aggregateLabelOf(SkyAggregate aggregate) => '+${aggregate.count}';
 
+/// 屏幕坐标 → 被点中的**子级** id；没点中返回 `null`。
+///
+/// 只判子级：当前节点与来路不是这一笔的下钻目标（前者是「你已经在这」，
+/// 后者是「回上层」，两者都不该由这一笔顺带承担），聚合点代表一片而不是一颗。
+/// 载荷子级也不会出现 —— `layoutUniverse` 已把它们滤掉（无球壳可上）。
+///
+/// 判定半径 = 该档点径 + [universeHitSlopPx]。点身只有 2.4 px，按点身判等于
+/// 要求手指精确到 2 px；把点画大来迁就点击又会让 105 个点糊成一片 —— 所以
+/// **只放大判定的圈，不放大画出来的点**。
+///
+/// 命中多个候选取屏幕距离最近的那个：两个点在屏幕上靠得近时，用户点的一定是
+/// 离指尖更近的那一颗。
+String? hitTestChildAt(
+  SkyProjection projection,
+  UniverseView universe,
+  ui.Offset point,
+) {
+  const double radius = universeChildDotSize + universeHitSlopPx;
+  const double radiusSquared = radius * radius;
+  String? nearestId;
+  double nearestDistance = double.infinity;
+  for (final MapEntry<String, SkyPoint> entry
+      in universe.layout.children.entries) {
+    final ui.Offset? center = projection.project(
+      directionOfSkyPoint(entry.value),
+    );
+    // 落在镜头后方 ⇒ 屏幕上根本没有它，不该被点中。
+    if (center == null) {
+      continue;
+    }
+    final double distance = (center - point).distanceSquared;
+    if (distance <= radiusSquared && distance < nearestDistance) {
+      nearestDistance = distance;
+      nearestId = entry.key;
+    }
+  }
+  return nearestId;
+}
+
 /// 节点光点。每帧重画，不缓存。
 class SkyNodesPainter extends CustomPainter {
   SkyNodesPainter({
     required this.view,
     required this.universe,
     this.brightness,
+    this.opacity = 1.0,
     super.repaint,
   });
 
@@ -126,6 +166,12 @@ class SkyNodesPainter extends CustomPainter {
   /// 两者都写成空集合的话，界面就无法把「日志读不出来」和「你什么都没学」
   /// 分开（`B17b` 笔 4 的降级口径）。
   final Map<String, double>? brightness;
+
+  /// 整层的额外不透明度（0..1），只由虫洞过渡用（`B17b` 笔 7）。
+  ///
+  /// 乘在每档系数之上，不改亮度分档本身 —— 亮度回答「学得怎样」，本值回答
+  /// 「这一帧该露多少」，两件事乘起来才是最终透明度。
+  final double opacity;
 
   @override
   void paint(ui.Canvas canvas, ui.Size size) {
@@ -205,10 +251,14 @@ class SkyNodesPainter extends CustomPainter {
 
     byAlpha.forEach((double alpha, List<ui.Offset> centers) {
       final ui.Paint glow = ui.Paint()
-        ..color = color.withValues(alpha: universeDotGlowAlpha * alpha)
+        ..color = color.withValues(
+          alpha: universeDotGlowAlpha * alpha * opacity,
+        )
         ..maskFilter = ui.MaskFilter.blur(ui.BlurStyle.normal, radius);
       final ui.Paint core = ui.Paint()
-        ..color = color.withValues(alpha: universeDotCoreAlpha * alpha);
+        ..color = color.withValues(
+          alpha: universeDotCoreAlpha * alpha * opacity,
+        );
       for (final ui.Offset center in centers) {
         canvas.drawCircle(center, radius * universeDotGlowScale, glow);
         canvas.drawCircle(center, radius * universeDotCoreScale, core);
@@ -234,7 +284,8 @@ class SkyNodesPainter extends CustomPainter {
     if (center == null) {
       return;
     }
-    final double alpha = aggregateAlphaFactorOf(aggregate, brightness);
+    final double alpha =
+        aggregateAlphaFactorOf(aggregate, brightness) * opacity;
     final ui.Paint glow = ui.Paint()
       ..color = color.withValues(alpha: universeDotGlowAlpha * alpha)
       ..maskFilter = ui.MaskFilter.blur(
@@ -262,7 +313,7 @@ class SkyNodesPainter extends CustomPainter {
           ),
         )..pushStyle(
           ui.TextStyle(
-            color: color.withValues(alpha: universeLabelAlpha),
+            color: color.withValues(alpha: universeLabelAlpha * opacity),
             fontSize: universeLabelFontSize,
           ),
         );
