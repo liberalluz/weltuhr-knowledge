@@ -462,5 +462,21 @@ void main() {
       // 由渲染层按「只画星空」处置 —— 不是拿一个空布局凑数。
       expect(layoutOfNode(tree, 'no-such-node'), isNull);
     });
+
+    test('TC-UNIVERSE-020 来路带上与坐标逐位对齐的 id（ADR-0006 修订十五）', () {
+      // 坐标只回答「画在哪」，答不了「这是谁」；亮度要按 id 查。两者长度不等
+      // 就意味着某个点查不到亮度 —— 而它会安静地画成「未学」，不报任何错。
+      final UniverseView view = layoutOfNode(tree, 'skeleton:d-0101')!;
+      expect(view.layout.ancestorIds, hasLength(view.layout.ancestors.length));
+      expect(view.layout.ancestorIds, <String>['skeleton:d-01', 'skeleton:d']);
+      // 坐标本身一个字没动：`ancestorIds` 只加身份，不改几何。
+      expect(
+        view.layout.ancestors.map((SkyPoint p) => p.elevationDeg),
+        orderedEquals(<double>[
+          for (int i = 0; i < view.layout.ancestors.length; i++)
+            ancestorElevationOf(i),
+        ]),
+      );
+    });
   });
 }

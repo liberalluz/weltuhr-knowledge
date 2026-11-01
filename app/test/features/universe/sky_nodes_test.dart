@@ -50,6 +50,10 @@ UniverseView _universe({
   layout: UniverseLayout(
     current: current ?? _point(),
     ancestors: ancestors,
+    // 逐位对齐的 id：只影响亮度查表，不影响坐标，因此按序号造即可。
+    ancestorIds: <String>[
+      for (int i = 0; i < ancestors.length; i++) 'ancestor-$i',
+    ],
     children: children,
   ),
   axis: axis,
@@ -152,15 +156,97 @@ void main() {
     // 「画布根本没工作」而不是「确实没画」。
     expect(await _inkedPixels(universe: _universe()), greaterThan(0));
   });
+  test('TC-UNIVERSE-011 亮度分档单调不减、端点落对（ADR-0006 修订十五）', () {
+    // 分档只为一件事：让 paint 能复用。但「谁比谁亮」这个顺序不能被分档改掉 ——
+    // 改了的话，界面会显示成「学得更多反而更暗」。
+    expect(brightnessStepOf(0), 0);
+    expect(brightnessStepOf(1), universeBrightnessSteps - 1);
+    int previous = -1;
+    for (double b = 0; b <= 1.0001; b += 0.02) {
+      final int step = brightnessStepOf(b);
+      expect(step, greaterThanOrEqualTo(previous), reason: '亮度 $b 的档位回退了');
+      previous = step;
+    }
+    // 越界不炸：调用方从没保证过 0..1（浮点累加会出 1.0000000000000002）。
+    expect(brightnessStepOf(1.4), universeBrightnessSteps - 1);
+    expect(brightnessStepOf(-0.4), 0);
+  });
+
+  test('TC-UNIVERSE-012 未学仍留可见下限，全学满才到满不透明（ADR-0006 修订十五）', () {
+    // 未学不是「不透明度 0」：一片没学过的天会变成空的，与新用户分不清
+    // 「还没学」和「没装载」。
+    expect(alphaFactorOfStep(0), closeTo(universeBrightnessFloor, 1e-9));
+    expect(alphaFactorOfStep(universeBrightnessSteps - 1), closeTo(1, 1e-9));
+    for (int i = 1; i < universeBrightnessSteps; i++) {
+      expect(alphaFactorOfStep(i), greaterThan(alphaFactorOfStep(i - 1)));
+    }
+  });
+
+  test('TC-UNIVERSE-013 取不到数据比「确实没学」更亮（ADR-0006 修订十五）', () async {
+    // `null` 是「不知道」，空表是「知道了，一项都没学」。两者画成一样的话，
+    // 日志读不出来时界面就在说「你什么都没学」——那是假话。
+    final double unknown = await _inkAlpha(
+      universe: _universe(),
+      brightness: null,
+    );
+    final double none = await _inkAlpha(
+      universe: _universe(),
+      brightness: <String, double>{'x': 0},
+    );
+    final double all = await _inkAlpha(
+      universe: _universe(),
+      brightness: <String, double>{'x': 1},
+    );
+    expect(none, greaterThan(0), reason: '未学也不该一点像素都不留');
+    expect(unknown, greaterThan(none));
+    expect(all, greaterThan(unknown));
+  });
 }
 
 /// 画一遍，数出有多少个非透明像素。
-Future<int> _inkedPixels({required UniverseView? universe}) async {
+Future<int> _inkedPixels({
+  required UniverseView? universe,
+  Map<String, double>? brightness,
+}) async {
+  final ByteData? data = await _render(
+    universe: universe,
+    brightness: brightness,
+  );
+  int inked = 0;
+  for (int i = 3; i < data!.lengthInBytes; i += 4) {
+    if (data.getUint8(i) != 0) {
+      inked++;
+    }
+  }
+  return inked;
+}
+
+/// 画一遍，把全部像素的 alpha 加起来 —— 亮度差表现为 alpha 差，像素数看不出。
+Future<double> _inkAlpha({
+  required UniverseView? universe,
+  Map<String, double>? brightness,
+}) async {
+  final ByteData? data = await _render(
+    universe: universe,
+    brightness: brightness,
+  );
+  double total = 0;
+  for (int i = 3; i < data!.lengthInBytes; i += 4) {
+    total += data.getUint8(i);
+  }
+  return total;
+}
+
+Future<ByteData?> _render({
+  required UniverseView? universe,
+  Map<String, double>? brightness,
+}) async {
   final ui.PictureRecorder recorder = ui.PictureRecorder();
   final ui.Canvas canvas = ui.Canvas(recorder);
   SkyNodesPainter(
     view: _View(yaw: 0, pitch: 0, fovDeg: 70),
     universe: universe,
+    brightness: brightness,
   ).paint(canvas, _size);
   final ui.Image image = await recorder.endRecording().toImage(
     _size.width.toInt(),
@@ -170,14 +256,5 @@ Future<int> _inkedPixels({required UniverseView? universe}) async {
     format: ui.ImageByteFormat.rawRgba,
   );
   image.dispose();
-  if (data == null) {
-    return 0;
-  }
-  int inked = 0;
-  for (int i = 3; i < data.lengthInBytes; i += 4) {
-    if (data.getUint8(i) != 0) {
-      inked++;
-    }
-  }
-  return inked;
+  return data;
 }
