@@ -58,4 +58,25 @@ void main() {
       reason: '默认必须是关：产品入口 `UniverseScreen` 不传这个参数',
     );
   });
+
+  test('TC-UNIVERSE-054 宇宙带回来的地址：没带 / 没变 / 变了三种处置（ADR-0006 修订十八）', () {
+    // 真正走一遍「进宇宙 → 下钻 → 返回」要构建 `UniverseScreen`，而它一构建
+    // 就要 `gpuContext()`。所以把回写判据抽成纯函数，在这里验三段分支；
+    // 「pop 真的带回了值」只能真机看，已登记在 ADR 修订十八的未验项里。
+    expect(
+      adoptReturnedAddress(picked: null, current: 'a'),
+      isNull,
+      reason: '没带回来就什么都不做 —— 用户可能只是进去看了看',
+    );
+    expect(
+      adoptReturnedAddress(picked: 'a', current: 'a'),
+      isNull,
+      reason: '带回来的还是进来那一行 ⇒ 没下钻，不该 setState（会让树滚动位置抖一下）',
+    );
+    expect(
+      adoptReturnedAddress(picked: 'b', current: 'a'),
+      'b',
+      reason: '在宇宙里下钻过，树里那一行要跟着走（SPEC-TREE-007 同一份地址）',
+    );
+  });
 }

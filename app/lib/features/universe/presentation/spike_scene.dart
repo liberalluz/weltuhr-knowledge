@@ -33,6 +33,7 @@ import 'sky_labels.dart';
 import 'sky_nodes.dart';
 import 'star_catalog.dart';
 import 'star_sprite.dart';
+import 'wormhole_transition.dart';
 
 /// `ADR-0006` §3 规定的同屏点数。
 const int kSpikeBillboardCount = 1200;
@@ -155,11 +156,16 @@ class SkyCamera implements SkyView {
 /// 单独一个 widget 是为了**能测** —— 真正的 `SceneView` 要 GPU，在
 /// `flutter test` 里挂不起来，而「手势有没有被识别、有没有落到相机上」
 /// 这一层不需要 GPU。
+///
+/// [enabled] 为假时**四类手势全部不响应**：虫洞过渡期间相机由过渡接管，
+/// 此时让用户拖一把会把插值中的姿态打乱（`B17b` 笔 7）。
 class SkyGestureLayer extends StatefulWidget {
   const SkyGestureLayer({
     required this.camera,
     required this.child,
     this.onChanged,
+    this.onTapUp,
+    this.enabled = true,
     super.key,
   });
 
@@ -168,6 +174,16 @@ class SkyGestureLayer extends StatefulWidget {
 
   /// 相机变化后的回调（画面要重绘）。
   final VoidCallback? onChanged;
+
+  /// 点击回调，给出**本地坐标**与手势层尺寸。
+  ///
+  /// 尺寸由本层用 `LayoutBuilder` 取，不从 `MediaQuery` 猜 —— 画布是
+  /// `Positioned.fill` 填满 body 的，与屏幕尺寸差一个 appBar 的高度；
+  /// 用屏幕尺寸算出的投影会把命中判定整体上移这么多像素。
+  final void Function(ui.Offset local, ui.Size size)? onTapUp;
+
+  /// 是否接受手势。过渡期间为假。
+  final bool enabled;
 
   @override
   State<SkyGestureLayer> createState() => _SkyGestureLayerState();
@@ -178,26 +194,43 @@ class _SkyGestureLayerState extends State<SkyGestureLayer> {
 
   @override
   Widget build(BuildContext context) {
-    return Listener(
-      onPointerSignal: (PointerSignalEvent event) {
-        if (event is PointerScrollEvent) {
-          widget.camera.zoom(event.scrollDelta.dy);
-          widget.onChanged?.call();
-        }
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        final ui.Size size = constraints.biggest;
+        return Listener(
+          onPointerSignal: (PointerSignalEvent event) {
+            if (!widget.enabled) {
+              return;
+            }
+            if (event is PointerScrollEvent) {
+              widget.camera.zoom(event.scrollDelta.dy);
+              widget.onChanged?.call();
+            }
+          },
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTapUp: (TapUpDetails details) {
+              if (!widget.enabled) {
+                return;
+              }
+              widget.onTapUp?.call(details.localPosition, size);
+            },
+            onPanStart: (DragStartDetails details) {
+              _lastPan = details.localPosition;
+            },
+            onPanUpdate: (DragUpdateDetails details) {
+              if (!widget.enabled) {
+                return;
+              }
+              final ui.Offset delta = details.localPosition - _lastPan;
+              _lastPan = details.localPosition;
+              widget.camera.drag(delta);
+              widget.onChanged?.call();
+            },
+            child: widget.child,
+          ),
+        );
       },
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onPanStart: (DragStartDetails details) {
-          _lastPan = details.localPosition;
-        },
-        onPanUpdate: (DragUpdateDetails details) {
-          final ui.Offset delta = details.localPosition - _lastPan;
-          _lastPan = details.localPosition;
-          widget.camera.drag(delta);
-          widget.onChanged?.call();
-        },
-        child: widget.child,
-      ),
     );
   }
 }
@@ -208,6 +241,7 @@ class SpikeSceneView extends StatefulWidget {
     this.showReadout = false,
     this.universe,
     this.brightness,
+    this.onDrill,
   });
 
   /// 是否显示左上角的采样面板（`P50` / `P95` / 重采按钮）。
@@ -238,6 +272,16 @@ class SpikeSceneView extends StatefulWidget {
   /// 此时全体共用 `universeBrightnessUnknown` —— **不是**把点画成全暗。
   final Map<String, double>? brightness;
 
+  /// 下钻回调：点中子级、且相机已经转到位之后调用一次，参数是被点中的子级 id。
+  ///
+  /// **在转向结束那一刻才调**，不是在手指抬起时：换地址会让 `universe` 换成
+  /// 新的一片天，若在手抬起时就换，相机还在旧姿态、新片天的点会以错误的角度
+  /// 出现半秒。所以这里把「转向」和「换片」拆成两步，本回调是两步之间的闸。
+  ///
+  /// 上层收到后改地址即可 —— 本组件在 `didUpdateWidget` 里检测到片天换了，
+  /// 会把相机摆到新片天的正中（此时视觉方向恰好连续，见 [WormholeTransition.to]）。
+  final void Function(String childId)? onDrill;
+
   @override
   State<SpikeSceneView> createState() => _SpikeSceneViewState();
 }
@@ -263,6 +307,18 @@ class _SpikeSceneViewState extends State<SpikeSceneView>
   /// HIP 号 → 星表记录，连线按号取坐标用。
   Map<int, StarRecord> _starsByHip = const <int, StarRecord>{};
 
+  /// 正在进行的虫洞过渡；`null` = 静止。
+  ///
+  /// 生命周期跨一次换片：转向阶段画旧片天，到达后上层改地址、新片天进来，
+  /// 它继续跑淡入阶段。因此**不能**在上层换片时把它清掉。
+  WormholeTransition? _transition;
+
+  /// 等转向完成后要下钻的子级 id。那一帧消费一次即清空。
+  String? _pendingDrillId;
+
+  /// 上一帧的 ticker 计时。`dt` 由两帧之差算，不读系统时钟 —— 与渲染帧同源。
+  Duration? _lastTickElapsed;
+
   late final Ticker _ticker;
 
   bool _ready = false;
@@ -287,8 +343,98 @@ class _SpikeSceneViewState extends State<SpikeSceneView>
         ..autoSpin = false;
     }
     SchedulerBinding.instance.addTimingsCallback(_onTimings);
-    _ticker = createTicker((_) => _tick.value++)..start();
+    _ticker = createTicker(_onTick)..start();
     _build();
+  }
+
+  /// 每帧：先推进过渡，再让各层重绘。
+  ///
+  /// 过渡推进放在这里而不是 `build` 里，是因为它要**改相机的字段** —— 写进
+  /// `build` 会在每次因别的原因重建时把过渡重新算一遍。
+  void _onTick(Duration elapsed) {
+    final Duration? previous = _lastTickElapsed;
+    _lastTickElapsed = elapsed;
+    if (previous != null) {
+      _advanceTransition((elapsed - previous).inMicroseconds / 1e6);
+    }
+    _tick.value++;
+  }
+
+  /// 推进虫洞过渡；转到位的那一帧回调上层换地址。
+  ///
+  /// 相机姿态每帧从过渡的方向反解后写回 [SkyCamera] —— 是**覆盖**不是累加，
+  /// 所以过渡期间不允许用户拖转（手势层 `enabled` 为假）。
+  void _advanceTransition(double dt) {
+    final WormholeTransition? transition = _transition;
+    if (transition == null) {
+      return;
+    }
+    final bool arrived = transition.advance(dt);
+    final SkyPose pose = poseOfDirection(transition.direction);
+    _camera
+      ..yaw = pose.yawDeg * math.pi / 180
+      ..pitch = pose.pitchDeg * math.pi / 180;
+
+    if (arrived) {
+      final String? childId = _pendingDrillId;
+      _pendingDrillId = null;
+      if (childId != null) {
+        widget.onDrill?.call(childId);
+      }
+    }
+    if (transition.isDone) {
+      // 恢复手势与标注层要重建 widget 树，用 `setState`；其余帧只靠 `_tick`
+      // 重绘画布，不必重建。
+      setState(() => _transition = null);
+    }
+  }
+
+  /// 点中一个子级 ⇒ 起一次过渡。过渡进行中的点击一律忽略。
+  void _onTapUp(ui.Offset local, ui.Size size) {
+    if (_transition != null || size.isEmpty) {
+      return;
+    }
+    final UniverseView? universe = widget.universe;
+    if (universe == null) {
+      return;
+    }
+    final SkyProjection projection = SkyProjection(view: _camera, size: size);
+    final String? childId = hitTestChildAt(projection, universe, local);
+    if (childId == null) {
+      return;
+    }
+    final SkyPoint? target = universe.layout.children[childId];
+    // 走到这里 `target` 不该为 `null`（id 就是从这张表里取的）；留着是因为
+    // 表可能被下游换掉，而「点不中」比「空指针崩掉」安全。
+    if (target == null) {
+      return;
+    }
+    final vm.Vector3 from = _camera.direction;
+    setState(() {
+      _transition = WormholeTransition(
+        from: Vec3(from.x, from.y, from.z),
+        to: directionOfSkyPoint(target),
+      );
+      _pendingDrillId = childId;
+    });
+  }
+
+  @override
+  void didUpdateWidget(covariant SpikeSceneView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // 片天换了（锚点变了）且过渡正处「已到达」⇒ 新片天把当前节点定义在
+    // 正前方，相机摆回 0/0。方向是连续的：转向的终点就是新片天的 0/0，
+    // 所以这一步在画面上看不见，只是把数值对齐。
+    //
+    // 比锚点而不是比对象引用：上一层的 `_universe` 是每次 `build` 现算的纯
+    // 函数结果，引用永远不等，比引用会把这一支变成「每次都触发」。
+    if (_transition != null &&
+        _transition!.hasArrived &&
+        oldWidget.universe?.anchorId != widget.universe?.anchorId) {
+      _camera
+        ..yaw = 0
+        ..pitch = 0;
+    }
   }
 
   @override
@@ -464,6 +610,9 @@ class _SpikeSceneViewState extends State<SpikeSceneView>
                       ? SkyGestureLayer(
                           camera: _camera,
                           onChanged: () => setState(() {}),
+                          onTapUp: _onTapUp,
+                          // 过渡期间相机由过渡接管，四类手势全部关掉。
+                          enabled: _transition == null,
                           child: fs.SceneView(_scene, cameraBuilder: _cameraAt),
                         )
                       : const Center(
@@ -495,13 +644,19 @@ class _SpikeSceneViewState extends State<SpikeSceneView>
                     view: _camera,
                     universe: widget.universe,
                     brightness: widget.brightness,
+                    // 过渡期间点层整体压暗再涨回（下界 `C-156`）。
+                    opacity: _transition?.nodeOpacity ?? 1.0,
                     repaint: _tick,
                   ),
                 ),
               ),
             ),
           // 标注压在点之上：字必须盖住点的晕，反过来就糊成一团。
-          if (_ready)
+          //
+          // **过渡期间整层不画**：标注的不透明度不在本笔的改动面上（笔 5 那层
+          // 没有这个参数），让它保持满亮会与压暗的点层对不上 —— 点暗下去、字
+          // 还亮着，看起来像字浮在空处。过渡前后各 0.5 s，不画比画错好。
+          if (_ready && _transition == null)
             Positioned.fill(
               child: IgnorePointer(
                 child: CustomPaint(

@@ -259,6 +259,80 @@ void main() {
       );
     });
   });
+
+  group('命中判定（B17b 笔 7 的可下钻目标）', () {
+    /// 某个落位点在屏幕上的位置。
+    ui.Offset screenOf(SkyPoint point) =>
+        _projection().project(directionOfSkyPoint(point))!;
+
+    test('TC-UNIVERSE-050 点中子级点返回它的 id（ADR-0006 修订十八）', () {
+      final UniverseView universe = _universe(
+        children: <String, SkyPoint>{'c1': _point()},
+      );
+      // 子级落在正前方 ⇒ 屏幕中心。
+      expect(screenOf(_point()).dx, closeTo(_size.width / 2, 0.5));
+      expect(
+        hitTestChildAt(_projection(), universe, screenOf(_point())),
+        'c1',
+        reason: '点中了却返回 null，等于宇宙里一颗都下钻不了',
+      );
+    });
+
+    test('TC-UNIVERSE-051 超出判定半径返回 null，不误伤邻近的空白处（ADR-0006 修订十八）', () {
+      final UniverseView universe = _universe(
+        children: <String, SkyPoint>{'c1': _point()},
+      );
+      final ui.Offset center = screenOf(_point());
+      // 半径 = 点径 + 容差；往外再多 2 px 就不该命中。
+      final ui.Offset outside = center.translate(
+        0,
+        universeChildDotSize + universeHitSlopPx + 2,
+      );
+      expect(hitTestChildAt(_projection(), universe, outside), isNull);
+      // 边界之内仍要命中：容差是给手指留的，不是给空白留的。
+      final ui.Offset inside = center.translate(
+        0,
+        universeChildDotSize + universeHitSlopPx - 2,
+      );
+      expect(hitTestChildAt(_projection(), universe, inside), 'c1');
+    });
+
+    test('TC-UNIVERSE-052 两个子级都够近时取屏幕上更近的那个（ADR-0006 修订十八）', () {
+      // 方位角差 1°：fov 70° / 800 px 宽 ≈ 9 px，两个判定圈会重叠。
+      final SkyPoint near = _point(az: 0);
+      final SkyPoint far = _point(az: 1);
+      final UniverseView universe = _universe(
+        children: <String, SkyPoint>{'near': near, 'far': far},
+      );
+      final ui.Offset a = screenOf(near);
+      final ui.Offset b = screenOf(far);
+      // 取靠近 far 的那一边，但仍在 near 的判定圈内 —— 两个都算候选。
+      final ui.Offset between = ui.Offset.lerp(a, b, 0.7)!;
+      expect(
+        hitTestChildAt(_projection(), universe, between),
+        'far',
+        reason: '两根手指点不中一颗，模型只能取「离指尖更近的那一颗」',
+      );
+    });
+
+    test('TC-UNIVERSE-053 当前节点与来路不可下钻，只有子级是目标（ADR-0006 修订十八）', () {
+      // 当前节点在正前方、来路在它旁边，子级放在 20° 外。
+      final UniverseView universe = _universe(
+        ancestors: <SkyPoint>[_point(az: 3)],
+        children: <String, SkyPoint>{'c1': _point(az: 20)},
+      );
+      expect(
+        hitTestChildAt(_projection(), universe, screenOf(_point())),
+        isNull,
+        reason: '点当前节点不该触发下钻 —— 它已经是「你在这」',
+      );
+      expect(
+        hitTestChildAt(_projection(), universe, screenOf(_point(az: 20))),
+        'c1',
+        reason: '同一条用例里子级仍要命中，否则这条只证明了「什么都不响应」',
+      );
+    });
+  });
 }
 
 /// 画一遍，数出有多少个非透明像素。
