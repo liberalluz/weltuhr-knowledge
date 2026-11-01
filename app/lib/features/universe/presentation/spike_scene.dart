@@ -29,6 +29,7 @@ import '../../../core/universe/placement.dart';
 import 'constellations.dart';
 import 'frame_stats.dart';
 import 'sky_image.dart';
+import 'sky_labels.dart';
 import 'sky_nodes.dart';
 import 'star_catalog.dart';
 import 'star_sprite.dart';
@@ -224,7 +225,11 @@ class SpikeSceneView extends StatefulWidget {
   /// `null` = 只画星空（调试入口、以及算不出落位的情形）。非 `null` 时相机
   /// **对准当前节点并停掉自转**：当前节点在落位里的方位角与仰角都是 0，
   /// 正好是 `yaw = 0 / pitch = 0` 的视线方向；自转开着的话，几秒后它就自己
-  /// 飘出视野，而这一笔还没有标注（笔 5）能把人找回来。
+  /// 飘出视野。
+  ///
+  /// ⚠️ 笔 5 的标注只在 `fov ≤ universeLabelFovDeg`（60°）时出现，而这里的
+  /// 默认 `fov` 是 70° —— 所以刚进来**只看得见点、看不见名字**，要往下滚
+  /// 至少 3 格。两条口径都是既定的，叠在一起就是这个结果。
   final UniverseView? universe;
 
   /// 骨架点 id → 亮度（0..1），见 [SkyNodesPainter.brightness]。
@@ -248,6 +253,12 @@ class _SpikeSceneViewState extends State<SpikeSceneView>
   /// 每帧递增。连线层挂在这个 notifier 上重绘 —— 相机是原地改字段的对象，
   /// 靠 `setState` 重画会连带把 `SceneView` 整棵子树重建一遍。
   final ValueNotifier<int> _tick = ValueNotifier<int>(0);
+
+  /// 标注文字的排版缓存。
+  ///
+  /// **必须活在 State 里**：`CustomPainter` 每帧都被重建，缓存挂在 painter 上
+  /// 等于每帧从零开始，一屏 60 条就要每帧走 60 遍字形排版。
+  final SkyLabelCache _labelCache = SkyLabelCache();
 
   /// HIP 号 → 星表记录，连线按号取坐标用。
   Map<int, StarRecord> _starsByHip = const <int, StarRecord>{};
@@ -285,6 +296,7 @@ class _SpikeSceneViewState extends State<SpikeSceneView>
     SchedulerBinding.instance.removeTimingsCallback(_onTimings);
     _ticker.dispose();
     _tick.dispose();
+    _labelCache.dispose();
     _stats.dispose();
     _elapsed.dispose();
     super.dispose();
@@ -483,6 +495,21 @@ class _SpikeSceneViewState extends State<SpikeSceneView>
                     view: _camera,
                     universe: widget.universe,
                     brightness: widget.brightness,
+                    repaint: _tick,
+                  ),
+                ),
+              ),
+            ),
+          // 标注压在点之上：字必须盖住点的晕，反过来就糊成一团。
+          if (_ready)
+            Positioned.fill(
+              child: IgnorePointer(
+                child: CustomPaint(
+                  size: ui.Size.infinite,
+                  painter: SkyLabelsPainter(
+                    view: _camera,
+                    universe: widget.universe,
+                    cache: _labelCache,
                     repaint: _tick,
                   ),
                 ),

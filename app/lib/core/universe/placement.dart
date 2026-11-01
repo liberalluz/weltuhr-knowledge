@@ -63,6 +63,10 @@ class UniverseLayout {
     required this.ancestors,
     required this.ancestorIds,
     required this.children,
+    // 有默认值：名字只对标注层有意义，而落位用例与光点用例构造布局时并不
+    // 关心文字。给默认值让它们不必逐个补一个空表 —— 但那不等于「名字可选」，
+    // `layoutUniverse` 产出的布局里这张表总是齐的。
+    this.names = const <String, String>{},
   });
 
   /// 当前节点，恒在正前方、仰角 0。
@@ -81,6 +85,14 @@ class UniverseLayout {
 
   /// 直接子级，键为 `Node.id`。同一父的子不撞格（除非超出格数叠放）。
   final Map<String, SkyPoint> children;
+
+  /// 本视角内全部点的 id → 名字，当前、来路、子级三组都在这一张表里。
+  ///
+  /// 与 [ancestorIds] 同一类东西 —— 坐标答「画在哪」，名字答「这是谁」。
+  /// 合成一张表而不是三张（`currentName` / `ancestorNames` / `childNames`）：
+  /// 标注层要的是「给我这个 id 的字」，按 id 查一次比按组判断三次省事，
+  /// 也不会出现同一个 id 在两张表里名字不一致。
+  final Map<String, String> names;
 
   /// 本视角内的全部点（当前 + 来路 + 子级），供渲染层直接遍历。
   List<SkyPoint> get all => <SkyPoint>[
@@ -241,6 +253,12 @@ UniverseLayout layoutUniverse({
     ancestors: ancestors,
     ancestorIds: ancestorIds,
     children: childPoints,
+    // 名字只从传进来的节点取，不去查树 —— 落位模块不认识 `TreeIndex`，
+    // 一旦在这里反查，它就同时依赖树与坐标两份事实源。
+    names: <String, String>{
+      for (final Node node in path) node.id: node.name,
+      for (final Node node in sorted) node.id: node.name,
+    },
   );
 }
 
