@@ -202,7 +202,12 @@ class _SkyGestureLayerState extends State<SkyGestureLayer> {
 }
 
 class SpikeSceneView extends StatefulWidget {
-  const SpikeSceneView({super.key, this.showReadout = false, this.universe});
+  const SpikeSceneView({
+    super.key,
+    this.showReadout = false,
+    this.universe,
+    this.brightness,
+  });
 
   /// 是否显示左上角的采样面板（`P50` / `P95` / 重采按钮）。
   ///
@@ -221,6 +226,12 @@ class SpikeSceneView extends StatefulWidget {
   /// 正好是 `yaw = 0 / pitch = 0` 的视线方向；自转开着的话，几秒后它就自己
   /// 飘出视野，而这一笔还没有标注（笔 5）能把人找回来。
   final UniverseView? universe;
+
+  /// 骨架点 id → 亮度（0..1），见 [SkyNodesPainter.brightness]。
+  ///
+  /// `null` = 取不到学习数据（没接存储、日志为空、读失败、某个包算不出深度），
+  /// 此时全体共用 `universeBrightnessUnknown` —— **不是**把点画成全暗。
+  final Map<String, double>? brightness;
 
   @override
   State<SpikeSceneView> createState() => _SpikeSceneViewState();
@@ -471,6 +482,7 @@ class _SpikeSceneViewState extends State<SpikeSceneView>
                   painter: SkyNodesPainter(
                     view: _camera,
                     universe: widget.universe,
+                    brightness: widget.brightness,
                     repaint: _tick,
                   ),
                 ),

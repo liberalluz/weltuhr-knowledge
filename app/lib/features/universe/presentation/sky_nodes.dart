@@ -65,15 +65,41 @@ List<ui.Offset> screenPointsOf(
   return offsets;
 }
 
+/// 亮度 → 分档序号（0..`universeBrightnessSteps` − 1）。
+///
+/// 分档而不是逐点用原值，是为了让 paint 能复用；档数本身是常量
+/// （`C-145`），改档数不会改变「谁比谁亮」这个顺序。
+int brightnessStepOf(double brightness) {
+  final double clamped = brightness.clamp(0, 1);
+  return (clamped * (universeBrightnessSteps - 1)).round();
+}
+
+/// 某一档对应的不透明度系数（`C-143` 下限之上线性铺开）。
+double alphaFactorOfStep(int step) {
+  final double ratio = step / (universeBrightnessSteps - 1);
+  return universeBrightnessFloor + (1 - universeBrightnessFloor) * ratio;
+}
+
 /// 节点光点。每帧重画，不缓存。
 class SkyNodesPainter extends CustomPainter {
-  SkyNodesPainter({required this.view, required this.universe, super.repaint});
+  SkyNodesPainter({
+    required this.view,
+    required this.universe,
+    this.brightness,
+    super.repaint,
+  });
 
   final SkyView view;
 
   /// `null` = 这一片天画不出来（树没装载、地址已过期）。空天不等于错误：
   /// 只画星空，不画点。
   final UniverseView? universe;
+
+  /// 骨架点 id → 亮度（0..1）。**整张表为 `null` = 取不到学习数据** ⇒ 全体共用
+  /// `universeBrightnessUnknown`。空表与非空表的分工是「不知道」与「确实没学」，
+  /// 两者都写成空集合的话，界面就无法把「日志读不出来」和「你什么都没学」
+  /// 分开（`B17b` 笔 4 的降级口径）。
+  final Map<String, double>? brightness;
 
   @override
   void paint(ui.Canvas canvas, ui.Size size) {
@@ -83,49 +109,78 @@ class SkyNodesPainter extends CustomPainter {
     }
     final SkyProjection projection = SkyProjection(view: view, size: size);
     final ui.Color color = axisNodeColor(universe.axis);
+    final UniverseLayout layout = universe.layout;
 
     // 三档分开画，各用一套 paint：光晕的模糊半径与点径同量级，共用一套就
-    // 会把小点糊成大点。每档只建两个 paint，不是每个点建一个。
+    // 会把小点糊成大点。每档内再按亮度分档 —— 亮度的差别不该把点径也拖下水。
     _paintLayer(
       canvas,
       projection,
-      <SkyPoint>[universe.layout.current],
+      <String, SkyPoint>{universe.anchorId: layout.current},
       universeCurrentDotSize,
       color,
     );
     _paintLayer(
       canvas,
       projection,
-      universe.layout.ancestors,
+      <String, SkyPoint>{
+        for (int i = 0; i < layout.ancestors.length; i++)
+          layout.ancestorIds[i]: layout.ancestors[i],
+      },
       universeAncestorDotSize,
       color,
     );
     _paintLayer(
       canvas,
       projection,
-      universe.layout.children.values,
+      layout.children,
       universeChildDotSize,
       color,
     );
   }
 
+  /// 该骨架点的不透明度系数（0..1）。
+  double _alphaOf(String id) {
+    final Map<String, double>? table = brightness;
+    if (table == null) {
+      return alphaFactorOfStep(brightnessStepOf(universeBrightnessUnknown));
+    }
+    return alphaFactorOfStep(brightnessStepOf(table[id] ?? 0));
+  }
+
   void _paintLayer(
     ui.Canvas canvas,
     SkyProjection projection,
-    Iterable<SkyPoint> points,
+    Map<String, SkyPoint> points,
     double radius,
     ui.Color color,
   ) {
-    final ui.Paint glow = ui.Paint()
-      ..color = color.withValues(alpha: universeDotGlowAlpha)
-      ..maskFilter = ui.MaskFilter.blur(ui.BlurStyle.normal, radius);
-    final ui.Paint core = ui.Paint()
-      ..color = color.withValues(alpha: universeDotCoreAlpha);
-
-    for (final ui.Offset center in screenPointsOf(projection, points)) {
-      canvas.drawCircle(center, radius * universeDotGlowScale, glow);
-      canvas.drawCircle(center, radius * universeDotCoreScale, core);
+    // 先按不透明度系数聚组，再逐组画：同一个系数下所有点共用两个 paint，
+    // 与点数无关。逐点建 paint 会让一屏一百来个点每帧建两百个对象。
+    final Map<double, List<ui.Offset>> byAlpha = <double, List<ui.Offset>>{};
+    for (final MapEntry<String, SkyPoint> entry in points.entries) {
+      final ui.Offset? center = projection.project(
+        directionOfSkyPoint(entry.value),
+      );
+      // `null` = 落在镜头后方。广角时正对方向两侧 180° 外的点会是这种，
+      // 跳过即可 —— 不是丢数据，是它本来就不该出现在这一帧里。
+      if (center == null) {
+        continue;
+      }
+      byAlpha.putIfAbsent(_alphaOf(entry.key), () => <ui.Offset>[]).add(center);
     }
+
+    byAlpha.forEach((double alpha, List<ui.Offset> centers) {
+      final ui.Paint glow = ui.Paint()
+        ..color = color.withValues(alpha: universeDotGlowAlpha * alpha)
+        ..maskFilter = ui.MaskFilter.blur(ui.BlurStyle.normal, radius);
+      final ui.Paint core = ui.Paint()
+        ..color = color.withValues(alpha: universeDotCoreAlpha * alpha);
+      for (final ui.Offset center in centers) {
+        canvas.drawCircle(center, radius * universeDotGlowScale, glow);
+        canvas.drawCircle(center, radius * universeDotCoreScale, core);
+      }
+    });
   }
 
   /// 恒返回 `true`：相机是**原地改字段**的对象，比较引用永远相等；真正的

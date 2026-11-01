@@ -61,6 +61,7 @@ class UniverseLayout {
   const UniverseLayout({
     required this.current,
     required this.ancestors,
+    required this.ancestorIds,
     required this.children,
   });
 
@@ -69,6 +70,14 @@ class UniverseLayout {
 
   /// 来路，**由近到远**（父在前、根在后）。空表表示当前就是轴根。
   final List<SkyPoint> ancestors;
+
+  /// 与 [ancestors] **逐位对齐**的节点 id。
+  ///
+  /// 坐标只回答「画在哪」，答不了「这是谁」；而亮度、标注这些都要按 id 查
+  /// （`B17b` 笔 4 起）。单列一张对齐表而不是把 id 塞进 `SkyPoint`：那个类
+  /// 是纯几何值、会被落位用例直接比较，掺进身份字段之后连「两个点重不重合」
+  /// 这种判据都得先决定要不要比 id。
+  final List<String> ancestorIds;
 
   /// 直接子级，键为 `Node.id`。同一父的子不撞格（除非超出格数叠放）。
   final Map<String, SkyPoint> children;
@@ -197,6 +206,7 @@ UniverseLayout layoutUniverse({
 
   // 来路由近到远：path 去掉末位后倒序。
   final List<SkyPoint> ancestors = <SkyPoint>[];
+  final List<String> ancestorIds = <String>[];
   final List<Node> ancestorsPath = path
       .sublist(0, path.length - 1)
       .reversed
@@ -210,6 +220,7 @@ UniverseLayout layoutUniverse({
         elevationDeg: ancestorElevationOf(ancestors.length),
       ),
     );
+    ancestorIds.add(node.id);
   }
 
   final List<Node> sorted = List<Node>.of(children)
@@ -228,6 +239,7 @@ UniverseLayout layoutUniverse({
   return UniverseLayout(
     current: SkyPoint(radius: currentRadius, azimuthDeg: 0, elevationDeg: 0),
     ancestors: ancestors,
+    ancestorIds: ancestorIds,
     children: childPoints,
   );
 }
