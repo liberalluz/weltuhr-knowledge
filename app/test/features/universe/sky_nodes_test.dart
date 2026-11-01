@@ -45,6 +45,7 @@ UniverseView _universe({
   SkyPoint? current,
   List<SkyPoint> ancestors = const <SkyPoint>[],
   Map<String, SkyPoint> children = const <String, SkyPoint>{},
+  SkyAggregate? aggregate,
   Axis axis = Axis.discipline,
 }) => UniverseView(
   layout: UniverseLayout(
@@ -55,6 +56,7 @@ UniverseView _universe({
       for (int i = 0; i < ancestors.length; i++) 'ancestor-$i',
     ],
     children: children,
+    aggregate: aggregate,
   ),
   axis: axis,
   anchorId: 'x',
@@ -200,6 +202,62 @@ void main() {
     expect(none, greaterThan(0), reason: '未学也不该一点像素都不留');
     expect(unknown, greaterThan(none));
     expect(all, greaterThan(unknown));
+  });
+
+  group('聚合点（B17b 笔 6）', () {
+    SkyAggregate aggregateOf(List<String> ids) =>
+        SkyAggregate(point: _point(), memberIds: ids);
+
+    test('TC-UNIVERSE-036 聚合点的字是「+N」，N 是被合并的个数（ADR-0006 修订十七）', () {
+      final SkyAggregate aggregate = aggregateOf(<String>['a', 'b', 'c']);
+      expect(aggregate.count, 3);
+      expect(aggregateLabelOf(aggregate), '+3');
+    });
+
+    test('TC-UNIVERSE-037 取不到亮度表时，聚合点走「不知道」那一档（ADR-0006 修订十七）', () {
+      // 与单点口径一致：整张表为 null 是「取不到学习数据」，
+      // 不能拿它当「成员都没学过」——那是 `C-145` 要分开的两件事。
+      expect(
+        aggregateAlphaFactorOf(aggregateOf(<String>['a', 'b']), null),
+        alphaFactorOfStep(brightnessStepOf(universeBrightnessUnknown)),
+      );
+    });
+
+    test('TC-UNIVERSE-038 聚合点的亮度取成员均值（ADR-0006 修订十七）', () {
+      expect(
+        aggregateAlphaFactorOf(
+          aggregateOf(<String>['a', 'b']),
+          <String, double>{'a': 1.0, 'b': 0.0},
+        ),
+        alphaFactorOfStep(brightnessStepOf(0.5)),
+      );
+    });
+
+    test('TC-UNIVERSE-039 成员里查不到亮度的按 0 计，不跳过（ADR-0006 修订十七）', () {
+      // 跳过的话「a = 1.0、b 缺失」会算成 1.0（全亮），而实际只学了一半 ——
+      // 与单点口径 `table[id] ?? 0` 对齐。
+      expect(
+        aggregateAlphaFactorOf(
+          aggregateOf(<String>['a', 'b']),
+          <String, double>{'a': 1.0},
+        ),
+        alphaFactorOfStep(brightnessStepOf(0.5)),
+      );
+    });
+
+    test('TC-UNIVERSE-040 空成员表不除零：有表按 0 档，无表按「不知道」（ADR-0006 修订十七）', () {
+      // 正常路径构造不出空成员（聚合要 >120 个才出现，count ≥ 2），
+      // 这条守的是函数本身别在边界上抛。
+      final SkyAggregate empty = aggregateOf(const <String>[]);
+      expect(
+        aggregateAlphaFactorOf(empty, <String, double>{}),
+        alphaFactorOfStep(brightnessStepOf(0)),
+      );
+      expect(
+        aggregateAlphaFactorOf(empty, null),
+        alphaFactorOfStep(brightnessStepOf(universeBrightnessUnknown)),
+      );
+    });
   });
 }
 
