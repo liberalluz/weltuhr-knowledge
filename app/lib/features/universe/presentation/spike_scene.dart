@@ -25,9 +25,11 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter_scene/scene.dart' as fs;
 import 'package:vector_math/vector_math.dart' as vm;
 
+import '../../../core/universe/placement.dart';
 import 'constellations.dart';
 import 'frame_stats.dart';
 import 'sky_image.dart';
+import 'sky_nodes.dart';
 import 'star_catalog.dart';
 import 'star_sprite.dart';
 
@@ -200,7 +202,7 @@ class _SkyGestureLayerState extends State<SkyGestureLayer> {
 }
 
 class SpikeSceneView extends StatefulWidget {
-  const SpikeSceneView({super.key, this.showReadout = false});
+  const SpikeSceneView({super.key, this.showReadout = false, this.universe});
 
   /// 是否显示左上角的采样面板（`P50` / `P95` / 重采按钮）。
   ///
@@ -211,6 +213,14 @@ class SpikeSceneView extends StatefulWidget {
   /// 默认关而不是默认开，是为了让**忘记传参**的那一侧落在安全的一边：
   /// 新增的调用点不带这个参数，就不会把调试面板漏到产品里。
   final bool showReadout;
+
+  /// 要在这一片星空上画出来的节点。
+  ///
+  /// `null` = 只画星空（调试入口、以及算不出落位的情形）。非 `null` 时相机
+  /// **对准当前节点并停掉自转**：当前节点在落位里的方位角与仰角都是 0，
+  /// 正好是 `yaw = 0 / pitch = 0` 的视线方向；自转开着的话，几秒后它就自己
+  /// 飘出视野，而这一笔还没有标注（笔 5）能把人找回来。
+  final UniverseView? universe;
 
   @override
   State<SpikeSceneView> createState() => _SpikeSceneViewState();
@@ -246,6 +256,14 @@ class _SpikeSceneViewState extends State<SpikeSceneView>
   @override
   void initState() {
     super.initState();
+    // 有节点要画时把视线摆到当前节点上、并停掉自转。摆位是构造期的一次赋值，
+    // 不进 `build`：进 `build` 会在每帧把用户刚拖出来的视角拽回去。
+    if (widget.universe != null) {
+      _camera
+        ..yaw = 0
+        ..pitch = 0
+        ..autoSpin = false;
+    }
     SchedulerBinding.instance.addTimingsCallback(_onTimings);
     _ticker = createTicker((_) => _tick.value++)..start();
     _build();
@@ -438,6 +456,21 @@ class _SpikeSceneViewState extends State<SpikeSceneView>
                   painter: ConstellationPainter(
                     view: _camera,
                     starsByHip: _starsByHip,
+                    repaint: _tick,
+                  ),
+                ),
+              ),
+            ),
+          // 节点压在连线之上：连线是天上的图案，节点是「你在哪一片天」，
+          // 两者重叠时该让节点露出来。
+          if (_ready)
+            Positioned.fill(
+              child: IgnorePointer(
+                child: CustomPaint(
+                  size: ui.Size.infinite,
+                  painter: SkyNodesPainter(
+                    view: _camera,
+                    universe: widget.universe,
                     repaint: _tick,
                   ),
                 ),

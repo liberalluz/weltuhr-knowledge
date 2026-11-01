@@ -222,9 +222,12 @@ class _TreeScreenState extends State<TreeScreen> {
             key: treeUniverseKey,
             icon: const Icon(Icons.blur_on),
             tooltip: '宇宙视图',
+            // 地址与索引原样传过去：宇宙不自己再建一份（`SPEC-TREE-007`）。
+            // 这里传的是 `build` 的局部量，进宇宙那一刻取的就是屏幕上这一行。
             onPressed: () => Navigator.of(context).push(
               MaterialPageRoute<void>(
-                builder: (BuildContext context) => const UniverseScreen(),
+                builder: (BuildContext context) =>
+                    UniverseScreen(tree: tree, currentNodeId: address),
               ),
             ),
           ),
